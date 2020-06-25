@@ -1,3 +1,5 @@
+![Build Master](https://github.com/Farfetch/kafka-flow/workflows/Build%20Master/badge.svg?branch=master)
+
 # KafkaFlow
 
 A flexible framewrok to process Kafka messages with multithreading, middlewares, serialization, compression, typed handlers and message order support.
