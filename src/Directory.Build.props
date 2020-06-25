@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>8.0</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Authors>Farfetch</Authors>
+    <Company>Farfetch</Company>
+    <Product>KafkaFlow</Product>
+    <PackageProjectUrl>https://github.com/Farfetch/Kafka-flow</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Farfetch/Kafka-flow</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+</Project>

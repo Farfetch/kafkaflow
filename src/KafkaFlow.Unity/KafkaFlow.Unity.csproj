@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
+      <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Unity" Version="5.11.7" />
+    </ItemGroup>
+
+</Project>

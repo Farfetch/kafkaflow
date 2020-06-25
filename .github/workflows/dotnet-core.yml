@@ -1,0 +1,27 @@
+name: .NET Core
+
+on:
+  push:
+    branches: [ github ]
+  pull_request:
+    branches: [ github ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+    - name: Install dependencies
+      run: dotnet restore ./src/KafkaFlow.sln
+    - name: Build
+      run: dotnet pack ./src/KafkaFlow.sln -c Release /p:VersionPrefix="1.0" -o ./drop --include-source --include-symbols
+    - name: Test
+      run: dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj -c Release --no-restore --verbosity normal
+    - name: push to nuget
+      run: dotnet nuget push ./drop/*.nupkg -k ${{ secrets.nuget_secret }} -s https://api.nuget.org/v3/index.json --skip-duplicate
