@@ -36,17 +36,20 @@ A flexible framewrok to process Kafka messages with multithreading, middlewares,
 
 You should install [KafkaFlow with NuGet](https://www.nuget.org/packages/KafkaFlow):
 
+```bash
     Install-Package KafkaFlow
-    
-Or via the .NET Core command line interface:
+```
 
+Or via the .NET Core command line interface:
+```bash
     dotnet add package KafkaFlow
+```
 
 Either commands, from Package Manager Console or .NET Core CLI, will download and install KafkaFlow and all required dependencies.
 
 ## Usage
 
-See samples folder to see Consumer and Consumer samples
+See the [samples](/samples) folder to see Consumer and Consumer samples
 
 ## Contributing
 
@@ -54,6 +57,15 @@ See samples folder to see Consumer and Consumer samples
 2. Follow project guidelines
 3. Do your stuff
 4. Open a merge request using the template
+
+### Disclaimer
+
+By sending us your contributions, you are agreeing that your contribution is made subject to the terms of our [Contributor Ownership Statement](https://github.com/Farfetch/.github/blob/master/COS.md)
+
+## Maintainers
+
+* [filipeesch](https://github.com/filipeesch)
+* [dougolima](https://github.com/dougolima)
 
 ## License
 
