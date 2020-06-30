@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>KafkaFlow.Compressor</PackageId>
+    <Description>Compression middleware for KafkaFlow</Description>
   </PropertyGroup>
 
   <ItemGroup>

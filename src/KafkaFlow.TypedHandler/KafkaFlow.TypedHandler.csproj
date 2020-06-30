@@ -2,7 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>7.2</LangVersion>
+        <PackageId>KafkaFlow.TypedHandler</PackageId>
+        <Description>A KafkaFlow middleware to execute a handler class when a specific message arrives</Description>
     </PropertyGroup>
 
     <ItemGroup>

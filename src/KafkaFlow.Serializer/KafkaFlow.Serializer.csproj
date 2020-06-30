@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>KafkaFlow.Serializer</PackageId>
+    <Description>Serializer middleware for KafkaFlow</Description>
   </PropertyGroup>
 
   <ItemGroup>

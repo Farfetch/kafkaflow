@@ -8,5 +8,7 @@
     <PackageProjectUrl>https://github.com/Farfetch/Kafka-flow</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Farfetch/Kafka-flow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+	<PackageLicenseUrl>https://github.com/Farfetch/kafka-flow/blob/master/LICENSE</PackageLicenseUrl>
+	<PackageLicenseType>MIT</PackageLicenseType>
   </PropertyGroup>
 </Project>

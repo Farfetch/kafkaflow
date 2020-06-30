@@ -2,6 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <PackageId>KafkaFlow.Microsoft.DependencyInjection</PackageId>
+        <Description>Adapts KafkaFlow to use Microsoft Dependency Injection</Description>
     </PropertyGroup>
 
     <ItemGroup>
