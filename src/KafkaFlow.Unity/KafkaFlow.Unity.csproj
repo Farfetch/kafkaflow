@@ -2,7 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
+        <PackageId>KafkaFlow.Unity</PackageId>
+        <Description>Adapts KafkaFlow to use Unity Dependency Injection</Description>
     </PropertyGroup>
 
     <ItemGroup>

@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <PackageId>KafkaFlow.Serializer.Json</PackageId>
+    <Description>JSON implementation for KafkaFlow serializer middleware using System.Text.Json</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>KafkaFlow</PackageId>
+    <Description>KafkaFlow main package</Description>
   </PropertyGroup>
 
   <ItemGroup>

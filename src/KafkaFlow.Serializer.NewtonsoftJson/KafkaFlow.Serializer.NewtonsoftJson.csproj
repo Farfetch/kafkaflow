@@ -2,6 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <PackageId>KafkaFlow.Serializer.NewtonsoftJson</PackageId>
+        <Description>JSON implementation for KafkaFlow serializer middleware using Newtonsoft Json</Description>
     </PropertyGroup>
 
     <ItemGroup>
