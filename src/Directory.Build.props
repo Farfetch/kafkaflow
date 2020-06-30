@@ -2,13 +2,15 @@
   <PropertyGroup>
     <LangVersion>8.0</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Authors>Farfetch</Authors>
     <Company>Farfetch</Company>
     <Product>KafkaFlow</Product>
     <PackageProjectUrl>https://github.com/Farfetch/Kafka-flow</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Farfetch/Kafka-flow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-	<PackageLicenseUrl>https://github.com/Farfetch/kafka-flow/blob/master/LICENSE</PackageLicenseUrl>
+	<license>https://github.com/Farfetch/kafka-flow/blob/master/LICENSE</license>
 	<PackageLicenseType>MIT</PackageLicenseType>
   </PropertyGroup>
 </Project>
