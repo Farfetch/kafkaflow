@@ -49,7 +49,7 @@ Either commands, from Package Manager Console or .NET Core CLI, will download an
 
 ## Usage
 
-See the [samples](/samples) folder to see Consumer and Consumer samples
+See the [samples](/samples) folder to see Producer and Consumer samples
 
 ## Contributing
 
