@@ -1,5 +1,11 @@
 .PHONY: init_broker shutdown_broker
 
+restore:
+	dotnet restore src/KafkaFlow.sln
+
+build:
+	dotnet build src/KafkaFlow.sln
+
 init_broker:	
 	@echo command | date
 	@echo Initializing Kafka broker
