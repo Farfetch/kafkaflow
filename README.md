@@ -2,7 +2,7 @@
 
 # KafkaFlow
 
-A flexible framewrok to process Kafka messages with multithreading, middlewares, serialization, compression, typed handlers and message order support.
+A flexible framework to process Kafka messages with multithreading, middlewares, serialization, compression, typed handlers and message order support.
 
 ## Features
 
