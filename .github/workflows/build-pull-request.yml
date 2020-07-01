@@ -18,6 +18,6 @@ jobs:
     - name: Install dependencies
       run: dotnet restore ./src/KafkaFlow.sln
     - name: Build PR
-      run: dotnet pack ./src/KafkaFlow.sln -c Release /p:VersionPrefix="1.0" -o ./drop
+      run: dotnet build ./src/KafkaFlow.sln -c Release
     - name: Test
       run: dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj -c Release --no-restore --verbosity normal
