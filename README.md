@@ -56,7 +56,7 @@ See the [samples](/samples) folder to see Producer and Consumer samples
 1. Fork this repository
 2. Follow project guidelines
 3. Do your stuff
-4. Open a merge request using the template
+4. Open a pull request using the template
 
 ### Disclaimer
 
