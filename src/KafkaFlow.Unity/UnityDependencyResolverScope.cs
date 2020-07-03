@@ -2,7 +2,7 @@ namespace KafkaFlow.Unity
 {
     using global::Unity;
 
-    public class UnityDependencyResolverScope : IDependencyResolverScope
+    internal class UnityDependencyResolverScope : IDependencyResolverScope
     {
         private readonly IUnityContainer container;
 

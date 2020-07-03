@@ -5,7 +5,7 @@
     using global::Unity.Lifetime;
     using InstanceLifetime = KafkaFlow.InstanceLifetime;
 
-    public class UnityDependencyConfigurator : IDependencyConfigurator
+    internal class UnityDependencyConfigurator : IDependencyConfigurator
     {
         private readonly IUnityContainer container;
 
