@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>	
+  </PropertyGroup>
+</Project>
