@@ -7,7 +7,7 @@
     /// <summary>
     /// Serializer class for messages using protobuf protocol
     /// </summary>
-    public abstract class ProtobufMessageSerializer : IMessageSerializer
+    public class ProtobufMessageSerializer : IMessageSerializer
     {
         /// <summary>
         /// Creates a protocol-buffer representation of the given instance
