@@ -3,11 +3,12 @@
     using KafkaFlow.Configuration;
 
     /// <summary>
+    /// Extension methods for <see cref="IConsumerMiddlewareConfigurationBuilder"/> and <see cref="IProducerMiddlewareConfigurationBuilder"/> implementations
     /// </summary>
     public static class ConfigurationBuilderExtensions
     {
         /// <summary>
-        /// Register a middleware to deserialize messages
+        /// Registers a middleware to deserialize messages
         /// </summary>
         /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
         /// <typeparam name="TResolver">A class that implements <see cref="IMessageTypeResolver"/></typeparam>
@@ -47,7 +48,7 @@
         }
 
         /// <summary>
-        /// Register a middleware to serialize messages
+        /// Registers a middleware to serialize messages
         /// </summary>
         /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
         /// <typeparam name="TResolver">A class that implements <see cref="IMessageTypeResolver"/></typeparam>
@@ -61,7 +62,7 @@
         }
 
         /// <summary>
-        /// Register a middleware to serialize messages
+        /// Registers a middleware to serialize messages
         /// </summary>
         /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
         /// <typeparam name="TResolver">A class that implements <see cref="IMessageTypeResolver"/></typeparam>
