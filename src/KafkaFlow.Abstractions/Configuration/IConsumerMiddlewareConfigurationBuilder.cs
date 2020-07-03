@@ -1,11 +1,17 @@
 namespace KafkaFlow.Configuration
 {
+    /// <summary>
+    /// Represents the interface to be extended by custom consumer middleware configuration builders
+    /// </summary>
     public interface IConsumerMiddlewareConfigurationBuilder
     {
+        /// <summary>
+        /// Gets the dependency injection configurator
+        /// </summary>
         IDependencyConfigurator DependencyConfigurator { get; }
 
         /// <summary>
-        /// Register a middleware
+        /// Registers a middleware
         /// </summary>
         /// <param name="factory">A factory to create the instance</param>
         /// <typeparam name="T">A class that implements the <see cref="IMessageMiddleware"/></typeparam>
@@ -14,7 +20,7 @@ namespace KafkaFlow.Configuration
             where T : class, IMessageMiddleware;
 
         /// <summary>
-        /// Register a middleware
+        /// Registers a middleware
         /// </summary>
         /// <typeparam name="T">A class that implements the <see cref="IMessageMiddleware"/></typeparam>
         /// <returns></returns>

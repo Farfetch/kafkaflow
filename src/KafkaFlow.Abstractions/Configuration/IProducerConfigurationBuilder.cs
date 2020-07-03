@@ -2,8 +2,14 @@ namespace KafkaFlow.Configuration
 {
     using System;
 
+    /// <summary>
+    /// Represents the interface to be extended by custom producer configuration builders
+    /// </summary>
     public interface IProducerConfigurationBuilder
     {
+        /// <summary>
+        /// Gets the dependency injection configurator
+        /// </summary>
         IDependencyConfigurator DependencyConfigurator { get; }
 
         /// <summary>
@@ -14,14 +20,14 @@ namespace KafkaFlow.Configuration
         IProducerConfigurationBuilder AddMiddlewares(Action<IProducerMiddlewareConfigurationBuilder> middlewares);
 
         /// <summary>
-        /// Set the default topic to be used when producing messages
+        /// Sets the default topic to be used when producing messages
         /// </summary>
         /// <param name="topic">Topic name</param>
         /// <returns></returns>
         IProducerConfigurationBuilder DefaultTopic(string topic);
 
         /// <summary>
-        /// Set the <see cref="Acks"/> to be used when producing messages
+        /// Sets the <see cref="Acks"/> to be used when producing messages
         /// </summary>
         /// <param name="acks"></param>
         /// <returns></returns>
