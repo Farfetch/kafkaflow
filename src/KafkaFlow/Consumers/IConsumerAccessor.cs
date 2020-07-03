@@ -8,7 +8,7 @@ namespace KafkaFlow.Consumers
     public interface IConsumerAccessor
     {
         /// <summary>
-        /// Get a Consumer by it´s name
+        /// Gets a consumer by its name
         /// </summary>
         /// <param name="name">The name defined in the consumer configuration</param>
         /// <returns></returns>

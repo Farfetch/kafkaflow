@@ -4,10 +4,16 @@ namespace KafkaFlow.Producers
     using System.Threading.Tasks;
     using Confluent.Kafka;
 
+    /// <summary>
+    /// Provides access to the kafka message producer
+    /// </summary>
     public interface IMessageProducer<TProducer> : IMessageProducer
     {
     }
 
+    /// <summary>
+    /// Provides access to the kafka producer
+    /// </summary>
     public interface IMessageProducer
     {
         /// <summary>

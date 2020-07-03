@@ -3,8 +3,16 @@ namespace KafkaFlow.Configuration
     using System;
     using KafkaFlow.Consumers;
 
+    /// <summary>
+    /// Class configurator for kafkaflow clients
+    /// </summary>
     public class KafkaFlowConfigurator
     {
+        /// <summary>
+        /// KafkaFlowConfigurator constructor
+        /// </summary>
+        /// <param name="dependencyConfigurator">Dependency injection configurator</param>
+        /// <param name="kafka">Action to be done over instance of IKafkaConfigurationBuilder</param>
         public KafkaFlowConfigurator(
             IDependencyConfigurator dependencyConfigurator,
             Action<IKafkaConfigurationBuilder> kafka)
@@ -16,6 +24,11 @@ namespace KafkaFlow.Configuration
             dependencyConfigurator.AddSingleton(builder.Build());
         }
 
+        /// <summary>
+        /// Creates kafka bus using the instance of <see cref="IDependencyResolver"/> informed 
+        /// </summary>
+        /// <param name="resolver">Implementation of <see cref="IDependencyResolver"/></param>
+        /// <returns></returns>
         public IKafkaBus CreateBus(IDependencyResolver resolver)
         {
             var scope = resolver.CreateScope();

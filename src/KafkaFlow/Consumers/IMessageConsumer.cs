@@ -4,6 +4,9 @@ namespace KafkaFlow.Consumers
     using System.Collections.Generic;
     using Confluent.Kafka;
 
+    /// <summary>
+    /// Provides access to the kafka message consumer
+    /// </summary>
     public interface IMessageConsumer
     {
         /// <summary>
