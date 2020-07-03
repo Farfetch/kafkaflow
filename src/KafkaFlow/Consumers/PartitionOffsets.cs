@@ -4,7 +4,7 @@ namespace KafkaFlow.Consumers
     using System.Collections.Generic;
     using Confluent.Kafka;
 
-    public class PartitionOffsets
+    internal class PartitionOffsets
     {
         private readonly LinkedList<long> pendingOffsets = new LinkedList<long>();
 

@@ -2,7 +2,7 @@ namespace KafkaFlow.TypedHandler
 {
     using System.Threading.Tasks;
 
-    public class TypedHandlerMiddleware : IMessageMiddleware
+    internal class TypedHandlerMiddleware : IMessageMiddleware
     {
         private readonly IDependencyResolver dependencyResolver;
         private readonly TypedHandlerConfiguration configuration;
