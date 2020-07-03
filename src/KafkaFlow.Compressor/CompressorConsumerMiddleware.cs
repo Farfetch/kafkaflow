@@ -3,15 +3,29 @@
     using System;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// Middleware to decompress messages on consumers
+    /// </summary>
     public class CompressorConsumerMiddleware : IMessageMiddleware
     {
         private readonly IMessageCompressor compressor;
 
+        /// <summary>
+        /// CompressorConsumerMiddleware constructor
+        /// </summary>
+        /// <param name="compressor">Instance of <see cref="IMessageCompressor"/></param>
         public CompressorConsumerMiddleware(IMessageCompressor compressor)
         {
             this.compressor = compressor;
         }
 
+        /// <summary>
+        /// Decompress message based on message compressor configured
+        /// </summary>
+        /// <param name="context">Instance of <see cref="IMessageContext"/></param>
+        /// <param name="next">Next middleware to be executed</param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException">Throw if message is not byte[]</exception>
         public Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
             if (!(context.Message is byte[] rawData))
