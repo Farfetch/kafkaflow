@@ -58,7 +58,5 @@ namespace KafkaFlow.Configuration
 
             return this;
         }
-
-        //todo: add auth
     }
 }
