@@ -4,7 +4,7 @@ namespace KafkaFlow.TypedHandler
     using System.Collections.Concurrent;
     using System.Threading.Tasks;
 
-    public abstract class HandlerExecutor
+    internal abstract class HandlerExecutor
     {
         private static readonly ConcurrentDictionary<Type, HandlerExecutor> executors =
             new ConcurrentDictionary<Type, HandlerExecutor>();
@@ -19,7 +19,7 @@ namespace KafkaFlow.TypedHandler
         public abstract Task Execute(object handler, IMessageContext context, object message);
     }
 
-    public class HandlerExecutor<T> : HandlerExecutor
+    internal class HandlerExecutor<T> : HandlerExecutor
     {
         public override Task Execute(object handler, IMessageContext context, object message)
         {

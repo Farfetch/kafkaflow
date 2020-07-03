@@ -4,7 +4,7 @@ namespace KafkaFlow
     using System.Collections.Generic;
     using Confluent.Kafka;
 
-    public class MessageHeaders : IMessageHeaders
+    internal class MessageHeaders : IMessageHeaders
     {
         private readonly Headers headers;
 
