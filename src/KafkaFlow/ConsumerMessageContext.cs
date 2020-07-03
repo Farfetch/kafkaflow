@@ -14,15 +14,15 @@ namespace KafkaFlow
         {
             this.result = result;
             this.Consumer = consumer;
-            this.Message = result.Value;
-            this.Headers = new MessageHeaders(result.Headers);
+            this.Message = result.Message.Value;
+            this.Headers = new MessageHeaders(result.Message.Headers);
             this.WorkerId = workerId;
             this.GroupId = groupId;
         }
 
         public int WorkerId { get; }
 
-        public byte[] PartitionKey => this.result.Key;
+        public byte[] PartitionKey => this.result.Message.Key;
 
         public object Message { get; private set; }
 
