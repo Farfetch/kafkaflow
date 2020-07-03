@@ -13,6 +13,10 @@ namespace KafkaFlow.Consumers.DistributionStrategies
     {
         private readonly Channel<IWorker> freeWorkers = Channel.CreateUnbounded<IWorker>();
 
+        /// <summary>
+        /// Initializes the distribution strategy
+        /// </summary>
+        /// <param name="workers"></param>
         public void Init(IReadOnlyList<IWorker> workers)
         {
             foreach (var worker in workers)
@@ -22,9 +26,15 @@ namespace KafkaFlow.Consumers.DistributionStrategies
             }
         }
 
-        public Task<IWorker> GetWorkerAsync(byte[] partitionKey, CancellationToken stopCancellationToken = default)
+        /// <summary>
+        /// Gets the next free worker regardless of the partition key informed 
+        /// </summary>
+        /// <param name="partitionKey">Message partition key</param>
+        /// <param name="cancellationToken">A <see cref="T:System.Threading.CancellationToken" /> used to cancel the operation.</param>
+        /// <returns></returns>
+        public Task<IWorker> GetWorkerAsync(byte[] partitionKey, CancellationToken cancellationToken = default)
         {
-            return this.freeWorkers.Reader.ReadAsync(stopCancellationToken).AsTask();
+            return this.freeWorkers.Reader.ReadAsync(cancellationToken).AsTask();
         }
     }
 }
