@@ -79,7 +79,7 @@ namespace KafkaFlow.Consumers
             this.offsetManager.InitializeOffsetIfNeeded(message.TopicPartitionOffset);
 
             var worker = (IConsumerWorker) await this.distributionStrategy
-                .GetWorkerAsync(message.Key, stopCancellationToken)
+                .GetWorkerAsync(message.Message.Key, stopCancellationToken)
                 .ConfigureAwait(false);
 
             if (worker == null)
