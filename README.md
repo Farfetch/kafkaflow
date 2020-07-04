@@ -49,7 +49,128 @@ Either commands, from Package Manager Console or .NET Core CLI, will download an
 
 ## Usage
 
-See the [samples](/samples) folder to see Producer and Consumer samples
+#### .NET Core
+
+Install *KafkaFlow.Microsoft.DependencyInjection* package
+
+```csharp
+public class Startup
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddKafka(
+            kafka => kafka
+                // You must implement IlogHandler interface and replace YourLogHandler
+                .UseLogHandler<YourLogHandler>() 
+                .AddCluster(
+                    cluster => cluster
+                        .WithBrokers(new[] { "localhost:9092" })
+                        .AddConsumer(
+                            consumer => consumer
+                                .Topic("test-topic")
+                                .WithGroupId("print-console-handler")
+                                .WithBufferSize(100)
+                                .WithWorkersCount(10)
+                                .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                .AddMiddlewares(
+                                    middlewares => middlewares
+                                        // Install KafkaFlow.Compressor and Install KafkaFlow.Compressor.Gzip
+                                        .AddCompressor<GzipMessageCompressor>() 
+                                        // Install KafkaFlow.Serializer and Install KafkaFlow.Serializer.Protobuf
+                                        // You must implement IMessageTypeResolver and replace YourMessageTypeResolver
+                                        .AddSerializer<ProtobufMessageSerializer, YourMessageTypeResolver>()
+                                        // Install KafkaFlow.TypedHandler
+                                        .AddTypedHandlers(
+                                            handlers => handlers
+                                                .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                                .AddHandler<PrintConsoleHandler>())
+                                )
+                        )
+                        // The PrintConsoleProducer class is needed to bind the producer configuration with the
+                        // IMessageProducer<PrintConsoleProducer> instance that will produce the messages (see the samples)
+                        .AddProducer<PrintConsoleProducer>(
+                            producer => producer
+                                .DefaultTopic("test-topic")
+                                .AddMiddlewares(
+                                    middlewares => middlewares
+                                        .AddSerializer<ProtobufMessageSerializer, YourMessageTypeResolver>()
+                                        .AddCompressor<GzipMessageCompressor>()
+                                )
+                        )
+                )
+        );
+    }
+
+    public void Configure(
+        IApplicationBuilder app,
+        IHostApplicationLifetime lifetime,
+        IServiceProvider serviceProvider)
+    {
+        var bus = serviceProvider.CreateKafkaBus();
+
+        // Starts and stops the bus when you app starts and stops to graceful shutdown
+        lifetime.ApplicationStarted.Register(
+            a => bus.StartAsync(lifetime.ApplicationStopped).GetAwaiter().GetResult(),
+            null);
+    }
+}
+```
+
+#### .NET Framework or other DI containers
+
+```csharp
+var container = new UnityContainer();
+
+var configurator = new KafkaFlowConfigurator(
+    // Install KafkaFlow.Unity package
+    new UnityDependencyConfigurator(container),
+    kafka => kafka
+        // You must implement IlogHandler interface and replace YourLogHandler
+        .UseLogHandler<YourLogHandler>() 
+        .AddCluster(
+            cluster => cluster
+                .WithBrokers(new[] { "localhost:9092" })
+                .AddConsumer(
+                    consumer => consumer
+                        .Topic("test-topic")
+                        .WithGroupId("print-console-handler")
+                        .WithBufferSize(100)
+                        .WithWorkersCount(10)
+                        .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                        .AddMiddlewares(
+                            middlewares => middlewares
+                                // Install KafkaFlow.Compressor and Install KafkaFlow.Compressor.Gzip packages
+                                .AddCompressor<GzipMessageCompressor>() 
+                                // Install KafkaFlow.Serializer and Install KafkaFlow.Serializer.Protobuf packages
+                                // You must implement IMessageTypeResolver and replace YourMessageTypeResolver
+                                .AddSerializer<ProtobufMessageSerializer, YourMessageTypeResolver>()
+                                // Install KafkaFlow.TypedHandler package
+                                .AddTypedHandlers(
+                                    handlers => handlers
+                                        .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                        .AddHandler<PrintConsoleHandler>())
+                        )
+                )
+                // The PrintConsoleProducer class is needed to bind the producer configuration with the
+                // IMessageProducer<PrintConsoleProducer> instance that will produce the messages (see the samples)
+                .AddProducer<PrintConsoleProducer>(
+                    producer => producer
+                        .DefaultTopic("test-topic")
+                        .AddMiddlewares(
+                            middlewares => middlewares
+                                .AddSerializer<ProtobufMessageSerializer, YourMessageTypeResolver>()
+                                .AddCompressor<GzipMessageCompressor>()
+                        )
+                )
+        )
+);
+
+//Call bus.StartAsync() when your app starts and bus.StopAsync() when your app stops
+var bus = configurator.CreateBus(new UnityDependencyResolver(container));
+```
+
+- See the [samples](/samples) folder for more usages
+- You can use other dependency injection frameworks implementing the *IDependencyConfigurator*, *IDependencyResolver* and *IDependencyResolverScope* interfaces
 
 ## Contributing
 
