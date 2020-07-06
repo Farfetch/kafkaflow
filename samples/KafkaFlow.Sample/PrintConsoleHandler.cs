@@ -1,20 +1,12 @@
-﻿namespace KafkaFlow.Samples.Common
+﻿namespace KafkaFlow.Sample
 {
     using System;
     using System.Threading.Tasks;
     using KafkaFlow.TypedHandler;
 
-    public class PrintConsoleHandler
-        : IMessageHandler<TestMessage>,
-            IMessageHandler<TestMessage2>
+    public class PrintConsoleHandler : IMessageHandler<TestMessage>
     {
         public Task Handle(IMessageContext context, TestMessage message)
-        {
-            Console.WriteLine(message.Text);
-            return Task.CompletedTask;
-        }
-
-        public Task Handle(IMessageContext context, TestMessage2 message)
         {
             var watermark = context.Consumer.GetOffsetsWatermark();
 
@@ -23,7 +15,7 @@
                 watermark.High,
                 context.Offset,
                 watermark.High - context.Offset.Value - 1,
-                message.Value);
+                message.Text);
 
             return Task.CompletedTask;
         }
