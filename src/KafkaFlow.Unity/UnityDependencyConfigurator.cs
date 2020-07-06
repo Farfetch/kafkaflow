@@ -21,6 +21,12 @@
             this.container = container;
         }
 
+        /// <summary>
+        /// Configures a type mapping
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <param name="implementationType"></param>
+        /// <param name="lifetime"></param>
         public IDependencyConfigurator Add(
             Type serviceType,
             Type implementationType,
