@@ -30,14 +30,11 @@ namespace KafkaFlow.Consumers.DistributionStrategies
         /// <param name="partitionKey">Message partition key</param>
         /// <param name="cancellationToken">A <see cref="T:System.Threading.CancellationToken" /> used to cancel the operation.</param>
         /// <returns></returns>
-        public Task<IWorker> GetWorkerAsync(byte[] partitionKey, CancellationToken cancellationToken = default)
+        public Task<IWorker> GetWorkerAsync(byte[] partitionKey, CancellationToken cancellationToken)
         {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return null;
-            }
-
-            return Task.FromResult(this.workers.ElementAtOrDefault(partitionKey.Sum(x => x) % this.workers.Count));
+            return cancellationToken.IsCancellationRequested ? 
+                null : 
+                Task.FromResult(this.workers.ElementAtOrDefault(partitionKey.Sum(x => x) % this.workers.Count));
         }
     }
 }
