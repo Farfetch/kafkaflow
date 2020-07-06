@@ -139,6 +139,7 @@
                             }
                             catch (OperationCanceledException)
                             {
+                                // Ignores the exception
                             }
                             catch (KafkaException ex) when (ex.Error.IsFatal)
                             {

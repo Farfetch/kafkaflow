@@ -13,20 +13,29 @@ namespace KafkaFlow
         /// <param name="message"></param>
         /// <param name="ex"></param>
         /// <param name="data"></param>
-        public void Error(string message, Exception ex, object data) { }
+        public void Error(string message, Exception ex, object data)
+        {
+            // Do nothing
+        }
 
         /// <summary>
         /// Does nothing
         /// </summary>
         /// <param name="message"></param>
         /// <param name="data"></param>
-        public void Info(string message, object data) { }
+        public void Info(string message, object data)
+        {
+            // Do nothing
+        }
 
         /// <summary>
         /// Does nothing
         /// </summary>
         /// <param name="message"></param>
         /// <param name="data"></param>
-        public void Warning(string message, object data) { }
+        public void Warning(string message, object data)
+        {
+            // Do nothing
+        }
     }
 }

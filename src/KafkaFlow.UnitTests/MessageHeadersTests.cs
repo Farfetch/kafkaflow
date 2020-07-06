@@ -8,9 +8,9 @@ namespace KafkaFlow.UnitTests
     [TestClass]
     public class MessageHeadersTests
     {
-        const string key = "abc";
-        const string strValue = "123";
-        private byte[] value = Encoding.UTF8.GetBytes("123");
+        private const string key = "abc";
+        private const string strValue = "123";
+        private readonly byte[] value = Encoding.UTF8.GetBytes("123");
         
         [TestMethod]
         public void Add_WithKeyNotNull_ShouldAddValueCorrectly()

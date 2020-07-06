@@ -45,7 +45,7 @@ namespace KafkaFlow.Consumers
             return this.messagesBuffer.Writer.WriteAsync(message, stopCancellationToken);
         }
 
-        public Task StartAsync(CancellationToken stopCancellationToken = default)
+        public Task StartAsync(CancellationToken stopCancellationToken)
         {
             this.cancellationTokenSource =
                 CancellationTokenSource.CreateLinkedTokenSource(stopCancellationToken);
@@ -96,6 +96,7 @@ namespace KafkaFlow.Consumers
                         }
                         catch (OperationCanceledException)
                         {
+                            // Ignores the exception
                         }
                     }
                 },
@@ -105,6 +106,8 @@ namespace KafkaFlow.Consumers
 
             return Task.CompletedTask;
         }
+
+        public Task StartAsync() => this.StartAsync(default);
 
         public async Task StopAsync()
         {
