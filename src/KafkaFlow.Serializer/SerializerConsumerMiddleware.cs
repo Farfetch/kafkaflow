@@ -4,7 +4,7 @@
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Middleware to deserialize messages on consumers
+    /// Middleware to deserialize messages when consuming
     /// </summary>
     public class SerializerConsumerMiddleware : IMessageMiddleware
     {
@@ -12,7 +12,7 @@
         private readonly IMessageTypeResolver typeResolver;
 
         /// <summary>
-        /// SerializerConsumerMiddleware constructor
+        /// Creates a <see cref="SerializerConsumerMiddleware"/> instance
         /// </summary>
         /// <param name="serializer">Instance of <see cref="IMessageSerializer"/></param>
         /// <param name="typeResolver">Instance of <see cref="IMessageTypeResolver"/></param>
@@ -25,10 +25,10 @@
         }
 
         /// <summary>
-        /// Deserializes message based on message type resolver and message serializer configured
+        /// Deserializes the message using the passed serialized
         /// </summary>
-        /// <param name="context">Instance of <see cref="IMessageContext"/></param>
-        /// <param name="next">Next middleware to be executed</param>
+        /// <param name="context">The <see cref="IMessageContext"/> containing the message and metadata</param>
+        /// <param name="next">A delegate to the next middleware</param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">Throw if message is not byte[]</exception>
         public Task Invoke(IMessageContext context, MiddlewareDelegate next)

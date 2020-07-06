@@ -1,7 +1,7 @@
 namespace KafkaFlow
 {
     /// <summary>
-    /// Represents the interface to be implemented by custom message compressors
+    /// Used to create a message compressor
     /// </summary>
     public interface IMessageCompressor
     {

@@ -4,14 +4,14 @@
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Middleware to decompress messages on consumers
+    /// Middleware to decompress the messages when consuming
     /// </summary>
     public class CompressorConsumerMiddleware : IMessageMiddleware
     {
         private readonly IMessageCompressor compressor;
 
         /// <summary>
-        /// CompressorConsumerMiddleware constructor
+        /// Creates a <see cref="CompressorConsumerMiddleware"/> instance
         /// </summary>
         /// <param name="compressor">Instance of <see cref="IMessageCompressor"/></param>
         public CompressorConsumerMiddleware(IMessageCompressor compressor)
@@ -20,7 +20,7 @@
         }
 
         /// <summary>
-        /// Decompress message based on message compressor configured
+        /// Decompress a message based on the passed message compressor
         /// </summary>
         /// <param name="context">Instance of <see cref="IMessageContext"/></param>
         /// <param name="next">Next middleware to be executed</param>

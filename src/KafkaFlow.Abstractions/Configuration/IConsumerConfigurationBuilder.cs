@@ -4,7 +4,7 @@ namespace KafkaFlow.Configuration
     using System.Collections.Generic;
 
     /// <summary>
-    /// Represents the interface to be extended by custom consumer configuration builders
+    /// Used to build the consumer configuration
     /// </summary>
     public interface IConsumerConfigurationBuilder
     {
@@ -51,8 +51,6 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Sets the initial offset strategy used by new consumer groups.
         /// If your consumer group (set by method <see cref="WithGroupId(string)"/>) has no offset stored in Kafka, this configuration will be used
-        /// Use Earliest to read the topic from the beginning
-        /// Use Latest to read only new messages in the topic
         /// </summary>
         /// <param name="autoOffsetReset"></param>
         /// <returns></returns>
@@ -110,7 +108,7 @@ namespace KafkaFlow.Configuration
         IConsumerConfigurationBuilder WithAutoStoreOffsets();
 
         /// <summary>
-        /// The handler or middleware should call the <see cref="IMessageContextConsumer.StoreOffset()"/>
+        /// The client should call the <see cref="IMessageContextConsumer.StoreOffset()"/>
         /// </summary>
         /// <returns></returns>
         IConsumerConfigurationBuilder WithManualStoreOffsets();

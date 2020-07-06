@@ -9,25 +9,25 @@ namespace KafkaFlow.TypedHandler
     public static class ConfigurationBuilderExtensions
     {
         /// <summary>
-        /// Adds typed handler middlewares into the stack of middlewares 
+        /// Adds typed handler middleware
         /// </summary>
-        /// <param name="middlewaresBuilder">Instance of <see cref="IConsumerMiddlewareConfigurationBuilder"/></param>
-        /// <param name="configure">Action to be done over instance of TypedHandlerConfigurationBuilder</param>
+        /// <param name="builder">Instance of <see cref="IConsumerMiddlewareConfigurationBuilder"/></param>
+        /// <param name="configure">A handler to configure the middleware</param>
         /// <returns></returns>
         public static IConsumerMiddlewareConfigurationBuilder AddTypedHandlers(
-            this IConsumerMiddlewareConfigurationBuilder middlewaresBuilder,
+            this IConsumerMiddlewareConfigurationBuilder builder,
             Action<TypedHandlerConfigurationBuilder> configure)
         {
-            var typedHandlerBuilder = new TypedHandlerConfigurationBuilder(middlewaresBuilder.DependencyConfigurator);
+            var typedHandlerBuilder = new TypedHandlerConfigurationBuilder(builder.DependencyConfigurator);
 
             configure(typedHandlerBuilder);
 
             var configuration = typedHandlerBuilder.Build();
 
-            middlewaresBuilder.DependencyConfigurator.AddSingleton(configuration);
-            middlewaresBuilder.Add(resolver => new TypedHandlerMiddleware(resolver, configuration));
+            builder.DependencyConfigurator.AddSingleton(configuration);
+            builder.Add(resolver => new TypedHandlerMiddleware(resolver, configuration));
 
-            return middlewaresBuilder;
+            return builder;
         }
     }
 }

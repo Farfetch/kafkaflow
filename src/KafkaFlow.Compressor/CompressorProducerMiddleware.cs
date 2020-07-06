@@ -4,14 +4,14 @@
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Middleware to compress messages on producers
+    /// Middleware to compress the messages when producing
     /// </summary>
     internal class CompressorProducerMiddleware : IMessageMiddleware
     {
         private readonly IMessageCompressor compressor;
 
         /// <summary>
-        /// CompressorConsumerMiddleware constructor
+        /// Creates a <see cref="CompressorProducerMiddleware"/> instance
         /// </summary>
         /// <param name="compressor">Instance of <see cref="IMessageCompressor"/></param>
         public CompressorProducerMiddleware(IMessageCompressor compressor)
@@ -20,7 +20,7 @@
         }
 
         /// <summary>
-        /// Compress message based on message compressor configured.
+        /// Compress message based on the passed compressor.
         /// </summary>
         /// <param name="context">Instance of <see cref="IMessageContext"/></param>
         /// <param name="next">Next middleware to be executed</param>

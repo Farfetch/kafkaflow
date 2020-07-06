@@ -6,7 +6,7 @@ namespace KafkaFlow
     public static class DependencyResolverExtensions
     {
         /// <summary>
-        /// Resolve an instance of arbitrary type <typeparamref name="T" />.
+        /// Resolve an instance of <typeparamref name="T" />.
         /// </summary>
         /// <param name="resolver">Instance of <see cref="IDependencyResolver"/></param>
         /// <returns></returns>

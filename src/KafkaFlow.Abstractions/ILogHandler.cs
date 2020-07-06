@@ -3,7 +3,7 @@ namespace KafkaFlow
     using System;
 
     /// <summary>
-    /// Provides an interface to use for logging information
+    /// An interface used to create a log handler
     /// </summary>
     public interface ILogHandler
     {

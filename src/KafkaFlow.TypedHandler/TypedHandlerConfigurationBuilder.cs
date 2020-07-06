@@ -5,7 +5,7 @@ namespace KafkaFlow.TypedHandler
     using System.Linq;
 
     /// <summary>
-    /// Builder class for typed handler configurations
+    /// Builder class for typed handler configuration
     /// </summary>
     public class TypedHandlerConfigurationBuilder
     {
@@ -15,7 +15,6 @@ namespace KafkaFlow.TypedHandler
         private InstanceLifetime serviceLifetime = InstanceLifetime.Singleton;
 
         /// <summary>
-        /// TypedHandlerConfigurationBuilder constructor
         /// </summary>
         /// <param name="dependencyConfigurator">Dependency injection configurator</param>
         public TypedHandlerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)

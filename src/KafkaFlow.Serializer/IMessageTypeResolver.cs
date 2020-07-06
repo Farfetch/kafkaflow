@@ -3,21 +3,21 @@
     using System;
 
     /// <summary>
-    /// Represents the interface to be implemented by custom message type resolver implementations
+    /// Used by the serializer middleware to resolve the type when consuming and store it when producing
     /// </summary>
     public interface IMessageTypeResolver
     {
         /// <summary>
-        /// Gets the type of the message being consumed
+        /// Must return the message type when consuming
         /// </summary>
-        /// <param name="context">Instance of <see cref="IMessageContext"/> containing context data of message being consumed</param>
+        /// <param name="context">The <see cref="IMessageContext"/> containing the message and the metadata</param>
         /// <returns></returns>
         Type OnConsume(IMessageContext context);
         
         /// <summary>
-        /// Sets the type of the message being produced
+        /// Must store the message type somewhere
         /// </summary>
-        /// <param name="context">Instance of <see cref="IMessageContext"/> containing context data of message being produced</param>
+        /// <param name="context">The <see cref="IMessageContext"/> containing the message and the metadata</param>
         /// <returns></returns>
         void OnProduce(IMessageContext context);
     }

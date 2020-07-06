@@ -10,10 +10,10 @@ namespace KafkaFlow
     public static class ServiceProviderExtensions
     {
         /// <summary>
-        /// Creates a kafka bus using a instance of KafkaFlowConfigurator
+        /// Creates a KafkaFlow bus
         /// </summary>
         /// <param name="provider">Instance of <see cref="IServiceProvider"/></param>
-        /// <returns><see cref="IKafkaBus"/> created</returns>
+        /// <returns><see cref="IKafkaBus"/>A KafkaFlow bus</returns>
         public static IKafkaBus CreateKafkaBus(this IServiceProvider provider)
         {
             var resolver = provider.GetRequiredService<IDependencyResolver>();

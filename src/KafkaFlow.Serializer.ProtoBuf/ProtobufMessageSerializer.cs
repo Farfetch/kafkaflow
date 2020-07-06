@@ -5,14 +5,12 @@
     using global::ProtoBuf;
 
     /// <summary>
-    /// Serializer class for messages using protobuf protocol
+    /// A message serializer using protobuf-net library
     /// </summary>
     public class ProtobufMessageSerializer : IMessageSerializer
     {
-        /// <summary>
-        /// Creates a protocol-buffer representation of the given instance
-        /// </summary>
-        /// <param name="message">The message to be serialized (cannot be null)</param>
+        /// <summary>Serializes the message</summary>
+        /// <param name="message">The message to be serialized</param>
         /// <returns>The serialized message</returns>
         public byte[] Serialize(object message)
         {
@@ -21,11 +19,9 @@
             return stream.ToArray();
         }
 
-        /// <summary>
-        /// Creates a new instance from a protocol-buffer representation
-        /// </summary>
-        /// <param name="data">The message to be deserialized (cannot be null)</param>
-        /// <param name="type">The type to be created</param>
+        /// <summary>Deserialize the message </summary>
+        /// <param name="data">The message to be deserialized</param>
+        /// <param name="type">The destination type</param>
         /// <returns>The deserialized message</returns>
         public object Deserialize(byte[] data, Type type)
         {

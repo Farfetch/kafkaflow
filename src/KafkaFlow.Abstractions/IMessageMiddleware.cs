@@ -3,15 +3,15 @@ namespace KafkaFlow
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Represents the interface to be implemented by custom message middlewares
+    /// Used to create a message middleware
     /// </summary>
     public interface IMessageMiddleware
     {
         /// <summary>
-        /// Executes an operation using data from <see cref="IMessageContext"/>
+        /// The method that is called when the middleware is invoked
         /// </summary>
-        /// <param name="context">Instance of <see cref="IMessageContext"/></param>
-        /// <param name="next">Next middleware to be executed</param>
+        /// <param name="context">The message context</param>
+        /// <param name="next">A delegate to the next middleware</param>
         /// <returns></returns>
         Task Invoke(IMessageContext context, MiddlewareDelegate next);
     }
