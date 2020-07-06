@@ -38,7 +38,7 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
                     return;
                 }
 
-                await Task.Delay(100);
+                await Task.Delay(100).ConfigureAwait(false);
             }
         }
 
@@ -54,7 +54,7 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
                     return;
                 }
 
-                await Task.Delay(100);
+                await Task.Delay(100).ConfigureAwait(false);
             }
         }
 
@@ -70,7 +70,7 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
                     return;
                 }
 
-                await Task.Delay(100);
+                await Task.Delay(100).ConfigureAwait(false);
             }
         }
 

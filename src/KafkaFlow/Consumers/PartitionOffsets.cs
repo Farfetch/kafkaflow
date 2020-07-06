@@ -35,6 +35,7 @@ namespace KafkaFlow.Consumers
 
             while (this.pendingOffsets.Remove(++this.LastOffset + 1))
             {
+                // Do nothing
             }
 
             return true;

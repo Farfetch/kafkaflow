@@ -2,6 +2,7 @@ namespace KafkaFlow.Configuration
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Linq;
     using Confluent.Kafka;
     using KafkaFlow.Consumers.DistributionStrategies;
@@ -64,15 +65,15 @@ namespace KafkaFlow.Configuration
 
         public IConsumerConfigurationBuilder WithAutoOffsetReset(KafkaFlow.AutoOffsetReset autoOffsetReset)
         {
-            switch (autoOffsetReset)
+            this.consumerConfig.AutoOffsetReset = autoOffsetReset switch
             {
-                case KafkaFlow.AutoOffsetReset.Earliest:
-                    this.consumerConfig.AutoOffsetReset = AutoOffsetReset.Earliest;
-                    break;
-                case KafkaFlow.AutoOffsetReset.Latest:
-                    this.consumerConfig.AutoOffsetReset = AutoOffsetReset.Latest;
-                    break;
-            }
+                KafkaFlow.AutoOffsetReset.Earliest => AutoOffsetReset.Earliest,
+                KafkaFlow.AutoOffsetReset.Latest => AutoOffsetReset.Latest,
+                _ => throw new InvalidEnumArgumentException(
+                    nameof(autoOffsetReset),
+                    (int) autoOffsetReset,
+                    typeof(KafkaFlow.AutoOffsetReset))
+            };
 
             return this;
         }

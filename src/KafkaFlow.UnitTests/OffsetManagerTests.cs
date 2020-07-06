@@ -15,7 +15,8 @@ namespace KafkaFlow.UnitTests
         private TopicPartition topicPartition;
         private OffsetManager target;
 
-        public OffsetManagerTests()
+        [TestInitialize]
+        public void Setup()
         {
             this.consumerMock = new Mock<IConsumer<byte[], byte[]>>();
             this.topicPartition = new TopicPartition("topic-A", new Partition(1));

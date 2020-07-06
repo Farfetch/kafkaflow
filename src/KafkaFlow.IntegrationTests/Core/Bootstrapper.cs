@@ -17,7 +17,7 @@ namespace KafkaFlow.IntegrationTests.Core
     using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
 
-    public class Bootstrapper
+    public static class Bootstrapper
     {
         private const string ProtobufTopicName = "test-protobuf";
         private const string JsonTopicName = "test-json";

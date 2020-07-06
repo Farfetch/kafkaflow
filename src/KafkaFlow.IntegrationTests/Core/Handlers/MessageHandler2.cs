@@ -9,7 +9,7 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
     {
         public async Task Handle(IMessageContext context, TestMessage2 message)
         {
-            await Task.Delay(new Random().Next(1000));
+            await Task.Delay(new Random().Next(1000)).ConfigureAwait(false);
 
             MessageStorage.Add(message);
         }

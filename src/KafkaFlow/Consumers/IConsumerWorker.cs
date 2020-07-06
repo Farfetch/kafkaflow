@@ -8,7 +8,9 @@ namespace KafkaFlow.Consumers
     {
         ValueTask EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken = default);
 
-        Task StartAsync(CancellationToken stopCancellationToken = default);
+        Task StartAsync(CancellationToken stopCancellationToken);
+        
+        Task StartAsync();
 
         Task StopAsync();
     }
