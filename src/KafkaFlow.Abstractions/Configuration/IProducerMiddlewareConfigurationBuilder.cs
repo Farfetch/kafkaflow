@@ -1,7 +1,7 @@
 namespace KafkaFlow.Configuration
 {
     /// <summary>
-    /// Represents the interface to be extended by custom producer middleware configuration builders
+    /// Used to build the producer middlewares configuration
     /// </summary>
     public interface IProducerMiddlewareConfigurationBuilder
     {

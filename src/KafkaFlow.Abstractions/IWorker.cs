@@ -8,7 +8,7 @@ namespace KafkaFlow
     public interface IWorker
     {
         /// <summary>
-        /// Gets the id of this worker
+        /// Gets worker's id
         /// </summary>
         int Id { get; }
 

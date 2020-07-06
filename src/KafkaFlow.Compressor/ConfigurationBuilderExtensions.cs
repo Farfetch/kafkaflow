@@ -3,7 +3,7 @@
     using KafkaFlow.Configuration;
 
     /// <summary>
-    /// Extension methods for <see cref="IConsumerMiddlewareConfigurationBuilder"/> and <see cref="IProducerMiddlewareConfigurationBuilder"/> implementations.
+    /// Extension methods for <see cref="IConsumerMiddlewareConfigurationBuilder"/> and <see cref="IProducerMiddlewareConfigurationBuilder"/>.
     /// </summary>
     public static class ConfigurationBuilderExtensions
     {

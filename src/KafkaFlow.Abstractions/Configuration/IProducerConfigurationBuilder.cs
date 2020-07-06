@@ -3,7 +3,7 @@ namespace KafkaFlow.Configuration
     using System;
 
     /// <summary>
-    /// Represents the interface to be extended by custom producer configuration builders
+    /// Used to build the producer configuration
     /// </summary>
     public interface IProducerConfigurationBuilder
     {

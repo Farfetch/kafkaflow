@@ -3,7 +3,7 @@ namespace KafkaFlow
     using System;
 
     /// <summary>
-    /// Represents the interface to be implemented by custom message serializers
+    /// Used to implement a message serializer
     /// </summary>
     public interface IMessageSerializer
     {

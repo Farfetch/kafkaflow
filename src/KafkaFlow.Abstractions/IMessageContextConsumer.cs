@@ -1,7 +1,7 @@
 namespace KafkaFlow
 {
     /// <summary>
-    /// Represents the consumer context of a message consumed from a Kafka topic
+    /// Represents the message consumer
     /// </summary>
     public interface IMessageContextConsumer
     {

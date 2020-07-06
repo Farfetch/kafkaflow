@@ -1,12 +1,12 @@
 namespace KafkaFlow
 {
     /// <summary>
-    /// Represents the context of a message from a Kafka cluster
+    /// A context that contains the message and metadata
     /// </summary>
     public interface IMessageContext
     {
         /// <summary>
-        /// Gets the worker id that processed the message
+        /// Gets the worker id that is processing the message
         /// </summary>
         int WorkerId { get; }
 
@@ -46,12 +46,12 @@ namespace KafkaFlow
         string GroupId { get; }
 
         /// <summary>
-        /// Gets the <see cref="IMessageContextConsumer"></see> from the message consumed
+        /// Gets the <see cref="IMessageContextConsumer"></see> from the consumed message
         /// </summary>
         IMessageContextConsumer Consumer { get; }
 
         /// <summary>
-        /// Updates the message value with the value provided
+        /// Transforms the message to a new value
         /// </summary>
         /// <param name="message">New message value</param>
         void TransformMessage(object message);

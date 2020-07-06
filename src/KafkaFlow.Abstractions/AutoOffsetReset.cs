@@ -3,10 +3,10 @@ namespace KafkaFlow
     /// <summary>AutoOffsetReset enum values</summary>
     public enum AutoOffsetReset
     {
-        /// <summary>Latest</summary>
+        /// <summary>Only reads new messages in the topic</summary>
         Latest,
         
-        /// <summary>Earliest</summary>
+        /// <summary>Reads the topic from the beginning</summary>
         Earliest
     }
 }

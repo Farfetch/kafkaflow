@@ -11,10 +11,10 @@ namespace KafkaFlow
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds a singleton instance of <see cref="KafkaFlowConfigurator"/> with <see cref="MicrosoftDependencyConfigurator"/>
+        /// Configures KafkaFlow
         /// </summary>
         /// <param name="services">Instance of <see cref="IServiceCollection"/></param>
-        /// <param name="kafka">Action to be done over instance of <see cref="IKafkaConfigurationBuilder"/></param>
+        /// <param name="kafka">A handler to configure KafkaFlow</param>
         /// <returns></returns>
         public static IServiceCollection AddKafka(
             this IServiceCollection services,

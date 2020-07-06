@@ -3,7 +3,7 @@
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Middleware to serialize messages on producers
+    /// Middleware to serialize messages when producing
     /// </summary>
     public class SerializerProducerMiddleware : IMessageMiddleware
     {
@@ -11,7 +11,7 @@
         private readonly IMessageTypeResolver typeResolver;
 
         /// <summary>
-        /// SerializerProducerMiddleware constructor
+        /// creates a <see cref="SerializerProducerMiddleware"/> instance
         /// </summary>
         /// <param name="serializer">Instance of <see cref="IMessageSerializer"/></param>
         /// <param name="typeResolver">Instance of <see cref="IMessageTypeResolver"/></param>
@@ -26,8 +26,8 @@
         /// <summary>
         /// Serializes message based on message type resolver strategy
         /// </summary>
-        /// <param name="context">Instance of <see cref="IMessageContext"/></param>
-        /// <param name="next">Next middleware to be executed</param>
+        /// <param name="context">The <see cref="IMessageContext"/> containing the message and metadata</param>
+        /// <param name="next">A delegate to call next middleware</param>
         /// <returns></returns>
         public Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {

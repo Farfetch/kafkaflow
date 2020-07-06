@@ -1,7 +1,7 @@
 namespace KafkaFlow.Configuration
 {
     /// <summary>
-    /// Represents the interface to be extended by custom consumer middleware configuration builders
+    /// Used to build the consumer middlewares configuration
     /// </summary>
     public interface IConsumerMiddlewareConfigurationBuilder
     {

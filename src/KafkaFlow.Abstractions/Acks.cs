@@ -1,15 +1,15 @@
 namespace KafkaFlow
 {
-    /// <summary>Acks enum values</summary>
+    /// <summary>Acknowledge type</summary>
     public enum Acks
     {
-        /// <summary>Leader</summary>
+        /// <summary>Only waits leader's acknowledge</summary>
         Leader,
         
-        /// <summary>All</summary>
+        /// <summary>Waits acknowledge from all brokers</summary>
         All,
         
-        /// <summary>None</summary>
+        /// <summary>Don't wait acknowledge</summary>
         None
     }
 }
