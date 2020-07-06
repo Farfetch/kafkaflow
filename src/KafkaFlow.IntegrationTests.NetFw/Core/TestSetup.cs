@@ -1,84 +1,55 @@
-namespace KafkaFlow.IntegrationTests.Core
+namespace KafkaFlow.IntegrationTests.NetFw.Core
 {
-    using System;
-    using System.IO;
+    using System.Configuration;
     using System.Threading;
-    using global::Microsoft.Extensions.Configuration;
-    using global::Microsoft.Extensions.DependencyInjection;
-    using global::Microsoft.Extensions.Hosting;
-    using KafkaFlow.Compressor;
-    using KafkaFlow.Compressor.Gzip;
-    using KafkaFlow.IntegrationTests.Core.Handlers;
-    using KafkaFlow.IntegrationTests.Core.Middlewares;
-    using KafkaFlow.IntegrationTests.Core.Middlewares.Producers;
-    using KafkaFlow.IntegrationTests.Core.TypeResolvers;
-    using KafkaFlow.Serializer;
-    using KafkaFlow.Serializer.Json;
-    using KafkaFlow.Serializer.ProtoBuf;
-    using KafkaFlow.TypedHandler;
+    using Compressor;
+    using Compressor.Gzip;
+    using Configuration;
+    using global::Unity;
+    using Handlers;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Middlewares;
+    using Producers;
+    using Serializer;
+    using Serializer.Json;
+    using Serializer.ProtoBuf;
+    using TypedHandler;
+    using TypeResolvers;
+    using Unity;
 
-    public class Bootstrapper
+    [TestClass]
+    public static class TestSetup
     {
-        private const string ProtobufTopicName = "topic-protobuf-netcore";
-        private const string JsonTopicName = "topic-json-netcore";
-        private const string GzipTopicName = "topic-gzip-netcore";
-        private const string JsonGzipTopicName = "topic-json-gzip-netcore";
-        private const string ProtobufGzipTopicName = "topic-protobuf-gzip-netcore";
-        private const string ProtobufGzipTopicName2 = "topic-protobuf-gzip-2-netcore";
+        private const string ProtobufTopicName = "topic-protobuf-netfw";
+        private const string JsonTopicName = "topic-json-netfw";
+        private const string GzipTopicName = "topic-gzip-netfw";
+        private const string JsonGzipTopicName = "topic-json-gzip-netfw";
+        private const string ProtobufGzipTopicName = "topic-protobuf-gzip-netfw";
+        private const string ProtobufGzipTopicName2 = "topic-protobuf-gzip-2-netfw";
 
-        private const string ProtobufConsumerId = "consumer-protobuf-netcore";
-        private const string JsonConsumerId = "consumer-protobuf-netcore";
-        private const string GzipConsumerId = "consumer-gzip-netcore";
-        private const string JsonGzipConsumerId = "consumer-json-gzip-netcore";
-        private const string ProtobufGzipConsumerId = "consumer-protobuf-gzip-netcore";
+        private const string ProtobufConsumerId = "consumer-protobuf-netfw";
+        private const string JsonConsumerId = "consumer-protobuf-netfw";
+        private const string GzipConsumerId = "consumer-gzip-netfw";
+        private const string JsonGzipConsumerId = "consumer-json-gzip-netfw";
+        private const string ProtobufGzipConsumerId = "consumer-protobuf-gzip-netfw";
 
+        private static UnityContainer container;
+        private static IKafkaBus kafkaBus;
 
-        private static readonly Lazy<IServiceProvider> lazyProvider = new Lazy<IServiceProvider>(SetupProvider);
-
-        public static IServiceProvider GetServiceProvider() => lazyProvider.Value;
-
-        private static IServiceProvider SetupProvider()
+        public static UnityContainer GetContainer() => container;
+            
+        [AssemblyInitialize]
+        public static void AssemblyInit(TestContext context)
         {
-            var builder = Host
-                .CreateDefaultBuilder()
-                .ConfigureAppConfiguration(
-                    (builderContext, config) =>
-                    {
-                        config
-                            .SetBasePath(Directory.GetCurrentDirectory())
-                            .AddJsonFile(
-                                "conf/appsettings.json",
-                                false,
-                                true)
-                            .AddEnvironmentVariables();
-                    })
-                .ConfigureServices(SetupServices)
-                .UseDefaultServiceProvider(
-                    (context, options) =>
-                    {
-                        options.ValidateScopes = true;
-                        options.ValidateOnBuild = true;
-                    });
+            container = new UnityContainer();
 
-            var host = builder.Build();
-            var bus = host.Services.CreateKafkaBus();
-            bus.StartAsync().GetAwaiter().GetResult();
-            //Wait partition assignment
-            Thread.Sleep(10000);
-
-            return host.Services;
-        }
-
-        private static void SetupServices(HostBuilderContext context, IServiceCollection services)
-        {
-            var brokers = context.Configuration.GetValue<string>("Kafka:Brokers");
-
-            services.AddKafka(
+            var configurator = new KafkaFlowConfigurator(
+                new UnityDependencyConfigurator(container),
                 kafka => kafka
                     .UseLogHandler<TraceLoghandler>()
                     .AddCluster(
                         cluster => cluster
-                            .WithBrokers(brokers.Split(';'))
+                            .WithBrokers(new[] { ConfigurationManager.AppSettings["Kafka:Brokers"]})
                             .AddConsumer(
                                 consumer => consumer
                                     .Topic(ProtobufTopicName)
@@ -92,7 +63,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
-                                                        .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                                        .WithHandlerLifetime(KafkaFlow.InstanceLifetime.Singleton)
                                                         .AddHandler<MessageHandler>())
                                     )
                             )
@@ -109,7 +80,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
-                                                        .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                                        .WithHandlerLifetime(KafkaFlow.InstanceLifetime.Singleton)
                                                         .AddHandlersFromAssemblyOf<MessageHandler>())
                                     )
                             )
@@ -140,7 +111,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
-                                                        .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                                        .WithHandlerLifetime(KafkaFlow.InstanceLifetime.Singleton)
                                                         .AddHandler<MessageHandler>())
                                     )
                             )
@@ -159,7 +130,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
-                                                        .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                                        .WithHandlerLifetime(KafkaFlow.InstanceLifetime.Singleton)
                                                         .AddHandler<MessageHandler>())
                                     )
                             )
@@ -217,12 +188,24 @@ namespace KafkaFlow.IntegrationTests.Core
                     )
             );
 
-            services.AddSingleton<JsonProducer>();
-            services.AddSingleton<JsonGzipProducer>();
-            services.AddSingleton<ProtobufProducer>();
-            services.AddSingleton<ProtobufGzipProducer2>();
-            services.AddSingleton<ProtobufGzipProducer>();
-            services.AddSingleton<GzipProducer>();
+            container.RegisterType<JsonProducer>();
+            container.RegisterType<JsonGzipProducer>();
+            container.RegisterType<ProtobufProducer>();
+            container.RegisterType<ProtobufGzipProducer2>();
+            container.RegisterType<ProtobufGzipProducer>();
+            container.RegisterType<GzipProducer>();
+            
+            kafkaBus = configurator.CreateBus(new UnityDependencyResolver(container));
+            kafkaBus.StartAsync().GetAwaiter().GetResult();
+            
+            //Wait partition assignment
+            Thread.Sleep(10000);
+        }
+        
+        [AssemblyCleanup]
+        public static void AssemblyCleanUp()
+        {
+            kafkaBus.StopAsync().GetAwaiter().GetResult();
         }
     }
 }

@@ -1,15 +1,16 @@
-namespace KafkaFlow.IntegrationTests.Core.Handlers
+namespace KafkaFlow.IntegrationTests.NetFw.Core.Handlers
 {
     using System;
     using System.Threading.Tasks;
-    using KafkaFlow.TypedHandler;
     using Messages;
+    using TypedHandler;
 
     public class MessageHandler2 : IMessageHandler<TestMessage2>
     {
-        public async Task Handle(IMessageContext context, TestMessage2 message)
+        public Task Handle(IMessageContext context, TestMessage2 message)
         {
             MessageStorage.Add(message);
+            return Task.CompletedTask;
         }
     }
 }

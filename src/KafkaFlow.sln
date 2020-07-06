@@ -33,23 +33,25 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Serializer", "Kaf
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Compressor", "KafkaFlow.Compressor\KafkaFlow.Compressor.csproj", "{D29EC709-33DE-4045-8F3B-EC6619CDB429}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.IntegrationTests", "KafkaFlow.IntegrationTests\KafkaFlow.IntegrationTests.csproj", "{36F459F4-8323-472A-A8C5-8C9D89F92012}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.IntegrationTests", "KafkaFlow.IntegrationTests\KafkaFlow.IntegrationTests.csproj", "{36F459F4-8323-472A-A8C5-8C9D89F92012}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Serializer.NewtonsoftJson", "KafkaFlow.Serializer.NewtonsoftJson\KafkaFlow.Serializer.NewtonsoftJson.csproj", "{FC622AB0-6481-4249-8D83-27BC39912103}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Serializer.NewtonsoftJson", "KafkaFlow.Serializer.NewtonsoftJson\KafkaFlow.Serializer.NewtonsoftJson.csproj", "{FC622AB0-6481-4249-8D83-27BC39912103}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DependencyResolvers", "DependencyResolvers", "{292BCEDD-55B4-49BB-B8B2-24CD834FF2AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Microsoft.DependencyInjection", "KafkaFlow.Microsoft.DependencyInjection\KafkaFlow.Microsoft.DependencyInjection.csproj", "{B86A51E3-7AC9-4EF8-BD2A-1ACC9EF0F5AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Microsoft.DependencyInjection", "KafkaFlow.Microsoft.DependencyInjection\KafkaFlow.Microsoft.DependencyInjection.csproj", "{B86A51E3-7AC9-4EF8-BD2A-1ACC9EF0F5AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Unity", "KafkaFlow.Unity\KafkaFlow.Unity.csproj", "{22DB5734-E792-4309-B565-77F02D27D88C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Unity", "KafkaFlow.Unity\KafkaFlow.Unity.csproj", "{22DB5734-E792-4309-B565-77F02D27D88C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NetCore", "NetCore", "{419DCA62-1BDB-4D8D-8283-95F12F2D68C1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NetFramework", "NetFramework", "{4DBEC1FF-6F13-4FA9-A99A-BB2727D8E572}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Samples.NetCore.Consumer", "..\samples\NetCore\KafkaFlow.Samples.NetCore.Consumer\KafkaFlow.Samples.NetCore.Consumer.csproj", "{5592B102-35B7-46F0-8B35-9B99F5010770}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Samples.NetCore.Consumer", "..\samples\NetCore\KafkaFlow.Samples.NetCore.Consumer\KafkaFlow.Samples.NetCore.Consumer.csproj", "{5592B102-35B7-46F0-8B35-9B99F5010770}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Samples.NetCore.Producer", "..\samples\NetCore\KafkaFlow.Samples.NetCore.Producer\KafkaFlow.Samples.NetCore.Producer.csproj", "{977F102D-4E5C-4B7C-A057-67E4A67D8EFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Samples.NetCore.Producer", "..\samples\NetCore\KafkaFlow.Samples.NetCore.Producer\KafkaFlow.Samples.NetCore.Producer.csproj", "{977F102D-4E5C-4B7C-A057-67E4A67D8EFC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.IntegrationTests.NetFw", "KafkaFlow.IntegrationTests.NetFw\KafkaFlow.IntegrationTests.NetFw.csproj", "{9B7AAA25-02A8-4DED-BEAF-C2EFF57E5CA2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -121,6 +123,10 @@ Global
 		{977F102D-4E5C-4B7C-A057-67E4A67D8EFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{977F102D-4E5C-4B7C-A057-67E4A67D8EFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{977F102D-4E5C-4B7C-A057-67E4A67D8EFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B7AAA25-02A8-4DED-BEAF-C2EFF57E5CA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B7AAA25-02A8-4DED-BEAF-C2EFF57E5CA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B7AAA25-02A8-4DED-BEAF-C2EFF57E5CA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B7AAA25-02A8-4DED-BEAF-C2EFF57E5CA2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -144,6 +150,7 @@ Global
 		{4DBEC1FF-6F13-4FA9-A99A-BB2727D8E572} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 		{5592B102-35B7-46F0-8B35-9B99F5010770} = {419DCA62-1BDB-4D8D-8283-95F12F2D68C1}
 		{977F102D-4E5C-4B7C-A057-67E4A67D8EFC} = {419DCA62-1BDB-4D8D-8283-95F12F2D68C1}
+		{9B7AAA25-02A8-4DED-BEAF-C2EFF57E5CA2} = {7A9B997B-DAAC-4004-94F3-32F6B88E0068}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AE955B5-16B0-41CF-9F12-66D15B3DD1AB}
