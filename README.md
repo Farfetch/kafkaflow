@@ -49,7 +49,7 @@ Either commands, from Package Manager Console or .NET Core CLI, will download an
 
 ## Usage
 
-#### .NET Core
+### .NET Core
 
 Install *KafkaFlow.Microsoft.DependencyInjection* package
 
@@ -116,7 +116,7 @@ public class Startup
 }
 ```
 
-#### .NET Framework or other DI containers
+### .NET Framework or other DI containers
 
 ```csharp
 var container = new UnityContainer();
@@ -171,6 +171,17 @@ var bus = configurator.CreateBus(new UnityDependencyResolver(container));
 
 -  See the [samples](/samples) folder for more usages
 -  You can use other dependency injection frameworks implementing the *IDependencyConfigurator*, *IDependencyResolver* and *IDependencyResolverScope* interfaces
+
+## It's all about middlewares
+
+KafkaFlow is very middleware-oriented. Messages will be delivered to a middleware, will then be passed to another middleware, and so on. The middlewares can transform the messages, allowing them to apply serialization and compression, for example. You can log the messages, handle exceptions, apply retry policies (maybe using [Polly](https://github.com/App-vNext/Polly)), collect metrics, and many other things. **The middlewares are executed in the same order that they are defined in the configuration.**
+
+Every middleware must implement the `IMessageMiddleware` interface. You must implement the method `Invoke`, which receives two parameters: the `IMessageContext` and the `MiddlewareDelegate`. The `IMessageContext` is an object that has the message, message metadata, and consumer/producer information. The `MiddlewareDelegate` is a `async` method that calls the next middleware; you can short-circuit the message execution by just not calling the next middleware or putting it inside a `try` block so you can catch any exceptions thrown by the next middlewares.
+
+When consuming, the message will be delivered as a byte array to the first middleware; you will choose the middlewares that will process the messages (you will probably create a middleware to do it or use the [Typed Handler](https://www.nuget.org/packages/KafkaFlow.TypedHandler) depending on the message type). The next message will only be processed after the execution of all the configured middlewares for that consumer.
+
+When producing, the middlewares are called when the `Produce` or `PoduceAsync` of the `IMessageProducer<YourProducer>` is called. After the execution of all middlewares, the message will be published to Kafka. A `YourProducer` class is needed when configuring the producer to bind the producer configuration to the `IMessageProducer<YourProducer>` instance that will be delivered through dependency injection; you can use any arbitrary type, but we highly recommend that you use a type that conveys what the producer does, like `ProductCommandProducer`. This allows the client app to create two producers with different middlewares configuration to produce messages for the same topic, for example.
+
 
 ## Contributing
 
