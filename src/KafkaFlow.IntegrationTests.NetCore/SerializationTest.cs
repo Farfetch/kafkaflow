@@ -1,9 +1,9 @@
-namespace KafkaFlow.IntegrationTests.NetFw
+namespace KafkaFlow.IntegrationTests
 {
     using System.Threading.Tasks;
     using global::Microsoft.VisualStudio.TestTools.UnitTesting;
     using KafkaFlow.IntegrationTests.Common.Core.Producers;
-    using KafkaFlow.Producers;
+    using Producers;
 
     [TestClass]
     public class SerializationTest : BaseSerializationTest
@@ -19,7 +19,7 @@ namespace KafkaFlow.IntegrationTests.NetFw
         {
             return base.JsonMessageTest(Bootstrapper.GetService<IMessageProducer<JsonProducer>>());
         }
-
+        
         [TestMethod]
         public Task ProtobufMessageTest()
         {

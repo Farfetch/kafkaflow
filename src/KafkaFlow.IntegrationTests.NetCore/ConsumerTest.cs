@@ -1,10 +1,11 @@
-namespace KafkaFlow.IntegrationTests.NetFw
+namespace KafkaFlow.IntegrationTests
 {
     using System.Threading.Tasks;
     using global::Microsoft.VisualStudio.TestTools.UnitTesting;
     using KafkaFlow.IntegrationTests.Common.Core.Producers;
     using KafkaFlow.Producers;
 
+    [TestClass]
     public class ConsumerTest : BaseConsumerTest
     {
         [TestInitialize]

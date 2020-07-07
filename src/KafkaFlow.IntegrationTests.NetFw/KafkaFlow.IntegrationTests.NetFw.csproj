@@ -131,24 +131,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CompressionTest.cs" />
-    <Compile Include="ConpressionSerializationTest.cs" />
+    <Compile Include="CompressionSerializationTest.cs" />
     <Compile Include="ConsumerTest.cs" />
-    <Compile Include="Core\Handlers\MessageHandler.cs" />
-    <Compile Include="Core\Handlers\MessageHandler2.cs" />
-    <Compile Include="Core\Handlers\MessageStorage.cs" />
-    <Compile Include="Core\Messages\ITestMessage.cs" />
-    <Compile Include="Core\Messages\TestMessage1.cs" />
-    <Compile Include="Core\Messages\TestMessage2.cs" />
-    <Compile Include="Core\Middlewares\GzipMiddleware.cs" />
-    <Compile Include="Core\Producers\GzipProducer.cs" />
-    <Compile Include="Core\Producers\JsonGzipProducer.cs" />
-    <Compile Include="Core\Producers\JsonProducer.cs" />
-    <Compile Include="Core\Producers\ProtobufGzipProducer.cs" />
-    <Compile Include="Core\Producers\ProtobufGzipProducer2.cs" />
-    <Compile Include="Core\Producers\ProtobufProducer.cs" />
-    <Compile Include="Core\TestSetup.cs" />
-    <Compile Include="Core\TraceLoghandler.cs" />
-    <Compile Include="Core\TypeResolvers\SampleMessageTypeResolver.cs" />
+    <Compile Include="Bootstrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerializationTest.cs" />
   </ItemGroup>
@@ -164,6 +149,10 @@
     <ProjectReference Include="..\KafkaFlow.Compressor\KafkaFlow.Compressor.csproj">
       <Project>{d29ec709-33de-4045-8f3b-ec6619cdb429}</Project>
       <Name>KafkaFlow.Compressor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\KafkaFlow.IntegrationTests.Common\KafkaFlow.IntegrationTests.Common.csproj">
+      <Project>{a8503658-6fbf-4009-b078-928358fd00c3}</Project>
+      <Name>KafkaFlow.IntegrationTests.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\KafkaFlow.Serializer.Json\KafkaFlow.Serializer.Json.csproj">
       <Project>{42cffa0d-3bf2-42f0-a1b0-bdcd30cbb470}</Project>
