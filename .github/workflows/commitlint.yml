@@ -11,3 +11,5 @@ jobs:
         with:
           fetch-depth: 0
       - uses: wagoid/commitlint-github-action@v1
+        with:
+            configFile: 'https://raw.githubusercontent.com/conventional-changelog/commitlint/master/%40commitlint/config-conventional/index.js'
