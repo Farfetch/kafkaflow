@@ -5,10 +5,48 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  build-ubuntu:
     runs-on: ubuntu-latest
-
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+    - name: Install dependencies
+      run: dotnet restore ./src/KafkaFlow.sln
+    - name: Build
+      run: dotnet build ./src/KafkaFlow.sln -c Release
+    - name: UnitTest
+      run: dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj -c Release --no-restore --verbosity normal
+    - name: IntegrationTest
+      run: |
+        make init_broker
+        dotnet test src/KafkaFlow.IntegrationTests/KafkaFlow.IntegrationTests.csproj -c Release
+        make shutdown_broker
+        
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+    - name: Install dependencies
+      run: dotnet restore ./src/KafkaFlow.sln
+    - name: Build
+      run: dotnet build ./src/KafkaFlow.sln -c Release
+    - name: UnitTest
+      run: dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj -c Release --no-restore --verbosity normal
+    - name: IntegrationTest
+      run: |
+        make init_broker
+        dotnet test src/KafkaFlow.IntegrationTests/KafkaFlow.IntegrationTests.csproj -c Release
+        make shutdown_broker
+        
+  build-mac:
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core
