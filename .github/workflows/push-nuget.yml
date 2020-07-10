@@ -8,6 +8,7 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    if: "startsWith(github.event.head_commit.message, 'feat:') || startsWith(github.event.head_commit.message, 'bug:')"
 
     steps:
     - uses: actions/checkout@v2    
