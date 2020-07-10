@@ -32,5 +32,12 @@ namespace KafkaFlow.Configuration
         /// <param name="acks"></param>
         /// <returns></returns>
         IProducerConfigurationBuilder WithAcks(Acks acks);
+
+        /// <summary>
+        /// Sets a unique name for the producer
+        /// </summary>
+        /// <param name="name">A unique name</param>
+        /// <returns></returns>
+        IProducerConfigurationBuilder WithName(string name);
     }
 }

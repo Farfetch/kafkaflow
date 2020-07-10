@@ -15,8 +15,10 @@ namespace KafkaFlow.Producers
 
         public MessageProducer(
             IDependencyResolver dependencyResolver,
+            string producerName,
             ProducerConfiguration configuration)
         {
+            this.ProducerName = producerName;
             this.configuration = configuration;
 
             this.producer = new ProducerBuilder<byte[], byte[]>(configuration.GetKafkaConfig()).Build();
@@ -27,6 +29,8 @@ namespace KafkaFlow.Producers
 
             this.middlewareExecutor = new MiddlewareExecutor(middlewares);
         }
+
+        public string ProducerName { get; }
 
         public async Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
             string topic,

@@ -13,6 +13,7 @@ namespace KafkaFlow.Configuration
         private string topic;
         private ProducerConfig baseProducerConfig;
         private Acks? acks;
+        private string name;
 
         public ProducerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator, Type type)
         {
@@ -47,6 +48,12 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
+        public IProducerConfigurationBuilder WithName(string name)
+        {
+            this.name = name;
+            return this;
+        }
+
         public ProducerConfiguration Build(ClusterConfiguration clusterConfiguration)
         {
             var configuration = new ProducerConfiguration(
@@ -61,6 +68,7 @@ namespace KafkaFlow.Configuration
                 resolver => Activator.CreateInstance(
                     typeof(MessageProducer<>).MakeGenericType(this.producerType),
                     resolver,
+                    this.name,
                     configuration));
 
             return configuration;
