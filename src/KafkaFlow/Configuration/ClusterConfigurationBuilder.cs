@@ -39,7 +39,12 @@ namespace KafkaFlow.Configuration
 
         public IClusterConfigurationBuilder AddProducer<TProducer>(Action<IProducerConfigurationBuilder> producer)
         {
-            var builder = new ProducerConfigurationBuilder(this.dependencyConfigurator, typeof(TProducer));
+            return this.AddProducer(typeof(TProducer), producer);
+        }
+
+        public IClusterConfigurationBuilder AddProducer(Type producerType, Action<IProducerConfigurationBuilder> producer)
+        {
+            var builder = new ProducerConfigurationBuilder(this.dependencyConfigurator, producerType);
 
             producer(builder);
 
