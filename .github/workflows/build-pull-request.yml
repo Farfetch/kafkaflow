@@ -26,6 +26,7 @@ jobs:
         make shutdown_broker
 
   build-windows:
+    needs: build-ubuntu
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
@@ -46,6 +47,7 @@ jobs:
         make shutdown_broker
         
   build-mac:
+    needs: build-mac
     runs-on: macos-latest 
     steps:
     - uses: actions/checkout@v2
