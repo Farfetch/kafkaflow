@@ -3,7 +3,7 @@ namespace KafkaFlow.Consumers
     using System.Collections.Generic;
 
     /// <summary>
-    /// Provides access to configured consumers
+    /// Provides access to the configured consumers
     /// </summary>
     public interface IConsumerAccessor
     {
@@ -18,5 +18,11 @@ namespace KafkaFlow.Consumers
         /// Returns all configured consumers
         /// </summary>
         IEnumerable<IMessageConsumer> All { get; }
+
+        /// <summary>
+        /// Gets a consumer by its name
+        /// </summary>
+        /// <param name="name"></param>
+        IMessageConsumer this[string name] { get; }
     }
 }

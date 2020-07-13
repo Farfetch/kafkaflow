@@ -8,12 +8,14 @@ namespace KafkaFlow.Configuration
     {
         public ProducerConfiguration(
             ClusterConfiguration cluster,
+            string name,
             string topic,
             Acks? acks,
             MiddlewareConfiguration middlewareConfiguration,
             ProducerConfig baseProducerConfig)
         {
             this.Cluster = cluster ?? throw new ArgumentNullException(nameof(cluster));
+            this.Name = name;
             this.Topic = string.IsNullOrWhiteSpace(topic) ? throw new ArgumentNullException(nameof(topic)) : topic;
             this.Acks = acks;
             this.MiddlewareConfiguration = middlewareConfiguration;
@@ -21,6 +23,8 @@ namespace KafkaFlow.Configuration
         }
 
         public ClusterConfiguration Cluster { get; }
+
+        public string Name { get; }
 
         public string Topic { get; }
 

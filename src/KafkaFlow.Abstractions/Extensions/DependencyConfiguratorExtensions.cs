@@ -52,17 +52,15 @@ namespace KafkaFlow
         /// Registers a singleton type mapping where the returned instance will be given by the provided factory
         /// </summary>
         /// <param name="configurator">The <see cref="IDependencyConfigurator"/> object that this method was called on</param>
-        /// <param name="serviceType"><see cref="Type"/> that will be requested</param>
         /// <param name="factory">A factory to create new instances of the service implementation</param>
+        /// <typeparam name="TService">Type that will be created</typeparam>
         /// <returns></returns>
-        public static IDependencyConfigurator AddSingleton<TImplementation>(
+        public static IDependencyConfigurator AddSingleton<TService>(
             this IDependencyConfigurator configurator,
-            Type serviceType,
-            Func<IDependencyResolver, TImplementation> factory)
-            where TImplementation : class
+            Func<IDependencyResolver, TService> factory)
         {
             return configurator.Add(
-                serviceType,
+                typeof(TService),
                 factory,
                 InstanceLifetime.Singleton);
         }
@@ -89,7 +87,7 @@ namespace KafkaFlow
         /// Registers a transient type mapping
         /// </summary>
         /// <param name="configurator">The <see cref="IDependencyConfigurator"/> object that this method was called on</param>
-        /// <typeparam name="TService"><see cref="Type"/> that will be created</typeparam>
+        /// <typeparam name="TService">Type that will be created</typeparam>
         /// <returns></returns>
         public static IDependencyConfigurator AddTransient<TService>(this IDependencyConfigurator configurator)
             where TService : class

@@ -17,6 +17,11 @@ namespace KafkaFlow.Producers
     public interface IMessageProducer
     {
         /// <summary>
+        /// Gets the unique producer's name defined in the configuration
+        /// </summary>
+        string ProducerName { get; }
+        
+        /// <summary>
         /// Produces a new message
         /// </summary>
         /// <param name="topic">The topic where the message wil be produced</param>

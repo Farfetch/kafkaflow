@@ -6,25 +6,46 @@ namespace KafkaFlow
     using System.Threading.Tasks;
     using KafkaFlow.Configuration;
     using KafkaFlow.Consumers;
+    using KafkaFlow.Producers;
 
     internal class KafkaBus : IKafkaBus
     {
         private readonly IDependencyResolver dependencyResolver;
         private readonly KafkaConfiguration configuration;
         private readonly IConsumerManager consumerManager;
+        private readonly IProducerManager producerManager;
         private readonly ILogHandler logHandler;
         private readonly IList<KafkaConsumer> consumers = new List<KafkaConsumer>();
 
         public KafkaBus(
             IDependencyResolver dependencyResolver,
             IConsumerManager consumerManager,
+            IProducerManager producerManager,
             ILogHandler logHandler,
             KafkaConfiguration configuration)
         {
             this.dependencyResolver = dependencyResolver;
             this.configuration = configuration;
             this.consumerManager = consumerManager;
+            this.producerManager = producerManager;
             this.logHandler = logHandler;
+
+            this.CreateProducers();
+        }
+
+        public IConsumerAccessor Consumers => this.consumerManager;
+
+        public IProducerAccessor Producers => this.producerManager;
+
+        private void CreateProducers()
+        {
+            foreach (var producerConfig in this.configuration.Clusters.SelectMany(x => x.Producers))
+            {
+                this.producerManager.AddOrUpdate(
+                    new MessageProducer(
+                        this.dependencyResolver,
+                        producerConfig));
+            }
         }
 
         public async Task StartAsync(CancellationToken stopCancellationToken = default)

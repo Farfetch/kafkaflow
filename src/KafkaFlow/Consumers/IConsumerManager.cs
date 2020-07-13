@@ -1,7 +1,7 @@
 namespace KafkaFlow.Consumers
 {
-    internal interface IConsumerManager
+    internal interface IConsumerManager : IConsumerAccessor
     {
-        void AddOrUpdateConsumer(IMessageConsumer consumer);
+        void AddOrUpdate(IMessageConsumer consumer);
     }
 }

@@ -4,6 +4,7 @@ namespace KafkaFlow.Configuration
     using System.Collections.Generic;
     using System.Linq;
     using KafkaFlow.Consumers;
+    using KafkaFlow.Producers;
 
     internal class KafkaConfigurationBuilder
         : IKafkaConfigurationBuilder
@@ -23,10 +24,15 @@ namespace KafkaFlow.Configuration
 
             configuration.AddClusters(this.clusters.Select(x => x.Build(configuration)));
 
+            var consumerManager = new ConsumerManager();
+            var producerManager = new ProducerManager();
+
             this.dependencyConfigurator
                 .AddSingleton(typeof(ILogHandler), this.logHandler)
-                .AddSingleton<IConsumerAccessor>(ConsumerManager.Instance)
-                .AddSingleton<IConsumerManager>(ConsumerManager.Instance);
+                .AddSingleton<IConsumerAccessor>(consumerManager)
+                .AddSingleton<IConsumerManager>(consumerManager)
+                .AddSingleton<IProducerManager>(producerManager)
+                .AddSingleton<IProducerAccessor>(producerManager);
 
             return configuration;
         }
