@@ -1,12 +1,16 @@
 namespace KafkaFlow.Producers
 {
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Linq;
 
-    internal class ProducerManager : IProducerManager
+    internal class ProducerAccessor : IProducerAccessor
     {
-        private readonly ConcurrentDictionary<string, IMessageProducer> producers =
-            new ConcurrentDictionary<string, IMessageProducer>();
+        private readonly Dictionary<string, IMessageProducer> producers;
+
+        public ProducerAccessor(IEnumerable<IMessageProducer> producers)
+        {
+            this.producers = producers.ToDictionary(x => x.ProducerName, v => v);
+        }
 
         public IMessageProducer GetProducer(string name) =>
             this.producers.TryGetValue(name, out var consumer) ? consumer : null;
@@ -17,13 +21,5 @@ namespace KafkaFlow.Producers
         public IEnumerable<IMessageProducer> All => this.producers.Values;
 
         public IMessageProducer this[string name] => this.GetProducer(name);
-
-        public void AddOrUpdate(IMessageProducer producer)
-        {
-            this.producers.AddOrUpdate(
-                producer.ProducerName,
-                producer,
-                (x, y) => producer);
-        }
     }
 }
