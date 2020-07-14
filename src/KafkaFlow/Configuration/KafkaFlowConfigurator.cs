@@ -40,7 +40,7 @@ namespace KafkaFlow.Configuration
             return new KafkaBus(
                 scope.Resolver,
                 scope.Resolver.Resolve<IConsumerManager>(),
-                scope.Resolver.Resolve<IProducerManager>(),
+                scope.Resolver.Resolve<IProducerAccessor>(),
                 scope.Resolver.Resolve<ILogHandler>(),
                 this.configuration);
         }

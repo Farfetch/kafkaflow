@@ -1,6 +1,7 @@
 ﻿namespace KafkaFlow.Microsoft.DependencyInjection
 {
     using System;
+    using System.Collections.Generic;
     using global::Microsoft.Extensions.DependencyInjection;
 
     internal class MicrosoftDependencyResolver : IDependencyResolver
@@ -20,6 +21,11 @@
         public IDependencyResolverScope CreateScope()
         {
             return new MicrosoftDependencyResolverScope(this.serviceProvider.CreateScope());
+        }
+
+        public IEnumerable<T> ResolveAll<T>()
+        {
+            return this.serviceProvider.GetServices<T>();
         }
     }
 }

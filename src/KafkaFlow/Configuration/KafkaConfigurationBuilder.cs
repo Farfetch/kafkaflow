@@ -25,14 +25,12 @@ namespace KafkaFlow.Configuration
             configuration.AddClusters(this.clusters.Select(x => x.Build(configuration)));
 
             var consumerManager = new ConsumerManager();
-            var producerManager = new ProducerManager();
 
             this.dependencyConfigurator
                 .AddSingleton(typeof(ILogHandler), this.logHandler)
                 .AddSingleton<IConsumerAccessor>(consumerManager)
                 .AddSingleton<IConsumerManager>(consumerManager)
-                .AddSingleton<IProducerManager>(producerManager)
-                .AddSingleton<IProducerAccessor>(producerManager);
+                .AddSingleton<IProducerAccessor>(resolver => new ProducerAccessor(resolver.ResolveAll<IMessageProducer>()));
 
             return configuration;
         }

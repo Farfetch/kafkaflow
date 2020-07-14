@@ -1,6 +1,7 @@
 namespace KafkaFlow
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Represents the interface of a dependency injection resolver
@@ -19,5 +20,12 @@ namespace KafkaFlow
         /// <param name="type"><see cref="Type"/> of object to be resolved</param>
         /// <returns>The retrieved object</returns>
         object Resolve(Type type);
+
+        /// <summary>
+        /// Resolve all instances of the requested type
+        /// </summary>
+        /// <typeparam name="T"><see cref="Type"/> of object to be resolved</typeparam>
+        /// <returns></returns>
+        IEnumerable<T> ResolveAll<T>();
     }
 }
