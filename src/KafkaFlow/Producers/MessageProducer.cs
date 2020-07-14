@@ -7,7 +7,7 @@ namespace KafkaFlow.Producers
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
 
-    internal class MessageProducer<TProducer> : IMessageProducer<TProducer>
+    internal class MessageProducer : IMessageProducer
     {
         private readonly ProducerConfiguration configuration;
         private readonly IProducer<byte[], byte[]> producer;
@@ -27,6 +27,8 @@ namespace KafkaFlow.Producers
 
             this.middlewareExecutor = new MiddlewareExecutor(middlewares);
         }
+
+        public string ProducerName => this.configuration.Name;
 
         public async Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
             string topic,

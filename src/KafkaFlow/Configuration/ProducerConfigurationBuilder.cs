@@ -2,22 +2,21 @@ namespace KafkaFlow.Configuration
 {
     using System;
     using Confluent.Kafka;
-    using KafkaFlow.Producers;
     using Acks = KafkaFlow.Acks;
 
     internal class ProducerConfigurationBuilder : IProducerConfigurationBuilder
     {
-        private readonly Type producerType;
+        private readonly string name;
         private readonly ProducerMiddlewareConfigurationBuilder middlewareConfigurationBuilder;
 
         private string topic;
         private ProducerConfig baseProducerConfig;
         private Acks? acks;
 
-        public ProducerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator, Type type)
+        public ProducerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator, string name)
         {
+            this.name = name;
             this.DependencyConfigurator = dependencyConfigurator;
-            this.producerType = type;
             this.middlewareConfigurationBuilder = new ProducerMiddlewareConfigurationBuilder(dependencyConfigurator);
         }
 
@@ -51,17 +50,11 @@ namespace KafkaFlow.Configuration
         {
             var configuration = new ProducerConfiguration(
                 clusterConfiguration,
+                this.name,
                 this.topic,
                 this.acks,
                 this.middlewareConfigurationBuilder.Build(),
                 this.baseProducerConfig ?? new ProducerConfig());
-
-            this.DependencyConfigurator.AddSingleton(
-                typeof(IMessageProducer<>).MakeGenericType(this.producerType),
-                resolver => Activator.CreateInstance(
-                    typeof(MessageProducer<>).MakeGenericType(this.producerType),
-                    resolver,
-                    configuration));
 
             return configuration;
         }

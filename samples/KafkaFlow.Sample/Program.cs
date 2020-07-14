@@ -5,6 +5,7 @@
     using KafkaFlow.Compressor;
     using KafkaFlow.Compressor.Gzip;
     using KafkaFlow.Consumers;
+    using KafkaFlow.Producers;
     using KafkaFlow.Serializer;
     using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
@@ -15,13 +16,16 @@
         {
             var services = new ServiceCollection();
 
+            const string producerName = "PrintConsole";
+
             services.AddKafka(
                 kafka => kafka
                     .UseLogHandler<ConsoleLogHandler>()
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(new[] { "localhost:9092" })
-                            .AddProducer<PrintConsoleProducer>(
+                            .AddProducer(
+                                producerName,
                                 producer => producer
                                     .DefaultTopic("test-topic")
                                     .AddMiddlewares(
@@ -51,16 +55,13 @@
                     )
             );
 
-            services.AddSingleton<PrintConsoleProducer>();
-
             var provider = services.BuildServiceProvider();
 
             var bus = provider.CreateKafkaBus();
 
             bus.StartAsync().GetAwaiter().GetResult();
-
-            var printConsole = provider.GetService<PrintConsoleProducer>();
-            var consumerAcessor = provider.GetRequiredService<IConsumerAccessor>();
+            var consumers = provider.GetRequiredService<IConsumerAccessor>();
+            var producers = provider.GetRequiredService<IProducerAccessor>();
 
             while (true)
             {
@@ -72,13 +73,16 @@
                     case var _ when int.TryParse(input, out var count):
                         for (var i = 0; i < count; i++)
                         {
-                            printConsole.Produce(new TestMessage { Text = $"Message: {Guid.NewGuid()}" });
+                            producers[producerName]
+                                .Produce(
+                                    Guid.NewGuid().ToString(),
+                                    new TestMessage { Text = $"Message: {Guid.NewGuid()}" });
                         }
 
                         break;
 
                     case "pause":
-                        foreach (var consumer in consumerAcessor.All)
+                        foreach (var consumer in consumers.All)
                         {
                             consumer.Pause(consumer.Assignment);
                         }
@@ -88,7 +92,7 @@
                         break;
 
                     case "resume":
-                        foreach (var consumer in consumerAcessor.All)
+                        foreach (var consumer in consumers.All)
                         {
                             consumer.Resume(consumer.Assignment);
                         }

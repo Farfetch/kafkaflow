@@ -18,17 +18,17 @@ namespace KafkaFlow.Configuration
         /// Adds a producer to the cluster
         /// </summary>
         /// <param name="producer">A handler to configure the producer</param>
-        /// <typeparam name="TProducer">The class responsible for the production</typeparam>
+        /// <typeparam name="TProducer">A type used to get the internal producer instance</typeparam>
         /// <returns></returns>
         IClusterConfigurationBuilder AddProducer<TProducer>(Action<IProducerConfigurationBuilder> producer);
 
         /// <summary>
         /// Adds a producer to the cluster
-        /// </summary>
+        /// </summary> 
+        /// <param name="name">The producer name used to get its instance</param>
         /// <param name="producer">A handler to configure the producer</param>
-        /// <param name="producerType">The type of the class responsible for the production</param>
         /// <returns></returns>
-        IClusterConfigurationBuilder AddProducer(Type producerType, Action<IProducerConfigurationBuilder> producer);
+        IClusterConfigurationBuilder AddProducer(string name, Action<IProducerConfigurationBuilder> producer);
 
         /// <summary>
         /// Adds a consumer to the cluster

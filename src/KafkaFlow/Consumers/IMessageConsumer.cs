@@ -10,7 +10,7 @@ namespace KafkaFlow.Consumers
     public interface IMessageConsumer
     {
         /// <summary>
-        /// Gets the unique consumer name defined in the configuration
+        /// Gets the unique consumer´s name defined in the configuration
         /// </summary>
         string ConsumerName { get; }
 

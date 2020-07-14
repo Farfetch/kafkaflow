@@ -3,6 +3,7 @@ namespace KafkaFlow.Configuration
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using KafkaFlow.Producers;
 
     internal class ClusterConfigurationBuilder
         : IClusterConfigurationBuilder
@@ -39,12 +40,16 @@ namespace KafkaFlow.Configuration
 
         public IClusterConfigurationBuilder AddProducer<TProducer>(Action<IProducerConfigurationBuilder> producer)
         {
-            return this.AddProducer(typeof(TProducer), producer);
+            this.dependencyConfigurator.AddSingleton<IMessageProducer<TProducer>>(
+                resolver => new MessageProducerWrapper<TProducer>(
+                    resolver.Resolve<IProducerAccessor>().GetProducer<TProducer>()));
+
+            return this.AddProducer(typeof(TProducer).FullName, producer);
         }
 
-        public IClusterConfigurationBuilder AddProducer(Type producerType, Action<IProducerConfigurationBuilder> producer)
+        public IClusterConfigurationBuilder AddProducer(string name, Action<IProducerConfigurationBuilder> producer)
         {
-            var builder = new ProducerConfigurationBuilder(this.dependencyConfigurator, producerType);
+            var builder = new ProducerConfigurationBuilder(this.dependencyConfigurator, name);
 
             producer(builder);
 

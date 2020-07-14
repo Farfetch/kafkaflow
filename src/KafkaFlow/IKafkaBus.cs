@@ -2,6 +2,8 @@ namespace KafkaFlow
 {
     using System.Threading;
     using System.Threading.Tasks;
+    using KafkaFlow.Consumers;
+    using KafkaFlow.Producers;
 
     /// <summary>
     /// Provides access to the kafka bus operations
@@ -20,5 +22,15 @@ namespace KafkaFlow
         /// </summary>
         /// <returns></returns>
         Task StopAsync();
+
+        /// <summary>
+        /// Give access to all configured consumers
+        /// </summary>
+        IConsumerAccessor Consumers { get; }
+
+        /// <summary>
+        /// Give access to all configured producers
+        /// </summary>
+        IProducerAccessor Producers { get; }
     }
 }

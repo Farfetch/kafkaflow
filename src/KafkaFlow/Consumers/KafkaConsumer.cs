@@ -114,7 +114,7 @@
         {
             var consumer = this.consumerBuilder.Build();
 
-            this.consumerManager.AddOrUpdateConsumer(
+            this.consumerManager.AddOrUpdate(
                 new MessageConsumer(
                     consumer,
                     this.configuration.ConsumerName,

@@ -1,13 +1,17 @@
 namespace KafkaFlow.Configuration
 {
     using System;
+    using System.Linq;
     using KafkaFlow.Consumers;
+    using KafkaFlow.Producers;
 
     /// <summary>
     /// A class to configure KafkaFlow
     /// </summary>
     public class KafkaFlowConfigurator
     {
+        private readonly KafkaConfiguration configuration;
+
         /// <summary>
         /// Creates a <see cref="KafkaFlowConfigurator"/> instance
         /// </summary>
@@ -21,7 +25,7 @@ namespace KafkaFlow.Configuration
 
             kafka(builder);
 
-            dependencyConfigurator.AddSingleton(builder.Build());
+            this.configuration = builder.Build();
         }
 
         /// <summary>
@@ -36,8 +40,9 @@ namespace KafkaFlow.Configuration
             return new KafkaBus(
                 scope.Resolver,
                 scope.Resolver.Resolve<IConsumerManager>(),
+                scope.Resolver.Resolve<IProducerManager>(),
                 scope.Resolver.Resolve<ILogHandler>(),
-                scope.Resolver.Resolve<KafkaConfiguration>());
+                this.configuration);
         }
     }
 }
