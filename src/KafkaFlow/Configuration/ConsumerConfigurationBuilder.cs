@@ -31,9 +31,9 @@ namespace KafkaFlow.Configuration
             this.consumerConfig = new ConsumerConfig();
         }
 
-        public IConsumerConfigurationBuilder Topic(string topic)
+        public IConsumerConfigurationBuilder Topic(string topicName)
         {
-            this.topics.Add(topic);
+            this.topics.Add(topicName);
             return this;
         }
 
@@ -43,13 +43,13 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public IConsumerConfigurationBuilder Topics(IEnumerable<string> topics)
+        public IConsumerConfigurationBuilder Topics(IEnumerable<string> topicNames)
         {
-            this.topics.AddRange(topics);
+            this.topics.AddRange(topicNames);
             return this;
         }
 
-        public IConsumerConfigurationBuilder Topics(params string[] topics) => this.Topics(topics.AsEnumerable());
+        public IConsumerConfigurationBuilder Topics(params string[] topicNames) => this.Topics(topicNames.AsEnumerable());
 
         public IConsumerConfigurationBuilder WithName(string name)
         {
