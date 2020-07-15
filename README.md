@@ -2,6 +2,8 @@
 
 # KafkaFlow
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/49878b337fde46839c5f08051c2ba098)](https://app.codacy.com/gh/Farfetch/kafka-flow?utm_source=github.com&utm_medium=referral&utm_content=Farfetch/kafka-flow&utm_campaign=Badge_Grade_Dashboard)
+
 A flexible framework to process Kafka messages with multithreading, middlewares, serialization, compression, typed handlers and message order support.
 
 ## Features
