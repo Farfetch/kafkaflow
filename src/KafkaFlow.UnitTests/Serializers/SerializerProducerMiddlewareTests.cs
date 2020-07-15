@@ -49,7 +49,7 @@ namespace KafkaFlow.UnitTests.Serializers
             this.contextMock.Setup(x => x.TransformMessage(rawMessage));
             
             // Act
-            await this.target.Invoke(this.contextMock.Object, this.SetNextCalled);
+            await this.target.Invoke(this.contextMock.Object, c => this.SetNextCalled());
 
             // Assert
             this.nextCalled.Should().BeTrue();
@@ -58,7 +58,7 @@ namespace KafkaFlow.UnitTests.Serializers
             this.typeResolverMock.VerifyAll();
         }
 
-        private Task SetNextCalled(IMessageContext context)
+        private Task SetNextCalled()
         {
             this.nextCalled = true;
             return Task.CompletedTask;

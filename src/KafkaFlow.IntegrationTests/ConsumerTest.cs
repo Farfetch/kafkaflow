@@ -90,7 +90,7 @@ namespace KafkaFlow.IntegrationTests
             }
 
             // Assert
-            await Task.Delay(8000);
+            await Task.Delay(8000).ConfigureAwait(false);
             var versionsSent = messages.Select(m => m.Version).ToList();
             var versionsReceived = MessageStorage
                     .GetVersions()
