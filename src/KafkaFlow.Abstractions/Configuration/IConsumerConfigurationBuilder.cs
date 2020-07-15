@@ -16,23 +16,23 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Sets the topic that will be used to read the messages
         /// </summary>
-        /// <param name="topic">Topic name</param>
+        /// <param name="topicName">Topic name</param>
         /// <returns></returns>
-        IConsumerConfigurationBuilder Topic(string topic);
+        IConsumerConfigurationBuilder Topic(string topicName);
 
         /// <summary>
         /// Sets the topics that will be used to read the messages
         /// </summary>
-        /// <param name="topics">Topic names</param>
+        /// <param name="topicNames">Topic names</param>
         /// <returns></returns>
-        IConsumerConfigurationBuilder Topics(IEnumerable<string> topics);
+        IConsumerConfigurationBuilder Topics(IEnumerable<string> topicNames);
 
         /// <summary>
         /// Sets the topics that will be used to read the messages
         /// </summary>
-        /// <param name="topics">Topic names</param>
+        /// <param name="topicNames">Topic names</param>
         /// <returns></returns>
-        IConsumerConfigurationBuilder Topics(params string[] topics);
+        IConsumerConfigurationBuilder Topics(params string[] topicNames);
 
         /// <summary>
         /// Sets a unique name for the consumer

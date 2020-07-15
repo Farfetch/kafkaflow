@@ -14,8 +14,8 @@ namespace KafkaFlow.UnitTests.Compressors
         private Mock<IMessageCompressor> compressorMock;
         private bool nextCalled;
         private CompressorConsumerMiddleware target;
-        
-        
+
+
         [TestInitialize]
         public void Setup()
         {
@@ -33,7 +33,7 @@ namespace KafkaFlow.UnitTests.Compressors
                 .Returns(new object());
 
             // Act
-            Func<Task> act = () => this.target.Invoke(this.contextMock.Object, this.SetNextCalled);
+            Func<Task> act = () => this.target.Invoke(this.contextMock.Object, c => this.SetNextCalled());
 
             // Assert
             act.Should().Throw<InvalidOperationException>();
@@ -58,7 +58,7 @@ namespace KafkaFlow.UnitTests.Compressors
                 .Returns(decompressed);
 
             // Act
-            await this.target.Invoke(this.contextMock.Object, this.SetNextCalled);
+            await this.target.Invoke(this.contextMock.Object, c => this.SetNextCalled());
 
             // Assert
             this.nextCalled.Should().BeTrue();
@@ -66,7 +66,7 @@ namespace KafkaFlow.UnitTests.Compressors
             this.compressorMock.VerifyAll();
         }
 
-        private Task SetNextCalled(IMessageContext context)
+        private Task SetNextCalled()
         {
             this.nextCalled = true;
             return Task.CompletedTask;
