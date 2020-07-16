@@ -8,12 +8,12 @@ Fixes # (issue)
 
 Please describe the tests that you ran to verify your changes.
 
-## Checklist:
+## Checklist
 
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my own code
-- [ ] I have added tests to cover my changes
-- [ ] I have made corresponding changes to the documentation
+-   [ ] My code follows the style guidelines of this project
+-   [ ] I have performed a self-review of my own code
+-   [ ] I have added tests to cover my changes
+-   [ ] I have made corresponding changes to the documentation
 
 ### Disclaimer
 
