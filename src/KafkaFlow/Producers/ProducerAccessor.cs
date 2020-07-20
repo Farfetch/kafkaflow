@@ -9,7 +9,7 @@ namespace KafkaFlow.Producers
 
         public ProducerAccessor(IEnumerable<IMessageProducer> producers)
         {
-            this.producers = producers.ToDictionary(x => x.ProducerName, v => v);
+            this.producers = producers.ToDictionary(x => x.ProducerName);
         }
 
         public IMessageProducer GetProducer(string name) =>

@@ -22,10 +22,5 @@
         {
             return new MicrosoftDependencyResolverScope(this.serviceProvider.CreateScope());
         }
-
-        public IEnumerable<T> ResolveAll<T>()
-        {
-            return this.serviceProvider.GetServices<T>();
-        }
     }
 }

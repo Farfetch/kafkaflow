@@ -63,8 +63,14 @@ namespace KafkaFlow.Producers
             object message,
             IMessageHeaders headers = null)
         {
+            if (string.IsNullOrWhiteSpace(this.configuration.DefaultTopic))
+            {
+                throw new InvalidOperationException(
+                    $"There is no default topic defined for producer {this.ProducerName}");
+            }
+
             return this.ProduceAsync(
-                this.configuration.Topic,
+                this.configuration.DefaultTopic,
                 partitionKey,
                 message,
                 headers);
@@ -115,8 +121,14 @@ namespace KafkaFlow.Producers
             IMessageHeaders headers = null,
             Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null)
         {
+            if (string.IsNullOrWhiteSpace(this.configuration.DefaultTopic))
+            {
+                throw new InvalidOperationException(
+                    $"There is no default topic defined for producer {this.ProducerName}");
+            }
+
             this.Produce(
-                this.configuration.Topic,
+                this.configuration.DefaultTopic,
                 partitionKey,
                 message,
                 headers,

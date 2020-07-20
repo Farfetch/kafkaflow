@@ -29,8 +29,7 @@ namespace KafkaFlow.Configuration
             this.dependencyConfigurator
                 .AddSingleton(typeof(ILogHandler), this.logHandler)
                 .AddSingleton<IConsumerAccessor>(consumerManager)
-                .AddSingleton<IConsumerManager>(consumerManager)
-                .AddSingleton<IProducerAccessor>(resolver => new ProducerAccessor(resolver.ResolveAll<IMessageProducer>()));
+                .AddSingleton<IConsumerManager>(consumerManager);
 
             return configuration;
         }

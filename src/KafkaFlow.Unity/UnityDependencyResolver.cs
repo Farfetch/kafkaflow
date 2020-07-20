@@ -30,12 +30,5 @@ namespace KafkaFlow.Unity
         /// <param name="type">The type to be created</param>
         /// <returns></returns>
         public object Resolve(Type type) => this.container.Resolve(type);
-
-        /// <summary>
-        /// Gets all instances of the passed type
-        /// </summary>
-        /// <typeparam name="T">Type to be resolved</typeparam>
-        /// <returns></returns>
-        public IEnumerable<T> ResolveAll<T>() => this.container.ResolveAll<T>();
     }
 }

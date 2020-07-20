@@ -9,14 +9,14 @@ namespace KafkaFlow.Configuration
         public ProducerConfiguration(
             ClusterConfiguration cluster,
             string name,
-            string topic,
+            string defaultTopic,
             Acks? acks,
             MiddlewareConfiguration middlewareConfiguration,
             ProducerConfig baseProducerConfig)
         {
             this.Cluster = cluster ?? throw new ArgumentNullException(nameof(cluster));
             this.Name = name;
-            this.Topic = string.IsNullOrWhiteSpace(topic) ? throw new ArgumentNullException(nameof(topic)) : topic;
+            this.DefaultTopic = defaultTopic;
             this.Acks = acks;
             this.MiddlewareConfiguration = middlewareConfiguration;
             this.BaseProducerConfig = baseProducerConfig;
@@ -26,7 +26,7 @@ namespace KafkaFlow.Configuration
 
         public string Name { get; }
 
-        public string Topic { get; }
+        public string DefaultTopic { get; }
 
         public ProducerConfig BaseProducerConfig { get; }
 

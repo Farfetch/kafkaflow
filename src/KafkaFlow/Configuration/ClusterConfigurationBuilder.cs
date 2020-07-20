@@ -29,10 +29,9 @@ namespace KafkaFlow.Configuration
             configuration.AddProducers(this.producers.Select(x => x.Build(configuration)));
             configuration.AddConsumers(this.consumers.Select(x => x.Build(configuration)));
 
-            foreach(var producer in configuration.Producers)
-            {
-                this.dependencyConfigurator.AddSingleton<IMessageProducer>(resolver => new MessageProducer(resolver, producer));
-            }
+            this.dependencyConfigurator.AddSingleton<IProducerAccessor>(
+                resolver => new ProducerAccessor(
+                    configuration.Producers.Select(producer => new MessageProducer(resolver, producer))));
 
             return configuration;
         }
