@@ -52,8 +52,8 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddKafka(kafka => kafka
-            // You must implement ILogHandler interface and replace YourLogHandler
-            .UseLogHandler<YourLogHandler>() 
+            // Install KafkaFlow.LogHandler.Console or implement ILogHandler interface
+            .UseConsoleLog() 
             .AddCluster(cluster => cluster
                 .WithBrokers(new[] { "localhost:9092" })
                 .AddConsumer(consumer => consumer
@@ -66,8 +66,7 @@ public class Startup
                         // Install KafkaFlow.Compressor and Install KafkaFlow.Compressor.Gzip
                         .AddCompressor<GzipMessageCompressor>() 
                         // Install KafkaFlow.Serializer and Install KafkaFlow.Serializer.Protobuf
-                        // You must implement IMessageTypeResolver and replace YourMessageTypeResolver
-                        .AddSerializer<ProtobufMessageSerializer, YourMessageTypeResolver>()
+                        .AddSerializer<ProtobufMessageSerializer>()
                         // Install KafkaFlow.TypedHandler
                         .AddTypedHandlers(handlers => handlers
                             .WithHandlerLifetime(InstanceLifetime.Singleton)
@@ -77,7 +76,7 @@ public class Startup
                 .AddProducer("producer-name", producer => producer
                     .DefaultTopic("test-topic")
                     .AddMiddlewares(middlewares => middlewares
-                        .AddSerializer<ProtobufMessageSerializer, YourMessageTypeResolver>()
+                        .AddSerializer<ProtobufMessageSerializer>()
                         .AddCompressor<GzipMessageCompressor>()
                     )
                 )
