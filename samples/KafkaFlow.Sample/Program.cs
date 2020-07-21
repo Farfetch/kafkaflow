@@ -20,7 +20,7 @@
 
             services.AddKafka(
                 kafka => kafka
-                    .UseLogHandler<ConsoleLogHandler>()
+                    .UseConsoleLog()
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(new[] { "localhost:9092" })
@@ -30,7 +30,7 @@
                                     .DefaultTopic("test-topic")
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ProtobufMessageSerializer, SampleMessageTypeResolver>()
+                                            .AddSerializer<ProtobufMessageSerializer>()
                                             .AddCompressor<GzipMessageCompressor>()
                                     )
                                     .WithAcks(Acks.All)
@@ -45,7 +45,7 @@
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddCompressor<GzipMessageCompressor>()
-                                            .AddSerializer<ProtobufMessageSerializer, SampleMessageTypeResolver>()
+                                            .AddSerializer<ProtobufMessageSerializer>()
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)

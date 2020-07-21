@@ -43,6 +43,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Unity", "KafkaFlo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample", "..\samples\KafkaFlow.Sample\KafkaFlow.Sample.csproj", "{E59C13AF-41E7-4DFA-B118-A65EA87F0605}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LogHandlers", "LogHandlers", "{EF626895-FDAE-4B28-9110-BA85671CBBF2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.LogHandler.Console", "KafkaFlow.LogHandler.Console\KafkaFlow.LogHandler.Console.csproj", "{6E9F7CDC-E935-4A51-9358-2E6DBB901A34}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,6 +109,10 @@ Global
 		{E59C13AF-41E7-4DFA-B118-A65EA87F0605}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E59C13AF-41E7-4DFA-B118-A65EA87F0605}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E59C13AF-41E7-4DFA-B118-A65EA87F0605}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E9F7CDC-E935-4A51-9358-2E6DBB901A34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E9F7CDC-E935-4A51-9358-2E6DBB901A34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E9F7CDC-E935-4A51-9358-2E6DBB901A34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E9F7CDC-E935-4A51-9358-2E6DBB901A34}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -124,6 +132,7 @@ Global
 		{B86A51E3-7AC9-4EF8-BD2A-1ACC9EF0F5AE} = {292BCEDD-55B4-49BB-B8B2-24CD834FF2AA}
 		{22DB5734-E792-4309-B565-77F02D27D88C} = {292BCEDD-55B4-49BB-B8B2-24CD834FF2AA}
 		{E59C13AF-41E7-4DFA-B118-A65EA87F0605} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
+		{6E9F7CDC-E935-4A51-9358-2E6DBB901A34} = {EF626895-FDAE-4B28-9110-BA85671CBBF2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AE955B5-16B0-41CF-9F12-66D15B3DD1AB}
