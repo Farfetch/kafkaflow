@@ -15,7 +15,7 @@ namespace KafkaFlow.Consumers
         private readonly ILogHandler logHandler;
         private readonly IMiddlewareExecutor middlewareExecutor;
 
-        private CancellationTokenSource cancellationTokenSource;
+        private CancellationTokenSource stopCancellationTokenSource;
 
         private readonly Channel<ConsumeResult<byte[], byte[]>> messagesBuffer;
         private Task backgroundTask;
@@ -47,18 +47,18 @@ namespace KafkaFlow.Consumers
 
         public Task StartAsync(CancellationToken stopCancellationToken)
         {
-            this.cancellationTokenSource =
+            this.stopCancellationTokenSource =
                 CancellationTokenSource.CreateLinkedTokenSource(stopCancellationToken);
 
             this.backgroundTask = Task.Factory.StartNew(
                 async () =>
                 {
-                    while (!this.cancellationTokenSource.IsCancellationRequested)
+                    while (!this.stopCancellationTokenSource.IsCancellationRequested)
                     {
                         try
                         {
                             var message = await this.messagesBuffer.Reader
-                                .ReadAsync(this.cancellationTokenSource.Token)
+                                .ReadAsync(this.stopCancellationTokenSource.Token)
                                 .ConfigureAwait(false);
 
                             var context = new ConsumerMessageContext(
@@ -66,7 +66,8 @@ namespace KafkaFlow.Consumers
                                     this.consumer,
                                     this.configuration.ConsumerName,
                                     this.offsetManager,
-                                    message),
+                                    message,
+                                    this.stopCancellationTokenSource.Token),
                                 message,
                                 this.Id,
                                 this.configuration.GroupId);
@@ -111,9 +112,9 @@ namespace KafkaFlow.Consumers
 
         public async Task StopAsync()
         {
-            if (this.cancellationTokenSource.Token.CanBeCanceled)
+            if (this.stopCancellationTokenSource.Token.CanBeCanceled)
             {
-                this.cancellationTokenSource.Cancel();
+                this.stopCancellationTokenSource.Cancel();
             }
 
             await this.backgroundTask.ConfigureAwait(false);

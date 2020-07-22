@@ -1,5 +1,6 @@
 namespace KafkaFlow.Consumers
 {
+    using System.Threading;
     using Confluent.Kafka;
 
     internal class MessageContextConsumer : IMessageContextConsumer
@@ -12,15 +13,19 @@ namespace KafkaFlow.Consumers
             IConsumer<byte[], byte[]> consumer,
             string name,
             IOffsetManager offsetManager,
-            ConsumeResult<byte[], byte[]> kafkaResult)
+            ConsumeResult<byte[], byte[]> kafkaResult, 
+            CancellationToken workerStopped)
         {
             this.Name = name;
+            this.WorkerStopped = workerStopped;
             this.consumer = consumer;
             this.offsetManager = offsetManager;
             this.kafkaResult = kafkaResult;
         }
 
         public string Name { get; }
+        
+        public CancellationToken WorkerStopped { get; }
 
         public void StoreOffset()
         {
