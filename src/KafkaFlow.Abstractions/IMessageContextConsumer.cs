@@ -1,5 +1,7 @@
 namespace KafkaFlow
 {
+    using System.Threading;
+
     /// <summary>
     /// Represents the message consumer
     /// </summary>
@@ -9,6 +11,11 @@ namespace KafkaFlow
         /// The consumer unique name defined in configuration
         /// </summary>
         string Name { get; }
+
+        /// <summary>
+        /// A CancellationToken that is cancelled when the worker is requested to stop
+        /// </summary>
+        CancellationToken WorkerStopped { get; }
 
         /// <summary>
         /// Store the message offset when manual store option is used
