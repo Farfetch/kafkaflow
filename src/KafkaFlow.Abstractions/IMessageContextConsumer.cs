@@ -18,6 +18,11 @@ namespace KafkaFlow
         CancellationToken WorkerStopped { get; }
 
         /// <summary>
+        /// Gets or Sets if the framework should store the current offset in the end when auto store offset is used
+        /// </summary>
+        bool ShouldStoreOffset { get; set; }
+
+        /// <summary>
         /// Store the message offset when manual store option is used
         /// </summary>
         void StoreOffset();
