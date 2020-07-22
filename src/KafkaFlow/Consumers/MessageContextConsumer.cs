@@ -27,6 +27,8 @@ namespace KafkaFlow.Consumers
         
         public CancellationToken WorkerStopped { get; }
 
+        public bool ShouldStoreOffset { get; set; } = true;
+
         public void StoreOffset()
         {
             this.offsetManager.StoreOffset(this.kafkaResult.TopicPartitionOffset);

@@ -40,7 +40,9 @@ namespace KafkaFlow.Consumers
 
         public int Id { get; }
 
-        public ValueTask EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken = default)
+        public ValueTask EnqueueAsync(
+            ConsumeResult<byte[], byte[]> message,
+            CancellationToken stopCancellationToken = default)
         {
             return this.messagesBuffer.Writer.WriteAsync(message, stopCancellationToken);
         }
@@ -87,7 +89,7 @@ namespace KafkaFlow.Consumers
                             }
                             finally
                             {
-                                if (this.configuration.AutoStoreOffsets)
+                                if (this.configuration.AutoStoreOffsets && context.Consumer.ShouldStoreOffset)
                                 {
                                     this.offsetManager.StoreOffset(message.TopicPartitionOffset);
                                 }
