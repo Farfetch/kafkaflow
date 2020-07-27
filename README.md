@@ -1,4 +1,4 @@
-![Build Master](https://github.com/Farfetch/kafka-flow/workflows/Build%20Master/badge.svg?branch=master) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/49878b337fde46839c5f08051c2ba098)](https://app.codacy.com/gh/Farfetch/kafka-flow?utm_source=github.com&utm_medium=referral&utm_content=Farfetch/kafka-flow&utm_campaign=Badge_Grade_Dashboard) [<img src="https://img.shields.io/badge/slack-@kafkaflow/questions-green.svg?logo=slack">](https://join.slack.com/t/kafkaflow/shared_invite/zt-fqw06n2u-1lA5Mz_VnSPGhRgfT97SPQ)
+![Build Master](https://github.com/Farfetch/kafka-flow/workflows/Build%20Master/badge.svg?branch=master) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/49878b337fde46839c5f08051c2ba098)](https://app.codacy.com/gh/Farfetch/kafka-flow?utm_source=github.com&utm_medium=referral&utm_content=Farfetch/kafka-flow&utm_campaign=Badge_Grade_Dashboard) [<img src="https://img.shields.io/badge/slack-@kafkaflow-green.svg?logo=slack">](https://join.slack.com/t/kafkaflow/shared_invite/zt-fqw06n2u-1lA5Mz_VnSPGhRgfT97SPQ)
 
 ## Packages
 
@@ -19,7 +19,7 @@
 
 ## Why you should use KafkaFlow
 
-The main features of KafkaFlow are the capacity to process messages in parallel and [middlewares](https://github.com/Farfetch/kafka-flow#its-all-about-middlewares) support. You can define how many workers a consumer will have, this means how many messages will be processed at the same time for that consumer.
+The main features of KafkaFlow are the capacity to process messages in parallel and [middlewares](https://github.com/Farfetch/kafka-flow/wiki/middlewares) support. You can define how many workers a consumer will have, this means how many messages will be processed at the same time for that consumer.
 
 KafkaFlow uses [Confluent Kafka Client](https://github.com/confluentinc/confluent-kafka-dotnet).
 
