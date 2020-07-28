@@ -58,7 +58,7 @@
         {
             return consumer.AddSerializer(
                 resolver => resolver.Resolve<TSerializer>(),
-                resolver => DefaultMessageTypeResolver.Instance);
+                resolver => resolver.Resolve<DefaultMessageTypeResolver>());
         }
 
         /// <summary>
@@ -74,7 +74,7 @@
         {
             return consumer.AddSerializer(
                 serializerFactory,
-                resolver => DefaultMessageTypeResolver.Instance);
+                resolver => resolver.Resolve<DefaultMessageTypeResolver>());
         }
 
         /// <summary>
@@ -128,7 +128,7 @@
         {
             return producer.AddSerializer(
                 resolver => resolver.Resolve<TSerializer>(),
-                resolver => DefaultMessageTypeResolver.Instance);
+                resolver => resolver.Resolve<DefaultMessageTypeResolver>());
         }
 
         /// <summary>
@@ -144,7 +144,67 @@
         {
             return producer.AddSerializer(
                 serializerFactory,
-                resolver => DefaultMessageTypeResolver.Instance);
+                resolver => resolver.Resolve<DefaultMessageTypeResolver>());
+        }
+
+        /// <summary>
+        /// Register a middleware to deserialize the message to a fixed type
+        /// </summary>
+        /// <param name="consumer"></param>
+        /// <param name="serializerFactory">A factory to create a <see cref="IMessageSerializer"/></param>
+        /// <typeparam name="TMessage">The message type</typeparam>
+        /// <returns></returns>
+        public static IConsumerMiddlewareConfigurationBuilder AddSingleTypeSerializer<TMessage>(
+            this IConsumerMiddlewareConfigurationBuilder consumer,
+            Factory<IMessageSerializer> serializerFactory)
+        {
+            return consumer.AddSerializer(
+                serializerFactory,
+                resolver => resolver.Resolve<SingleMessageTypeResolver<TMessage>>());
+        }
+
+        /// <summary>
+        /// Register a middleware to deserialize the message to a fixed type
+        /// </summary>
+        /// <param name="consumer"></param>
+        /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
+        /// <typeparam name="TMessage">The message type</typeparam>
+        /// <returns></returns>
+        public static IConsumerMiddlewareConfigurationBuilder AddSingleTypeSerializer<TSerializer, TMessage>(
+            this IConsumerMiddlewareConfigurationBuilder consumer)
+            where TSerializer : class, IMessageSerializer
+        {
+            return consumer.AddSerializer<TSerializer, SingleMessageTypeResolver<TMessage>>();
+        }
+
+        /// <summary>
+        /// Register a middleware to serialize the message to a fixed type
+        /// </summary>
+        /// <param name="consumer"></param>
+        /// <param name="serializerFactory">A factory to create a <see cref="IMessageSerializer"/></param>
+        /// <typeparam name="TMessage">The message type</typeparam>
+        /// <returns></returns>
+        public static IProducerMiddlewareConfigurationBuilder AddSingleTypeSerializer<TMessage>(
+            this IProducerMiddlewareConfigurationBuilder consumer,
+            Factory<IMessageSerializer> serializerFactory)
+        {
+            return consumer.AddSerializer(
+                serializerFactory,
+                resolver => resolver.Resolve<SingleMessageTypeResolver<TMessage>>());
+        }
+
+        /// <summary>
+        /// Register a middleware to serialize the message to a fixed type
+        /// </summary>
+        /// <param name="consumer"></param>
+        /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
+        /// <typeparam name="TMessage">The message type</typeparam>
+        /// <returns></returns>
+        public static IProducerMiddlewareConfigurationBuilder AddSingleTypeSerializer<TSerializer, TMessage>(
+            this IProducerMiddlewareConfigurationBuilder consumer)
+            where TSerializer : class, IMessageSerializer
+        {
+            return consumer.AddSerializer<TSerializer, SingleMessageTypeResolver<TMessage>>();
         }
     }
 }

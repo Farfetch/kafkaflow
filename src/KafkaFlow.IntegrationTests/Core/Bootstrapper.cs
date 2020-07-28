@@ -9,9 +9,9 @@ namespace KafkaFlow.IntegrationTests.Core
     using KafkaFlow.Compressor;
     using KafkaFlow.Compressor.Gzip;
     using KafkaFlow.IntegrationTests.Core.Handlers;
+    using KafkaFlow.IntegrationTests.Core.Messages;
     using KafkaFlow.IntegrationTests.Core.Middlewares;
     using KafkaFlow.IntegrationTests.Core.Middlewares.Producers;
-    using KafkaFlow.IntegrationTests.Core.TypeResolvers;
     using KafkaFlow.Serializer;
     using KafkaFlow.Serializer.Json;
     using KafkaFlow.Serializer.ProtoBuf;
@@ -82,7 +82,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ProtobufMessageSerializer, SampleMessageTypeResolver>()
+                                            .AddSingleTypeSerializer<ProtobufMessageSerializer, TestMessage1>()
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -99,7 +99,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<JsonMessageSerializer, SampleMessageTypeResolver>()
+                                            .AddSerializer<JsonMessageSerializer>()
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -130,7 +130,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddCompressor<GzipMessageCompressor>()
-                                            .AddSerializer<JsonMessageSerializer, SampleMessageTypeResolver>()
+                                            .AddSerializer<JsonMessageSerializer>()
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -149,7 +149,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddCompressor<GzipMessageCompressor>()
-                                            .AddSerializer<ProtobufMessageSerializer, SampleMessageTypeResolver>()
+                                            .AddSerializer<ProtobufMessageSerializer>()
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -162,7 +162,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(JsonTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<JsonMessageSerializer, SampleMessageTypeResolver>()
+                                            .AddSerializer<JsonMessageSerializer>()
                                     )
                             )
                             .AddProducer<JsonGzipProducer>(
@@ -170,7 +170,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(JsonGzipTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<JsonMessageSerializer, SampleMessageTypeResolver>()
+                                            .AddSerializer<JsonMessageSerializer>()
                                             .AddCompressor<GzipMessageCompressor>()
                                     )
                             )
@@ -179,7 +179,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(ProtobufTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ProtobufMessageSerializer, SampleMessageTypeResolver>()
+                                            .AddSingleTypeSerializer<ProtobufMessageSerializer, TestMessage1>()
                                     )
                             )
                             .AddProducer<ProtobufGzipProducer>(
@@ -187,7 +187,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(ProtobufGzipTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ProtobufMessageSerializer, SampleMessageTypeResolver>()
+                                            .AddSerializer<ProtobufMessageSerializer>()
                                             .AddCompressor<GzipMessageCompressor>()
                                     )
                             )
@@ -196,7 +196,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(ProtobufGzipTopicName2)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ProtobufMessageSerializer, SampleMessageTypeResolver>()
+                                            .AddSerializer<ProtobufMessageSerializer>()
                                             .AddCompressor<GzipMessageCompressor>()
                                     )
                             )
