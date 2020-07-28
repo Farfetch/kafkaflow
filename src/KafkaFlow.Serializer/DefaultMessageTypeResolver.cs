@@ -9,15 +9,6 @@ namespace KafkaFlow.Serializer
     {
         private const string MessageType = "Message-Type";
 
-        private DefaultMessageTypeResolver()
-        {
-        }
-
-        /// <summary>
-        /// The singleton instance 
-        /// </summary>
-        public static readonly DefaultMessageTypeResolver Instance = new DefaultMessageTypeResolver();
-
         /// <summary>
         /// Get the message type when consuming
         /// </summary>
