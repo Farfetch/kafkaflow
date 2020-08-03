@@ -6,46 +6,48 @@ namespace KafkaFlow.Consumers
 
     internal class MessageConsumer : IMessageConsumer
     {
-        private readonly IConsumer<byte[], byte[]> consumer;
-
         public MessageConsumer(
             IConsumer<byte[], byte[]> consumer,
             string consumerName,
             string groupId)
         {
+            this.Consumer = consumer;
             this.ConsumerName = consumerName;
             this.GroupId = groupId;
-            this.consumer = consumer;
         }
 
+        public IConsumer<byte[], byte[]> Consumer { get; }
+
         public string ConsumerName { get; }
-        
+
         public string GroupId { get; }
 
-        public IReadOnlyList<string> Subscription => this.consumer.Subscription.AsReadOnly();
+        public IReadOnlyList<string> Subscription => throw new NotImplementedException();
 
-        public IReadOnlyList<TopicPartition> Assignment => this.consumer.Assignment.AsReadOnly();
+        public IReadOnlyList<TopicPartition> Assignment => throw new NotImplementedException();
 
-        public string MemberId => this.consumer.MemberId;
+        public string MemberId => throw new NotImplementedException();
 
-        public string ClientInstanceName => this.consumer.Name;
+        public string ClientInstanceName => throw new NotImplementedException();
 
         public void Pause(IEnumerable<TopicPartition> topicPartitions) =>
-            this.consumer.Pause(topicPartitions);
+            throw new NotImplementedException();
 
         public void Resume(IEnumerable<TopicPartition> topicPartitions) =>
-            this.consumer.Resume(topicPartitions);
+            throw new NotImplementedException();
 
         public Offset GetPosition(TopicPartition topicPartition) =>
-            this.consumer.Position(topicPartition);
+            throw new NotImplementedException();
 
         public WatermarkOffsets GetWatermarkOffsets(TopicPartition topicPartition) =>
-            this.consumer.GetWatermarkOffsets(topicPartition);
+            throw new NotImplementedException();
 
         public WatermarkOffsets QueryWatermarkOffsets(TopicPartition topicPartition, TimeSpan timeout) =>
-            this.consumer.QueryWatermarkOffsets(topicPartition, timeout);
+            throw new NotImplementedException();
 
-        public void OffsetsForTimes(IEnumerable<TopicPartitionTimestamp> topicPartitions, TimeSpan timeout) =>
-            this.consumer.OffsetsForTimes(topicPartitions, timeout);
+        public List<TopicPartitionOffset> OffsetsForTimes(
+            IEnumerable<TopicPartitionTimestamp> topicPartitions,
+            TimeSpan timeout) =>
+            throw new NotImplementedException();
     }
 }

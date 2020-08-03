@@ -22,16 +22,19 @@ namespace KafkaFlow.Consumers
         /// <summary>
         /// Gets the current topic subscription
         /// </summary>
+        [Obsolete("Use Consumer property", true)]
         IReadOnlyList<string> Subscription { get; }
 
         /// <summary>
         /// Gets the current partition assignment
         /// </summary>
+        [Obsolete("Use Consumer property", true)]
         IReadOnlyList<TopicPartition> Assignment { get; }
-        
+
         /// <summary>
         /// Gets the (dynamic) group member id of this consumer (as set by the broker).
         /// </summary>
+        [Obsolete("Use Consumer property", true)]
         string MemberId { get; }
 
         /// <summary>
@@ -46,6 +49,7 @@ namespace KafkaFlow.Consumers
         ///     log messages to be associated with the
         ///     corresponding instance.
         /// </remarks>
+        [Obsolete("Use Consumer property", true)]
         string ClientInstanceName { get; }
 
         /// <summary>
@@ -61,6 +65,7 @@ namespace KafkaFlow.Consumers
         /// <exception cref="T:Confluent.Kafka.TopicPartitionException">
         ///     Per partition success or error.
         /// </exception>
+        [Obsolete("Use Consumer property", true)]
         void Pause(IEnumerable<TopicPartition> partitions);
 
         /// <summary>
@@ -75,6 +80,7 @@ namespace KafkaFlow.Consumers
         /// <exception cref="T:Confluent.Kafka.TopicPartitionException">
         ///     Per partition success or error.
         /// </exception>
+        [Obsolete("Use Consumer property", true)]
         void Resume(IEnumerable<TopicPartition> partitions);
 
         /// <summary>
@@ -89,6 +95,7 @@ namespace KafkaFlow.Consumers
         /// <exception cref="T:Confluent.Kafka.KafkaException">
         ///     Thrown if the request failed.
         /// </exception>
+        [Obsolete("Use Consumer property", true)]
         Offset GetPosition(TopicPartition topicPartition);
 
         /// <summary>
@@ -112,6 +119,7 @@ namespace KafkaFlow.Consumers
         ///     The requested WatermarkOffsets
         ///     (see that class for additional documentation).
         /// </returns>
+        [Obsolete("Use Consumer property", true)]
         WatermarkOffsets GetWatermarkOffsets(TopicPartition topicPartition);
 
         /// <summary>
@@ -132,6 +140,7 @@ namespace KafkaFlow.Consumers
         ///     The requested WatermarkOffsets (see
         ///     that class for additional documentation).
         /// </returns>
+        [Obsolete("Use Consumer property", true)]
         WatermarkOffsets QueryWatermarkOffsets(TopicPartition topicPartition, TimeSpan timeout);
 
         /// <summary>
@@ -171,6 +180,14 @@ namespace KafkaFlow.Consumers
         ///     <see cref="P:Confluent.Kafka.TopicPartitionOffsetException.Results" />
         ///     property of the exception.
         /// </exception>
-        void OffsetsForTimes(IEnumerable<TopicPartitionTimestamp> timestampsToSearch, TimeSpan timeout);
+        [Obsolete("Use Consumer property", true)]
+        List<TopicPartitionOffset> OffsetsForTimes(
+            IEnumerable<TopicPartitionTimestamp> timestampsToSearch,
+            TimeSpan timeout);
+        
+        /// <summary>
+        /// Gets the Confluent Consumer instance
+        /// </summary>
+        IConsumer<byte[],byte[]> Consumer { get; }
     }
 }
