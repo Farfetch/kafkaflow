@@ -1,20 +1,20 @@
 namespace KafkaFlow.Consumers
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using Confluent.Kafka;
 
-    internal class OffsetManager : IOffsetManager
+    internal class OffsetManager : IOffsetManager, IDisposable
     {
-        private readonly IConsumer<byte[], byte[]> consumer;
+        private readonly IOffsetComitter committer;
         private readonly Dictionary<(string, int), PartitionOffsets> partitionsOffsets;
 
         public OffsetManager(
-            IConsumer<byte[], byte[]> consumer,
+            IOffsetComitter committer,
             IEnumerable<TopicPartition> partitions)
         {
-            this.consumer = consumer;
-
+            this.committer = committer;
             this.partitionsOffsets = partitions.ToDictionary(
                 partition => (partition.Topic, partition.Partition.Value),
                 partition => new PartitionOffsets());
@@ -31,7 +31,7 @@ namespace KafkaFlow.Consumers
             {
                 if (offsets.ShouldUpdateOffset(offset.Offset.Value))
                 {
-                    this.consumer.StoreOffset(
+                    this.committer.StoreOffset(
                         new TopicPartitionOffset(
                             offset.TopicPartition,
                             new Offset(offsets.LastOffset + 1)));
@@ -47,6 +47,11 @@ namespace KafkaFlow.Consumers
             {
                 offsets.InitializeLastOffset(partitionOffset.Offset.Value - 1);
             }
+        }
+
+        public void Dispose()
+        {
+            this.committer.Dispose();
         }
     }
 }

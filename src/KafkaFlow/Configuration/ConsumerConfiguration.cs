@@ -15,7 +15,9 @@ namespace KafkaFlow.Configuration
             int workersCount,
             int bufferSize,
             Factory<IDistributionStrategy> distributionStrategyFactory,
-            MiddlewareConfiguration middlewareConfiguration)
+            MiddlewareConfiguration middlewareConfiguration,
+            bool autoStoreOffsets,
+            TimeSpan autoCommitInterval)
         {
             this.consumerConfig = consumerConfig ?? throw new ArgumentNullException(nameof(consumerConfig));
 
@@ -24,18 +26,21 @@ namespace KafkaFlow.Configuration
                 throw new ArgumentNullException(nameof(consumerConfig.GroupId));
             }
 
-            this.DistributionStrategyFactory = distributionStrategyFactory ?? throw new ArgumentNullException(nameof(distributionStrategyFactory));
+            this.DistributionStrategyFactory =
+                distributionStrategyFactory ?? throw new ArgumentNullException(nameof(distributionStrategyFactory));
             this.MiddlewareConfiguration = middlewareConfiguration ?? throw new ArgumentNullException(nameof(middlewareConfiguration));
+            this.AutoStoreOffsets = autoStoreOffsets;
+            this.AutoCommitInterval = autoCommitInterval;
             this.Topics = topics ?? throw new ArgumentNullException(nameof(topics));
             this.ConsumerName = consumerName ?? Guid.NewGuid().ToString();
-            
+
             this.WorkersCount = workersCount > 0 ?
                 workersCount :
                 throw new ArgumentOutOfRangeException(
                     nameof(workersCount),
                     workersCount,
                     "The value must be greater than 0");
-            
+
             this.BufferSize = bufferSize > 0 ?
                 bufferSize :
                 throw new ArgumentOutOfRangeException(
@@ -58,7 +63,9 @@ namespace KafkaFlow.Configuration
 
         public int BufferSize { get; }
 
-        public bool AutoStoreOffsets { get; set; } = true;
+        public bool AutoStoreOffsets { get; }
+
+        public TimeSpan AutoCommitInterval { get; }
 
         public ConsumerConfig GetKafkaConfig()
         {

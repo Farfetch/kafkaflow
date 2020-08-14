@@ -11,17 +11,18 @@ namespace KafkaFlow.UnitTests
     [TestClass]
     public class OffsetManagerTests
     {
-        private Mock<IConsumer<byte[], byte[]>> consumerMock;
+        private Mock<IOffsetComitter> committerMock;
         private TopicPartition topicPartition;
         private OffsetManager target;
 
         [TestInitialize]
         public void Setup()
         {
-            this.consumerMock = new Mock<IConsumer<byte[], byte[]>>();
+            this.committerMock = new Mock<IOffsetComitter>();
             this.topicPartition = new TopicPartition("topic-A", new Partition(1));
+
             this.target = new OffsetManager(
-                this.consumerMock.Object, 
+                this.committerMock.Object,
                 new List<TopicPartition> { this.topicPartition });
         }
         
@@ -45,7 +46,7 @@ namespace KafkaFlow.UnitTests
             this.target.StoreOffset(new TopicPartitionOffset(new TopicPartition("topic-B", new Partition(1)), new Offset(1)));
             
             // Assert
-            this.consumerMock.Verify(c => c.StoreOffset(It.IsAny<TopicPartitionOffset>()), Times.Never());
+            this.committerMock.Verify(c => c.StoreOffset(It.IsAny<TopicPartitionOffset>()), Times.Never());
         }
         
         [TestMethod]
@@ -60,7 +61,7 @@ namespace KafkaFlow.UnitTests
             this.target.StoreOffset(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
             
             // Assert
-            this.consumerMock.Verify(c => 
+            this.committerMock.Verify(c => 
                 c.StoreOffset(It.Is<TopicPartitionOffset>(p => 
                     p.Partition.Equals(this.topicPartition.Partition) &&
                     p.Offset.Value.Equals(4))), 
