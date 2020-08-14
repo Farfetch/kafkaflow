@@ -40,7 +40,13 @@ namespace KafkaFlow.Consumers
             IReadOnlyCollection<TopicPartition> partitions,
             CancellationToken stopCancellationToken = default)
         {
-            this.offsetManager = new OffsetManager(consumer, partitions);
+            this.offsetManager = new OffsetManager(
+                new OffsetCommitter(
+                    consumer,
+                    this.configuration.AutoCommitInterval,
+                    this.logHandler),
+                partitions);
+
             var workersCount = this.configuration.WorkersCount;
 
             await Task.WhenAll(
@@ -70,6 +76,9 @@ namespace KafkaFlow.Consumers
         public async Task StopAsync()
         {
             await Task.WhenAll(this.workers.Select(x => x.StopAsync())).ConfigureAwait(false);
+            
+            this.offsetManager?.Dispose();
+            this.offsetManager = null;
 
             this.workers.Clear();
         }
@@ -86,7 +95,7 @@ namespace KafkaFlow.Consumers
             {
                 return;
             }
-            
+
             await worker
                 .EnqueueAsync(message, stopCancellationToken)
                 .ConfigureAwait(false);

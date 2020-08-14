@@ -21,7 +21,8 @@ namespace KafkaFlow.Configuration
         private bool autoStoreOffsets = true;
 
         private Factory<IDistributionStrategy> distributionStrategyFactory = resolver => new BytesSumDistributionStrategy();
-        
+        private TimeSpan autoCommitInterval = TimeSpan.FromSeconds(5);
+
         public IDependencyConfigurator DependencyConfigurator { get; }
 
         public ConsumerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
@@ -80,7 +81,7 @@ namespace KafkaFlow.Configuration
 
         public IConsumerConfigurationBuilder WithAutoCommitIntervalMs(int autoCommitIntervalMs)
         {
-            this.consumerConfig.AutoCommitIntervalMs = autoCommitIntervalMs;
+            this.autoCommitInterval = TimeSpan.FromMilliseconds(autoCommitIntervalMs);
             return this;
         }
 
@@ -143,7 +144,7 @@ namespace KafkaFlow.Configuration
 
             this.consumerConfig.BootstrapServers = string.Join(",", clusterConfiguration.Brokers);
             this.consumerConfig.EnableAutoOffsetStore = false;
-            this.consumerConfig.EnableAutoCommit = true;
+            this.consumerConfig.EnableAutoCommit = false;
 
             return new ConsumerConfiguration(
                 this.consumerConfig,
@@ -152,11 +153,9 @@ namespace KafkaFlow.Configuration
                 this.workersCount,
                 this.bufferSize,
                 this.distributionStrategyFactory,
-                middlewareConfiguration
-            )
-            {
-                AutoStoreOffsets = this.autoStoreOffsets
-            };
+                middlewareConfiguration,
+                this.autoStoreOffsets,
+                this.autoCommitInterval);
         }
     }
 }
