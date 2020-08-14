@@ -84,7 +84,7 @@
                     case "pause":
                         foreach (var consumer in consumers.All)
                         {
-                            consumer.Consumer.Pause(consumer.Consumer.Assignment);
+                            consumer.Pause(consumer.Assignment);
                         }
 
                         Console.WriteLine("Consumer paused");
@@ -94,7 +94,7 @@
                     case "resume":
                         foreach (var consumer in consumers.All)
                         {
-                            consumer.Consumer.Resume(consumer.Consumer.Assignment);
+                            consumer.Resume(consumer.Assignment);
                         }
 
                         Console.WriteLine("Consumer resumed");

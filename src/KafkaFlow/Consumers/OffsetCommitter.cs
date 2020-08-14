@@ -6,7 +6,7 @@ namespace KafkaFlow.Consumers
     using System.Threading;
     using Confluent.Kafka;
 
-    internal class OffsetCommitter : IOffsetComitter
+    internal class OffsetCommitter : IOffsetCommitter
     {
         private readonly IConsumer<byte[], byte[]> consumer;
         private readonly ILogHandler logHandler;

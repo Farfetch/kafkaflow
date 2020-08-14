@@ -55,11 +55,12 @@ namespace KafkaFlow
                     consumerConfiguration,
                     this.consumerManager,
                     this.logHandler,
-                    consumerWorkerPool);
+                    consumerWorkerPool,
+                    stopCancellationToken);
 
                 this.consumers.Add(consumer);
 
-                await consumer.StartAsync(stopCancellationToken).ConfigureAwait(false);
+                await consumer.StartAsync().ConfigureAwait(false);
             }
         }
 

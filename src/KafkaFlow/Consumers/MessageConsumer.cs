@@ -2,52 +2,128 @@ namespace KafkaFlow.Consumers
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
     using Confluent.Kafka;
+    using KafkaFlow.Configuration;
 
     internal class MessageConsumer : IMessageConsumer
     {
+        private readonly IConsumer<byte[], byte[]> consumer;
+        private readonly KafkaConsumer kafkaConsumer;
+        private readonly IConsumerWorkerPool workerPool;
+        private readonly ConsumerConfiguration configuration;
+        private readonly ILogHandler logHandler;
+
         public MessageConsumer(
             IConsumer<byte[], byte[]> consumer,
-            string consumerName,
-            string groupId)
+            KafkaConsumer kafkaConsumer,
+            IConsumerWorkerPool workerPool,
+            ConsumerConfiguration configuration,
+            ILogHandler logHandler)
         {
-            this.Consumer = consumer;
-            this.ConsumerName = consumerName;
-            this.GroupId = groupId;
+            this.workerPool = workerPool;
+            this.configuration = configuration;
+            this.logHandler = logHandler;
+            this.consumer = consumer;
+            this.kafkaConsumer = kafkaConsumer;
         }
 
-        public IConsumer<byte[], byte[]> Consumer { get; }
+        public string ConsumerName => this.configuration.ConsumerName;
 
-        public string ConsumerName { get; }
+        public string GroupId => this.configuration.GroupId;
 
-        public string GroupId { get; }
+        public async Task OverrideOffsetsAndRestartAsync(IReadOnlyCollection<TopicPartitionOffset> offsets)
+        {
+            if (offsets is null)
+            {
+                throw new ArgumentNullException(nameof(offsets));
+            }
 
-        public IReadOnlyList<string> Subscription => throw new NotImplementedException();
+            try
+            {
+                this.consumer.Pause(this.consumer.Assignment);
+                await this.workerPool.StopAsync().ConfigureAwait(false);
 
-        public IReadOnlyList<TopicPartition> Assignment => throw new NotImplementedException();
+                this.consumer.Commit(offsets);
 
-        public string MemberId => throw new NotImplementedException();
+                await this.InternalRestart().ConfigureAwait(false);
 
-        public string ClientInstanceName => throw new NotImplementedException();
+                this.logHandler.Info("Kafka offsets overridden", GetOffsetsLogData(offsets));
+            }
+            catch (Exception e)
+            {
+                this.logHandler.Error(
+                    "Error overriding offsets",
+                    e,
+                    GetOffsetsLogData(offsets));
+                throw;
+            }
+        }
+
+        private static object GetOffsetsLogData(IEnumerable<TopicPartitionOffset> offsets) => offsets
+            .GroupBy(x => x.Topic)
+            .Select(
+                x => new
+                {
+                    x.First().Topic,
+                    Partitions = x.Select(
+                        y => new
+                        {
+                            Partition = y.Partition.Value,
+                            Offset = y.Offset.Value
+                        })
+                });
+
+        public async Task ChangeWorkerCountAndRestartAsync(int workerCount)
+        {
+            this.configuration.WorkerCount = workerCount;
+            await this.InternalRestart().ConfigureAwait(false);
+
+            this.logHandler.Info(
+                "KafkaFlow consumer workers changed",
+                new { workerCount });
+        }
+
+        public async Task RestartAsync()
+        {
+            await this.InternalRestart().ConfigureAwait(false);
+            this.logHandler.Info("KafkaFlow consumer manually restarted", null);
+        }
+
+        private async Task InternalRestart()
+        {
+            await this.kafkaConsumer.StopAsync().ConfigureAwait(false);
+            await Task.Delay(5000).ConfigureAwait(false);
+            await this.kafkaConsumer.StartAsync().ConfigureAwait(false);
+        }
+
+        public IReadOnlyList<string> Subscription => this.consumer.Subscription;
+
+        public IReadOnlyList<TopicPartition> Assignment => this.consumer.Assignment;
+
+        public string MemberId => this.consumer.MemberId;
+
+        public string ClientInstanceName => this.consumer.Name;
 
         public void Pause(IEnumerable<TopicPartition> topicPartitions) =>
-            throw new NotImplementedException();
+            this.consumer.Pause(topicPartitions);
 
         public void Resume(IEnumerable<TopicPartition> topicPartitions) =>
-            throw new NotImplementedException();
+            this.consumer.Resume(topicPartitions);
 
         public Offset GetPosition(TopicPartition topicPartition) =>
-            throw new NotImplementedException();
+            this.consumer.Position(topicPartition);
 
         public WatermarkOffsets GetWatermarkOffsets(TopicPartition topicPartition) =>
-            throw new NotImplementedException();
+            this.consumer.GetWatermarkOffsets(topicPartition);
 
         public WatermarkOffsets QueryWatermarkOffsets(TopicPartition topicPartition, TimeSpan timeout) =>
-            throw new NotImplementedException();
+            this.consumer.QueryWatermarkOffsets(topicPartition, timeout);
 
         public List<TopicPartitionOffset> OffsetsForTimes(
             IEnumerable<TopicPartitionTimestamp> topicPartitions,
             TimeSpan timeout) =>
-            throw new NotImplementedException();
+            this.consumer.OffsetsForTimes(topicPartitions, timeout);
     }
 }

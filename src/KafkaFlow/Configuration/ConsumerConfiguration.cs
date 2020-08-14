@@ -7,12 +7,13 @@ namespace KafkaFlow.Configuration
     internal class ConsumerConfiguration
     {
         private readonly ConsumerConfig consumerConfig;
+        private int workerCount;
 
         public ConsumerConfiguration(
             ConsumerConfig consumerConfig,
             IEnumerable<string> topics,
             string consumerName,
-            int workersCount,
+            int workerCount,
             int bufferSize,
             Factory<IDistributionStrategy> distributionStrategyFactory,
             MiddlewareConfiguration middlewareConfiguration,
@@ -33,13 +34,7 @@ namespace KafkaFlow.Configuration
             this.AutoCommitInterval = autoCommitInterval;
             this.Topics = topics ?? throw new ArgumentNullException(nameof(topics));
             this.ConsumerName = consumerName ?? Guid.NewGuid().ToString();
-
-            this.WorkersCount = workersCount > 0 ?
-                workersCount :
-                throw new ArgumentOutOfRangeException(
-                    nameof(workersCount),
-                    workersCount,
-                    "The value must be greater than 0");
+            this.WorkerCount = workerCount;
 
             this.BufferSize = bufferSize > 0 ?
                 bufferSize :
@@ -57,7 +52,17 @@ namespace KafkaFlow.Configuration
 
         public string ConsumerName { get; }
 
-        public int WorkersCount { get; }
+        public int WorkerCount
+        {
+            get => this.workerCount;
+            set =>
+                this.workerCount = value > 0 ?
+                    value :
+                    throw new ArgumentOutOfRangeException(
+                        nameof(this.WorkerCount),
+                        this.WorkerCount,
+                        $"The {nameof(this.WorkerCount)} value must be greater than 0");
+        }
 
         public string GroupId => this.consumerConfig.GroupId;
 

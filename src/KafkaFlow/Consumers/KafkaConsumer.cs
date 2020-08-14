@@ -14,22 +14,25 @@
         private readonly IConsumerManager consumerManager;
         private readonly ILogHandler logHandler;
         private readonly IConsumerWorkerPool consumerWorkerPool;
+        private readonly CancellationToken busStopCancellationToken;
 
         private readonly ConsumerBuilder<byte[], byte[]> consumerBuilder;
 
-        private CancellationTokenSource cancellationTokenSource;
+        private CancellationTokenSource stopCancellationTokenSource;
         private Task backgroundTask;
 
         public KafkaConsumer(
             ConsumerConfiguration configuration,
             IConsumerManager consumerManager,
             ILogHandler logHandler,
-            IConsumerWorkerPool consumerWorkerPool)
+            IConsumerWorkerPool consumerWorkerPool,
+            CancellationToken busStopCancellationToken)
         {
             this.configuration = configuration;
             this.consumerManager = consumerManager;
             this.logHandler = logHandler;
             this.consumerWorkerPool = consumerWorkerPool;
+            this.busStopCancellationToken = busStopCancellationToken;
 
             var kafkaConfig = configuration.GetKafkaConfig();
 
@@ -43,54 +46,45 @@
         {
             this.logHandler.Warning(
                 "Partitions revoked",
-                new
-                {
-                    this.configuration.GroupId,
-                    Topics = topicPartitions
-                        .GroupBy(x => x.Topic)
-                        .Select(
-                            x => new
-                            {
-                                x.First().Topic,
-                                PartitionsCount = x.Count(),
-                                Partitions = x.Select(y => y.Partition.Value)
-                            })
-                });
+                this.GetConsumerLogInfo(topicPartitions.Select(x => x.TopicPartition)));
 
             this.consumerWorkerPool.StopAsync().GetAwaiter().GetResult();
         }
 
-        private void OnPartitionAssigned(IConsumer<byte[], byte[]> consumer, IReadOnlyCollection<TopicPartition> topicPartitions)
+        private void OnPartitionAssigned(IConsumer<byte[], byte[]> consumer, IReadOnlyCollection<TopicPartition> partitions)
         {
             this.logHandler.Info(
                 "Partitions assigned",
-                new
-                {
-                    this.configuration.GroupId,
-                    Topics = topicPartitions
-                        .GroupBy(x => x.Topic)
-                        .Select(
-                            x => new
-                            {
-                                x.First().Topic,
-                                PartitionsCount = x.Count(),
-                                Partitions = x.Select(y => y.Partition.Value)
-                            })
-                });
+                this.GetConsumerLogInfo(partitions));
 
             this.consumerWorkerPool
                 .StartAsync(
                     consumer,
-                    topicPartitions,
-                    this.cancellationTokenSource.Token)
+                    partitions,
+                    this.stopCancellationTokenSource.Token)
                 .GetAwaiter()
                 .GetResult();
         }
 
-        public Task StartAsync(CancellationToken stopCancellationToken = default)
+        private object GetConsumerLogInfo(IEnumerable<TopicPartition> partitions) => new
         {
-            this.cancellationTokenSource =
-                CancellationTokenSource.CreateLinkedTokenSource(stopCancellationToken);
+            this.configuration.GroupId,
+            this.configuration.ConsumerName,
+            Topics = partitions
+                .GroupBy(x => x.Topic)
+                .Select(
+                    x => new
+                    {
+                        x.First().Topic,
+                        PartitionsCount = x.Count(),
+                        Partitions = x.Select(y => y.Partition.Value)
+                    })
+        };
+
+        public Task StartAsync()
+        {
+            this.stopCancellationTokenSource =
+                CancellationTokenSource.CreateLinkedTokenSource(this.busStopCancellationToken);
 
             this.CreateBackgroundTask();
 
@@ -101,9 +95,9 @@
         {
             await this.consumerWorkerPool.StopAsync().ConfigureAwait(false);
 
-            if (this.cancellationTokenSource.Token.CanBeCanceled)
+            if (this.stopCancellationTokenSource.Token.CanBeCanceled)
             {
-                this.cancellationTokenSource.Cancel();
+                this.stopCancellationTokenSource.Cancel();
             }
 
             await this.backgroundTask.ConfigureAwait(false);
@@ -117,8 +111,10 @@
             this.consumerManager.AddOrUpdate(
                 new MessageConsumer(
                     consumer,
-                    this.configuration.ConsumerName,
-                    this.configuration.GroupId));
+                    this,
+                    this.consumerWorkerPool,
+                    this.configuration,
+                    this.logHandler));
 
             consumer.Subscribe(this.configuration.Topics);
 
@@ -127,14 +123,14 @@
                 {
                     using (consumer)
                     {
-                        while (!this.cancellationTokenSource.IsCancellationRequested)
+                        while (!this.stopCancellationTokenSource.Token.IsCancellationRequested)
                         {
                             try
                             {
-                                var message = consumer.Consume(this.cancellationTokenSource.Token);
+                                var message = consumer.Consume(this.stopCancellationTokenSource.Token);
 
                                 await this.consumerWorkerPool
-                                    .EnqueueAsync(message, this.cancellationTokenSource.Token)
+                                    .EnqueueAsync(message, this.stopCancellationTokenSource.Token)
                                     .ConfigureAwait(false);
                             }
                             catch (OperationCanceledException)

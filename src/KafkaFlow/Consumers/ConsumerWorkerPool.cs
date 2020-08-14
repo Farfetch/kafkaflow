@@ -15,10 +15,9 @@ namespace KafkaFlow.Consumers
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly Factory<IDistributionStrategy> distributionStrategyFactory;
 
-        private readonly List<IConsumerWorker> workers = new List<IConsumerWorker>();
+        private List<IConsumerWorker> workers = new List<IConsumerWorker>();
 
         private IDistributionStrategy distributionStrategy;
-
         private OffsetManager offsetManager;
 
         public ConsumerWorkerPool(
@@ -37,7 +36,7 @@ namespace KafkaFlow.Consumers
 
         public async Task StartAsync(
             IConsumer<byte[], byte[]> consumer,
-            IReadOnlyCollection<TopicPartition> partitions,
+            IEnumerable<TopicPartition> partitions,
             CancellationToken stopCancellationToken = default)
         {
             this.offsetManager = new OffsetManager(
@@ -47,11 +46,9 @@ namespace KafkaFlow.Consumers
                     this.logHandler),
                 partitions);
 
-            var workersCount = this.configuration.WorkersCount;
-
             await Task.WhenAll(
                     Enumerable
-                        .Range(0, workersCount)
+                        .Range(0, this.configuration.WorkerCount)
                         .Select(
                             workerId =>
                             {
@@ -75,12 +72,13 @@ namespace KafkaFlow.Consumers
 
         public async Task StopAsync()
         {
-            await Task.WhenAll(this.workers.Select(x => x.StopAsync())).ConfigureAwait(false);
+            var currentWorkers = this.workers;
+            this.workers = new List<IConsumerWorker>();
             
+            await Task.WhenAll(currentWorkers.Select(x => x.StopAsync())).ConfigureAwait(false);
+
             this.offsetManager?.Dispose();
             this.offsetManager = null;
-
-            this.workers.Clear();
         }
 
         public async Task EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken = default)
