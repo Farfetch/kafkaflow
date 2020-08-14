@@ -7,11 +7,11 @@ namespace KafkaFlow.Consumers
 
     internal class OffsetManager : IOffsetManager, IDisposable
     {
-        private readonly IOffsetComitter committer;
+        private readonly IOffsetCommitter committer;
         private readonly Dictionary<(string, int), PartitionOffsets> partitionsOffsets;
 
         public OffsetManager(
-            IOffsetComitter committer,
+            IOffsetCommitter committer,
             IEnumerable<TopicPartition> partitions)
         {
             this.committer = committer;

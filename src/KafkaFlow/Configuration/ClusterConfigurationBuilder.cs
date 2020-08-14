@@ -8,8 +8,6 @@ namespace KafkaFlow.Configuration
     internal class ClusterConfigurationBuilder
         : IClusterConfigurationBuilder
     {
-        private readonly IDependencyConfigurator dependencyConfigurator;
-
         private readonly List<ProducerConfigurationBuilder> producers = new List<ProducerConfigurationBuilder>();
         private readonly List<ConsumerConfigurationBuilder> consumers = new List<ConsumerConfigurationBuilder>();
 
@@ -17,8 +15,10 @@ namespace KafkaFlow.Configuration
 
         public ClusterConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
-            this.dependencyConfigurator = dependencyConfigurator;
+            this.DependencyConfigurator = dependencyConfigurator;
         }
+
+        public IDependencyConfigurator DependencyConfigurator { get; }
 
         public ClusterConfiguration Build(KafkaConfiguration kafkaConfiguration)
         {
@@ -29,7 +29,7 @@ namespace KafkaFlow.Configuration
             configuration.AddProducers(this.producers.Select(x => x.Build(configuration)));
             configuration.AddConsumers(this.consumers.Select(x => x.Build(configuration)));
 
-            this.dependencyConfigurator.AddSingleton<IProducerAccessor>(
+            this.DependencyConfigurator.AddSingleton<IProducerAccessor>(
                 resolver => new ProducerAccessor(
                     configuration.Producers.Select(producer => new MessageProducer(resolver, producer))));
 
@@ -44,7 +44,7 @@ namespace KafkaFlow.Configuration
 
         public IClusterConfigurationBuilder AddProducer<TProducer>(Action<IProducerConfigurationBuilder> producer)
         {
-            this.dependencyConfigurator.AddSingleton<IMessageProducer<TProducer>>(
+            this.DependencyConfigurator.AddSingleton<IMessageProducer<TProducer>>(
                 resolver => new MessageProducerWrapper<TProducer>(
                     resolver.Resolve<IProducerAccessor>().GetProducer<TProducer>()));
 
@@ -53,7 +53,7 @@ namespace KafkaFlow.Configuration
 
         public IClusterConfigurationBuilder AddProducer(string name, Action<IProducerConfigurationBuilder> producer)
         {
-            var builder = new ProducerConfigurationBuilder(this.dependencyConfigurator, name);
+            var builder = new ProducerConfigurationBuilder(this.DependencyConfigurator, name);
 
             producer(builder);
 
@@ -64,7 +64,7 @@ namespace KafkaFlow.Configuration
 
         public IClusterConfigurationBuilder AddConsumer(Action<IConsumerConfigurationBuilder> consumer)
         {
-            var builder = new ConsumerConfigurationBuilder(this.dependencyConfigurator);
+            var builder = new ConsumerConfigurationBuilder(this.DependencyConfigurator);
 
             consumer(builder);
 

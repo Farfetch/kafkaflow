@@ -11,14 +11,14 @@ namespace KafkaFlow.UnitTests
     [TestClass]
     public class OffsetManagerTests
     {
-        private Mock<IOffsetComitter> committerMock;
+        private Mock<IOffsetCommitter> committerMock;
         private TopicPartition topicPartition;
         private OffsetManager target;
 
         [TestInitialize]
         public void Setup()
         {
-            this.committerMock = new Mock<IOffsetComitter>();
+            this.committerMock = new Mock<IOffsetCommitter>();
             this.topicPartition = new TopicPartition("topic-A", new Partition(1));
 
             this.target = new OffsetManager(
