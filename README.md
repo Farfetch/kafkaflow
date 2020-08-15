@@ -1,5 +1,11 @@
 ![Build Master](https://github.com/Farfetch/kafka-flow/workflows/Build%20Master/badge.svg?branch=master) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/49878b337fde46839c5f08051c2ba098)](https://app.codacy.com/gh/Farfetch/kafka-flow?utm_source=github.com&utm_medium=referral&utm_content=Farfetch/kafka-flow&utm_campaign=Badge_Grade_Dashboard) [<img src="https://img.shields.io/badge/slack-@kafkaflow-green.svg?logo=slack">](https://join.slack.com/t/kafkaflow/shared_invite/zt-fqw06n2u-1lA5Mz_VnSPGhRgfT97SPQ)
 
+## KafkaFlow
+
+KafkaFlow is a .NET framework to consume and produce Kafka messages with multi-threading support. It's very simple to use and very extendable. You just need to install, configure, start/stop the bus with your app and create a middleware/handler to process the messages.
+
+KafkaFlow uses [Confluent Kafka Client](https://github.com/confluentinc/confluent-kafka-dotnet).
+
 ## Packages
 
 | Package                                                                                                            | NuGet Stable                                                                                                                                                                                      | Downloads                                                                                                                                                                                          |
@@ -17,28 +23,19 @@
 | [KafkaFlow.Unity](https://www.nuget.org/packages/KafkaFlow.Unity/)                                                 | [![KafkaFlow.Unity](https://img.shields.io/nuget/v/KafkaFlow.Unity.svg)](https://www.nuget.org/packages/KafkaFlow.Unity/)                                                                         | [![KafkaFlow.Unity](https://img.shields.io/nuget/dt/KafkaFlow.Unity.svg)](https://www.nuget.org/packages/KafkaFlow.Unity/)                                                                         |
 | [KafkaFlow.LogHandler.Console](https://www.nuget.org/packages/KafkaFlow.LogHandler.Console/)                       | [![KafkaFlow.LogHandler.Console](https://img.shields.io/nuget/v/KafkaFlow.LogHandler.Console.svg)](https://www.nuget.org/packages/KafkaFlow.LogHandler.Console/)                                  | [![KafkaFlow.LogHandler.Console](https://img.shields.io/nuget/dt/KafkaFlow.LogHandler.Console.svg)](https://www.nuget.org/packages/KafkaFlow.LogHandler.Console/)                                  |
 
-## Why you should use KafkaFlow
-
-The main features of KafkaFlow are the capacity to process messages in parallel and [middlewares](https://github.com/Farfetch/kafka-flow/wiki/middlewares) support. You can define how many workers a consumer will have, this means how many messages will be processed at the same time for that consumer.
-
-KafkaFlow uses [Confluent Kafka Client](https://github.com/confluentinc/confluent-kafka-dotnet).
-
 ## Features
 
--   Fluent configuration
--   Multiple cluster support
--   Multiple workers consuming the same topic
--   Message order guarantee for the same partition key
--   Multiple consumer groups in the same topic
+-   Multi-threared consumer with message order garantee
+-   Middleware support implementing `IMessageMiddleware` interface
+-   Native support for topics with many message types
 -   Multiple topics in the same consumer
--   Different work distribution strategies
--   Middleware support for consumers and producers implementing `IMessageMiddleware` interface
--   Serialization middleware (ProtoBuf and Json are shipped with the framework but they have different nuget packages, you can support custom serialization using `IMessageSerializer` interface)
--   Compression middleware (Gzip is shipped with the framework but it has a different nuget package, you can support custom compressions using `IMessageCompressor` interface)
--   Graceful shutdown (waits for the message processor ends to shutdown)
--   Store message offset only when message processing ends, avoiding message loss (or you can store it manually)
+-   [Serializer middleware](https://github.com/Farfetch/kafka-flow/wiki/serializer-middleware) (ProtoBuf, Json, and NewtonsoftJson or implementing `IMessageSerializer` interface)
+-   [Compressor middleware](https://github.com/Farfetch/kafka-flow/wiki/Compressor-Middleware) (Gzip or implementing `IMessageCompressor` interface)
+-   Graceful shutdown (wait to finish processing to shutdown)
+-   Store offset when processing ends, avoiding message loss
 -   Supports .NET Core and .NET Framework
--   Can be used with any dependency injection framework
+-   Can be used with any dependency injection framework (see [here](https://github.com/Farfetch/kafka-flow/wiki/Dependency-Injection))
+-   Fluent configuration
 
 ## Usage
 
@@ -99,13 +96,11 @@ public class Startup
 }
 ```
 
--   See the [samples](/samples) folder for more usages
--   We natively supports [Microsoft DI](https://www.nuget.org/packages/KafkaFlow.Microsoft.DependencyInjection/) and [Unity 5](https://www.nuget.org/packages/KafkaFlow.Unity/).
--   You can use other dependency injection frameworks and .NET Framework (see [here](https://github.com/Farfetch/kafka-flow/wiki/Dependency-Injection))
+See the [samples](/samples) folder for more usages
 
 ## Documentation
 
-Look our [Wiki Page](https://github.com/Farfetch/kafka-flow/wiki).
+[Wiki Page](https://github.com/Farfetch/kafka-flow/wiki)
 
 ## Contributing
 
