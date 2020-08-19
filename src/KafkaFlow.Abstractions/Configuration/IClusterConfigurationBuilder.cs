@@ -8,6 +8,11 @@ namespace KafkaFlow.Configuration
     public interface IClusterConfigurationBuilder
     {
         /// <summary>
+        /// Gets the dependency injection configurator
+        /// </summary>
+        IDependencyConfigurator DependencyConfigurator { get; }
+
+        /// <summary>
         /// Set the Kafka Brokers to be used
         /// </summary>
         /// <param name="brokers"></param>
