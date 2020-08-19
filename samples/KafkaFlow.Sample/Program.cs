@@ -1,7 +1,10 @@
 ﻿namespace KafkaFlow.Sample
 {
     using System;
+    using System.Threading.Tasks;
     using global::Microsoft.Extensions.DependencyInjection;
+    using KafkaFlow.Admin;
+    using KafkaFlow.Admin.Messages;
     using KafkaFlow.Compressor;
     using KafkaFlow.Compressor.Gzip;
     using KafkaFlow.Consumers;
@@ -12,11 +15,13 @@
 
     internal static class Program
     {
-        private static void Main()
+        private static async Task Main()
         {
             var services = new ServiceCollection();
 
             const string producerName = "PrintConsole";
+
+            const string consumerName = "test";
 
             services.AddKafka(
                 kafka => kafka
@@ -24,6 +29,7 @@
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(new[] { "localhost:9092" })
+                            .EnableAdminMessages("kafka-flow.admin", Guid.NewGuid().ToString())
                             .AddProducer(
                                 producerName,
                                 producer => producer
@@ -39,8 +45,9 @@
                                 consumer => consumer
                                     .Topic("test-topic")
                                     .WithGroupId("print-console-handler")
+                                    .WithName(consumerName)
                                     .WithBufferSize(100)
-                                    .WithWorkersCount(10)
+                                    .WithWorkersCount(1)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
@@ -59,9 +66,12 @@
 
             var bus = provider.CreateKafkaBus();
 
-            bus.StartAsync().GetAwaiter().GetResult();
+            await bus.StartAsync();
+
             var consumers = provider.GetRequiredService<IConsumerAccessor>();
             var producers = provider.GetRequiredService<IProducerAccessor>();
+
+            var adminProducer = provider.GetService<IAdminProducer>();
 
             while (true)
             {
@@ -101,7 +111,45 @@
 
                         break;
 
+                    case "reset":
+                        await adminProducer.ProduceAsync(new ResetConsumerOffset { ConsumerName = consumerName });
+
+                        break;
+
+                    case "rewind":
+                        Console.Write("Input a time: ");
+                        var timeInput = Console.ReadLine();
+
+                        if (DateTime.TryParse(timeInput, out var time))
+                        {
+                            adminProducer.ProduceAsync(
+                                new RewindConsumerOffsetToDateTime
+                                {
+                                    ConsumerName = consumerName,
+                                    DateTime = time
+                                });
+                        }
+
+                        break;
+
+                    case "workers":
+                        Console.Write("Input a new worker count: ");
+                        var workersInput = Console.ReadLine();
+
+                        if (int.TryParse(workersInput, out var workers))
+                        {
+                            await adminProducer.ProduceAsync(
+                                new ChangeConsumerWorkersCount
+                                {
+                                    ConsumerName = consumerName,
+                                    WorkersCount = workers
+                                });
+                        }
+
+                        break;
+
                     case "exit":
+                        await bus.StopAsync();
                         return;
                 }
             }
