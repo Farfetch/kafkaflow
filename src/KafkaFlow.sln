@@ -57,11 +57,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Sample.WebApi", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro", "KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro\KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro.csproj", "{2E63A019-F8AD-4EC3-A80A-F560DEC7C5B4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Sample.Avro", "..\samples\KafkaFlow.Sample.Avro\KafkaFlow.Sample.Avro.csproj", "{5884FD90-F649-4E43-8638-FCC4C0B0C5CA}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Middlewares", "Middlewares", "{ED24B548-6F37-4283-A35B-F6015BFB7A34}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.BatchConsume", "KafkaFlow.BatchConsume\KafkaFlow.BatchConsume.csproj", "{C891D0DB-BE19-4D20-9E2F-61D413210F8D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Sample.BatchOperations", "..\samples\KafkaFlow.Sample.BatchOperations\KafkaFlow.Sample.BatchOperations.csproj", "{DE8A8871-B19E-489D-8292-386A06A4CDFA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Sample.BatchConsume", "..\samples\KafkaFlow.Sample.BatchConsume\KafkaFlow.Sample.BatchConsume.csproj", "{DE8A8871-B19E-489D-8292-386A06A4CDFA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Extensions.Hosting", "KafkaFlow.Extensions.Hosting\KafkaFlow.Extensions.Hosting.csproj", "{7913342E-80FD-4094-B892-18DAA2E6948F}"
 EndProject
@@ -76,6 +78,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample.Dashboard", "..\samples\KafkaFlow.Sample.Dashboard\KafkaFlow.Sample.Dashboard.csproj", "{F32DC7DA-36EA-4199-91F5-81960FD9C650}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample.SchemaRegistry", "..\samples\KafkaFlow.Sample.SchemaRegistry\KafkaFlow.Sample.SchemaRegistry.csproj", "{2BD49C06-7A88-4B98-91B0-659282D2A45E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{52DDF240-B6EA-4DE6-82DC-BA982A5A9F82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Client.Protocol", "KafkaFlow.Client.Protocol\KafkaFlow.Client.Protocol.csproj", "{3D61CEFB-3419-4BE4-BE39-D7EF576D7292}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Client.Sample", "..\samples\KafkaFlow.Client.Sample\KafkaFlow.Client.Sample.csproj", "{EE993AB2-3BEF-4F4D-AB0D-97EA35FC64C1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -159,6 +167,10 @@ Global
 		{2E63A019-F8AD-4EC3-A80A-F560DEC7C5B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E63A019-F8AD-4EC3-A80A-F560DEC7C5B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E63A019-F8AD-4EC3-A80A-F560DEC7C5B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5884FD90-F649-4E43-8638-FCC4C0B0C5CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5884FD90-F649-4E43-8638-FCC4C0B0C5CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5884FD90-F649-4E43-8638-FCC4C0B0C5CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5884FD90-F649-4E43-8638-FCC4C0B0C5CA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C891D0DB-BE19-4D20-9E2F-61D413210F8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C891D0DB-BE19-4D20-9E2F-61D413210F8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C891D0DB-BE19-4D20-9E2F-61D413210F8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -195,6 +207,14 @@ Global
 		{2BD49C06-7A88-4B98-91B0-659282D2A45E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2BD49C06-7A88-4B98-91B0-659282D2A45E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2BD49C06-7A88-4B98-91B0-659282D2A45E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D61CEFB-3419-4BE4-BE39-D7EF576D7292}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D61CEFB-3419-4BE4-BE39-D7EF576D7292}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D61CEFB-3419-4BE4-BE39-D7EF576D7292}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D61CEFB-3419-4BE4-BE39-D7EF576D7292}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE993AB2-3BEF-4F4D-AB0D-97EA35FC64C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE993AB2-3BEF-4F4D-AB0D-97EA35FC64C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE993AB2-3BEF-4F4D-AB0D-97EA35FC64C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE993AB2-3BEF-4F4D-AB0D-97EA35FC64C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -221,6 +241,7 @@ Global
 		{827620D3-2258-410E-A79E-E782ED42284C} = {58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}
 		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 		{2E63A019-F8AD-4EC3-A80A-F560DEC7C5B4} = {ADAAA63C-E17C-4F1B-A062-3CCA071D75C2}
+		{5884FD90-F649-4E43-8638-FCC4C0B0C5CA} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 		{C891D0DB-BE19-4D20-9E2F-61D413210F8D} = {ED24B548-6F37-4283-A35B-F6015BFB7A34}
 		{DE8A8871-B19E-489D-8292-386A06A4CDFA} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 		{7913342E-80FD-4094-B892-18DAA2E6948F} = {068CB250-2804-4C7E-9490-17F432B9CE21}
@@ -230,6 +251,8 @@ Global
 		{4072F646-9393-4BF3-A479-0550AC1BB6C4} = {58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}
 		{F32DC7DA-36EA-4199-91F5-81960FD9C650} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 		{2BD49C06-7A88-4B98-91B0-659282D2A45E} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
+		{3D61CEFB-3419-4BE4-BE39-D7EF576D7292} = {52DDF240-B6EA-4DE6-82DC-BA982A5A9F82}
+		{EE993AB2-3BEF-4F4D-AB0D-97EA35FC64C1} = {52DDF240-B6EA-4DE6-82DC-BA982A5A9F82}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AE955B5-16B0-41CF-9F12-66D15B3DD1AB}
