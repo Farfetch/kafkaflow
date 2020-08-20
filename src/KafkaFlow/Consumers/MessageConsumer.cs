@@ -73,10 +73,22 @@ namespace KafkaFlow.Consumers
             this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was paused", topicPartitions);
         }
 
+        public void Pause()
+        {
+            this.consumerManager.Consumer.FlowManager.Pause(this.Assignment);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was paused", null);
+        }
+
         public void Resume(IReadOnlyCollection<TopicPartition> topicPartitions)
         {
             this.consumerManager.Consumer.FlowManager.Resume(topicPartitions);
             this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was resumed", topicPartitions);
+        }
+
+        public void Resume()
+        {
+            this.consumerManager.Consumer.FlowManager.Resume(this.Assignment);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was resumed", null);
         }
 
         public Offset GetPosition(TopicPartition topicPartition) =>

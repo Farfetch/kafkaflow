@@ -2,14 +2,14 @@ namespace KafkaFlow.Configuration
 {
     using System;
 
-    internal class MiddlewareInstanceContainer<T> : IMiddlewareInstanceContainer
+    internal class MiddlewareInstanceContainer<T, TConfiguration> : IMiddlewareInstanceContainer<TConfiguration>
     {
         private readonly object sync = new();
-        private readonly Factory<IMessageMiddleware> factory;
+        private readonly Func<IDependencyResolver, TConfiguration, IMessageMiddleware> factory;
 
         private IMessageMiddleware instance;
 
-        public MiddlewareInstanceContainer(Guid id, Factory<IMessageMiddleware> factory)
+        public MiddlewareInstanceContainer(Guid id, Func<IDependencyResolver, TConfiguration, IMessageMiddleware> factory)
         {
             this.Id = id;
             this.factory = factory;
@@ -17,7 +17,7 @@ namespace KafkaFlow.Configuration
 
         public Guid Id { get; }
 
-        public IMessageMiddleware GetInstance(IDependencyResolver resolver)
+        public IMessageMiddleware GetInstance(IDependencyResolver resolver, TConfiguration configuration)
         {
             if (this.instance is not null)
             {
@@ -31,7 +31,7 @@ namespace KafkaFlow.Configuration
                     return this.instance;
                 }
 
-                this.instance = this.factory(resolver);
+                this.instance = this.factory(resolver, configuration);
             }
 
             return this.instance;

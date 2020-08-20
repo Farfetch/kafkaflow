@@ -11,6 +11,11 @@ namespace KafkaFlow
     public interface IKafkaBus
     {
         /// <summary>
+        /// Gets all configured clusters
+        /// </summary>
+        IClusterAccessor Clusters { get; }
+
+        /// <summary>
         /// Gets all configured consumers
         /// </summary>
         IConsumerAccessor Consumers { get; }
@@ -19,6 +24,11 @@ namespace KafkaFlow
         /// Gets all configured producers
         /// </summary>
         IProducerAccessor Producers { get; }
+
+        /// <summary>
+        /// Gets a <see cref="CancellationToken"/> that is triggered when the bus is requested to stop
+        /// </summary>
+        CancellationToken BusStopping { get; }
 
         /// <summary>
         /// Starts all consumers

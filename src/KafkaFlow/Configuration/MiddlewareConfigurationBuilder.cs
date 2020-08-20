@@ -3,7 +3,7 @@ namespace KafkaFlow.Configuration
     using System;
     using System.Collections.Generic;
 
-    internal class MiddlewareConfigurationBuilder<TBuilder>
+    internal class MiddlewareConfigurationBuilder<TBuilder, TConfiguration>
         : IMiddlewareConfigurationBuilder<TBuilder>
         where TBuilder : class, IMiddlewareConfigurationBuilder<TBuilder>
     {
@@ -21,11 +21,27 @@ namespace KafkaFlow.Configuration
             MiddlewareLifetime lifetime = MiddlewareLifetime.ConsumerOrProducer)
             where T : class, IMessageMiddleware
         {
-            return this.AddAt(this.middlewaresConfigurations.Count, factory, lifetime);
+            return this.AddAt(this.middlewaresConfigurations.Count, (resolver, _) => factory(resolver), lifetime);
         }
 
         public TBuilder AddAtBeginning<T>(
             Factory<T> factory,
+            MiddlewareLifetime lifetime = MiddlewareLifetime.ConsumerOrProducer)
+            where T : class, IMessageMiddleware
+        {
+            return this.AddAt(0, (resolver, _) => factory(resolver), lifetime);
+        }
+
+        public TBuilder Add<T>(
+            Func<IDependencyResolver, TConfiguration, T> factory,
+            MiddlewareLifetime lifetime = MiddlewareLifetime.ConsumerOrProducer)
+            where T : class, IMessageMiddleware
+        {
+            return this.AddAt(this.middlewaresConfigurations.Count, factory, lifetime);
+        }
+
+        public TBuilder AddAtBeginning<T>(
+            Func<IDependencyResolver, TConfiguration, T> factory,
             MiddlewareLifetime lifetime = MiddlewareLifetime.ConsumerOrProducer)
             where T : class, IMessageMiddleware
         {
@@ -61,15 +77,15 @@ namespace KafkaFlow.Configuration
 
         private TBuilder AddAt<T>(
             int position,
-            Factory<T> factory,
+            Func<IDependencyResolver, TConfiguration, T> factory,
             MiddlewareLifetime lifetime = MiddlewareLifetime.ConsumerOrProducer)
             where T : class, IMessageMiddleware
         {
             var containerId = Guid.NewGuid();
 
             this.DependencyConfigurator.Add(
-                typeof(MiddlewareInstanceContainer<T>),
-                _ => new MiddlewareInstanceContainer<T>(containerId, factory),
+                typeof(MiddlewareInstanceContainer<T, TConfiguration>),
+                _ => new MiddlewareInstanceContainer<T, TConfiguration>(containerId, factory),
                 ParseLifetime(lifetime));
 
             this.middlewaresConfigurations.Insert(

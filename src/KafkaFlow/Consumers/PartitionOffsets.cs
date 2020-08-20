@@ -3,7 +3,6 @@ namespace KafkaFlow.Consumers
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.CompilerServices;
 
     internal class PartitionOffsets
     {

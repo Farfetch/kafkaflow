@@ -1,7 +1,5 @@
 namespace KafkaFlow.Admin.WebApi.Adapters
 {
-    using System;
-    using System.Linq;
     using KafkaFlow.Admin.WebApi.Contracts;
     using KafkaFlow.Consumers;
 

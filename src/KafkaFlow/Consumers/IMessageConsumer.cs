@@ -137,6 +137,28 @@ namespace KafkaFlow.Consumers
         void Pause(IReadOnlyCollection<TopicPartition> partitions);
 
         /// <summary>
+        ///     Pause consumption for the all assigned of partitions.
+        /// </summary>
+        /// <exception cref="T:Confluent.Kafka.KafkaException">
+        ///     Thrown if the request failed.
+        /// </exception>
+        /// <exception cref="T:Confluent.Kafka.TopicPartitionException">
+        ///     Per partition success or error.
+        /// </exception>
+        void Pause();
+
+        /// <summary>
+        ///     Resume consumption for all paused partitions.
+        /// </summary>
+       /// <exception cref="T:Confluent.Kafka.KafkaException">
+        ///     Thrown if the request failed.
+        /// </exception>
+        /// <exception cref="T:Confluent.Kafka.TopicPartitionException">
+        ///     Per partition success or error.
+        /// </exception>
+        void Resume();
+
+        /// <summary>
         ///     Resume consumption for the provided list of partitions.
         /// </summary>
         /// <param name="partitions">

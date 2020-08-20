@@ -6,16 +6,20 @@ namespace KafkaFlow
     using System.Threading.Tasks;
     using KafkaFlow.Configuration;
 
-    internal class MiddlewareExecutor : IMiddlewareExecutor
+    internal class MiddlewareExecutor<TConfiguration> : IMiddlewareExecutor
     {
         private readonly IReadOnlyList<MiddlewareConfiguration> configurations;
+        private readonly TConfiguration parentConfiguration;
 
-        private readonly Dictionary<int, IMessageMiddleware> consumerOrProducerMiddlewares = new();
+        private readonly Dictionary<int, IMessageMiddleware> middlewares = new();
         private readonly Dictionary<(int, int), IMessageMiddleware> workersMiddlewares = new();
 
-        public MiddlewareExecutor(IReadOnlyList<MiddlewareConfiguration> configurations)
+        public MiddlewareExecutor(
+            IReadOnlyList<MiddlewareConfiguration> configurations,
+            TConfiguration parentConfiguration)
         {
             this.configurations = configurations;
+            this.parentConfiguration = parentConfiguration;
         }
 
         public Task Execute(
@@ -30,7 +34,7 @@ namespace KafkaFlow
                 nextOperation);
         }
 
-        private static IMessageMiddleware CreateInstance(
+        private IMessageMiddleware CreateInstance(
             IDependencyResolver dependencyResolver,
             MiddlewareConfiguration configuration)
         {
@@ -40,8 +44,8 @@ namespace KafkaFlow
             }
 
             var instanceContainer = dependencyResolver
-                .ResolveAll(typeof(MiddlewareInstanceContainer<>).MakeGenericType(configuration.Type))
-                .Cast<IMiddlewareInstanceContainer>()
+                .ResolveAll(typeof(MiddlewareInstanceContainer<,>).MakeGenericType(configuration.Type, typeof(TConfiguration)))
+                .Cast<IMiddlewareInstanceContainer<TConfiguration>>()
                 .FirstOrDefault(x => x.Id == configuration.InstanceContainerId);
 
             if (instanceContainer is null)
@@ -52,7 +56,7 @@ namespace KafkaFlow
                     "There is no instance container registered with the given ID. It's a bug! Please, open an issue!");
             }
 
-            return instanceContainer.GetInstance(dependencyResolver);
+            return instanceContainer.GetInstance(dependencyResolver, this.parentConfiguration);
         }
 
         private Task ExecuteDefinition(
@@ -89,7 +93,7 @@ namespace KafkaFlow
             {
                 MiddlewareLifetime.Worker => this.GetWorkerInstance(dependencyResolver, index, context, configuration),
                 MiddlewareLifetime.ConsumerOrProducer => this.GetConsumerOrProducerInstance(dependencyResolver, index, configuration),
-                _ => CreateInstance(dependencyResolver, configuration)
+                _ => this.CreateInstance(dependencyResolver, configuration)
             };
         }
 
@@ -98,9 +102,9 @@ namespace KafkaFlow
             int index,
             MiddlewareConfiguration configuration)
         {
-            return this.consumerOrProducerMiddlewares.SafeGetOrAdd(
+            return this.middlewares.SafeGetOrAdd(
                 index,
-                _ => CreateInstance(dependencyResolver, configuration));
+                _ => this.CreateInstance(dependencyResolver, configuration));
         }
 
         private IMessageMiddleware GetWorkerInstance(
@@ -111,7 +115,7 @@ namespace KafkaFlow
         {
             return this.workersMiddlewares.SafeGetOrAdd(
                 (index, context.ConsumerContext?.WorkerId ?? 0),
-                _ => CreateInstance(dependencyResolver, configuration));
+                _ => this.CreateInstance(dependencyResolver, configuration));
         }
     }
 }

@@ -53,7 +53,7 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Sets the interval the statistics are emitted
         /// </summary>
-        /// <param name="statisticsIntervalMs">The interval in miliseconds</param>
+        /// <param name="statisticsIntervalMs">The interval in milliseconds</param>
         /// <returns></returns>
         IProducerConfigurationBuilder WithStatisticsIntervalMs(int statisticsIntervalMs);
     }
