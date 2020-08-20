@@ -51,6 +51,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Admin", "Admin", "{58483813
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Admin", "KafkaFlow.Admin\KafkaFlow.Admin.csproj", "{46B6F104-D46E-4DC2-ADC2-18E76F5BBCD9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Admin.WebApi", "KafkaFlow.Admin.WebApi\KafkaFlow.Admin.WebApi.csproj", "{827620D3-2258-410E-A79E-E782ED42284C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Admin.WebApi.Sample", "..\samples\KafkaFlow.Admin.WebApi.Sample\KafkaFlow.Admin.WebApi.Sample.csproj", "{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -121,6 +125,14 @@ Global
 		{46B6F104-D46E-4DC2-ADC2-18E76F5BBCD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46B6F104-D46E-4DC2-ADC2-18E76F5BBCD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46B6F104-D46E-4DC2-ADC2-18E76F5BBCD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{827620D3-2258-410E-A79E-E782ED42284C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{827620D3-2258-410E-A79E-E782ED42284C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{827620D3-2258-410E-A79E-E782ED42284C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{827620D3-2258-410E-A79E-E782ED42284C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -142,6 +154,8 @@ Global
 		{E59C13AF-41E7-4DFA-B118-A65EA87F0605} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 		{6E9F7CDC-E935-4A51-9358-2E6DBB901A34} = {EF626895-FDAE-4B28-9110-BA85671CBBF2}
 		{46B6F104-D46E-4DC2-ADC2-18E76F5BBCD9} = {58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}
+		{827620D3-2258-410E-A79E-E782ED42284C} = {58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}
+		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7} = {58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AE955B5-16B0-41CF-9F12-66D15B3DD1AB}

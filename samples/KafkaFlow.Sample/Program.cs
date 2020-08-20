@@ -139,10 +139,10 @@
                         if (int.TryParse(workersInput, out var workers))
                         {
                             await adminProducer.ProduceAsync(
-                                new ChangeConsumerWorkersCount
+                                new ChangeConsumerWorkerCount
                                 {
                                     ConsumerName = consumerName,
-                                    WorkersCount = workers
+                                    WorkerCount = workers
                                 });
                         }
 
