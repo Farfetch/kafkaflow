@@ -3,6 +3,7 @@ namespace KafkaFlow.Client
     using System;
     using System.Linq;
     using System.Threading.Tasks;
+    using KafkaFlow.Client.Exceptions;
     using KafkaFlow.Client.Protocol;
     using KafkaFlow.Client.Protocol.Messages;
     using KafkaFlow.Client.Protocol.Security;
@@ -37,28 +38,28 @@ namespace KafkaFlow.Client
 
         public Task<IRequestFactory> GetRequestFactoryAsync() => this.lazyRequestFactory.Value;
 
+        public async ValueTask DisposeAsync()
+        {
+            await this.Connection.DisposeAsync();
+        }
+
         private async Task<IRequestFactory> CreateRequestFactoryAsync()
         {
             var factory = new RequestFactory();
 
-            var apiVersionResponse = await this.Connection.SendAsync(factory.CreateApiVersion());
+            var apiVersion = await this.Connection.SendAsync(factory.CreateApiVersion()).ConfigureAwait(false);
 
-            if (apiVersionResponse.Error != ErrorCode.None)
+            if (apiVersion.Error != ErrorCode.None)
             {
-                throw new Exception($"Error trying to get Kafka host api version: {apiVersionResponse.Error}");
+                throw new BrokerApiVersionException(apiVersion.Error, "Error trying to get Kafka host api version.");
             }
 
             factory.SetBrokerCapabilities(
                 new BrokerCapabilities(
-                    apiVersionResponse.ApiVersions
+                    apiVersion.ApiVersions
                         .Select(x => new ApiVersionRange(x.ApiKey, x.MinVersion, x.MaxVersion))));
 
             return factory;
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await this.Connection.DisposeAsync();
         }
     }
 }

@@ -1,18 +1,40 @@
 namespace KafkaFlow.Client.Protocol.Messages
 {
+    /// <summary>
+    ///  Used to create Metadata requests
+    /// </summary>
     public interface IMetadataRequest : IRequestMessage<IMetadataResponse>
     {
-        bool AllowAutoTopicCreation { get; set; }
+        /// <summary>
+        /// Gets a value indicating whether the broker may auto-create topics or not
+        /// </summary>
+        bool AllowAutoTopicCreation { get; }
 
-        bool IncludeClusterAuthorizedOperations { get; set; }
+        /// <summary>
+        /// Gets a value indicating whether to include cluster authorized operations or not
+        /// </summary>
+        bool IncludeClusterAuthorizedOperations { get; }
 
-        bool IncludeTopicAuthorizedOperations { get; set; }
+        /// <summary>
+        /// Gets a value indicating whether to include topic authorized operations or not
+        /// </summary>
+        bool IncludeTopicAuthorizedOperations { get; }
 
+        /// <summary>
+        /// Adds a topic to the request
+        /// </summary>
+        /// <param name="topicName"></param>
         void AddTopic(string topicName);
 
+        /// <summary>
+        /// Used to create a topic entity
+        /// </summary>
         public interface ITopic : IRequest
         {
-            string Name { get; set; }
+            /// <summary>
+            /// Gets the topic name
+            /// </summary>
+            string Name { get; }
         }
     }
 }

@@ -22,12 +22,12 @@ namespace KafkaFlow.Client
         public KafkaCluster(
             IReadOnlyCollection<BrokerAddress> addresses,
             string clientId,
-            TimeSpan requestTimeout,
+            TimeSpan? requestTimeout = null,
             ISecurityProtocol? securityProtocol = null)
         {
             this.addresses = addresses;
             this.clientId = clientId;
-            this.requestTimeout = requestTimeout;
+            this.requestTimeout = requestTimeout ?? TimeSpan.FromSeconds(30);
             this.securityProtocol = securityProtocol ?? NullSecurityProtocol.Instance;
         }
 
@@ -54,45 +54,48 @@ namespace KafkaFlow.Client
                     return;
                 }
 
-                var first = new KafkaBroker(
+                var firstBroker = new KafkaBroker(
                     this.addresses.First(),
                     0,
                     this.clientId,
                     this.requestTimeout,
                     this.securityProtocol);
 
-                var requestFactory = await first.GetRequestFactoryAsync();
+                this.brokers.TryAdd(firstBroker.NodeId, firstBroker);
 
-                var metadata = await first.Connection
+                var requestFactory = await firstBroker.GetRequestFactoryAsync();
+
+                var metadata = await firstBroker
+                    .Connection
                     .SendAsync(requestFactory.CreateMetadata())
                     .ConfigureAwait(false);
 
-                this.brokers.Add(first.NodeId, first);
+                firstBroker.NodeId = metadata
+                    .Brokers
+                    .First(b => b.Host == firstBroker.Address.Host && b.Port == firstBroker.Address.Port)
+                    .NodeId;
 
                 foreach (var broker in metadata.Brokers)
                 {
-                    if (broker.Host == first.Address.Host && broker.Port == first.Address.Port)
-                    {
-                        first.NodeId = broker.NodeId;
-                        this.brokers.Add(first.NodeId, first);
-                    }
-                    else
-                    {
-                        this.brokers.Add(
+                    this.brokers.TryAdd(
+                        broker.NodeId,
+                        new KafkaBroker(
+                            new BrokerAddress(broker.Host, broker.Port),
                             broker.NodeId,
-                            new KafkaBroker(
-                                new BrokerAddress(broker.Host, broker.Port),
-                                broker.NodeId,
-                                this.clientId,
-                                this.requestTimeout,
-                                this.securityProtocol));
-                    }
+                            this.clientId,
+                            this.requestTimeout,
+                            this.securityProtocol));
                 }
             }
             finally
             {
                 this.initializeSemaphore.Release();
             }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await Task.WhenAll(this.brokers.Select(b => b.Value.DisposeAsync().AsTask()));
         }
     }
 }
