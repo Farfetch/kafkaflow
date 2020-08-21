@@ -127,6 +127,17 @@ namespace KafkaFlow.Client.Protocol
             }
         }
 
+        public static void WriteArray<TMessage>(this Stream destination, IReadOnlyCollection<TMessage> items)
+            where TMessage : IRequest
+        {
+            destination.WriteInt32(items.Count);
+
+            foreach (var item in items)
+            {
+                destination.WriteMessage(item);
+            }
+        }
+
         public static void WriteTaggedFields(this Stream destination, TaggedField[] items)
         {
             destination.WriteUVarint((uint) items.Length);

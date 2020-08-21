@@ -19,7 +19,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public class ApiVersion : IResponse
         {
-            public short ApiKey { get; private set; }
+            public ApiKey ApiKey { get; private set; }
 
             public short MinVersion { get; private set; }
 
@@ -27,7 +27,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
             public void Read(Stream source)
             {
-                this.ApiKey = source.ReadInt16();
+                this.ApiKey = (ApiKey) source.ReadInt16();
                 this.MinVersion = source.ReadInt16();
                 this.MaxVersion = source.ReadInt16();
             }

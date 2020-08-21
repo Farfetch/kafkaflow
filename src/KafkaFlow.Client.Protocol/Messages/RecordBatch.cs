@@ -1,13 +1,16 @@
 namespace KafkaFlow.Client.Protocol.Messages
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Text;
 
     public class RecordBatch : IRequest, IResponse
     {
-        public long BaseOffset { get; set; }
+        private readonly LinkedList<Record> records = new LinkedList<Record>();
+
+        public long BaseOffset { get; private set; } = 0;
 
         public int BatchLength { get; private set; }
 
@@ -19,11 +22,11 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public short Attributes { get; private set; } = 0;
 
-        public int LastOffsetDelta { get; set; }
+        public int LastOffsetDelta { get; private set; }
 
-        public long FirstTimestamp { get; set; }
+        public long FirstTimestamp { get; private set; }
 
-        public long MaxTimestamp { get; set; }
+        public long MaxTimestamp { get; private set; }
 
         public long ProducerId { get; private set; } = -1;
 
@@ -31,7 +34,30 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public int BaseSequence { get; private set; } = -1;
 
-        public Record[] Records { get; set; } = Array.Empty<Record>();
+        public IReadOnlyCollection<Record> Records => this.records;
+
+        public void AddRecord(Record record)
+        {
+            lock (this.records)
+            {
+                var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+                if (this.records.Count == 0)
+                {
+                    this.FirstTimestamp = now;
+                    record.OffsetDelta = 0;
+                    record.TimestampDelta = 0;
+                }
+                else
+                {
+                    record.TimestampDelta = (int) (now - this.FirstTimestamp);
+                    record.OffsetDelta = this.LastOffsetDelta = this.records.Count;
+                }
+
+                this.MaxTimestamp = now;
+                this.records.AddLast(record);
+            }
+        }
 
         public void Write(Stream destination)
         {
@@ -43,7 +69,7 @@ namespace KafkaFlow.Client.Protocol.Messages
             crcSlice.WriteInt64(this.ProducerId);
             crcSlice.WriteInt16(this.ProducerEpoch);
             crcSlice.WriteInt32(this.BaseSequence);
-            crcSlice.WriteArray(this.Records);
+            crcSlice.WriteArray(this.records);
 
             var crcSliceLength = (int) crcSlice.Length;
             this.Crc = (int) Crc32CHash.Compute(crcSlice.GetBuffer(), 0, crcSliceLength);
@@ -77,7 +103,14 @@ namespace KafkaFlow.Client.Protocol.Messages
             this.ProducerId = tracked.ReadInt64();
             this.ProducerEpoch = tracked.ReadInt16();
             this.BaseSequence = tracked.ReadInt32();
-            this.Records = tracked.ReadArray<Record>();
+
+            var totalRecords = tracked.ReadInt32();
+
+            for (var i = 0; i < totalRecords; i++)
+            {
+                this.records.AddLast(tracked.ReadMessage<Record>());
+            }
+
             tracked.DiscardRemainingData();
 
             // The code below calculates the CRC32c
@@ -138,9 +171,9 @@ namespace KafkaFlow.Client.Protocol.Messages
 
             public byte Attributes { get; private set; } = 0;
 
-            public int TimestampDelta { get; set; }
+            public int TimestampDelta { get; internal set; }
 
-            public int OffsetDelta { get; set; }
+            public int OffsetDelta { get; internal set; }
 
             public byte[] Key { get; set; }
 

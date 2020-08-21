@@ -8,14 +8,14 @@ namespace KafkaFlow.Client.Protocol
     using System.Threading;
     using System.Threading.Tasks;
 
-    public class KafkaHostConnection : IDisposable
+    public class KafkaHostConnection : IKafkaHostConnection
     {
         private readonly TcpClient client;
         private readonly NetworkStream stream;
 
         private readonly ConcurrentDictionary<int, PendingRequest> pendingRequests = new ConcurrentDictionary<int, PendingRequest>();
 
-        private int lastCorrelationId;
+        private volatile int lastCorrelationId;
 
         private readonly CancellationTokenSource stopTokenSource = new CancellationTokenSource();
         private readonly Task listenerTask;
@@ -23,10 +23,12 @@ namespace KafkaFlow.Client.Protocol
         private readonly byte[] messageSizeBuffer = new byte[sizeof(int)];
 
         private readonly string clientId;
+        private readonly TimeSpan requestTimeout;
 
-        public KafkaHostConnection(string host, int port, string clientId)
+        public KafkaHostConnection(string host, int port, string clientId, TimeSpan requestTimeout)
         {
             this.clientId = clientId;
+            this.requestTimeout = requestTimeout;
             this.client = new TcpClient(host, port);
             this.stream = this.client.GetStream();
 
@@ -87,12 +89,10 @@ namespace KafkaFlow.Client.Protocol
             return BinaryPrimitives.ReadInt32BigEndian(this.messageSizeBuffer);
         }
 
-        public Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> request, TimeSpan timeout)
+        public Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> request)
             where TResponse : IResponse, new()
         {
-            var pendingRequest = new PendingRequest(
-                timeout,
-                typeof(TResponse));
+            var pendingRequest = new PendingRequest(this.requestTimeout, typeof(TResponse));
 
             lock (this.stream)
             {

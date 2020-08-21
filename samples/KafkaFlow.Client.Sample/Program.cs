@@ -1,4 +1,4 @@
-﻿﻿namespace KafkaFlow.Client.Sample
+﻿namespace KafkaFlow.Client.Sample
 {
     using System;
     using System.Text;
@@ -10,31 +10,26 @@
     {
         static async Task Main(string[] args)
         {
-            var memberId = Guid.NewGuid().ToString();
             const string groupId = "print-console-handler";
 
             var connection = new KafkaHostConnection(
                 "localhost",
                 9092,
-                "test-client-id");
-
-            var now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                "test-client-id",
+                TimeSpan.FromSeconds(30));
 
             var apiVersion = await connection.SendAsync(
-                new ApiVersionV2Request(),
-                TimeSpan.FromSeconds(30));
+                new ApiVersionV2Request());
 
             var topicMetadata = await connection.SendAsync(
                 new TopicMetadataV9Request(
                     new[] { new TopicMetadataV9Request.Topic("test-topic") },
                     false,
                     true,
-                    true),
-                TimeSpan.FromSeconds(30));
+                    true));
 
             var findCoordResponse = await connection.SendAsync(
-                new FindCoordinatorV3Request(string.Empty, 0),
-                TimeSpan.FromSeconds(30));
+                new FindCoordinatorV3Request(string.Empty, 0));
 
             var joinGroupResponse = await connection.SendAsync(
                 new JoinGroupV7Request(
@@ -44,8 +39,7 @@
                     string.Empty,
                     null,
                     "consumer",
-                    new[] { new JoinGroupV7Request.Protocol("consumer", Array.Empty<byte>()), }),
-                TimeSpan.FromSeconds(30));
+                    new[] { new JoinGroupV7Request.Protocol("consumer", Array.Empty<byte>()), }));
 
             var joinGroupResponse1 = await connection.SendAsync(
                 new JoinGroupV7Request(
@@ -55,16 +49,14 @@
                     joinGroupResponse.MemberId,
                     null,
                     "consumer",
-                    new[] { new JoinGroupV7Request.Protocol("consumer", Array.Empty<byte>()), }),
-                TimeSpan.FromSeconds(30));
+                    new[] { new JoinGroupV7Request.Protocol("consumer", Array.Empty<byte>()), }));
 
 
             var heartbeatResponse = await connection.SendAsync(
                 new HeartbeatV4Request(
                     groupId,
                     joinGroupResponse1.GenerationId,
-                    joinGroupResponse1.MemberId),
-                TimeSpan.FromSeconds(30));
+                    joinGroupResponse1.MemberId));
 
             var offsetFetchResponse = await connection.SendAsync(
                 new OffsetFetchV5Request(
@@ -74,10 +66,9 @@
                         new OffsetFetchV5Request.Topic(
                             "test-topic",
                             new[] { 0, 1, 2 })
-                    }),
-                TimeSpan.FromSeconds(30));
+                    }));
 
-            var produceResponse = await ProduceMessage(connection, now);
+            var produceResponse = await ProduceMessage(connection);
             var fetchResponse = await FetchMessage(connection);
 
             await Task.Delay(5000);
@@ -121,12 +112,28 @@
                             }
                         }
                     }
-                },
-                TimeSpan.FromSeconds(30));
+                });
         }
 
-        private static Task<ProduceV8Response> ProduceMessage(KafkaHostConnection connection, long now)
+        private static Task<ProduceV8Response> ProduceMessage(KafkaHostConnection connection)
         {
+            var batch = new RecordBatch();
+
+            batch.AddRecord(
+                new RecordBatch.Record
+                {
+                    Key = Encoding.UTF8.GetBytes("teste_key"),
+                    Value = Encoding.UTF8.GetBytes("teste_value"),
+                    Headers = new[]
+                    {
+                        new RecordBatch.Header
+                        {
+                            Key = "teste_header_key",
+                            Value = Encoding.UTF8.GetBytes("teste_header_value")
+                        }
+                    }
+                });
+
             return connection.SendAsync(
                 new ProduceV8Request(
                     ProduceAcks.Leader,
@@ -135,39 +142,9 @@
                     {
                         new ProduceV8Request.Topic(
                             "test-client",
-                            new[]
-                            {
-                                new ProduceV8Request.Partition(
-                                    0,
-                                    new RecordBatch
-                                    {
-                                        BaseOffset = 0,
-                                        LastOffsetDelta = 0,
-                                        FirstTimestamp = now,
-                                        MaxTimestamp = now,
-                                        Records = new[]
-                                        {
-                                            new RecordBatch.Record
-                                            {
-                                                TimestampDelta = 0,
-                                                OffsetDelta = 0,
-                                                Key = Encoding.UTF8.GetBytes("teste_key"),
-                                                Value = Encoding.UTF8.GetBytes("teste_value"),
-                                                Headers = new[]
-                                                {
-                                                    new RecordBatch.Header
-                                                    {
-                                                        Key = "teste_header_key",
-                                                        Value = Encoding.UTF8.GetBytes("teste_header_value")
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }),
-                            }),
+                            new[] { new ProduceV8Request.Partition(0, batch) }),
                     }
-                ),
-                TimeSpan.FromSeconds(30));
+                ));
         }
     }
 }
