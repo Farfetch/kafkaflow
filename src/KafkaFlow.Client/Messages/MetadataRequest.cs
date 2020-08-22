@@ -1,5 +1,6 @@
 namespace KafkaFlow.Client.Messages
 {
+    using System;
     using System.Collections.Generic;
     using KafkaFlow.Client.Protocol;
 
@@ -8,6 +9,10 @@ namespace KafkaFlow.Client.Messages
         public MetadataRequest(IReadOnlyCollection<string> topics)
         {
             this.Topics = topics;
+        }
+
+        public MetadataRequest() : this(Array.Empty<string>())
+        {
         }
 
         public ApiKey ApiKey => ApiKey.Metadata;

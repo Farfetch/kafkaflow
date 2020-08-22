@@ -6,7 +6,9 @@ namespace KafkaFlow.Client.Producers
     public class ProducerConfiguration
     {
         public ProduceAcks Acks { get; set; }
-        public TimeSpan Timeout { get; set; }
+        public TimeSpan ProduceTimeout { get; set; }
+
+        public TimeSpan Linger { get; set; }
         public int MaxProduceBatchSize { get; set; }
     }
 }

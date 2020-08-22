@@ -5,9 +5,9 @@ namespace KafkaFlow.Client
     public class KafkaHostAddress
     {
         public string Host { get; }
-        public ushort Port { get; }
+        public int Port { get; }
 
-        public KafkaHostAddress(string host, ushort port)
+        public KafkaHostAddress(string host, int port)
         {
             this.Host = !string.IsNullOrWhiteSpace(host) ?
                 host :

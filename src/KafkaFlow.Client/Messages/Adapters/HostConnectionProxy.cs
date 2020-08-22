@@ -4,6 +4,7 @@ namespace KafkaFlow.Client.Messages.Adapters
     using System.Collections.Concurrent;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Messages;
     using KafkaFlow.Client.Protocol;
@@ -24,16 +25,17 @@ namespace KafkaFlow.Client.Messages.Adapters
         public Task<TResponse> SendAsync<TResponse>(IClientRequest<TResponse> request)
             where TResponse : IClientResponse
         {
-            var interfaceType = typeof(IHostConnectionAdapter<IClientRequest<TResponse>, TResponse>);
+            var interfaceType = typeof(IHostConnectionAdapter<,>).MakeGenericType(request.GetType(), typeof(TResponse));
 
-            var adapter = (IHostConnectionAdapter<IClientRequest<TResponse>, TResponse>) this.GetAdapterInstance(request, interfaceType);
+            var adapter = this.GetAdapterInstance<TResponse>(request, interfaceType);
 
             return adapter.SendAsync(request);
         }
 
-        private object GetAdapterInstance(IClientRequest request, Type interfaceType)
+        private AdapterExecutor<TResponse> GetAdapterInstance<TResponse>(IClientRequest request, Type interfaceType)
+            where TResponse : IClientResponse
         {
-            return this.adaptersCache.GetOrAdd(
+            return (AdapterExecutor<TResponse>) this.adaptersCache.GetOrAdd(
                 interfaceType,
                 _ =>
                 {
@@ -46,7 +48,12 @@ namespace KafkaFlow.Client.Messages.Adapters
                         throw new NotSupportedException($"Your Kafka host does not support {request.GetType().Name} API");
                     }
 
-                    return Activator.CreateInstance(adapterType, this.connection);
+                    var adapter = Activator.CreateInstance(adapterType, this.connection);
+
+                    var executorType = typeof(AdapterExecutor<,>).MakeGenericType(request.GetType(), typeof(TResponse));
+                    var executor = (AdapterExecutor<TResponse>) Activator.CreateInstance(executorType, adapter);
+
+                    return executor;
                 });
         }
 
@@ -59,7 +66,7 @@ namespace KafkaFlow.Client.Messages.Adapters
                         type.IsClass &&
                         interfaceType.IsAssignableFrom(type) &&
                         type.GetCustomAttribute<ApiVersionAttribute>().Version >= versionRange.Min &&
-                        type.GetCustomAttribute<ApiVersionAttribute>().Version <= versionRange.Min)
+                        type.GetCustomAttribute<ApiVersionAttribute>().Version <= versionRange.Max)
                 .OrderByDescending(type => type.GetCustomAttribute<ApiVersionAttribute>().Version)
                 .FirstOrDefault();
         }
@@ -67,6 +74,30 @@ namespace KafkaFlow.Client.Messages.Adapters
         public void Dispose()
         {
             this.connection.Dispose();
+        }
+    }
+
+    internal abstract class AdapterExecutor<TResponse>
+        where TResponse : IClientResponse
+    {
+        public abstract Task<TResponse> SendAsync(IClientRequest<TResponse> request);
+    }
+
+    internal class AdapterExecutor<TRequest, TResponse> : AdapterExecutor<TResponse>
+        where TRequest : IClientRequest<TResponse>
+        where TResponse : IClientResponse
+    {
+        private readonly object adapter;
+
+        public AdapterExecutor(object adapter)
+        {
+            this.adapter = adapter;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override Task<TResponse> SendAsync(IClientRequest<TResponse> request)
+        {
+            return ((IHostConnectionAdapter<TRequest, TResponse>) this.adapter).SendAsync((TRequest) request);
         }
     }
 }

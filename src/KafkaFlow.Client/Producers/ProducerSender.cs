@@ -1,23 +1,31 @@
 namespace KafkaFlow.Client.Producers
 {
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Messages;
     using KafkaFlow.Client.Protocol.Messages;
 
-    internal class ProducerSender
+    internal class ProducerSender : IDisposable, IAsyncDisposable
     {
         private readonly IKafkaHost host;
         private readonly ProducerConfiguration configuration;
 
         private ProduceRequest request;
-        private int messageCount;
+        private volatile int messageCount;
+        private DateTime lastProductionTime = DateTime.MinValue;
+
+        private readonly Task produceTimeoutTask;
+        private readonly CancellationTokenSource stopLingerProduceTokenSource = new CancellationTokenSource();
+        private readonly SemaphoreSlim produceSemaphore = new SemaphoreSlim(1, 1);
 
         public ProducerSender(IKafkaHost host, ProducerConfiguration configuration)
         {
             this.host = host;
             this.configuration = configuration;
-            this.request = new ProduceRequest(this.configuration.Acks, this.configuration.Timeout.Milliseconds);
+            this.request = new ProduceRequest(this.configuration.Acks, this.configuration.ProduceTimeout.Milliseconds);
+
+            this.produceTimeoutTask = Task.Run(this.LingerProduceAsync);
         }
 
         public ValueTask EnqueueAsync(ProduceQueueItem item)
@@ -44,18 +52,84 @@ namespace KafkaFlow.Client.Producers
 
             return Interlocked.Increment(ref this.messageCount) < this.configuration.MaxProduceBatchSize ?
                 default :
-                this.ProduceAsync();
+                new ValueTask(this.ProduceAsync());
         }
 
-        private ValueTask ProduceAsync()
+        private async Task ProduceAsync()
         {
-            var queued = Interlocked.Exchange(
-                ref this.request,
-                new ProduceRequest(this.configuration.Acks, this.configuration.Timeout.Milliseconds));
+            try
+            {
+                if (this.messageCount == 0)
+                    return;
 
-            Interlocked.Exchange(ref this.messageCount, 0);
+                await this.produceSemaphore.WaitAsync().ConfigureAwait(false);
 
-            return new ValueTask(this.host.SendAsync(queued));
+                try
+                {
+                    if (Interlocked.Exchange(ref this.messageCount, 0) == 0)
+                        return;
+
+                    var queued = Interlocked.Exchange(
+                        ref this.request,
+                        new ProduceRequest(this.configuration.Acks, this.configuration.ProduceTimeout.Milliseconds));
+
+                    var result = await this.host.SendAsync(queued).ConfigureAwait(false);
+                }
+                finally
+                {
+                    this.produceSemaphore.Release();
+                }
+            }
+            catch
+            {
+                // TODO: some kind of log or retry on errors
+            }
+            finally
+            {
+                this.lastProductionTime = DateTime.Now;
+            }
+        }
+
+        private async Task LingerProduceAsync()
+        {
+            try
+            {
+                while (!this.stopLingerProduceTokenSource.IsCancellationRequested)
+                {
+                    var diff = DateTime.Now - this.lastProductionTime;
+                    if (diff < this.configuration.Linger)
+                    {
+                        await Task
+                            .Delay(
+                                this.configuration.Linger - diff,
+                                this.stopLingerProduceTokenSource.Token)
+                            .ConfigureAwait(false);
+
+                        continue;
+                    }
+
+                    await this.ProduceAsync().ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Do nothing
+            }
+
+            await this.ProduceAsync().ConfigureAwait(false);
+        }
+
+        public void Dispose()
+        {
+            this.DisposeAsync().GetAwaiter().GetResult();
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            this.produceSemaphore.Dispose();
+            this.stopLingerProduceTokenSource.Cancel();
+            await this.produceTimeoutTask.ConfigureAwait(false);
+            this.produceTimeoutTask.Dispose();
         }
     }
 }
