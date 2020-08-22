@@ -83,7 +83,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{52DDF2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Client.Protocol", "KafkaFlow.Client.Protocol\KafkaFlow.Client.Protocol.csproj", "{3D61CEFB-3419-4BE4-BE39-D7EF576D7292}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Client.Sample", "..\samples\KafkaFlow.Client.Sample\KafkaFlow.Client.Sample.csproj", "{EE993AB2-3BEF-4F4D-AB0D-97EA35FC64C1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Client.Protocol.Sample", "..\samples\KafkaFlow.Client.Protocol.Sample\KafkaFlow.Client.Protocol.Sample.csproj", "{EE993AB2-3BEF-4F4D-AB0D-97EA35FC64C1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Client.Tests", "KafkaFlow.Client.Tests\KafkaFlow.Client.Tests.csproj", "{846A62A8-B65E-41B7-A680-E9C4DE3A9AC0}"
 EndProject
