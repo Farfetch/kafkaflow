@@ -61,7 +61,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public void Write(Stream destination)
         {
-            using var crcSlice = MemoryStreamFactory.GetStream();
+            using var crcSlice = new MemoryStream(1024 * 8);
             crcSlice.WriteInt16(this.Attributes);
             crcSlice.WriteInt32(this.LastOffsetDelta);
             crcSlice.WriteInt64(this.FirstTimestamp);
@@ -183,7 +183,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
             public void Write(Stream destination)
             {
-                using var tmp = MemoryStreamFactory.GetStream();
+                using var tmp = new MemoryStream(1024);
 
                 tmp.WriteByte(this.Attributes);
                 tmp.WriteVarint(this.TimestampDelta);

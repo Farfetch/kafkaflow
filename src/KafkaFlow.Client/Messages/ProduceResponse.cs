@@ -29,14 +29,14 @@ namespace KafkaFlow.Client.Messages
             public Partition(
                 int id,
                 ErrorCode error,
-                long offset,
-                RecordError[] errors,
+                long baseOffset,
+                RecordError[] recordErrors,
                 string? errorMessage)
             {
                 this.Id = id;
                 this.Error = error;
-                this.Offset = offset;
-                this.Errors = errors;
+                this.BaseOffset = baseOffset;
+                this.RecordErrors = recordErrors;
                 this.ErrorMessage = errorMessage;
             }
 
@@ -44,9 +44,9 @@ namespace KafkaFlow.Client.Messages
 
             public ErrorCode Error { get; }
 
-            public long Offset { get; }
+            public long BaseOffset { get; }
 
-            public RecordError[] Errors { get; }
+            public RecordError[] RecordErrors { get; }
 
             public string? ErrorMessage { get; }
         }

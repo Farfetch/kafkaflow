@@ -4,9 +4,9 @@ namespace KafkaFlow.Client.Protocol.Messages
 
     public class ProduceV8Response : IResponse
     {
-        public Topic[] Topics { get; set; }
+        public Topic[] Topics { get; private set; }
 
-        public int ThrottleTimeMs { get; set; }
+        public int ThrottleTimeMs { get; private set; }
 
         public void Read(Stream source)
         {
@@ -16,9 +16,9 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public class Topic : IResponse
         {
-            public string Name { get; set; }
+            public string Name { get; private set; }
 
-            public Partition[] Partitions { get; set; }
+            public Partition[] Partitions { get; private set; }
 
             public void Read(Stream source)
             {
@@ -29,25 +29,25 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public class Partition : IResponse
         {
-            public int Id { get; set; }
+            public int Id { get; private set; }
 
-            public ErrorCode Error { get; set; }
+            public ErrorCode Error { get; private set; }
 
-            public long Offset { get; set; }
+            public long BaseOffset { get; private set; }
 
-            public long LogAppendTime { get; set; }
+            public long LogAppendTime { get; private set; }
 
-            public long LogStartOffset { get; set; }
+            public long LogStartOffset { get; private set; }
 
-            public RecordError[] Errors { get; set; }
+            public RecordError[] Errors { get; private set; }
 
-            public string? ErrorMessage { get; set; }
+            public string? ErrorMessage { get; private set; }
 
             public void Read(Stream source)
             {
                 this.Id = source.ReadInt32();
                 this.Error = source.ReadErrorCode();
-                this.Offset = source.ReadInt64();
+                this.BaseOffset = source.ReadInt64();
                 this.LogAppendTime = source.ReadInt64();
                 this.LogStartOffset = source.ReadInt64();
                 this.Errors = source.ReadArray<RecordError>();
@@ -57,9 +57,9 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public class RecordError : IResponse
         {
-            public int BatchIndex { get; set; }
+            public int BatchIndex { get; private set; }
 
-            public string? Message { get; set; }
+            public string? Message { get; private set; }
 
             public void Read(Stream source)
             {

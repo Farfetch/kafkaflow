@@ -1,8 +1,14 @@
 namespace KafkaFlow.Client.Producers
 {
     using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
+    using KafkaFlow.Client.Exceptions;
+    using KafkaFlow.Client.Extensions;
     using KafkaFlow.Client.Messages;
     using KafkaFlow.Client.Protocol.Messages;
 
@@ -19,6 +25,9 @@ namespace KafkaFlow.Client.Producers
         private readonly CancellationTokenSource stopLingerProduceTokenSource = new CancellationTokenSource();
         private readonly SemaphoreSlim produceSemaphore = new SemaphoreSlim(1, 1);
 
+        private ConcurrentDictionary<(string, int), LinkedList<ProduceQueueItem>> pendingRequests
+            = new ConcurrentDictionary<(string, int), LinkedList<ProduceQueueItem>>();
+
         public ProducerSender(IKafkaHost host, ProducerConfiguration configuration)
         {
             this.host = host;
@@ -28,9 +37,11 @@ namespace KafkaFlow.Client.Producers
             this.produceTimeoutTask = Task.Run(this.LingerProduceAsync);
         }
 
-        public ValueTask EnqueueAsync(ProduceQueueItem item)
+        public async ValueTask EnqueueAsync(ProduceQueueItem item)
         {
-            lock (this.request)
+            await this.produceSemaphore.WaitAsync().ConfigureAwait(false);
+
+            try
             {
                 var topic = this.request.Topics.GetOrAdd(
                     item.Data.Topic,
@@ -48,11 +59,22 @@ namespace KafkaFlow.Client.Producers
                         // TODO: copy headers
                         //Headers = 
                     });
+
+                item.OffsetDelta = partition.Batch.LastOffsetDelta;
+
+                this.pendingRequests
+                    .SafeGetOrAdd(
+                        (item.Data.Topic, item.PartitionId),
+                        key => new LinkedList<ProduceQueueItem>())
+                    .AddLast(item);
+            }
+            finally
+            {
+                this.produceSemaphore.Release();
             }
 
-            return Interlocked.Increment(ref this.messageCount) < this.configuration.MaxProduceBatchSize ?
-                default :
-                new ValueTask(this.ProduceAsync());
+            if (Interlocked.Increment(ref this.messageCount) >= this.configuration.MaxProduceBatchSize)
+                await this.ProduceAsync().ConfigureAwait(false);
         }
 
         private async Task ProduceAsync()
@@ -61,6 +83,9 @@ namespace KafkaFlow.Client.Producers
             {
                 if (this.messageCount == 0)
                     return;
+
+                ProduceResponse result;
+                ConcurrentDictionary<(string, int), LinkedList<ProduceQueueItem>> requests;
 
                 await this.produceSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -73,20 +98,67 @@ namespace KafkaFlow.Client.Producers
                         ref this.request,
                         new ProduceRequest(this.configuration.Acks, this.configuration.ProduceTimeout.Milliseconds));
 
-                    var result = await this.host.SendAsync(queued).ConfigureAwait(false);
+                    result = await this.host.SendAsync(queued).ConfigureAwait(false);
+
+                    requests = Interlocked.Exchange(
+                        ref this.pendingRequests,
+                        new ConcurrentDictionary<(string, int), LinkedList<ProduceQueueItem>>());
                 }
                 finally
                 {
                     this.produceSemaphore.Release();
                 }
+
+                this.RespondRequests(result, requests);
             }
-            catch
+            catch (Exception e)
             {
                 // TODO: some kind of log or retry on errors
             }
             finally
             {
                 this.lastProductionTime = DateTime.Now;
+            }
+        }
+
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void RespondRequests(
+            ProduceResponse result,
+            ConcurrentDictionary<(string, int), LinkedList<ProduceQueueItem>> requests)
+        {
+            foreach (var topic in result.Topics)
+            {
+                foreach (var partition in topic.Partitions)
+                {
+                    if (!requests.TryRemove((topic.Name, partition.Id), out var items))
+                        continue;
+
+                    foreach (var item in items)
+                    {
+                        if (
+                            partition.Error == ErrorCode.None &&
+                            partition.RecordErrors.All(x => x.BatchIndex != item.OffsetDelta))
+                        {
+                            item.CompletionSource.SetResult(
+                                new ProduceResult(
+                                    topic.Name,
+                                    partition.Id,
+                                    partition.BaseOffset + item.OffsetDelta,
+                                    item.Data));
+                        }
+                        else
+                        {
+                            var recordError = partition.RecordErrors
+                                .FirstOrDefault(x => x.BatchIndex == item.OffsetDelta);
+
+                            item.CompletionSource.SetException(
+                                new ProduceException(
+                                    partition.Error,
+                                    partition.ErrorMessage,
+                                    recordError.Message));
+                        }
+                    }
+                }
             }
         }
 

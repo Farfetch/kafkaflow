@@ -16,7 +16,7 @@ namespace KafkaFlow.Client
             this.Port = port;
         }
 
-        public static KafkaHostAddress Parse(string address) // TODO
+        public static KafkaHostAddress Parse(string address)
         {
             throw new NotImplementedException();
         }

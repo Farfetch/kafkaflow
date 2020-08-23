@@ -6,6 +6,7 @@ namespace KafkaFlow.Client.Messages.Adapters
     using System.Reflection;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
+    using KafkaFlow.Client.Extensions;
     using KafkaFlow.Client.Messages;
     using KafkaFlow.Client.Protocol;
 
@@ -35,7 +36,7 @@ namespace KafkaFlow.Client.Messages.Adapters
         private AdapterExecutor<TResponse> GetAdapterInstance<TResponse>(IClientRequest request, Type interfaceType)
             where TResponse : IClientResponse
         {
-            return (AdapterExecutor<TResponse>) this.adaptersCache.GetOrAdd(
+            return (AdapterExecutor<TResponse>) this.adaptersCache.SafeGetOrAdd(
                 interfaceType,
                 _ =>
                 {

@@ -1,6 +1,7 @@
 ﻿namespace KafkaFlow.Client.Sample
 {
     using System;
+    using System.Diagnostics;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -12,8 +13,16 @@
         {
             var producer = ProducerBuilder.CreateProducer();
 
+            await producer.ProduceAsync(
+                new ProduceData(
+                    "test-client",
+                    Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
+                    Encoding.UTF8.GetBytes("teste_value")));
+
+            var sw = Stopwatch.StartNew();
+
             var tasks = Enumerable
-                .Range(0, 100)
+                .Range(0, 1000000)
                 .Select(
                     x => producer.ProduceAsync(
                         new ProduceData(
@@ -22,6 +31,10 @@
                             Encoding.UTF8.GetBytes("teste_value"))));
 
             var results = await Task.WhenAll(tasks);
+
+            sw.Stop();
+            
+            Console.WriteLine("elapsed: {0}ms", sw.ElapsedMilliseconds);
         }
     }
 }

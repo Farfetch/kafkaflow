@@ -46,7 +46,7 @@ namespace KafkaFlow.Client.Messages.Adapters.Produce
                                     partition => new ProduceResponse.Partition(
                                         partition.Id,
                                         partition.Error,
-                                        partition.Offset,
+                                        partition.BaseOffset,
                                         partition.Errors
                                             .Select(
                                                 error => new ProduceResponse.RecordError(

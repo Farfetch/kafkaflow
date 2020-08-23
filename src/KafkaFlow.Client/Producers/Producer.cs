@@ -6,6 +6,7 @@ namespace KafkaFlow.Client.Producers
     using System.Threading.Tasks;
     using KafkaFlow.Client.Core;
     using KafkaFlow.Client.Exceptions;
+    using KafkaFlow.Client.Extensions;
     using KafkaFlow.Client.Messages;
     using KafkaFlow.Client.Producers.Partitioners;
 
@@ -19,8 +20,8 @@ namespace KafkaFlow.Client.Producers
         private readonly ConcurrentAsyncDictionary<string, MetadataResponse.Topic> metadataCache =
             new ConcurrentAsyncDictionary<string, MetadataResponse.Topic>();
 
-        private readonly ConcurrentDictionary<int, Lazy<ProducerSender>> senders =
-            new ConcurrentDictionary<int, Lazy<ProducerSender>>();
+        private readonly ConcurrentDictionary<int, ProducerSender> senders =
+            new ConcurrentDictionary<int, ProducerSender>();
 
         public Producer(
             IKafkaCluster cluster,
@@ -34,42 +35,33 @@ namespace KafkaFlow.Client.Producers
 
         public async Task<ProduceResult> ProduceAsync(ProduceData data)
         {
-            try
-            {
-                await this.cluster.EnsureInitializationAsync().ConfigureAwait(false);
+            await this.cluster.EnsureInitializationAsync().ConfigureAwait(false);
 
-                var topic = await this.GetTopicMetadataAsync(data.Topic).ConfigureAwait(false);
+            var topic = await this.GetTopicMetadataAsync(data.Topic).ConfigureAwait(false);
 
-                var partitionId = this.partitioner.GetPartition(topic.Partitions.Length, data.Key);
+            var partitionId = this.partitioner.GetPartition(topic.Partitions.Length, data.Key);
 
-                //TODO: update cache and retry when NotLeaderForPartition occur
+            //TODO: update cache and retry when NotLeaderForPartition occur
 
-                var sender = this.GetHostSender(topic.Partitions[partitionId].LeaderId);
+            var sender = this.GetHostSender(topic.Partitions[partitionId].LeaderId);
 
-                var completionSource = new TaskCompletionSource<ProduceResult>();
+            var completionSource = new TaskCompletionSource<ProduceResult>();
 
-                await sender
-                    .EnqueueAsync(new ProduceQueueItem(data, partitionId, completionSource))
-                    .ConfigureAwait(false);
+            await sender
+                .EnqueueAsync(new ProduceQueueItem(data, partitionId, completionSource))
+                .ConfigureAwait(false);
 
-                return await completionSource.Task.ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                throw new ProduceException(e);
-            }
+            return await completionSource.Task.ConfigureAwait(false);
         }
 
         private ProducerSender GetHostSender(int partitionLeaderId)
         {
             return this.senders
-                .GetOrAdd(
+                .SafeGetOrAdd(
                     partitionLeaderId,
-                    id => new Lazy<ProducerSender>(
-                        () => new ProducerSender(
-                            this.cluster.GetHost(id),
-                            this.configuration)))
-                .Value;
+                    id => new ProducerSender(
+                        this.cluster.GetHost(id),
+                        this.configuration));
         }
 
         private ValueTask<MetadataResponse.Topic> GetTopicMetadataAsync(string topicName)
