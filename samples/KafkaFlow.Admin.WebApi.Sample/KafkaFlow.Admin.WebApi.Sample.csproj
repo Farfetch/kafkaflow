@@ -7,17 +7,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\KafkaFlow.Admin.WebApi\KafkaFlow.Admin.WebApi.csproj" />
-      <ProjectReference Include="..\..\src\KafkaFlow.Admin\KafkaFlow.Admin.csproj" />
-      <ProjectReference Include="..\..\src\KafkaFlow.LogHandler.Console\KafkaFlow.LogHandler.Console.csproj" />
-      <ProjectReference Include="..\..\src\KafkaFlow.Microsoft.DependencyInjection\KafkaFlow.Microsoft.DependencyInjection.csproj" />
-      <ProjectReference Include="..\..\src\KafkaFlow\KafkaFlow.csproj" />
+        <ProjectReference Include="..\..\src\KafkaFlow.Admin.WebApi\KafkaFlow.Admin.WebApi.csproj"/>
+        <ProjectReference Include="..\..\src\KafkaFlow.Admin\KafkaFlow.Admin.csproj"/>
+        <ProjectReference Include="..\..\src\KafkaFlow.LogHandler.Console\KafkaFlow.LogHandler.Console.csproj"/>
+        <ProjectReference Include="..\..\src\KafkaFlow.Microsoft.DependencyInjection\KafkaFlow.Microsoft.DependencyInjection.csproj"/>
+        <ProjectReference Include="..\..\src\KafkaFlow\KafkaFlow.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="5.5.1" />
-      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="5.5.1" />
-      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="5.5.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="5.5.1"/>
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="5.5.1"/>
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="5.5.1"/>
     </ItemGroup>
 
 
