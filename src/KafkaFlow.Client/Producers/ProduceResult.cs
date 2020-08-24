@@ -1,6 +1,6 @@
 namespace KafkaFlow.Client.Producers
 {
-    public class ProduceResult
+    public readonly struct ProduceResult
     {
         public string Topic { get; }
 

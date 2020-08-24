@@ -380,5 +380,10 @@ namespace KafkaFlow.Client.Protocol
                 num >>= 7;
             } while (num != 0);
         }
+        
+        public static Span<byte> GetSpan(this Stream destination, long offset, long count)
+        {
+            return new Span<byte>();
+        }
     }
 }

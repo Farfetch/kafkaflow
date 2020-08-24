@@ -1,6 +1,8 @@
 namespace KafkaFlow.Client.Protocol
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
     public class Crc32CHash
     {
@@ -37,7 +39,7 @@ namespace KafkaFlow.Client.Protocol
             }
         }
 
-        static uint InternalCompute(uint crci, byte[] data, int offset, int len)
+        static uint InternalCompute(uint crci, IReadOnlyList<byte> data, int offset, int len)
         {
             ulong crc = crci ^ 0xffffffff;
 
@@ -46,10 +48,17 @@ namespace KafkaFlow.Client.Protocol
                 crc = Table[0, (crc ^ data[offset++]) & 0xff] ^ (crc >> 8);
                 len--;
             }
+            
+            Span<byte> buffer = stackalloc byte[8];
 
             while (len >= 8)
             {
-                var ncopy = BitConverter.ToUInt64(data, offset);
+                for (var i = 0; i < buffer.Length; ++i)
+                {
+                    buffer[i] = data[offset + i];
+                }
+                
+                var ncopy = BitConverter.ToUInt64(buffer);
 
                 crc ^= ncopy;
                 crc = Table[7, crc & 0xff] ^
@@ -73,12 +82,12 @@ namespace KafkaFlow.Client.Protocol
             return (uint) crc ^ 0xffffffff;
         }
 
-        public static uint Compute(byte[] data)
+        public static uint Compute(IReadOnlyList<byte> data)
         {
-            return InternalCompute(0, data, 0, data.Length);
+            return InternalCompute(0, data, 0, data.Count);
         }
 
-        public static uint Compute(byte[] data, int offset, int length)
+        public static uint Compute(IReadOnlyList<byte> data, int offset, int length)
         {
             return InternalCompute(0, data, offset, length);
         }

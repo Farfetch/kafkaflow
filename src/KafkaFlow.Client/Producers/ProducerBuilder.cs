@@ -19,8 +19,8 @@ namespace KafkaFlow.Client.Producers
                 {
                     Acks = ProduceAcks.All,
                     ProduceTimeout = TimeSpan.FromSeconds(10),
-                    MaxProduceBatchSize = 25000,
-                    Linger = TimeSpan.FromMilliseconds(10)
+                    MaxProduceBatchSize = 30000,
+                    Linger = TimeSpan.FromMilliseconds(2)
                 },
                 new ByteSumPartitioner());
         }

@@ -1,12 +1,13 @@
 namespace KafkaFlow.Client.Protocol
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
 
-    public class FastMemoryStream : Stream
+    public class FastMemoryStream : Stream, IReadOnlyList<byte>
     {
         private long length = 0;
         private int currentSegment = 0;
@@ -23,6 +24,11 @@ namespace KafkaFlow.Client.Protocol
 
         public FastMemoryStream() : this(1024)
         {
+        }
+
+        ~FastMemoryStream()
+        {
+            this.Dispose(false);
         }
 
         public override void Flush()
@@ -222,7 +228,7 @@ namespace KafkaFlow.Client.Protocol
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int GetRelativePosition(long globalPosition) => (int) (globalPosition % this.segmentSize);
 
-        // public byte this[int index] => Marshal.ReadByte(this.segments[this.GetSegment(index)] + this.GetRelativePosition(index));
+        public byte this[int index] => Marshal.ReadByte(this.segments[this.GetSegment(index)] + this.GetRelativePosition(index));
 
         public override bool CanRead => true;
 
@@ -250,5 +256,17 @@ namespace KafkaFlow.Client.Protocol
         }
 
         public long Capacity { get; private set; }
+
+        public IEnumerator<byte> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
+
+        public int Count => (int) this.length;
     }
 }

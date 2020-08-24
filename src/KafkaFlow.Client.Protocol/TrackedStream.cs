@@ -92,11 +92,11 @@ namespace KafkaFlow.Client.Protocol
             if (remaining == 0)
                 return;
 
-            using var buffer = new PooledArray<byte>(1024);
+            Span<byte> buffer = stackalloc byte[1024];
 
             do
             {
-                var read = this.stream.Read(buffer, 0, Math.Min(remaining, buffer.Length));
+                var read = this.stream.Read(buffer.Slice(0, Math.Min(remaining, buffer.Length)));
 
                 if (read == 0)
                     return;

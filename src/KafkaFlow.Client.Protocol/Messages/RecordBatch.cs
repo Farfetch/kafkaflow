@@ -61,28 +61,41 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public void Write(Stream destination)
         {
-            using var crcSlice = new FastMemoryStream();
-            crcSlice.WriteInt16(this.Attributes);
-            crcSlice.WriteInt32(this.LastOffsetDelta);
-            crcSlice.WriteInt64(this.FirstTimestamp);
-            crcSlice.WriteInt64(this.MaxTimestamp);
-            crcSlice.WriteInt64(this.ProducerId);
-            crcSlice.WriteInt16(this.ProducerEpoch);
-            crcSlice.WriteInt32(this.BaseSequence);
-            crcSlice.WriteArray(this.records);
-
-            var crcSliceLength = (int) crcSlice.Length;
-            this.Crc = (int) Crc32CHash.Compute(crcSlice.ToArray());
-
-            destination.WriteInt32(crcSliceLength + 8 + 4 + 4 + 1 + 4);
+            // destination.WriteInt32(crcSliceLength + 8 + 4 + 4 + 1 + 4);
+            var lengthStartPosition = destination.Position;
+            destination.WriteInt32(0); // Length will be filled in the end
             destination.WriteInt64(this.BaseOffset);
-            destination.WriteInt32(this.BatchLength = GetBatchSizeFromCrcSliceSize(crcSliceLength));
+            destination.WriteInt32(0); // BatchLength will be filled in the end
             destination.WriteInt32(this.PartitionLeaderEpoch);
             destination.WriteByte(this.Magic);
-            destination.WriteInt32(this.Crc);
+            destination.WriteInt32(0); // CRC will be filled in the wnd
 
-            crcSlice.Position = 0;
-            crcSlice.CopyTo(destination);
+            var crcPosition = destination.Position;
+            destination.WriteInt16(this.Attributes);
+            destination.WriteInt32(this.LastOffsetDelta);
+            destination.WriteInt64(this.FirstTimestamp);
+            destination.WriteInt64(this.MaxTimestamp);
+            destination.WriteInt64(this.ProducerId);
+            destination.WriteInt16(this.ProducerEpoch);
+            destination.WriteInt32(this.BaseSequence);
+            destination.WriteArray(this.records);
+            var endPosition = destination.Position;
+
+            //Write total length
+            var totalLength = (int) (endPosition - lengthStartPosition - 4);
+            destination.Position = lengthStartPosition;
+            destination.WriteInt32(totalLength);
+
+            //Write batch length
+            destination.Position = lengthStartPosition + 4 + 8;
+            destination.WriteInt32(this.BatchLength = totalLength - 8 - 4);
+
+            //Write CRC
+            var crc = Crc32CHash.Compute((FastMemoryStream) destination, (int) crcPosition, (int) (endPosition - crcPosition));
+            destination.Position = crcPosition - 4;
+            destination.WriteInt32((int) crc);
+
+            destination.Position = endPosition;
         }
 
         public void Read(Stream source)

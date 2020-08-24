@@ -4,6 +4,7 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Producers;
 
@@ -19,8 +20,10 @@
                     Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
                     Encoding.UTF8.GetBytes("teste_value")));
 
+            Console.WriteLine("Starting...");
+
             var sw = Stopwatch.StartNew();
-            
+
             var tasks = Enumerable
                 .Range(0, 100000)
                 .Select(
@@ -29,12 +32,13 @@
                             "test-client",
                             Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
                             Encoding.UTF8.GetBytes("teste_value"))));
-            
+
             var results = await Task.WhenAll(tasks);
-            
+
             sw.Stop();
-            
-            Console.WriteLine("elapsed: {0}ms", sw.ElapsedMilliseconds);
+
+            Console.WriteLine("Ended! Elapsed: {0}ms", sw.ElapsedMilliseconds);
+            Thread.Sleep(5000);
         }
     }
 }
