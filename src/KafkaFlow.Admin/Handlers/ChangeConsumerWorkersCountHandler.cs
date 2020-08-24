@@ -15,9 +15,9 @@ namespace KafkaFlow.Admin.Handlers
         {
             var consumer = this.consumerAccessor[message.ConsumerName];
 
-            return consumer is null ?
-                Task.CompletedTask :
-                consumer.ChangeWorkerCountAndRestartAsync(message.WorkerCount);
+            return
+                consumer?.ChangeWorkerCountAndRestartAsync(message.WorkerCount) ??
+                Task.CompletedTask;
         }
     }
 }
