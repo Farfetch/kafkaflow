@@ -1,5 +1,7 @@
 namespace KafkaFlow.Client.Messages.Adapters.Produce
 {
+    using System;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Messages;

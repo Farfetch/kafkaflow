@@ -23,7 +23,7 @@ namespace KafkaFlow.Client.Protocol
 
         public void Write(Stream destination)
         {
-            using var tmp = MemoryStreamFactory.GetStream();
+            using var tmp = new FastMemoryStream();
 
             tmp.WriteInt16((short) this.Message.ApiKey);
             tmp.WriteInt16(this.Message.ApiVersion);

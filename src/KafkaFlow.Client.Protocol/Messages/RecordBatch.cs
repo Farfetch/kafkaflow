@@ -61,7 +61,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public void Write(Stream destination)
         {
-            using var crcSlice = new MemoryStream(1024 * 8);
+            using var crcSlice = new FastMemoryStream();
             crcSlice.WriteInt16(this.Attributes);
             crcSlice.WriteInt32(this.LastOffsetDelta);
             crcSlice.WriteInt64(this.FirstTimestamp);
@@ -72,7 +72,7 @@ namespace KafkaFlow.Client.Protocol.Messages
             crcSlice.WriteArray(this.records);
 
             var crcSliceLength = (int) crcSlice.Length;
-            this.Crc = (int) Crc32CHash.Compute(crcSlice.GetBuffer(), 0, crcSliceLength);
+            this.Crc = (int) Crc32CHash.Compute(crcSlice.ToArray());
 
             destination.WriteInt32(crcSliceLength + 8 + 4 + 4 + 1 + 4);
             destination.WriteInt64(this.BaseOffset);
@@ -80,7 +80,9 @@ namespace KafkaFlow.Client.Protocol.Messages
             destination.WriteInt32(this.PartitionLeaderEpoch);
             destination.WriteByte(this.Magic);
             destination.WriteInt32(this.Crc);
-            crcSlice.WriteTo(destination);
+
+            crcSlice.Position = 0;
+            crcSlice.CopyTo(destination);
         }
 
         public void Read(Stream source)
@@ -183,7 +185,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
             public void Write(Stream destination)
             {
-                using var tmp = new MemoryStream(1024);
+                using var tmp = new FastMemoryStream();
 
                 tmp.WriteByte(this.Attributes);
                 tmp.WriteVarint(this.TimestampDelta);

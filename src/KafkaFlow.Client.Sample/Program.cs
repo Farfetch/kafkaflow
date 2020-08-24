@@ -13,25 +13,25 @@
         {
             var producer = ProducerBuilder.CreateProducer();
 
-            await producer.ProduceAsync(
+            var result = await producer.ProduceAsync(
                 new ProduceData(
                     "test-client",
                     Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
                     Encoding.UTF8.GetBytes("teste_value")));
 
             var sw = Stopwatch.StartNew();
-
+            
             var tasks = Enumerable
-                .Range(0, 1000000)
+                .Range(0, 100000)
                 .Select(
                     x => producer.ProduceAsync(
                         new ProduceData(
                             "test-client",
                             Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
                             Encoding.UTF8.GetBytes("teste_value"))));
-
+            
             var results = await Task.WhenAll(tasks);
-
+            
             sw.Stop();
             
             Console.WriteLine("elapsed: {0}ms", sw.ElapsedMilliseconds);

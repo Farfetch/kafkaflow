@@ -8,11 +8,18 @@ namespace KafkaFlow.Client.Protocol
     {
         private readonly Stream stream;
         private long position;
+        private long length = 0;
+        private readonly long offsetPosition;
 
         public TrackedStream(Stream stream, int size)
         {
             this.Size = size;
             this.stream = stream;
+
+            if (stream.CanSeek)
+            {
+                this.offsetPosition = stream.Position;
+            }
         }
 
         public int Size { get; }
@@ -23,12 +30,21 @@ namespace KafkaFlow.Client.Protocol
 
         public override bool CanWrite => this.stream.CanWrite;
 
-        public override long Length => this.stream.Length;
+        public override long Length => this.length;
 
         public override long Position
         {
             get => this.position;
-            set => throw new NotSupportedException();
+            set
+            {
+                if (!this.stream.CanSeek)
+                {
+                    throw new NotSupportedException();
+                }
+
+                this.position = value;
+                this.stream.Position = this.offsetPosition + value;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -58,7 +74,7 @@ namespace KafkaFlow.Client.Protocol
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void SetLength(long value)
         {
-            this.stream.SetLength(value);
+            throw new NotSupportedException();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -80,7 +96,12 @@ namespace KafkaFlow.Client.Protocol
 
             do
             {
-                remaining -= this.stream.Read(buffer, 0, Math.Min(remaining, buffer.Length));
+                var read = this.stream.Read(buffer, 0, Math.Min(remaining, buffer.Length));
+
+                if (read == 0)
+                    return;
+
+                remaining -= read;
             } while (remaining > 0);
         }
     }

@@ -155,7 +155,7 @@ namespace KafkaFlow.Client.Producers
                                 new ProduceException(
                                     partition.Error,
                                     partition.ErrorMessage,
-                                    recordError.Message));
+                                    recordError?.Message));
                         }
                     }
                 }

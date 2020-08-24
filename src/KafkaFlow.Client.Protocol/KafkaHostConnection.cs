@@ -96,7 +96,9 @@ namespace KafkaFlow.Client.Protocol
 
             lock (this.stream)
             {
-                this.pendingRequests.TryAdd(++this.lastCorrelationId, pendingRequest);
+                this.pendingRequests.TryAdd(
+                    Interlocked.Increment(ref this.lastCorrelationId),
+                    pendingRequest);
 
                 this.stream.WriteMessage(
                     new Request(
