@@ -98,6 +98,31 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         }
 
         [HttpPost]
+        [Route("{consumerName}/restart")]
+        [ProducesResponseType(202)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> Restart(
+            [FromRoute] string groupId,
+            [FromRoute] string consumerName)
+        {
+            var consumer = this.consumers.All
+                .FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
+
+            if (consumer is null)
+            {
+                return this.NotFound();
+            }
+
+            await this.adminProducer.ProduceAsync(
+                new RestartConsumerByName
+                {
+                    ConsumerName = consumerName
+                });
+
+            return this.Accepted();
+        }
+
+        [HttpPost]
         [Route("{consumerName}/reset-offsets")]
         [ProducesResponseType(202)]
         [ProducesResponseType(404)]
