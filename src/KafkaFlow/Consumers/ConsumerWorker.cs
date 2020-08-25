@@ -76,9 +76,19 @@ namespace KafkaFlow.Consumers
 
                             try
                             {
-                                await this.middlewareExecutor
-                                    .Execute(context, con => Task.CompletedTask)
+                                using var timeoutTokenSource = new CancellationTokenSource(this.configuration.MessageTimeout);
+                                await Task
+                                    .Run(
+                                        () => this.middlewareExecutor.Execute(context, con => Task.CompletedTask),
+                                        timeoutTokenSource.Token)
                                     .ConfigureAwait(false);
+                            }
+                            catch (OperationCanceledException ex)
+                            {
+                                this.logHandler.Error(
+                                    "Kafka message processing timeout",
+                                    ex,
+                                    context);
                             }
                             catch (Exception ex)
                             {

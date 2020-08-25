@@ -22,6 +22,7 @@ namespace KafkaFlow.Configuration
 
         private Factory<IDistributionStrategy> distributionStrategyFactory = resolver => new BytesSumDistributionStrategy();
         private TimeSpan autoCommitInterval = TimeSpan.FromSeconds(5);
+        private TimeSpan messageTimeout = TimeSpan.FromMinutes(5);
 
         public IDependencyConfigurator DependencyConfigurator { get; }
 
@@ -82,6 +83,12 @@ namespace KafkaFlow.Configuration
         public IConsumerConfigurationBuilder WithAutoCommitIntervalMs(int autoCommitIntervalMs)
         {
             this.autoCommitInterval = TimeSpan.FromMilliseconds(autoCommitIntervalMs);
+            return this;
+        }
+
+        public IConsumerConfigurationBuilder WithMessageTimeout(TimeSpan timeout)
+        {
+            this.messageTimeout = timeout;
             return this;
         }
 
@@ -155,7 +162,8 @@ namespace KafkaFlow.Configuration
                 this.distributionStrategyFactory,
                 middlewareConfiguration,
                 this.autoStoreOffsets,
-                this.autoCommitInterval);
+                this.autoCommitInterval,
+                this.messageTimeout);
         }
     }
 }

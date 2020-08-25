@@ -119,5 +119,13 @@ namespace KafkaFlow.Configuration
         /// <param name="middlewares">A handler to register middlewares</param>
         /// <returns></returns>
         IConsumerConfigurationBuilder AddMiddlewares(Action<IConsumerMiddlewareConfigurationBuilder> middlewares);
+
+        /// <summary>
+        /// The time that KafkaFlow waits for the message processing end.
+        /// If this time expires KafkaFlow will cancel the execution and will process the next message
+        /// </summary>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        IConsumerConfigurationBuilder WithMessageTimeout(TimeSpan timeout);
     }
 }

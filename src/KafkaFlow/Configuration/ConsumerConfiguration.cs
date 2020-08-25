@@ -18,7 +18,8 @@ namespace KafkaFlow.Configuration
             Factory<IDistributionStrategy> distributionStrategyFactory,
             MiddlewareConfiguration middlewareConfiguration,
             bool autoStoreOffsets,
-            TimeSpan autoCommitInterval)
+            TimeSpan autoCommitInterval,
+            TimeSpan messageTimeout)
         {
             this.consumerConfig = consumerConfig ?? throw new ArgumentNullException(nameof(consumerConfig));
 
@@ -32,6 +33,7 @@ namespace KafkaFlow.Configuration
             this.MiddlewareConfiguration = middlewareConfiguration ?? throw new ArgumentNullException(nameof(middlewareConfiguration));
             this.AutoStoreOffsets = autoStoreOffsets;
             this.AutoCommitInterval = autoCommitInterval;
+            this.MessageTimeout = messageTimeout;
             this.Topics = topics ?? throw new ArgumentNullException(nameof(topics));
             this.ConsumerName = consumerName ?? Guid.NewGuid().ToString();
             this.WorkerCount = workerCount;
@@ -71,6 +73,8 @@ namespace KafkaFlow.Configuration
         public bool AutoStoreOffsets { get; }
 
         public TimeSpan AutoCommitInterval { get; }
+
+        public TimeSpan MessageTimeout { get; }
 
         public ConsumerConfig GetKafkaConfig()
         {
