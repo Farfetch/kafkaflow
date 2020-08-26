@@ -74,7 +74,7 @@ namespace KafkaFlow.Consumers
         {
             var currentWorkers = this.workers;
             this.workers = new List<IConsumerWorker>();
-            
+
             await Task.WhenAll(currentWorkers.Select(x => x.StopAsync())).ConfigureAwait(false);
 
             this.offsetManager?.Dispose();
@@ -83,8 +83,6 @@ namespace KafkaFlow.Consumers
 
         public async Task EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken = default)
         {
-            this.offsetManager.InitializeOffsetIfNeeded(message.TopicPartitionOffset);
-
             var worker = (IConsumerWorker) await this.distributionStrategy
                 .GetWorkerAsync(message.Message.Key, stopCancellationToken)
                 .ConfigureAwait(false);
@@ -93,6 +91,8 @@ namespace KafkaFlow.Consumers
             {
                 return;
             }
+
+            this.offsetManager.AddOffset(message.TopicPartitionOffset);
 
             await worker
                 .EnqueueAsync(message, stopCancellationToken)
