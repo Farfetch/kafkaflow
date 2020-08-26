@@ -1,5 +1,6 @@
 namespace KafkaFlow.Admin.Handlers
 {
+    using System;
     using System.Linq;
     using System.Threading.Tasks;
     using Confluent.Kafka;
@@ -22,9 +23,11 @@ namespace KafkaFlow.Admin.Handlers
                 return Task.CompletedTask;
             }
 
-            var offsets = consumer.Assignment
-                .Select(x => new TopicPartitionOffset(x, 0))
-                .ToList();
+            var offsets = consumer.OffsetsForTimes(
+                consumer.Assignment.Select(
+                    partition =>
+                        new TopicPartitionTimestamp(partition, new Timestamp(new DateTime(1990, 1, 1)))),
+                TimeSpan.FromSeconds(30));
 
             return consumer.OverrideOffsetsAndRestartAsync(offsets);
         }
