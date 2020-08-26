@@ -47,7 +47,7 @@
                                     .WithGroupId("print-console-handler")
                                     .WithName(consumerName)
                                     .WithBufferSize(100)
-                                    .WithWorkersCount(1)
+                                    .WithWorkersCount(20)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares

@@ -27,20 +27,10 @@ namespace KafkaFlow.UnitTests
         }
         
         [TestMethod]
-        public void StoreOffset_WithoutInitialization_ThrowsException()
-        {
-            // Act
-            Action act = () => this.target.StoreOffset(new TopicPartitionOffset(this.topicPartition, new Offset(1) ));
-            
-            // Assert
-            act.Should().Throw<InvalidOperationException>();
-        }
-        
-        [TestMethod]
         public void StoreOffset_WithInvalidTopicPartition_ShouldDoNothing()
         {
             // Arrange
-            this.target.InitializeOffsetIfNeeded(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
+            this.target.AddOffset(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
             
             // Act
             this.target.StoreOffset(new TopicPartitionOffset(new TopicPartition("topic-B", new Partition(1)), new Offset(1)));
@@ -53,7 +43,9 @@ namespace KafkaFlow.UnitTests
         public void StoreOffset_WithGaps_ShouldStoreOffsetJustOnce()
         {
             // Arrange
-            this.target.InitializeOffsetIfNeeded(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
+            this.target.AddOffset(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
+            this.target.AddOffset(new TopicPartitionOffset(this.topicPartition, new Offset(2)));
+            this.target.AddOffset(new TopicPartitionOffset(this.topicPartition, new Offset(3)));
             
             // Act
             this.target.StoreOffset(new TopicPartitionOffset(this.topicPartition, new Offset(3)));

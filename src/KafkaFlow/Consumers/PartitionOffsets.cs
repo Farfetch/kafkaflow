@@ -2,40 +2,46 @@ namespace KafkaFlow.Consumers
 {
     using System;
     using System.Collections.Generic;
-    using Confluent.Kafka;
+    using System.Linq;
+    using System.Runtime.CompilerServices;
 
     internal class PartitionOffsets
     {
-        private readonly LinkedList<long> pendingOffsets = new LinkedList<long>();
+        private readonly SortedSet<long> pendingOffsets = new SortedSet<long>();
+        private readonly LinkedList<long> offsetsOrder = new LinkedList<long>();
 
-        public long LastOffset { get; private set; } = Offset.Unset;
+        public long LastOffset { get; private set; } = -1;
 
-        public void InitializeLastOffset(long offset)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AddOffset(long offset)
         {
-            if (this.LastOffset != Offset.Unset)
+            lock (this.offsetsOrder)
             {
-                throw new InvalidOperationException("LastOffset is already initialized");
+                this.offsetsOrder.AddLast(offset);
             }
-
-            this.LastOffset = offset;
         }
 
         public bool ShouldUpdateOffset(long newOffset)
         {
-            if (this.LastOffset == Offset.Unset)
+            lock (this.offsetsOrder)
             {
-                throw new InvalidOperationException($"Call '{nameof(this.InitializeLastOffset)}()' first");
-            }
+                if (!this.offsetsOrder.Any())
+                {
+                    throw new InvalidOperationException(
+                        $"There is no offsets in the queue. Call {nameof(this.AddOffset)} first");
+                }
 
-            if (newOffset != this.LastOffset + 1)
-            {
-                this.pendingOffsets.AddLast(newOffset);
-                return false;
-            }
+                if (newOffset != this.offsetsOrder.First.Value)
+                {
+                    this.pendingOffsets.Add(newOffset);
+                    return false;
+                }
 
-            while (this.pendingOffsets.Remove(++this.LastOffset + 1))
-            {
-                // Do nothing
+                do
+                {
+                    this.LastOffset = this.offsetsOrder.First.Value;
+                    this.offsetsOrder.RemoveFirst();
+                } while (this.offsetsOrder.Count > 0 && this.pendingOffsets.Remove(this.offsetsOrder.First.Value));
             }
 
             return true;

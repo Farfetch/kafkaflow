@@ -39,13 +39,13 @@ namespace KafkaFlow.Consumers
             }
         }
 
-        public void InitializeOffsetIfNeeded(TopicPartitionOffset partitionOffset)
+        public void AddOffset(TopicPartitionOffset offset)
         {
-            if (
-                this.partitionsOffsets.TryGetValue((partitionOffset.Topic, partitionOffset.Partition.Value), out var offsets) &&
-                offsets.LastOffset == Offset.Unset)
+            if (this.partitionsOffsets.TryGetValue(
+                (offset.Topic, offset.Partition.Value),
+                out var offsets))
             {
-                offsets.InitializeLastOffset(partitionOffset.Offset.Value - 1);
+                offsets.AddOffset(offset.Offset.Value);
             }
         }
 
