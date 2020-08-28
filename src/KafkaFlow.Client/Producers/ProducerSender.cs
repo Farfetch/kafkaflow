@@ -1,10 +1,8 @@
 namespace KafkaFlow.Client.Producers
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Exceptions;
@@ -25,8 +23,8 @@ namespace KafkaFlow.Client.Producers
         private readonly CancellationTokenSource stopLingerProduceTokenSource = new CancellationTokenSource();
         private readonly SemaphoreSlim produceSemaphore = new SemaphoreSlim(1, 1);
 
-        private ConcurrentDictionary<(string, int), LinkedList<ProduceQueueItem>> pendingRequests
-            = new ConcurrentDictionary<(string, int), LinkedList<ProduceQueueItem>>();
+        private SortedDictionary<(string, int), LinkedList<ProduceQueueItem>> pendingRequests
+            = new SortedDictionary<(string, int), LinkedList<ProduceQueueItem>>();
 
         public ProducerSender(IKafkaHost host, ProducerConfiguration configuration)
         {
@@ -84,8 +82,8 @@ namespace KafkaFlow.Client.Producers
                 if (this.messageCount == 0)
                     return;
 
-                ProduceResponse result;
-                ConcurrentDictionary<(string, int), LinkedList<ProduceQueueItem>> requests;
+                Task<ProduceResponse> resultTask;
+                SortedDictionary<(string, int), LinkedList<ProduceQueueItem>> requests;
 
                 await this.produceSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -98,18 +96,20 @@ namespace KafkaFlow.Client.Producers
                         ref this.request,
                         new ProduceRequest(this.configuration.Acks, this.configuration.ProduceTimeout.Milliseconds));
 
-                    result = await this.host.SendAsync(queued).ConfigureAwait(false);
+                    resultTask = this.host.SendAsync(queued);
 
                     requests = Interlocked.Exchange(
                         ref this.pendingRequests,
-                        new ConcurrentDictionary<(string, int), LinkedList<ProduceQueueItem>>());
+                        new SortedDictionary<(string, int), LinkedList<ProduceQueueItem>>());
                 }
                 finally
                 {
                     this.produceSemaphore.Release();
                 }
 
-                this.RespondRequests(result, requests);
+                this.RespondRequests(
+                    await resultTask.ConfigureAwait(false),
+                    requests);
             }
             catch (Exception e)
             {
@@ -124,14 +124,16 @@ namespace KafkaFlow.Client.Producers
         // [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void RespondRequests(
             ProduceResponse result,
-            ConcurrentDictionary<(string, int), LinkedList<ProduceQueueItem>> requests)
+            IDictionary<(string, int), LinkedList<ProduceQueueItem>> requests)
         {
             foreach (var topic in result.Topics)
             {
                 foreach (var partition in topic.Partitions)
                 {
-                    if (!requests.TryRemove((topic.Name, partition.Id), out var items))
+                    if (!requests.TryGetValue((topic.Name, partition.Id), out var items))
                         continue;
+
+                    requests.Remove((topic.Name, partition.Id));
 
                     foreach (var item in items)
                     {
