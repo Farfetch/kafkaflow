@@ -2,11 +2,14 @@ namespace KafkaFlow.Client
 {
     using System;
     using System.Threading.Tasks;
-    using KafkaFlow.Client.Messages;
+    using KafkaFlow.Client.Protocol;
+    using KafkaFlow.Client.Protocol.Messages;
 
     internal interface IKafkaHost : IDisposable
     {
-        Task<TResponse> SendAsync<TResponse>(IClientRequest<TResponse> request)
-            where TResponse : IClientResponse;
+        IRequestFactory RequestFactory { get; }
+
+        Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> request)
+            where TResponse : class, IResponse;
     }
 }

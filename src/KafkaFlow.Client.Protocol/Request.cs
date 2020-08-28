@@ -4,6 +4,7 @@ namespace KafkaFlow.Client.Protocol
     using System.IO;
     using KafkaFlow.Client.Protocol.MemoryManagement;
     using KafkaFlow.Client.Protocol.Messages;
+    using KafkaFlow.Client.Protocol.Messages.Implementations;
 
     public class Request : IRequest
     {
@@ -31,7 +32,7 @@ namespace KafkaFlow.Client.Protocol
             tmp.WriteInt32(this.CorrelationId);
             tmp.WriteString(this.ClientId);
 
-            if (this.Message is IRequestV2)
+            if (this.Message is ITaggedFields)
                 tmp.WriteTaggedFields(this.TaggedFields);
 
             tmp.WriteMessage(this.Message);

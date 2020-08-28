@@ -1,24 +1,22 @@
 namespace KafkaFlow.Client.Producers
 {
-    using System;
     using System.Collections.Concurrent;
     using System.Linq;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Core;
     using KafkaFlow.Client.Exceptions;
     using KafkaFlow.Client.Extensions;
-    using KafkaFlow.Client.Messages;
     using KafkaFlow.Client.Producers.Partitioners;
+    using KafkaFlow.Client.Protocol.Messages;
 
     internal class Producer : IProducer
     {
         private readonly IKafkaCluster cluster;
         private readonly ProducerConfiguration configuration;
-
         private readonly IProducerPartitioner partitioner;
 
-        private readonly ConcurrentAsyncDictionary<string, MetadataResponse.Topic> metadataCache =
-            new ConcurrentAsyncDictionary<string, MetadataResponse.Topic>();
+        private readonly ConcurrentAsyncDictionary<string, IMetadataResponse.ITopic> metadataCache =
+            new ConcurrentAsyncDictionary<string, IMetadataResponse.ITopic>();
 
         private readonly ConcurrentDictionary<int, ProducerSender> senders =
             new ConcurrentDictionary<int, ProducerSender>();
@@ -64,15 +62,21 @@ namespace KafkaFlow.Client.Producers
                         this.configuration));
         }
 
-        private ValueTask<MetadataResponse.Topic> GetTopicMetadataAsync(string topicName)
+        private ValueTask<IMetadataResponse.ITopic> GetTopicMetadataAsync(string topicName)
         {
             return this.metadataCache.GetOrAddAsync(
                 topicName,
                 async () =>
                 {
-                    var metadata = await this.cluster.AnyHost
-                        .SendAsync(new MetadataRequest(new[] { topicName }))
-                        .ConfigureAwait(false);
+                    var host = this.cluster.AnyHost;
+
+                    var request = host.RequestFactory.CreateMetadata();
+
+                    var topic = request.CreateTopic();
+                    topic.Name = topicName;
+                    request.Topics = new[] { topic };
+
+                    var metadata = await host.SendAsync(request).ConfigureAwait(false);
 
                     if (!metadata.Topics.Any())
                     {

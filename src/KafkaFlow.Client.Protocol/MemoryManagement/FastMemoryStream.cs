@@ -1,9 +1,11 @@
 namespace KafkaFlow.Client.Protocol.MemoryManagement
 {
     using System;
+    using System.Buffers.Binary;
     using System.Collections;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Net.Sockets;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
@@ -39,6 +41,7 @@ namespace KafkaFlow.Client.Protocol.MemoryManagement
             // Do nothing
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int Read(byte[] buffer, int offset, int count) => this.Read(new Span<byte>(buffer, offset, count));
 
         public override unsafe int Read(Span<byte> buffer)
@@ -75,8 +78,7 @@ namespace KafkaFlow.Client.Protocol.MemoryManagement
 
         public unsafe void ReadFrom(NetworkStream stream, int count)
         {
-            var startPosition = this.Position;
-            var endPosition = startPosition + count;
+            var endPosition = this.Position + count;
 
             this.EnsureCapacity(endPosition);
 
@@ -94,20 +96,18 @@ namespace KafkaFlow.Client.Protocol.MemoryManagement
                 stream.Read(new Span<byte>((segment + startRelPosition).ToPointer(), writeCount));
 
                 startRelPosition = 0;
-
-                this.length += writeCount;
                 count -= writeCount;
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void Write(byte[] buffer, int offset, int count) => this.Write(new Span<byte>(buffer, offset, count));
 
         public override unsafe void Write(ReadOnlySpan<byte> buffer)
         {
             var count = buffer.Length;
             var offset = 0;
-            var startPosition = this.Position;
-            var endPosition = startPosition + count;
+            var endPosition = this.Position + count;
 
             this.EnsureCapacity(endPosition);
 
@@ -128,12 +128,12 @@ namespace KafkaFlow.Client.Protocol.MemoryManagement
 
                 startRelPosition = 0;
 
-                this.length += writeCount;
                 offset += writeCount;
                 count -= writeCount;
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public new void CopyTo(Stream destination)
         {
             if (destination is FastMemoryStream fast)
@@ -152,13 +152,10 @@ namespace KafkaFlow.Client.Protocol.MemoryManagement
 
             var totalWriteCount = this.Length - this.Position;
 
-            dest.EnsureCapacity(dest.Length + totalWriteCount);
+            dest.EnsureCapacity(dest.Position + totalWriteCount);
 
             this.Position = this.Length;
             dest.Position += totalWriteCount;
-
-            if (dest.Position > dest.Length)
-                dest.length = dest.Position;
 
             while (totalWriteCount > 0)
             {
@@ -276,6 +273,9 @@ namespace KafkaFlow.Client.Protocol.MemoryManagement
                         nameof(this.Position),
                         $"The {nameof(this.Position)} must be greater or equal 0");
                 }
+
+                if (value > this.length)
+                    this.length = value;
 
                 this.currentSegment = this.GetSegment(value);
                 this.relativePosition = this.GetRelativePosition(value);

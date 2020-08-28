@@ -91,6 +91,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Client", "KafkaFl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Client.Sample", "KafkaFlow.Client.Sample\KafkaFlow.Client.Sample.csproj", "{96DFDA84-246A-41B9-9A04-834140CCBACF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Client.Benchmark", "KafkaFlow.Client.Benchmark\KafkaFlow.Client.Benchmark.csproj", "{39116A28-8B76-4D96-A169-518A0A1E3FAF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -233,6 +235,10 @@ Global
 		{96DFDA84-246A-41B9-9A04-834140CCBACF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96DFDA84-246A-41B9-9A04-834140CCBACF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96DFDA84-246A-41B9-9A04-834140CCBACF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39116A28-8B76-4D96-A169-518A0A1E3FAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39116A28-8B76-4D96-A169-518A0A1E3FAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39116A28-8B76-4D96-A169-518A0A1E3FAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39116A28-8B76-4D96-A169-518A0A1E3FAF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -274,6 +280,7 @@ Global
 		{846A62A8-B65E-41B7-A680-E9C4DE3A9AC0} = {52DDF240-B6EA-4DE6-82DC-BA982A5A9F82}
 		{D20C61A8-6B47-4768-B18B-5897F2DCAED9} = {52DDF240-B6EA-4DE6-82DC-BA982A5A9F82}
 		{96DFDA84-246A-41B9-9A04-834140CCBACF} = {52DDF240-B6EA-4DE6-82DC-BA982A5A9F82}
+		{39116A28-8B76-4D96-A169-518A0A1E3FAF} = {52DDF240-B6EA-4DE6-82DC-BA982A5A9F82}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AE955B5-16B0-41CF-9F12-66D15B3DD1AB}

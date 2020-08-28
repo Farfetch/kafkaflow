@@ -2,6 +2,7 @@ namespace KafkaFlow.Client.Exceptions
 {
     using System;
     using KafkaFlow.Client.Protocol.Messages;
+    using KafkaFlow.Client.Protocol.Messages.Implementations;
 
     public class ProduceException : Exception
     {

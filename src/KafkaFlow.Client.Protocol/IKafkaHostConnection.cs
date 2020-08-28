@@ -6,6 +6,6 @@ namespace KafkaFlow.Client.Protocol
     public interface IKafkaHostConnection : IDisposable
     {
         Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> request)
-            where TResponse : IResponse, new();
+            where TResponse : class, IResponse;
     }
 }

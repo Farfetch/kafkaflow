@@ -75,10 +75,9 @@ namespace KafkaFlow.Client.Tests
         {
             // Arrange
             var buffer = new byte[bufferSize];
-            this.target.Write(buffer, 0, buffer.Length);
 
             // Act
-            this.target.Dispose();
+            this.target.Write(buffer, 0, buffer.Length);
 
             // Assert
             this.target.Position.Should().Be(bufferSize);
@@ -104,6 +103,32 @@ namespace KafkaFlow.Client.Tests
 
             // Assert
             this.target.Should().BeEquivalentTo(buffer);
+        }
+
+        [TestMethod]
+        [DataRow(0)]
+        [DataRow(16)]
+        [DataRow(SegmentSize)]
+        [DataRow(98)]
+        [DataRow(SegmentSize * 3)]
+        [DataRow(478)]
+        public void Write_Chuncks_EqualToBuffer(int bufferSize)
+        {
+            // Arrange
+            var buffer = this.fixture
+                .CreateMany<byte>(bufferSize)
+                .ToArray();
+
+            // Act
+            for (var i = 0; i < 100; i++)
+            {
+                this.target.Write(buffer, 0, buffer.Length);
+            }
+
+            // Assert
+            this.target.Length.Should().Be(bufferSize * 100);
+            this.target.Position.Should().Be(bufferSize * 100);
+            // this.target.Should().BeEquivalentTo(buffer.)
         }
 
         [TestMethod]

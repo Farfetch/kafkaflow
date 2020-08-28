@@ -7,8 +7,9 @@ namespace KafkaFlow.Client.Protocol
     using System.Runtime.CompilerServices;
     using System.Text;
     using KafkaFlow.Client.Protocol.Messages;
+    using KafkaFlow.Client.Protocol.Messages.Implementations;
 
-    internal static class StreamExtensions
+    public static class StreamExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteMessage(this Stream destination, IRequest message) => message.Write(destination);
@@ -127,7 +128,7 @@ namespace KafkaFlow.Client.Protocol
             }
         }
 
-        public static void WriteArray<TMessage>(this Stream destination, IReadOnlyCollection<TMessage> items)
+        public static void WriteArray<TMessage>(this Stream destination, ICollection<TMessage> items)
             where TMessage : IRequest
         {
             destination.WriteInt32(items.Count);

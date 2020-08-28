@@ -2,20 +2,21 @@ namespace KafkaFlow.Client.Protocol
 {
     using System;
     using System.Buffers.Binary;
-    using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.Net.Sockets;
     using System.Runtime.CompilerServices;
-    using System.Security.Cryptography.X509Certificates;
     using System.Threading;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Protocol.MemoryManagement;
+    using KafkaFlow.Client.Protocol.Messages;
 
     public class KafkaHostConnection : IKafkaHostConnection
     {
         private readonly TcpClient client;
         private readonly NetworkStream stream;
 
-        private readonly ConcurrentDictionary<int, PendingRequest> pendingRequests = new ConcurrentDictionary<int, PendingRequest>();
+        private readonly SortedDictionary<int, PendingRequest> pendingRequests =
+            new SortedDictionary<int, PendingRequest>();
 
         private volatile int lastCorrelationId;
 
@@ -48,11 +49,10 @@ namespace KafkaFlow.Client.Protocol
                     if (messageSize <= 0)
                         continue;
 
-                    using var memory = new FastMemoryStream(FastMemoryManager.Instance);
-
+                    using var memory = new FastMemoryStream(FastMemoryManager.Instance, messageSize);
                     memory.ReadFrom(this.stream, messageSize);
                     memory.Position = 0;
-                    
+
                     using var tracked = new TrackedStream(memory, messageSize);
                     this.RespondMessage(tracked);
                 }
@@ -68,23 +68,25 @@ namespace KafkaFlow.Client.Protocol
         {
             var correlationId = source.ReadInt32();
 
-            if (!this.pendingRequests.TryRemove(correlationId, out var request))
+            if (!this.pendingRequests.TryGetValue(correlationId, out var request))
             {
                 source.DiscardRemainingData();
                 return;
             }
 
-            var message = (IResponse) Activator.CreateInstance(request.ResponseType)!;
+            this.pendingRequests.Remove(correlationId);
 
-            if (message is IResponseV2)
+            var response = (IResponse) Activator.CreateInstance(request.ResponseType);
+
+            if (response is ITaggedFields)
                 _ = source.ReadTaggedFields();
 
-            message.Read(source);
+            response.Read(source);
 
             if (source.Size != source.Position)
                 throw new Exception("Some data was not read from response");
 
-            request.CompletionSource.TrySetResult(message);
+            request.CompletionSource.TrySetResult(response);
         }
 
         private async Task<int> WaitForMessageSizeAsync()
@@ -97,9 +99,9 @@ namespace KafkaFlow.Client.Protocol
         }
 
         public Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> request)
-            where TResponse : IResponse, new()
+            where TResponse : class, IResponse
         {
-            var pendingRequest = new PendingRequest(this.requestTimeout, typeof(TResponse));
+            var pendingRequest = new PendingRequest(this.requestTimeout, request.ResponseType);
 
             lock (this.stream)
             {
@@ -126,19 +128,18 @@ namespace KafkaFlow.Client.Protocol
             this.client.Dispose();
         }
 
-        private class PendingRequest
+        private readonly struct PendingRequest
         {
             public TimeSpan Timeout { get; }
-
             public Type ResponseType { get; }
 
-            public readonly TaskCompletionSource<IResponse> CompletionSource =
-                new TaskCompletionSource<IResponse>();
+            public readonly TaskCompletionSource<IResponse> CompletionSource;
 
             public PendingRequest(TimeSpan timeout, Type responseType)
             {
                 this.Timeout = timeout;
                 this.ResponseType = responseType;
+                this.CompletionSource = new TaskCompletionSource<IResponse>();
             }
 
             public Task<TResponse> GetTask<TResponse>() where TResponse : IResponse =>

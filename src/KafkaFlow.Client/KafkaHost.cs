@@ -1,13 +1,11 @@
 namespace KafkaFlow.Client
 {
     using System;
-    using System.Linq;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Core;
-    using KafkaFlow.Client.Messages;
-    using KafkaFlow.Client.Messages.Adapters;
     using KafkaFlow.Client.Protocol;
     using KafkaFlow.Client.Protocol.Messages;
+    using KafkaFlow.Client.Protocol.Messages.Implementations;
 
     internal class KafkaHost : IKafkaHost
     {
@@ -15,7 +13,7 @@ namespace KafkaFlow.Client
         private readonly string clientId;
         private readonly TimeSpan requestTimeout;
 
-        private readonly AsyncLazy<IHostConnectionProxy> lazyConnection;
+        private readonly AsyncLazy<IKafkaHostConnection> lazyConnection;
 
         public KafkaHost(KafkaHostAddress address, string clientId, TimeSpan requestTimeout)
         {
@@ -23,26 +21,28 @@ namespace KafkaFlow.Client
             this.clientId = clientId;
             this.requestTimeout = requestTimeout;
 
-            this.lazyConnection = new AsyncLazy<IHostConnectionProxy>(this.CreateConnection);
+            this.lazyConnection = new AsyncLazy<IKafkaHostConnection>(this.CreateConnection);
         }
 
-        public async Task<TResponse> SendAsync<TResponse>(IClientRequest<TResponse> request)
-            where TResponse : IClientResponse
+        public IRequestFactory RequestFactory { get; private set; } = new RequestFactory(null);
+
+        public async Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> request)
+            where TResponse : class, IResponse
         {
             var connection = await this.lazyConnection.Value.ConfigureAwait(false);
 
             return await connection.SendAsync(request).ConfigureAwait(false);
         }
 
-        private async ValueTask<IHostConnectionProxy> CreateConnection()
+        private async ValueTask<IKafkaHostConnection> CreateConnection()
         {
-            var rawConnection = new KafkaHostConnection(
+            var connection = new KafkaHostConnection(
                 this.address.Host,
                 this.address.Port,
                 this.clientId,
                 this.requestTimeout);
 
-            var apiVersionResponse = await rawConnection
+            var apiVersionResponse = await connection
                 .SendAsync(new ApiVersionV2Request())
                 .ConfigureAwait(false);
 
@@ -51,11 +51,7 @@ namespace KafkaFlow.Client
                 throw new Exception($"Error trying to get Kafka host api version: {apiVersionResponse.Error.ToString()}");
             }
 
-            var hostCapabilities = new HostCapabilities(
-                apiVersionResponse.ApiVersions
-                    .Select(x => new ApiVersionRange(x.ApiKey, x.MinVersion, x.MaxVersion)));
-
-            return new HostConnectionProxy(rawConnection, hostCapabilities);
+            return connection;
         }
 
         public void Dispose()

@@ -7,15 +7,15 @@ namespace KafkaFlow.Client.Producers
     using System.Threading.Tasks;
     using KafkaFlow.Client.Exceptions;
     using KafkaFlow.Client.Extensions;
-    using KafkaFlow.Client.Messages;
     using KafkaFlow.Client.Protocol.Messages;
+    using KafkaFlow.Client.Protocol.Messages.Implementations;
 
     internal class ProducerSender : IDisposable, IAsyncDisposable
     {
         private readonly IKafkaHost host;
         private readonly ProducerConfiguration configuration;
 
-        private ProduceRequest request;
+        private IProduceRequest request;
         private volatile int messageCount;
         private DateTime lastProductionTime = DateTime.MinValue;
 
@@ -26,11 +26,15 @@ namespace KafkaFlow.Client.Producers
         private SortedDictionary<(string, int), LinkedList<ProduceQueueItem>> pendingRequests
             = new SortedDictionary<(string, int), LinkedList<ProduceQueueItem>>();
 
-        public ProducerSender(IKafkaHost host, ProducerConfiguration configuration)
+        public ProducerSender(
+            IKafkaHost host,
+            ProducerConfiguration configuration)
         {
             this.host = host;
             this.configuration = configuration;
-            this.request = new ProduceRequest(this.configuration.Acks, this.configuration.ProduceTimeout.Milliseconds);
+            this.request = host.RequestFactory.CreateProduce(
+                this.configuration.Acks,
+                this.configuration.ProduceTimeout.Milliseconds);
 
             this.produceTimeoutTask = Task.Run(this.LingerProduceAsync);
         }
@@ -43,13 +47,13 @@ namespace KafkaFlow.Client.Producers
             {
                 var topic = this.request.Topics.GetOrAdd(
                     item.Data.Topic,
-                    _ => new ProduceRequest.Topic(item.Data.Topic));
+                    _ => this.request.CreateTopic(item.Data.Topic));
 
                 var partition = topic.Partitions.GetOrAdd(
                     item.PartitionId,
-                    _ => new ProduceRequest.Partition(item.PartitionId, new RecordBatch()));
+                    _ => topic.CreatePartition(item.PartitionId));
 
-                partition.Batch.AddRecord(
+                partition.RecordBatch.AddRecord(
                     new RecordBatch.Record
                     {
                         Key = item.Data.Key,
@@ -58,7 +62,7 @@ namespace KafkaFlow.Client.Producers
                         //Headers = 
                     });
 
-                item.OffsetDelta = partition.Batch.LastOffsetDelta;
+                item.OffsetDelta = partition.RecordBatch.LastOffsetDelta;
 
                 this.pendingRequests
                     .SafeGetOrAdd(
@@ -82,7 +86,7 @@ namespace KafkaFlow.Client.Producers
                 if (this.messageCount == 0)
                     return;
 
-                Task<ProduceResponse> resultTask;
+                Task<IProduceResponse> resultTask;
                 SortedDictionary<(string, int), LinkedList<ProduceQueueItem>> requests;
 
                 await this.produceSemaphore.WaitAsync().ConfigureAwait(false);
@@ -94,7 +98,9 @@ namespace KafkaFlow.Client.Producers
 
                     var queued = Interlocked.Exchange(
                         ref this.request,
-                        new ProduceRequest(this.configuration.Acks, this.configuration.ProduceTimeout.Milliseconds));
+                        this.host.RequestFactory.CreateProduce(
+                            this.configuration.Acks,
+                            this.configuration.ProduceTimeout.Milliseconds));
 
                     resultTask = this.host.SendAsync(queued);
 
@@ -121,9 +127,8 @@ namespace KafkaFlow.Client.Producers
             }
         }
 
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void RespondRequests(
-            ProduceResponse result,
+            IProduceResponse result,
             IDictionary<(string, int), LinkedList<ProduceQueueItem>> requests)
         {
             foreach (var topic in result.Topics)

@@ -5,7 +5,6 @@ namespace KafkaFlow.Client
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using KafkaFlow.Client.Messages;
 
     internal class KafkaCluster : IKafkaCluster
     {
@@ -49,7 +48,9 @@ namespace KafkaFlow.Client
                 var firstHostAddress = this.addresses.First();
                 var firstHost = new KafkaHost(firstHostAddress, this.clientId, this.requestTimeout);
 
-                var metadata = await firstHost.SendAsync(new MetadataRequest()).ConfigureAwait(false);
+                var metadata = await firstHost
+                    .SendAsync(firstHost.RequestFactory.CreateMetadata())
+                    .ConfigureAwait(false);
 
                 foreach (var broker in metadata.Brokers)
                 {
