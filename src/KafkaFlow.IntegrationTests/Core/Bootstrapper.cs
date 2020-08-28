@@ -82,7 +82,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSingleTypeSerializer<ProtobufMessageSerializer, TestMessage1>()
+                                            .AddSingleTypeSerializer<TestMessage1, ProtobufMessageSerializer>()
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -179,7 +179,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(ProtobufTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSingleTypeSerializer<ProtobufMessageSerializer, TestMessage1>()
+                                            .AddSingleTypeSerializer<TestMessage1, ProtobufMessageSerializer>()
                                     )
                             )
                             .AddProducer<ProtobufGzipProducer>(
