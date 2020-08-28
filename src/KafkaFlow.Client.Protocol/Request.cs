@@ -2,6 +2,7 @@ namespace KafkaFlow.Client.Protocol
 {
     using System;
     using System.IO;
+    using KafkaFlow.Client.Protocol.MemoryManagement;
     using KafkaFlow.Client.Protocol.Messages;
 
     public class Request : IRequest
@@ -23,7 +24,7 @@ namespace KafkaFlow.Client.Protocol
 
         public void Write(Stream destination)
         {
-            using var tmp = new FastMemoryStream();
+            using var tmp = new FastMemoryStream(FastMemoryManager.Instance);
 
             tmp.WriteInt16((short) this.Message.ApiKey);
             tmp.WriteInt16(this.Message.ApiVersion);

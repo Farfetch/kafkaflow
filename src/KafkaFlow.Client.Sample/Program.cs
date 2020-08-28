@@ -4,8 +4,8 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Text;
-    using System.Threading;
     using System.Threading.Tasks;
+    using KafkaFlow.Client.Exceptions;
     using KafkaFlow.Client.Producers;
 
     class Program
@@ -14,31 +14,47 @@
         {
             var producer = ProducerBuilder.CreateProducer();
 
-            var result = await producer.ProduceAsync(
-                new ProduceData(
-                    "test-client",
-                    Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
-                    Encoding.UTF8.GetBytes("teste_value")));
+            string input;
 
-            Console.WriteLine("Starting...");
+            do
+            {
+                Console.Write("Messages to produce or exit: ");
+                input = Console.ReadLine();
 
-            var sw = Stopwatch.StartNew();
+                if (!int.TryParse(input, out var messageCount))
+                {
+                    continue;
+                }
 
-            var tasks = Enumerable
-                .Range(0, 100000)
-                .Select(
-                    x => producer.ProduceAsync(
-                        new ProduceData(
-                            "test-client",
-                            Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
-                            Encoding.UTF8.GetBytes("teste_value"))));
+                try
+                {
+                    Console.WriteLine("Starting...");
 
-            var results = await Task.WhenAll(tasks);
+                    var sw = Stopwatch.StartNew();
 
-            sw.Stop();
+                    var tasks = Enumerable
+                        .Range(0, messageCount)
+                        .Select(
+                            x => producer.ProduceAsync(
+                                new ProduceData(
+                                    "test-client",
+                                    Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
+                                    Encoding.UTF8.GetBytes("teste_value"))));
 
-            Console.WriteLine("Ended! Elapsed: {0}ms", sw.ElapsedMilliseconds);
-            Thread.Sleep(5000);
+
+                    var results = await Task.WhenAll(tasks);
+
+                    sw.Stop();
+
+                    Console.WriteLine("Ended! Elapsed: {0}ms", sw.ElapsedMilliseconds);
+                }
+                catch (ProduceException e)
+                {
+                    Console.WriteLine("Error code:" + e.ErrorCode);
+                    Console.WriteLine("Message : " + e.Message);
+                    Console.WriteLine(e.RecordMessage);
+                }
+            } while (input != "exit");
         }
     }
 }

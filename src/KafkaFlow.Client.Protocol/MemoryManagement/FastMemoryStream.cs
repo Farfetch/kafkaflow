@@ -1,28 +1,31 @@
-namespace KafkaFlow.Client.Protocol
+namespace KafkaFlow.Client.Protocol.MemoryManagement
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.IO;
+    using System.Net.Sockets;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
 
-    public class FastMemoryStream : Stream, IReadOnlyList<byte>
+    public sealed class FastMemoryStream : Stream, IReadOnlyList<byte>
     {
         private long length = 0;
         private int currentSegment = 0;
         private int relativePosition = 0;
 
+        private readonly IFastMemoryManager memoryManager;
         private readonly int segmentSize;
 
         private readonly List<IntPtr> segments = new List<IntPtr>();
 
-        public FastMemoryStream(int segmentSize)
+        public FastMemoryStream(IFastMemoryManager memoryManager, int segmentSize)
         {
+            this.memoryManager = memoryManager;
             this.segmentSize = segmentSize;
         }
 
-        public FastMemoryStream() : this(1024)
+        public FastMemoryStream(IFastMemoryManager memoryManager) : this(memoryManager, 1024)
         {
         }
 
@@ -36,8 +39,12 @@ namespace KafkaFlow.Client.Protocol
             // Do nothing
         }
 
-        public override int Read(byte[] buffer, int offset, int count)
+        public override int Read(byte[] buffer, int offset, int count) => this.Read(new Span<byte>(buffer, offset, count));
+
+        public override unsafe int Read(Span<byte> buffer)
         {
+            var offset = 0;
+            var count = buffer.Length;
             var startSegment = this.currentSegment;
             var startRelPosition = this.relativePosition;
 
@@ -54,7 +61,8 @@ namespace KafkaFlow.Client.Protocol
 
                 var writeCount = Math.Min(this.segmentSize - startRelPosition, count);
 
-                Marshal.Copy(segment + startRelPosition, buffer, offset, writeCount);
+                new Span<byte>((segment + startRelPosition).ToPointer(), writeCount)
+                    .CopyTo(buffer.Slice(offset, writeCount));
 
                 startRelPosition = 0;
 
@@ -65,7 +73,7 @@ namespace KafkaFlow.Client.Protocol
             return countToReturn;
         }
 
-        public override void Write(byte[] buffer, int offset, int count)
+        public unsafe void ReadFrom(NetworkStream stream, int count)
         {
             var startPosition = this.Position;
             var endPosition = startPosition + count;
@@ -83,7 +91,40 @@ namespace KafkaFlow.Client.Protocol
 
                 var writeCount = Math.Min(this.segmentSize - startRelPosition, count);
 
-                Marshal.Copy(buffer, offset, segment + startRelPosition, writeCount);
+                stream.Read(new Span<byte>((segment + startRelPosition).ToPointer(), writeCount));
+
+                startRelPosition = 0;
+
+                this.length += writeCount;
+                count -= writeCount;
+            }
+        }
+
+        public override void Write(byte[] buffer, int offset, int count) => this.Write(new Span<byte>(buffer, offset, count));
+
+        public override unsafe void Write(ReadOnlySpan<byte> buffer)
+        {
+            var count = buffer.Length;
+            var offset = 0;
+            var startPosition = this.Position;
+            var endPosition = startPosition + count;
+
+            this.EnsureCapacity(endPosition);
+
+            var startRelPosition = this.relativePosition;
+            var startSegment = this.currentSegment;
+
+            this.Position = endPosition;
+
+            while (count > 0)
+            {
+                var segment = this.segments[startSegment++];
+
+                var writeCount = Math.Min(this.segmentSize - startRelPosition, count);
+
+                buffer
+                    .Slice(offset, writeCount)
+                    .CopyTo(new Span<byte>((segment + startRelPosition).ToPointer(), writeCount));
 
                 startRelPosition = 0;
 
@@ -182,25 +223,11 @@ namespace KafkaFlow.Client.Protocol
             this.length = value;
         }
 
-        public byte[] ToArray()
-        {
-            var result = new byte[this.Length];
-
-            var position = this.Position;
-            this.Position = 0;
-
-            this.Read(result);
-
-            this.Position = position;
-
-            return result;
-        }
-
         protected override void Dispose(bool disposing)
         {
             foreach (var segment in this.segments)
             {
-                Marshal.FreeHGlobal(segment);
+                this.memoryManager.Free(segment);
             }
 
             this.segments.Clear();
@@ -218,7 +245,7 @@ namespace KafkaFlow.Client.Protocol
 
             while (--newSegmentsCount >= 0)
             {
-                this.segments.Add(Marshal.AllocHGlobal(this.segmentSize));
+                this.segments.Add(this.memoryManager.Allocate(this.segmentSize));
             }
         }
 
@@ -257,10 +284,7 @@ namespace KafkaFlow.Client.Protocol
 
         public long Capacity { get; private set; }
 
-        public IEnumerator<byte> GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
+        public IEnumerator<byte> GetEnumerator() => new FastMemoryStreamEnumerator(this);
 
         IEnumerator IEnumerable.GetEnumerator()
         {
@@ -268,5 +292,29 @@ namespace KafkaFlow.Client.Protocol
         }
 
         public int Count => (int) this.length;
+
+        private class FastMemoryStreamEnumerator : IEnumerator<byte>
+        {
+            private int position = -1;
+            private readonly FastMemoryStream stream;
+
+            public FastMemoryStreamEnumerator(FastMemoryStream stream)
+            {
+                this.stream = stream;
+            }
+
+            public bool MoveNext() => ++this.position < this.stream.Length;
+
+            public void Reset() => this.position = -1;
+
+            public byte Current => this.position < this.stream.Length ? this.stream[this.position] : default;
+
+            object IEnumerator.Current => this.Current;
+
+            public void Dispose()
+            {
+                // Dd nothing
+            }
+        }
     }
 }

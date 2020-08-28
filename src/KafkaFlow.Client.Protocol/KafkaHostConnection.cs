@@ -5,8 +5,10 @@ namespace KafkaFlow.Client.Protocol
     using System.Collections.Concurrent;
     using System.Net.Sockets;
     using System.Runtime.CompilerServices;
+    using System.Security.Cryptography.X509Certificates;
     using System.Threading;
     using System.Threading.Tasks;
+    using KafkaFlow.Client.Protocol.MemoryManagement;
 
     public class KafkaHostConnection : IKafkaHostConnection
     {
@@ -46,7 +48,12 @@ namespace KafkaFlow.Client.Protocol
                     if (messageSize <= 0)
                         continue;
 
-                    using var tracked = new TrackedStream(this.stream, messageSize);
+                    using var memory = new FastMemoryStream(FastMemoryManager.Instance);
+
+                    memory.ReadFrom(this.stream, messageSize);
+                    memory.Position = 0;
+                    
+                    using var tracked = new TrackedStream(memory, messageSize);
                     this.RespondMessage(tracked);
                 }
                 catch (OperationCanceledException)

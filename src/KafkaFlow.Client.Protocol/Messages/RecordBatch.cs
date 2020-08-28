@@ -5,6 +5,7 @@ namespace KafkaFlow.Client.Protocol.Messages
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Text;
+    using KafkaFlow.Client.Protocol.MemoryManagement;
 
     public class RecordBatch : IRequest, IResponse
     {
@@ -198,7 +199,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
             public void Write(Stream destination)
             {
-                using var tmp = new FastMemoryStream();
+                using var tmp = new FastMemoryStream(FastMemoryManager.Instance);
 
                 tmp.WriteByte(this.Attributes);
                 tmp.WriteVarint(this.TimestampDelta);

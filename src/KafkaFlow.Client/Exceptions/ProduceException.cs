@@ -10,6 +10,7 @@ namespace KafkaFlow.Client.Exceptions
         public string? RecordMessage { get; }
 
         public ProduceException(ErrorCode errorCode, string? partitionMessage, string? recordMessage)
+            : base(partitionMessage ?? recordMessage)
         {
             this.ErrorCode = errorCode;
             this.PartitionMessage = partitionMessage;
