@@ -102,7 +102,7 @@ namespace KafkaFlow.Client.Producers
                             this.configuration.Acks,
                             this.configuration.ProduceTimeout.Milliseconds));
 
-                    resultTask = this.host.SendAsync(queued);
+                    resultTask = this.host.Connection.SendAsync(queued);
 
                     requests = Interlocked.Exchange(
                         ref this.pendingRequests,
@@ -111,6 +111,7 @@ namespace KafkaFlow.Client.Producers
                 finally
                 {
                     this.produceSemaphore.Release();
+                    this.lastProductionTime = DateTime.Now;
                 }
 
                 this.RespondRequests(
@@ -120,10 +121,6 @@ namespace KafkaFlow.Client.Producers
             catch (Exception e)
             {
                 // TODO: some kind of log or retry on errors
-            }
-            finally
-            {
-                this.lastProductionTime = DateTime.Now;
             }
         }
 

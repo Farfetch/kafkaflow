@@ -1,63 +1,51 @@
 namespace KafkaFlow.Client
 {
     using System;
-    using System.Threading.Tasks;
-    using KafkaFlow.Client.Core;
+    using System.Linq;
     using KafkaFlow.Client.Protocol;
     using KafkaFlow.Client.Protocol.Messages;
     using KafkaFlow.Client.Protocol.Messages.Implementations;
 
     internal class KafkaHost : IKafkaHost
     {
-        private readonly KafkaHostAddress address;
-        private readonly string clientId;
-        private readonly TimeSpan requestTimeout;
-
-        private readonly AsyncLazy<IKafkaHostConnection> lazyConnection;
+        private readonly Lazy<IRequestFactory> lazyRequestFactory;
 
         public KafkaHost(KafkaHostAddress address, string clientId, TimeSpan requestTimeout)
         {
-            this.address = address;
-            this.clientId = clientId;
-            this.requestTimeout = requestTimeout;
+            this.Connection = new KafkaHostConnection(
+                address.Host,
+                address.Port,
+                clientId,
+                requestTimeout);
 
-            this.lazyConnection = new AsyncLazy<IKafkaHostConnection>(this.CreateConnection);
+            this.lazyRequestFactory = new Lazy<IRequestFactory>(this.CreateRequestFactory);
         }
 
-        public IRequestFactory RequestFactory { get; private set; } = new RequestFactory(null);
+        public IKafkaHostConnection Connection { get; }
 
-        public async Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> request)
-            where TResponse : class, IResponse
+        private IRequestFactory CreateRequestFactory()
         {
-            var connection = await this.lazyConnection.Value.ConfigureAwait(false);
-
-            return await connection.SendAsync(request).ConfigureAwait(false);
-        }
-
-        private async ValueTask<IKafkaHostConnection> CreateConnection()
-        {
-            var connection = new KafkaHostConnection(
-                this.address.Host,
-                this.address.Port,
-                this.clientId,
-                this.requestTimeout);
-
-            var apiVersionResponse = await connection
+            var apiVersionResponse = this.Connection
                 .SendAsync(new ApiVersionV2Request())
-                .ConfigureAwait(false);
+                .GetAwaiter()
+                .GetResult();
 
             if (apiVersionResponse.Error != ErrorCode.None)
             {
-                throw new Exception($"Error trying to get Kafka host api version: {apiVersionResponse.Error.ToString()}");
+                throw new Exception($"Error trying to get Kafka host api version: {apiVersionResponse.Error}");
             }
 
-            return connection;
+            return new RequestFactory(
+                new HostCapabilities(
+                    apiVersionResponse.ApiVersions
+                        .Select(x => new ApiVersionRange(x.ApiKey, x.MinVersion, x.MaxVersion))));
         }
+
+        public IRequestFactory RequestFactory => this.lazyRequestFactory.Value;
 
         public void Dispose()
         {
-            if (this.lazyConnection.IsValueCreated)
-                this.lazyConnection.Value.Result.Dispose();
+            this.Connection.Dispose();
         }
     }
 }

@@ -76,7 +76,7 @@ namespace KafkaFlow.Client.Producers
                     topic.Name = topicName;
                     request.Topics = new[] { topic };
 
-                    var metadata = await host.SendAsync(request).ConfigureAwait(false);
+                    var metadata = await host.Connection.SendAsync(request).ConfigureAwait(false);
 
                     if (!metadata.Topics.Any())
                     {
