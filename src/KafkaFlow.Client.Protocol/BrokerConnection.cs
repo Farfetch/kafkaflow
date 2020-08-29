@@ -10,7 +10,7 @@ namespace KafkaFlow.Client.Protocol
     using KafkaFlow.Client.Protocol.MemoryManagement;
     using KafkaFlow.Client.Protocol.Messages;
 
-    public class KafkaHostConnection : IKafkaHostConnection
+    public class BrokerConnection : IBrokerConnection
     {
         private readonly TcpClient client;
         private readonly NetworkStream stream;
@@ -28,7 +28,7 @@ namespace KafkaFlow.Client.Protocol
         private readonly string clientId;
         private readonly TimeSpan requestTimeout;
 
-        public KafkaHostConnection(string host, int port, string clientId, TimeSpan requestTimeout)
+        public BrokerConnection(string host, int port, string clientId, TimeSpan requestTimeout)
         {
             this.clientId = clientId;
             this.requestTimeout = requestTimeout;

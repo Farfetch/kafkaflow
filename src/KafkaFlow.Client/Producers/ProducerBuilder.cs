@@ -9,7 +9,7 @@ namespace KafkaFlow.Client.Producers
         public static IProducer CreateProducer()
         {
             var cluster = new KafkaCluster(
-                new[] { new KafkaHostAddress("localhost", 9092) },
+                new[] { new BrokerAddress("localhost", 9092) },
                 "test-id",
                 TimeSpan.FromSeconds(5));
 

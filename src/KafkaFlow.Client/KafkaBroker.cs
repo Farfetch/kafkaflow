@@ -6,13 +6,13 @@ namespace KafkaFlow.Client
     using KafkaFlow.Client.Protocol.Messages;
     using KafkaFlow.Client.Protocol.Messages.Implementations;
 
-    internal class KafkaHost : IKafkaHost
+    internal class KafkaBroker : IKafkaBroker
     {
         private readonly Lazy<IRequestFactory> lazyRequestFactory;
 
-        public KafkaHost(KafkaHostAddress address, string clientId, TimeSpan requestTimeout)
+        public KafkaBroker(BrokerAddress address, string clientId, TimeSpan requestTimeout)
         {
-            this.Connection = new KafkaHostConnection(
+            this.Connection = new BrokerConnection(
                 address.Host,
                 address.Port,
                 clientId,
@@ -21,7 +21,7 @@ namespace KafkaFlow.Client
             this.lazyRequestFactory = new Lazy<IRequestFactory>(this.CreateRequestFactory);
         }
 
-        public IKafkaHostConnection Connection { get; }
+        public IBrokerConnection Connection { get; }
 
         private IRequestFactory CreateRequestFactory()
         {
@@ -36,7 +36,7 @@ namespace KafkaFlow.Client
             }
 
             return new RequestFactory(
-                new HostCapabilities(
+                new BrokerCapabilities(
                     apiVersionResponse.ApiVersions
                         .Select(x => new ApiVersionRange(x.ApiKey, x.MinVersion, x.MaxVersion))));
         }

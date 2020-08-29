@@ -4,11 +4,11 @@ namespace KafkaFlow.Client.Protocol.Messages
     using System.Linq;
     using KafkaFlow.Client.Protocol;
 
-    public class HostCapabilities : IHostCapabilities
+    public class BrokerCapabilities : IBrokerCapabilities
     {
         private readonly Dictionary<ApiKey, ApiVersionRange> ranges;
 
-        public HostCapabilities(IEnumerable<ApiVersionRange> ranges)
+        public BrokerCapabilities(IEnumerable<ApiVersionRange> ranges)
         {
             this.ranges = ranges.ToDictionary(x => x.Api);
         }

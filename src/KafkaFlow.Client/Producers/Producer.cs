@@ -41,7 +41,7 @@ namespace KafkaFlow.Client.Producers
 
             //TODO: update cache and retry when NotLeaderForPartition occur
 
-            var sender = this.GetHostSender(topic.Partitions[partitionId].LeaderId);
+            var sender = this.GetBrokerSender(topic.Partitions[partitionId].LeaderId);
 
             var completionSource = new TaskCompletionSource<ProduceResult>();
 
@@ -52,13 +52,13 @@ namespace KafkaFlow.Client.Producers
             return await completionSource.Task.ConfigureAwait(false);
         }
 
-        private ProducerSender GetHostSender(int partitionLeaderId)
+        private ProducerSender GetBrokerSender(int partitionLeaderId)
         {
             return this.senders
                 .SafeGetOrAdd(
                     partitionLeaderId,
                     id => new ProducerSender(
-                        this.cluster.GetHost(id),
+                        this.cluster.GetBroker(id),
                         this.configuration));
         }
 
@@ -68,7 +68,7 @@ namespace KafkaFlow.Client.Producers
                 topicName,
                 async () =>
                 {
-                    var host = this.cluster.AnyHost;
+                    var host = this.cluster.AnyBroker;
 
                     var request = host.RequestFactory.CreateMetadata();
 

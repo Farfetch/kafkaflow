@@ -2,7 +2,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 {
     using KafkaFlow.Client.Protocol;
 
-    public interface IHostCapabilities
+    public interface IBrokerCapabilities
     {
         ApiVersionRange GetVersionRange(ApiKey api);
     }

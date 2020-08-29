@@ -8,16 +8,16 @@ namespace KafkaFlow.Client
 
     internal class KafkaCluster : IKafkaCluster
     {
-        private readonly IReadOnlyCollection<KafkaHostAddress> addresses;
+        private readonly IReadOnlyCollection<BrokerAddress> addresses;
         private readonly string clientId;
         private readonly TimeSpan requestTimeout;
 
-        private readonly Dictionary<int, IKafkaHost> hosts = new Dictionary<int, IKafkaHost>();
+        private readonly Dictionary<int, IKafkaBroker> brokers = new Dictionary<int, IKafkaBroker>();
 
         private readonly SemaphoreSlim initializeSemaphore = new SemaphoreSlim(1, 1);
 
         public KafkaCluster(
-            IReadOnlyCollection<KafkaHostAddress> addresses,
+            IReadOnlyCollection<BrokerAddress> addresses,
             string clientId,
             TimeSpan requestTimeout)
         {
@@ -26,27 +26,27 @@ namespace KafkaFlow.Client
             this.requestTimeout = requestTimeout;
         }
 
-        public IKafkaHost AnyHost => this.hosts.Values.First();
+        public IKafkaBroker AnyBroker => this.brokers.Values.First();
 
-        public IKafkaHost GetHost(int hostId) =>
-            this.hosts.TryGetValue(hostId, out var host) ?
+        public IKafkaBroker GetBroker(int hostId) =>
+            this.brokers.TryGetValue(hostId, out var host) ?
                 host :
                 throw new InvalidOperationException($"There os no host with id {hostId}");
 
         public async ValueTask EnsureInitializationAsync()
         {
-            if (this.hosts.Any())
+            if (this.brokers.Any())
                 return;
 
             await this.initializeSemaphore.WaitAsync().ConfigureAwait(false);
 
             try
             {
-                if (this.hosts.Any())
+                if (this.brokers.Any())
                     return;
 
                 var firstHostAddress = this.addresses.First();
-                var firstHost = new KafkaHost(firstHostAddress, this.clientId, this.requestTimeout);
+                var firstHost = new KafkaBroker(firstHostAddress, this.clientId, this.requestTimeout);
 
                 var metadata = await firstHost.Connection
                     .SendAsync(firstHost.RequestFactory.CreateMetadata())
@@ -56,14 +56,14 @@ namespace KafkaFlow.Client
                 {
                     if (broker.Host == firstHostAddress.Host && broker.Port == firstHostAddress.Port)
                     {
-                        this.hosts.Add(broker.NodeId, firstHost);
+                        this.brokers.Add(broker.NodeId, firstHost);
                     }
                     else
                     {
-                        this.hosts.Add(
+                        this.brokers.Add(
                             broker.NodeId,
-                            new KafkaHost(
-                                new KafkaHostAddress(broker.Host, broker.Port),
+                            new KafkaBroker(
+                                new BrokerAddress(broker.Host, broker.Port),
                                 this.clientId,
                                 this.requestTimeout));
                     }
@@ -75,7 +75,7 @@ namespace KafkaFlow.Client
             }
         }
 
-        public ValueTask<IKafkaHost> GetCoordinatorAsync()
+        public ValueTask<IKafkaBroker> GetCoordinatorAsync()
         {
             throw new System.NotImplementedException();
         }

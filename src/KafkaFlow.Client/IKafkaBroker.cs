@@ -4,10 +4,10 @@ namespace KafkaFlow.Client
     using KafkaFlow.Client.Protocol;
     using KafkaFlow.Client.Protocol.Messages;
 
-    internal interface IKafkaHost : IDisposable
+    internal interface IKafkaBroker : IDisposable
     {
         IRequestFactory RequestFactory { get; }
 
-        IKafkaHostConnection Connection { get; }
+        IBrokerConnection Connection { get; }
     }
 }

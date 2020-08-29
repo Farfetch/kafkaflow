@@ -4,12 +4,12 @@ namespace KafkaFlow.Client
 
     internal interface IKafkaCluster
     {
-        IKafkaHost AnyHost { get; }
+        IKafkaBroker AnyBroker { get; }
 
-        IKafkaHost GetHost(int hostId);
+        IKafkaBroker GetBroker(int hostId);
 
         ValueTask EnsureInitializationAsync();
 
-        ValueTask<IKafkaHost> GetCoordinatorAsync();
+        ValueTask<IKafkaBroker> GetCoordinatorAsync();
     }
 }

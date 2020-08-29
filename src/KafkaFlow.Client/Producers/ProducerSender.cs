@@ -12,7 +12,7 @@ namespace KafkaFlow.Client.Producers
 
     internal class ProducerSender : IDisposable, IAsyncDisposable
     {
-        private readonly IKafkaHost host;
+        private readonly IKafkaBroker broker;
         private readonly ProducerConfiguration configuration;
 
         private IProduceRequest request;
@@ -27,12 +27,12 @@ namespace KafkaFlow.Client.Producers
             = new SortedDictionary<(string, int), LinkedList<ProduceQueueItem>>();
 
         public ProducerSender(
-            IKafkaHost host,
+            IKafkaBroker broker,
             ProducerConfiguration configuration)
         {
-            this.host = host;
+            this.broker = broker;
             this.configuration = configuration;
-            this.request = host.RequestFactory.CreateProduce(
+            this.request = broker.RequestFactory.CreateProduce(
                 this.configuration.Acks,
                 this.configuration.ProduceTimeout.Milliseconds);
 
@@ -98,11 +98,11 @@ namespace KafkaFlow.Client.Producers
 
                     var queued = Interlocked.Exchange(
                         ref this.request,
-                        this.host.RequestFactory.CreateProduce(
+                        this.broker.RequestFactory.CreateProduce(
                             this.configuration.Acks,
                             this.configuration.ProduceTimeout.Milliseconds));
 
-                    resultTask = this.host.Connection.SendAsync(queued);
+                    resultTask = this.broker.Connection.SendAsync(queued);
 
                     requests = Interlocked.Exchange(
                         ref this.pendingRequests,

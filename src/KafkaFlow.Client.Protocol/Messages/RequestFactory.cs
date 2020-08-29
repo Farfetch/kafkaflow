@@ -5,9 +5,9 @@ namespace KafkaFlow.Client.Protocol.Messages
 
     public class RequestFactory : IRequestFactory
     {
-        private readonly IHostCapabilities capabilities;
+        private readonly IBrokerCapabilities capabilities;
 
-        public RequestFactory(IHostCapabilities capabilities)
+        public RequestFactory(IBrokerCapabilities capabilities)
         {
             this.capabilities = capabilities;
         }

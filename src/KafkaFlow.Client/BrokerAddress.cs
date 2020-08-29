@@ -2,12 +2,12 @@ namespace KafkaFlow.Client
 {
     using System;
 
-    public class KafkaHostAddress
+    public class BrokerAddress
     {
         public string Host { get; }
         public int Port { get; }
 
-        public KafkaHostAddress(string host, int port)
+        public BrokerAddress(string host, int port)
         {
             this.Host = !string.IsNullOrWhiteSpace(host) ?
                 host :
@@ -16,7 +16,7 @@ namespace KafkaFlow.Client
             this.Port = port;
         }
 
-        public static KafkaHostAddress Parse(string address)
+        public static BrokerAddress Parse(string address)
         {
             throw new NotImplementedException();
         }
