@@ -2,6 +2,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
 {
     using System;
     using System.IO;
+    using KafkaFlow.Client.Protocol.Streams;
 
     public class FindCoordinatorV3Request : IRequestMessageV2<FindCoordinatorV3Response>
     {

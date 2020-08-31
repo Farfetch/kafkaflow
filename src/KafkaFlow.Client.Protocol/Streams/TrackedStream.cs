@@ -1,4 +1,4 @@
-namespace KafkaFlow.Client.Protocol
+namespace KafkaFlow.Client.Protocol.Streams
 {
     using System;
     using System.IO;
@@ -65,6 +65,34 @@ namespace KafkaFlow.Client.Protocol
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override int Read(Span<byte> buffer)
+        {
+            this.MovePosition(buffer.Length);
+            return this.stream.Read(buffer);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override int ReadByte()
+        {
+            this.MovePosition(sizeof(byte));
+            return this.stream.ReadByte();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override void Write(ReadOnlySpan<byte> buffer)
+        {
+            this.MovePosition(buffer.Length);
+            this.stream.Write(buffer);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override void WriteByte(byte value)
+        {
+            this.MovePosition(sizeof(byte));
+            this.stream.WriteByte(value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override long Seek(long offset, SeekOrigin origin)
         {
             this.MovePosition(offset);
@@ -72,10 +100,8 @@ namespace KafkaFlow.Client.Protocol
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void SetLength(long value)
-        {
-            throw new NotSupportedException();
-        }
+        public override void SetLength(long value) => throw new NotSupportedException();
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void Write(byte[] buffer, int offset, int count)

@@ -7,8 +7,8 @@ namespace KafkaFlow.Client.Protocol
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
-    using KafkaFlow.Client.Protocol.MemoryManagement;
     using KafkaFlow.Client.Protocol.Messages;
+    using KafkaFlow.Client.Protocol.Streams;
 
     public class BrokerConnection : IBrokerConnection
     {
@@ -49,8 +49,8 @@ namespace KafkaFlow.Client.Protocol
                     if (messageSize <= 0)
                         continue;
 
-                    using var memory = new FastMemoryStream(FastMemoryManager.Instance, messageSize);
-                    memory.ReadFrom(this.stream, messageSize);
+                    using var memory = new StaticMemoryStream(MemoryManager.Instance, messageSize);
+                    memory.ReadFrom(this.stream);
                     memory.Position = 0;
 
                     using var tracked = new TrackedStream(memory, messageSize);

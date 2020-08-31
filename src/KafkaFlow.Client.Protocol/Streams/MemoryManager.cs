@@ -1,16 +1,16 @@
-namespace KafkaFlow.Client.Protocol.MemoryManagement
+namespace KafkaFlow.Client.Protocol.Streams
 {
     using System;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
 
-    public sealed class FastMemoryManager : IFastMemoryManager
+    public sealed class MemoryManager : IFastMemoryManager
     {
-        private FastMemoryManager()
+        private MemoryManager()
         {
         }
 
-        public static readonly FastMemoryManager Instance = new FastMemoryManager();
+        public static readonly MemoryManager Instance = new MemoryManager();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IntPtr Allocate(int size) => Marshal.AllocHGlobal(size);

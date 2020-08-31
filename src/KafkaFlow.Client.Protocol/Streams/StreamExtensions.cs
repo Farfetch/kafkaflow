@@ -1,4 +1,4 @@
-namespace KafkaFlow.Client.Protocol
+namespace KafkaFlow.Client.Protocol.Streams
 {
     using System;
     using System.Buffers.Binary;
@@ -6,7 +6,6 @@ namespace KafkaFlow.Client.Protocol
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Text;
-    using KafkaFlow.Client.Protocol.Messages;
     using KafkaFlow.Client.Protocol.Messages.Implementations;
 
     public static class StreamExtensions

@@ -3,6 +3,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System;
     using System.Collections.Concurrent;
     using System.IO;
+    using KafkaFlow.Client.Protocol.Streams;
 
     internal class ProduceV8Request : IProduceRequest
     {

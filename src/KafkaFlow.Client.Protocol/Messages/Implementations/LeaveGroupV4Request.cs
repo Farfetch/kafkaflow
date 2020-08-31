@@ -2,6 +2,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
 {
     using System;
     using System.IO;
+    using KafkaFlow.Client.Protocol.Streams;
 
     public class LeaveGroupV4Request : IRequestMessageV2<LeaveGroupV4Response>
     {

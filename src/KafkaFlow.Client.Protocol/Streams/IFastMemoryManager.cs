@@ -1,4 +1,4 @@
-namespace KafkaFlow.Client.Protocol.MemoryManagement
+namespace KafkaFlow.Client.Protocol.Streams
 {
     using System;
 

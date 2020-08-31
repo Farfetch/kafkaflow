@@ -4,7 +4,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
-    using KafkaFlow.Client.Protocol.MemoryManagement;
+    using KafkaFlow.Client.Protocol.Streams;
 
     public class RecordBatch : IRequest, IResponse
     {
@@ -91,7 +91,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
             destination.WriteInt32(this.BatchLength = totalLength - 8 - 4);
 
             //Write CRC
-            var crc = Crc32CHash.Compute((FastMemoryStream) destination, (int) crcPosition, (int) (endPosition - crcPosition));
+            var crc = Crc32CHash.Compute((DynamicMemoryStream) destination, (int) crcPosition, (int) (endPosition - crcPosition));
             destination.Position = crcPosition - 4;
             destination.WriteInt32((int) crc);
 
@@ -147,7 +147,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
 
             public void Write(Stream destination)
             {
-                using var tmp = new FastMemoryStream(FastMemoryManager.Instance, 256);
+                using var tmp = new DynamicMemoryStream(MemoryManager.Instance, 256);
 
                 tmp.WriteByte(this.Attributes);
                 tmp.WriteVarint(this.TimestampDelta);

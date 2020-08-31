@@ -5,7 +5,7 @@ namespace KafkaFlow.Client.Tests
     using System.Runtime.InteropServices;
     using AutoFixture;
     using FluentAssertions;
-    using KafkaFlow.Client.Protocol.MemoryManagement;
+    using KafkaFlow.Client.Protocol.Streams;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
 
@@ -15,7 +15,7 @@ namespace KafkaFlow.Client.Tests
         private readonly Fixture fixture = new Fixture();
         private Mock<IFastMemoryManager> managerMock;
 
-        private FastMemoryStream target;
+        private DynamicMemoryStream target;
 
         private const int SegmentSize = 64;
 
@@ -32,7 +32,7 @@ namespace KafkaFlow.Client.Tests
                 .Setup(x => x.Free(It.IsAny<IntPtr>()))
                 .Callback<IntPtr>(Marshal.FreeHGlobal);
 
-            this.target = new FastMemoryStream(this.managerMock.Object, SegmentSize);
+            this.target = new DynamicMemoryStream(this.managerMock.Object, SegmentSize);
         }
 
         [TestMethod]
@@ -173,7 +173,7 @@ namespace KafkaFlow.Client.Tests
                 .CreateMany<byte>(bufferSize)
                 .ToArray();
 
-            var origin = new FastMemoryStream(this.managerMock.Object, SegmentSize);
+            var origin = new DynamicMemoryStream(this.managerMock.Object, SegmentSize);
 
             origin.Write(buffer, 0, buffer.Length);
             origin.Position = 0;
@@ -200,7 +200,7 @@ namespace KafkaFlow.Client.Tests
                 .CreateMany<byte>(bufferSize)
                 .ToArray();
 
-            var origin = new FastMemoryStream(this.managerMock.Object, SegmentSize * 2);
+            var origin = new DynamicMemoryStream(this.managerMock.Object, SegmentSize * 2);
 
             origin.Write(buffer, 0, buffer.Length);
             origin.Position = 0;
