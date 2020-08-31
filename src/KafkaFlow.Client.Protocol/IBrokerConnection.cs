@@ -7,5 +7,7 @@ namespace KafkaFlow.Client.Protocol
     {
         Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> request)
             where TResponse : class, IResponse;
+
+        BrokerAddress Address { get; }
     }
 }

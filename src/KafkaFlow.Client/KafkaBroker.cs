@@ -10,16 +10,18 @@ namespace KafkaFlow.Client
     {
         private readonly Lazy<IRequestFactory> lazyRequestFactory;
 
-        public KafkaBroker(BrokerAddress address, string clientId, TimeSpan requestTimeout)
+        public KafkaBroker(BrokerAddress address, int nodeId, string clientId, TimeSpan requestTimeout)
         {
+            this.NodeId = nodeId;
             this.Connection = new BrokerConnection(
-                address.Host,
-                address.Port,
+                address,
                 clientId,
                 requestTimeout);
 
             this.lazyRequestFactory = new Lazy<IRequestFactory>(this.CreateRequestFactory);
         }
+
+        public int NodeId { get; }
 
         public IBrokerConnection Connection { get; }
 

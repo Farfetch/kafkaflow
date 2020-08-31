@@ -5,6 +5,8 @@ namespace KafkaFlow.Client
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using KafkaFlow.Client.Protocol;
+    using KafkaFlow.Client.Protocol.Messages;
 
     internal class KafkaCluster : IKafkaCluster
     {
@@ -45,34 +47,30 @@ namespace KafkaFlow.Client
                 if (this.brokers.Any())
                     return;
 
-                var firstHostAddress = this.addresses.First();
-                var firstHost = new KafkaBroker(firstHostAddress, this.clientId, this.requestTimeout);
-
-                var metadata = await firstHost.Connection
-                    .SendAsync(firstHost.RequestFactory.CreateMetadata())
-                    .ConfigureAwait(false);
+                var metadata = await this.GetClusterMetadata();
 
                 foreach (var broker in metadata.Brokers)
                 {
-                    if (broker.Host == firstHostAddress.Host && broker.Port == firstHostAddress.Port)
-                    {
-                        this.brokers.Add(broker.NodeId, firstHost);
-                    }
-                    else
-                    {
-                        this.brokers.Add(
+                    this.brokers.Add(
+                        broker.NodeId,
+                        new KafkaBroker(
+                            new BrokerAddress(broker.Host, broker.Port),
                             broker.NodeId,
-                            new KafkaBroker(
-                                new BrokerAddress(broker.Host, broker.Port),
-                                this.clientId,
-                                this.requestTimeout));
-                    }
+                            this.clientId,
+                            this.requestTimeout));
                 }
             }
             finally
             {
                 this.initializeSemaphore.Release();
             }
+        }
+
+        private Task<IMetadataResponse> GetClusterMetadata()
+        {
+            using var host = new KafkaBroker(this.addresses.First(), 0, this.clientId, this.requestTimeout);
+
+            return host.Connection.SendAsync(host.RequestFactory.CreateMetadata());
         }
 
         public ValueTask<IKafkaBroker> GetCoordinatorAsync()

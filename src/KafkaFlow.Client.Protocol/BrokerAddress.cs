@@ -1,8 +1,8 @@
-namespace KafkaFlow.Client
+namespace KafkaFlow.Client.Protocol
 {
     using System;
 
-    public class BrokerAddress
+    public readonly struct BrokerAddress : IEquatable<BrokerAddress>
     {
         public string Host { get; }
         public int Port { get; }
@@ -19,6 +19,21 @@ namespace KafkaFlow.Client
         public static BrokerAddress Parse(string address)
         {
             throw new NotImplementedException();
+        }
+
+        public bool Equals(BrokerAddress other)
+        {
+            return this.Host == other.Host && this.Port == other.Port;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is BrokerAddress other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.Host, this.Port);
         }
     }
 }

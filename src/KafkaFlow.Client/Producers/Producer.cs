@@ -41,7 +41,7 @@ namespace KafkaFlow.Client.Producers
 
             //TODO: update cache and retry when NotLeaderForPartition occur
 
-            var sender = this.GetBrokerSender(topic.Partitions[partitionId].LeaderId);
+            var sender = this.GetBrokerSender(topic.Partitions.First(x => x.Id == partitionId).LeaderId);
 
             var completionSource = new TaskCompletionSource<ProduceResult>();
 

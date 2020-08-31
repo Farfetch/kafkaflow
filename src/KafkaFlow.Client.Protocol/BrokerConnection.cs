@@ -28,15 +28,18 @@ namespace KafkaFlow.Client.Protocol
         private readonly string clientId;
         private readonly TimeSpan requestTimeout;
 
-        public BrokerConnection(string host, int port, string clientId, TimeSpan requestTimeout)
+        public BrokerConnection(BrokerAddress address, string clientId, TimeSpan requestTimeout)
         {
+            this.Address = address;
             this.clientId = clientId;
             this.requestTimeout = requestTimeout;
-            this.client = new TcpClient(host, port);
+            this.client = new TcpClient(address.Host, address.Port);
             this.stream = this.client.GetStream();
 
             this.listenerTask = Task.Run(this.ListenStream);
         }
+
+        public BrokerAddress Address { get; }
 
         private async Task ListenStream()
         {
