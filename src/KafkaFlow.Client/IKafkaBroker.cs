@@ -9,5 +9,9 @@ namespace KafkaFlow.Client
         IRequestFactory RequestFactory { get; }
 
         IBrokerConnection Connection { get; }
+
+        BrokerAddress Address { get; }
+
+        int NodeId { get; }
     }
 }

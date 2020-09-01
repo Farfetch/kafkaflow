@@ -47,30 +47,37 @@ namespace KafkaFlow.Client
                 if (this.brokers.Any())
                     return;
 
-                var metadata = await this.GetClusterMetadata();
+                var first = new KafkaBroker(this.addresses.First(), 0, this.clientId, this.requestTimeout);
+
+                var metadata = await first.Connection
+                    .SendAsync(first.RequestFactory.CreateMetadata())
+                    .ConfigureAwait(false);
+
+                this.brokers.Add(first.NodeId, first);
 
                 foreach (var broker in metadata.Brokers)
                 {
-                    this.brokers.Add(
-                        broker.NodeId,
-                        new KafkaBroker(
-                            new BrokerAddress(broker.Host, broker.Port),
+                    if (broker.Host == first.Address.Host && broker.Port == first.Address.Port)
+                    {
+                        first.NodeId = broker.NodeId;
+                        this.brokers.Add(first.NodeId, first);
+                    }
+                    else
+                    {
+                        this.brokers.Add(
                             broker.NodeId,
-                            this.clientId,
-                            this.requestTimeout));
+                            new KafkaBroker(
+                                new BrokerAddress(broker.Host, broker.Port),
+                                broker.NodeId,
+                                this.clientId,
+                                this.requestTimeout));
+                    }
                 }
             }
             finally
             {
                 this.initializeSemaphore.Release();
             }
-        }
-
-        private Task<IMetadataResponse> GetClusterMetadata()
-        {
-            using var host = new KafkaBroker(this.addresses.First(), 0, this.clientId, this.requestTimeout);
-
-            return host.Connection.SendAsync(host.RequestFactory.CreateMetadata());
         }
 
         public ValueTask<IKafkaBroker> GetCoordinatorAsync()

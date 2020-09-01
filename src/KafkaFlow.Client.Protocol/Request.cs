@@ -1,6 +1,7 @@
 namespace KafkaFlow.Client.Protocol
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using KafkaFlow.Client.Protocol.Messages;
     using KafkaFlow.Client.Protocol.Messages.Implementations;
@@ -38,6 +39,8 @@ namespace KafkaFlow.Client.Protocol
             tmp.WriteMessage(this.Message);
 
             destination.WriteInt32(Convert.ToInt32(tmp.Length));
+
+            Debug.WriteLine($"Sending {this.Message.GetType().Name} with {tmp.Length:N0}b");
 
             tmp.Position = 0;
             tmp.CopyTo(destination);

@@ -37,7 +37,7 @@
                         .Select(
                             x => producer.ProduceAsync(
                                 new ProduceData(
-                                    "test-client2",
+                                    "test-client",
                                     Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
                                     Encoding.UTF8.GetBytes("teste_value"))));
 

@@ -3,6 +3,7 @@ namespace KafkaFlow.Client.Protocol
     using System;
     using System.Buffers.Binary;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Net.Sockets;
     using System.Runtime.CompilerServices;
     using System.Threading;
@@ -48,6 +49,8 @@ namespace KafkaFlow.Client.Protocol
                 try
                 {
                     var messageSize = await this.WaitForMessageSizeAsync().ConfigureAwait(false);
+                    
+                    Debug.WriteLine($"Received message with {messageSize}b size");
 
                     if (messageSize <= 0)
                         continue;
@@ -73,9 +76,12 @@ namespace KafkaFlow.Client.Protocol
 
             if (!this.pendingRequests.TryGetValue(correlationId, out var request))
             {
+                Debug.WriteLine($"Received Invalid message CID: {correlationId}");
                 source.DiscardRemainingData();
                 return;
             }
+
+            Debug.WriteLine($"Received CID: {correlationId}, Type {request.ResponseType.Name} with {source.Size:N0}b");
 
             this.pendingRequests.Remove(correlationId);
 

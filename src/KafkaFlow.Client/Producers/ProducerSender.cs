@@ -32,10 +32,8 @@ namespace KafkaFlow.Client.Producers
         {
             this.broker = broker;
             this.configuration = configuration;
-            this.request = broker.RequestFactory.CreateProduce(
-                this.configuration.Acks,
-                this.configuration.ProduceTimeout.Milliseconds);
 
+            this.request = this.CreateProduceRequest();
             this.produceTimeoutTask = Task.Run(this.LingerProduceAsync);
         }
 
@@ -96,11 +94,7 @@ namespace KafkaFlow.Client.Producers
                     if (Interlocked.Exchange(ref this.messageCount, 0) == 0)
                         return;
 
-                    var queued = Interlocked.Exchange(
-                        ref this.request,
-                        this.broker.RequestFactory.CreateProduce(
-                            this.configuration.Acks,
-                            this.configuration.ProduceTimeout.Milliseconds));
+                    var queued = Interlocked.Exchange(ref this.request, this.CreateProduceRequest());
 
                     resultTask = this.broker.Connection.SendAsync(queued);
 
@@ -121,7 +115,15 @@ namespace KafkaFlow.Client.Producers
             catch (Exception e)
             {
                 // TODO: some kind of log or retry on errors
+                throw;
             }
+        }
+
+        private IProduceRequest CreateProduceRequest()
+        {
+            return this.broker.RequestFactory.CreateProduce(
+                this.configuration.Acks,
+                (int) this.configuration.ProduceTimeout.TotalMilliseconds);
         }
 
         private void RespondRequests(
