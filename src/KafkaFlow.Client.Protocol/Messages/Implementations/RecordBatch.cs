@@ -139,9 +139,9 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
 
             public int OffsetDelta { get; internal set; }
 
-            public byte[] Key { get; set; }
+            public byte[]? Key { get; set; }
 
-            public byte[] Value { get; set; }
+            public byte[]? Value { get; set; }
 
             public Header[] Headers { get; set; } = Array.Empty<Header>();
 
@@ -201,7 +201,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
         {
             public string Key { get; set; }
 
-            public byte[] Value { get; set; }
+            public byte[]? Value { get; set; }
 
             public void Write(Stream destination)
             {

@@ -32,6 +32,11 @@
 
                     var sw = Stopwatch.StartNew();
 
+                    var header = new Headers
+                    {
+                        ["test_header"] = Encoding.UTF8.GetBytes("header_value")
+                    };
+
                     var tasks = Enumerable
                         .Range(0, messageCount)
                         .Select(
@@ -39,7 +44,8 @@
                                 new ProduceData(
                                     "test-client",
                                     Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
-                                    Encoding.UTF8.GetBytes("teste_value"))));
+                                    Encoding.UTF8.GetBytes("teste_value"),
+                                    header)));
 
 
                     var results = await Task.WhenAll(tasks);
