@@ -1,7 +1,6 @@
 namespace KafkaFlow.Client.Protocol.Messages
 {
     using System.Collections;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -11,23 +10,23 @@ namespace KafkaFlow.Client.Protocol.Messages
 
     public class Headers : ISerializable, IEnumerable<KeyValuePair<string, byte[]>>, IRequest, IResponse
     {
-        private readonly ConcurrentDictionary<string, List<byte[]?>> values = new ConcurrentDictionary<string, List<byte[]?>>();
+        private readonly List<Header> headers = new List<Header>();
 
         public void Add(string key, byte[]? value)
         {
-            this.values.GetOrAdd(key, new List<byte[]?>()).Add(value);
-            ++this.Count;
+            this.headers.Add(new Header(key, value));
         }
 
         public void Remove(string key)
         {
-            if (this.values.TryRemove(key, out var v))
-                this.Count -= v.Count;
+            this.headers.RemoveAll(x => x.Key == key);
         }
 
-        public IReadOnlyList<byte[]?>? GetValues(string key)
+        public IEnumerable<byte[]?>? GetValues(string key)
         {
-            return this.values.TryGetValue(key, out var values) ? values : null;
+            return this.headers
+                .Where(x => x.Key == key)
+                .Select(x => x.Value);
         }
 
         public byte[]? this[string key]
@@ -40,7 +39,7 @@ namespace KafkaFlow.Client.Protocol.Messages
             }
         }
 
-        public int Count { get; private set; }
+        public int Count => this.headers.Count;
 
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
@@ -50,10 +49,10 @@ namespace KafkaFlow.Client.Protocol.Messages
             }
         }
 
-        public IEnumerator<KeyValuePair<string, byte[]>> GetEnumerator()
+        public IEnumerator<KeyValuePair<string, byte[]?>> GetEnumerator()
         {
-            return this.values
-                .SelectMany(x => x.Value.Select(y => new KeyValuePair<string, byte[]>(x.Key, y)))
+            return this.headers
+                .Select(x => new KeyValuePair<string, byte[]?>(x.Key, x.Value))
                 .GetEnumerator();
         }
 
@@ -61,26 +60,23 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public void Write(Stream destination)
         {
-            destination.WriteVarint(this.Count);
+            destination.WriteVarint(this.headers.Count);
 
-            foreach (var values in this.values)
+            foreach (var header in this.headers)
             {
-                var keyBytes = Encoding.UTF8.GetBytes(values.Key);
+                var keyBytes = Encoding.UTF8.GetBytes(header.Key);
 
-                foreach (var value in values.Value)
+                destination.WriteVarint(keyBytes.Length);
+                destination.Write(keyBytes);
+
+                if (header.Value is null)
                 {
-                    destination.WriteVarint(keyBytes.Length);
-                    destination.Write(keyBytes);
-
-                    if (value is null)
-                    {
-                        destination.WriteVarint(-1);
-                    }
-                    else
-                    {
-                        destination.WriteVarint(value.Length);
-                        destination.Write(value);
-                    }
+                    destination.WriteVarint(-1);
+                }
+                else
+                {
+                    destination.WriteVarint(header.Value.Length);
+                    destination.Write(header.Value);
                 }
             }
         }
@@ -88,13 +84,26 @@ namespace KafkaFlow.Client.Protocol.Messages
         public void Read(Stream source)
         {
             var count = source.ReadVarint();
+            this.headers.Capacity = count;
 
             for (var i = 0; i < count; ++i)
             {
                 var key = source.ReadString(source.ReadVarint());
                 var value = source.ReadBytes(source.ReadVarint());
-                
+
                 this.Add(key, value);
+            }
+        }
+
+        private sealed class Header
+        {
+            public readonly string Key;
+            public readonly byte[]? Value;
+
+            public Header(string key, byte[]? value)
+            {
+                this.Key = key;
+                this.Value = value;
             }
         }
     }

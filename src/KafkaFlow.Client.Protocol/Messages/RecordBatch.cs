@@ -199,36 +199,5 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
                 this.Headers = source.ReadMessage<Headers>();
             }
         }
-
-        public class Header : IRequest, IResponse
-        {
-            public string Key { get; set; }
-
-            public byte[]? Value { get; set; }
-
-            public void Write(Stream destination)
-            {
-                var keyBytes = Encoding.UTF8.GetBytes(this.Key);
-
-                destination.WriteVarint(keyBytes.Length);
-                destination.Write(keyBytes);
-
-                if (this.Value is null)
-                {
-                    destination.WriteVarint(-1);
-                }
-                else
-                {
-                    destination.WriteVarint(this.Value.Length);
-                    destination.Write(this.Value);
-                }
-            }
-
-            public void Read(Stream source)
-            {
-                this.Key = source.ReadString(source.ReadVarint());
-                this.Value = source.ReadBytes(source.ReadVarint());
-            }
-        }
     }
 }
