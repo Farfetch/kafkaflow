@@ -56,14 +56,7 @@ namespace KafkaFlow.Client.Producers
                     {
                         Key = item.Data.Key,
                         Value = item.Data.Value,
-                        Headers = item.Data.Headers?
-                            .Select(
-                                x => new RecordBatch.Header
-                                {
-                                    Key = x.Key,
-                                    Value = x.Value
-                                })
-                            .ToArray() ?? Array.Empty<RecordBatch.Header>()
+                        Headers = item.Data.Headers
                     });
 
                 item.OffsetDelta = partition.RecordBatch.LastOffsetDelta;

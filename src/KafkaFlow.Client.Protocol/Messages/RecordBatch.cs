@@ -143,7 +143,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
 
             public byte[]? Value { get; set; }
 
-            public Header[] Headers { get; set; } = Array.Empty<Header>();
+            public Headers? Headers { get; set; }
 
             public void Write(Stream destination)
             {
@@ -172,11 +172,14 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
                     tmp.WriteVarint(this.Value.Length);
                     tmp.Write(this.Value);
                 }
-
-                tmp.WriteVarint(this.Headers.Length);
-                foreach (var header in this.Headers)
+                
+                if (this.Headers is null)
                 {
-                    tmp.WriteMessage(header);
+                    tmp.WriteVarint(0);
+                }
+                else
+                {
+                    tmp.WriteMessage(this.Headers);
                 }
 
                 destination.WriteVarint(this.Length = Convert.ToInt32(tmp.Length));
@@ -193,7 +196,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
                 this.OffsetDelta = source.ReadVarint();
                 this.Key = source.ReadBytes(source.ReadVarint());
                 this.Value = source.ReadBytes(source.ReadVarint());
-                this.Headers = source.ReadArray<Header>(source.ReadVarint());
+                this.Headers = source.ReadMessage<Headers>();
             }
         }
 

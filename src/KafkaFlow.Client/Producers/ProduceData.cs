@@ -1,5 +1,7 @@
 namespace KafkaFlow.Client.Producers
 {
+    using KafkaFlow.Client.Protocol.Messages;
+
     public readonly struct ProduceData
     {
         public ProduceData(string topic, byte[] key, byte[] value) :
@@ -7,7 +9,7 @@ namespace KafkaFlow.Client.Producers
         {
         }
 
-        public ProduceData(string topic, byte[] key, byte[] value, IHeaders headers)
+        public ProduceData(string topic, byte[] key, byte[] value, Headers headers)
         {
             this.Topic = topic;
             this.Key = key;
@@ -21,6 +23,6 @@ namespace KafkaFlow.Client.Producers
 
         public byte[] Value { get; }
 
-        public IHeaders? Headers { get; }
+        public Headers? Headers { get; }
     }
 }
