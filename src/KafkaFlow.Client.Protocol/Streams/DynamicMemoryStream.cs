@@ -12,18 +12,18 @@ namespace KafkaFlow.Client.Protocol.Streams
         private int currentSegment = 0;
         private int relativePosition = 0;
 
-        private readonly IFastMemoryManager memoryManager;
+        private readonly IMemoryManager memoryManager;
         private readonly int segmentSize;
 
         private readonly List<IntPtr> segments = new List<IntPtr>();
 
-        public DynamicMemoryStream(IFastMemoryManager memoryManager, int segmentSize)
+        public DynamicMemoryStream(IMemoryManager memoryManager, int segmentSize)
         {
             this.memoryManager = memoryManager;
             this.segmentSize = segmentSize;
         }
 
-        public DynamicMemoryStream(IFastMemoryManager memoryManager) : this(memoryManager, 1024)
+        public DynamicMemoryStream(IMemoryManager memoryManager) : this(memoryManager, 1024)
         {
         }
 

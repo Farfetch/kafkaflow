@@ -22,7 +22,7 @@ namespace KafkaFlow.Client.Protocol.Messages
             this.headers.RemoveAll(x => x.Key == key);
         }
 
-        public IEnumerable<byte[]?>? GetValues(string key)
+        public IEnumerable<byte[]?> GetValues(string key)
         {
             return this.headers
                 .Where(x => x.Key == key)
@@ -31,7 +31,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public byte[]? this[string key]
         {
-            get => this.GetValues(key)?.FirstOrDefault();
+            get => this.GetValues(key).FirstOrDefault();
             set
             {
                 this.Remove(key);

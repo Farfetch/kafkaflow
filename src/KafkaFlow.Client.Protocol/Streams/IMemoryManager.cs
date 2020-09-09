@@ -2,7 +2,7 @@ namespace KafkaFlow.Client.Protocol.Streams
 {
     using System;
 
-    public interface IFastMemoryManager
+    public interface IMemoryManager
     {
         IntPtr Allocate(int size);
 

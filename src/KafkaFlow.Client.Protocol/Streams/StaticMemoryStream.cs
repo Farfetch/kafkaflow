@@ -8,10 +8,10 @@ namespace KafkaFlow.Client.Protocol.Streams
     public sealed class StaticMemoryStream : BaseMemoryStream
     {
         private readonly IntPtr buffer;
-        private readonly IFastMemoryManager memoryManager;
+        private readonly IMemoryManager memoryManager;
         private long position;
 
-        public StaticMemoryStream(IFastMemoryManager memoryManager, int length)
+        public StaticMemoryStream(IMemoryManager memoryManager, int length)
         {
             this.memoryManager = memoryManager;
             this.buffer = memoryManager.Allocate(length);

@@ -13,7 +13,7 @@ namespace KafkaFlow.Client.Tests
     public class FastMemoryStreamTests
     {
         private readonly Fixture fixture = new Fixture();
-        private Mock<IFastMemoryManager> managerMock;
+        private Mock<IMemoryManager> managerMock;
 
         private DynamicMemoryStream target;
 
@@ -22,7 +22,7 @@ namespace KafkaFlow.Client.Tests
         [TestInitialize]
         public void Setup()
         {
-            this.managerMock = new Mock<IFastMemoryManager>();
+            this.managerMock = new Mock<IMemoryManager>();
 
             this.managerMock
                 .Setup(x => x.Allocate(It.IsAny<int>()))

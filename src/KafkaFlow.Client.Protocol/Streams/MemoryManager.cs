@@ -4,7 +4,7 @@ namespace KafkaFlow.Client.Protocol.Streams
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
 
-    public sealed class MemoryManager : IFastMemoryManager
+    public sealed class MemoryManager : IMemoryManager
     {
         private MemoryManager()
         {
