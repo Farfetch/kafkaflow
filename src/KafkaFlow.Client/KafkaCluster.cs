@@ -6,7 +6,6 @@ namespace KafkaFlow.Client
     using System.Threading;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Protocol;
-    using KafkaFlow.Client.Protocol.Messages;
 
     internal class KafkaCluster : IKafkaCluster
     {

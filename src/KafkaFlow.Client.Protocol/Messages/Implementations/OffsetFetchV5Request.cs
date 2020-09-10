@@ -16,6 +16,8 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
 
         public short ApiVersion => 5;
 
+        public Type ResponseType => typeof(OffsetFetchV5Response);
+
         public string GroupId { get; }
 
         public Topic[] Topics { get; }
@@ -44,7 +46,5 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
                 destination.WriteInt32Array(this.Partitions);
             }
         }
-
-        public Type ResponseType { get; }
     }
 }

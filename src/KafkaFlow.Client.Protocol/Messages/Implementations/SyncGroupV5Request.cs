@@ -4,7 +4,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class SyncGroupV5Request : IRequestMessageV2<SyncGroupV5Response>
+    public class SyncGroupV5Request : IRequestMessage<SyncGroupV5Response>, ITaggedFields
     {
         public SyncGroupV5Request(
             string groupId,
@@ -19,7 +19,10 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
         }
 
         public ApiKey ApiKey => ApiKey.SyncGroup;
+
         public short ApiVersion => 5;
+
+        public Type ResponseType => typeof(SyncGroupV5Response);
 
         public string GroupId { get; }
 
@@ -49,7 +52,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
             destination.WriteTaggedFields(this.TaggedFields);
         }
 
-        public class Assigment : IRequestV2
+        public class Assigment : IRequest, ITaggedFields
         {
             public Assigment(string memberId, byte[] metadata)
             {
@@ -70,7 +73,5 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
                 destination.WriteTaggedFields(this.TaggedFields);
             }
         }
-
-        public Type ResponseType { get; }
     }
 }

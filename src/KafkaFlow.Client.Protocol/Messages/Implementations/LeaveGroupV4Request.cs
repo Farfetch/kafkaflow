@@ -1,26 +1,25 @@
 namespace KafkaFlow.Client.Protocol.Messages.Implementations
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class LeaveGroupV4Request : IRequestMessageV2<LeaveGroupV4Response>
+    internal class LeaveGroupV4Request : ITaggedFields, ILeaveGroupRequest
     {
-        public LeaveGroupV4Request(string groupId, Member[] members)
-        {
-            this.GroupId = groupId;
-            this.Members = members;
-        }
-
         public ApiKey ApiKey => ApiKey.LeaveGroup;
 
         public short ApiVersion => 4;
 
-        public string GroupId { get; }
+        public Type ResponseType => typeof(LeaveGroupV4Response);
 
-        public Member[] Members { get; }
+        public string GroupId { get; set; }
 
-        public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
+        public List<ILeaveGroupRequest.IMember> Members { get; set; }
+
+        public TaggedField[] TaggedFields { get; set; } = Array.Empty<TaggedField>();
+
+        public ILeaveGroupRequest.IMember CreateMember() => new Member();
 
         public void Write(Stream destination)
         {
@@ -29,19 +28,13 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
             destination.WriteTaggedFields(this.TaggedFields);
         }
 
-        public class Member : IRequestV2
+        private class Member : ITaggedFields, ILeaveGroupRequest.IMember
         {
-            public Member(string memberId, string? groupInstanceId)
-            {
-                this.MemberId = memberId;
-                this.GroupInstanceId = groupInstanceId;
-            }
+            public string MemberId { get; set; }
 
-            public string MemberId { get; }
+            public string? GroupInstanceId { get; set; }
 
-            public string? GroupInstanceId { get; }
-
-            public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
+            public TaggedField[] TaggedFields { get; set; } = Array.Empty<TaggedField>();
 
             public void Write(Stream destination)
             {
@@ -50,7 +43,5 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
                 destination.WriteTaggedFields(this.TaggedFields);
             }
         }
-
-        public Type ResponseType { get; }
     }
 }

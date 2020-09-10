@@ -3,7 +3,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class SyncGroupV5Response : IResponseV2
+    public class SyncGroupV5Response : IResponse, ITaggedFields
     {
         public int ThrottleTimeMs { get; private set; }
 

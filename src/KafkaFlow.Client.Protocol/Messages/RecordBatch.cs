@@ -1,9 +1,8 @@
-namespace KafkaFlow.Client.Protocol.Messages.Implementations
+namespace KafkaFlow.Client.Protocol.Messages
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Text;
     using KafkaFlow.Client.Protocol.Streams;
 
     public class RecordBatch : IRequest, IResponse

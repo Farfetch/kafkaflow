@@ -3,7 +3,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class HeartbeatV4Response : IResponseV2
+    public class HeartbeatV4Response : IResponse, ITaggedFields, IHeartbeatResponse
     {
         public int ThrottleTimeMs { get; private set; }
 

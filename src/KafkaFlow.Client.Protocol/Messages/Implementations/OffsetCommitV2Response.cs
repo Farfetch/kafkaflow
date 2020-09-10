@@ -3,20 +3,20 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class OffsetCommitV2Response : IResponse
+    internal class OffsetCommitV2Response : IResponse, IOffsetCommitResponse
     {
-        public Topic[] Topics { get; private set; }
+        public IOffsetCommitResponse.ITopic[] Topics { get; private set; }
 
         public void Read(Stream source)
         {
             this.Topics = source.ReadArray<Topic>();
         }
 
-        public class Topic : IResponse
+        private class Topic : IOffsetCommitResponse.ITopic
         {
             public string Name { get; private set; }
 
-            public Partition[] Partitions { get; private set; }
+            public IOffsetCommitResponse.IPartition[] Partitions { get; private set; }
 
             public void Read(Stream source)
             {
@@ -25,7 +25,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
             }
         }
 
-        public class Partition : IResponse
+        private class Partition : IOffsetCommitResponse.IPartition
         {
             public int Id { get; private set; }
 

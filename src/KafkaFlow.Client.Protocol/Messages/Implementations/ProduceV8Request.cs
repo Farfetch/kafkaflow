@@ -3,6 +3,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System;
     using System.Collections.Concurrent;
     using System.IO;
+    using System.Linq;
     using KafkaFlow.Client.Protocol.Streams;
 
     internal class ProduceV8Request : IProduceRequest
@@ -35,7 +36,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
             destination.WriteString(this.TransactionalId);
             destination.WriteInt16((short) this.Acks);
             destination.WriteInt32(this.Timeout);
-            destination.WriteArray(this.Topics.Values);
+            destination.WriteArray(this.Topics.Select(x => x.Value), this.Topics.Count);
         }
 
         public class Topic : IProduceRequest.ITopic
@@ -55,7 +56,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
             public void Write(Stream destination)
             {
                 destination.WriteString(this.Name);
-                destination.WriteArray(this.Partitions.Values);
+                destination.WriteArray(this.Partitions.Select(x => x.Value), this.Partitions.Count);
             }
         }
 

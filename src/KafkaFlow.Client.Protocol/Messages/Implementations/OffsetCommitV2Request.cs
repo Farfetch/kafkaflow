@@ -1,58 +1,56 @@
 namespace KafkaFlow.Client.Protocol.Messages.Implementations
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class OffsetCommitV2Request : IRequestMessage<OffsetCommitV2Response>
+    public class OffsetCommitV2Request : IOffsetCommitRequest
     {
-        public OffsetCommitV2Request(
-            string groupId,
-            int groupGenerationId,
-            string memberId,
-            long retentionTimeMs,
-            Topic[] topics)
-        {
-            this.GroupId = groupId;
-            this.GroupGenerationId = groupGenerationId;
-            this.MemberId = memberId;
-            this.RetentionTimeMs = retentionTimeMs;
-            this.Topics = topics;
-        }
-
-        public string GroupId { get; }
-
-        public int GroupGenerationId { get; }
-
-        public string MemberId { get; }
-
-        public long RetentionTimeMs { get; }
-
-        public Topic[] Topics { get; }
-
         public ApiKey ApiKey => ApiKey.OffsetCommit;
 
         public short ApiVersion => 2;
+
+        public Type ResponseType => typeof(OffsetCommitV2Response);
+
+        public string GroupId { get; set; }
+
+        public int GroupGenerationId { get; set; }
+
+        public string MemberId { get; set; }
+
+        public long RetentionTimeMs { get; set; }
+
+        public List<IOffsetCommitRequest.ITopic> Topics { get; } = new List<IOffsetCommitRequest.ITopic>();
+
+        public IOffsetCommitRequest.ITopic AddTopic()
+        {
+            var topic = new Topic();
+            this.Topics.Add(topic);
+            return topic;
+        }
 
         public void Write(Stream destination)
         {
             destination.WriteString(this.GroupId);
             destination.WriteInt32(this.GroupGenerationId);
+            destination.WriteString(this.MemberId);
             destination.WriteInt64(this.RetentionTimeMs);
             destination.WriteArray(this.Topics);
         }
 
-        public class Topic : IRequest
+        public class Topic : IOffsetCommitRequest.ITopic
         {
-            public Topic(string name, Partition[] partitions)
+            public string Name { get; set; }
+
+            public List<IOffsetCommitRequest.IPartition> Partitions { get; } = new List<IOffsetCommitRequest.IPartition>();
+
+            public IOffsetCommitRequest.IPartition AddPartition()
             {
-                this.Name = name;
-                this.Partitions = partitions;
+                var partition = new Partition();
+                this.Partitions.Add(partition);
+                return partition;
             }
-
-            public string Name { get; }
-
-            public Partition[] Partitions { get; }
 
             public void Write(Stream destination)
             {
@@ -61,13 +59,13 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
             }
         }
 
-        public class Partition : IRequest
+        public class Partition : IOffsetCommitRequest.IPartition
         {
-            public int Id { get; }
+            public int Id { get; set; }
 
-            public long Offset { get; }
+            public long Offset { get; set; }
 
-            public string Metadata { get; }
+            public string Metadata { get; set; }
 
             public void Write(Stream destination)
             {
@@ -76,7 +74,5 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
                 destination.WriteString(this.Metadata);
             }
         }
-
-        public Type ResponseType { get; }
     }
 }

@@ -3,11 +3,11 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class ApiVersionV2Response : IResponse
+    public class ApiVersionV2Response : IApiVersionResponse
     {
         public ErrorCode Error { get; private set; }
 
-        public ApiVersion[] ApiVersions { get; private set; }
+        public IApiVersionResponse.IApiVersion[] ApiVersions { get; private set; }
 
         public int ThrottleTime { get; private set; }
 
@@ -18,7 +18,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
             this.ThrottleTime = source.ReadInt32();
         }
 
-        public class ApiVersion : IResponse
+        public class ApiVersion : IApiVersionResponse.IApiVersion
         {
             public ApiKey ApiKey { get; private set; }
 

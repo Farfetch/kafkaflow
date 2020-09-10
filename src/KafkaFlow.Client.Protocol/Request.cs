@@ -4,7 +4,6 @@ namespace KafkaFlow.Client.Protocol
     using System.Diagnostics;
     using System.IO;
     using KafkaFlow.Client.Protocol.Messages;
-    using KafkaFlow.Client.Protocol.Messages.Implementations;
     using KafkaFlow.Client.Protocol.Streams;
 
     public class Request : IRequest

@@ -6,7 +6,7 @@ namespace KafkaFlow.Client.Protocol.Streams
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Text;
-    using KafkaFlow.Client.Protocol.Messages.Implementations;
+    using KafkaFlow.Client.Protocol.Messages;
 
     public static class StreamExtensions
     {
@@ -60,7 +60,7 @@ namespace KafkaFlow.Client.Protocol.Streams
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteString(this Stream destination, string value)
+        public static void WriteString(this Stream destination, string? value)
         {
             if (value is null)
             {
@@ -116,21 +116,10 @@ namespace KafkaFlow.Client.Protocol.Streams
             destination.WriteByte((byte) (value ? 1 : 0));
         }
 
-        public static void WriteArray<TMessage>(this Stream destination, TMessage[] items)
+        public static void WriteArray<TMessage>(this Stream destination, IEnumerable<TMessage> items, int count)
             where TMessage : IRequest
         {
-            destination.WriteInt32(items.Length);
-
-            for (var i = 0; i < items.Length; ++i)
-            {
-                destination.WriteMessage(items[i]);
-            }
-        }
-
-        public static void WriteArray<TMessage>(this Stream destination, ICollection<TMessage> items)
-            where TMessage : IRequest
-        {
-            destination.WriteInt32(items.Count);
+            destination.WriteInt32(count);
 
             foreach (var item in items)
             {
@@ -138,22 +127,29 @@ namespace KafkaFlow.Client.Protocol.Streams
             }
         }
 
-        public static void WriteTaggedFields(this Stream destination, TaggedField[] items)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteArray<TMessage>(this Stream destination, IReadOnlyCollection<TMessage> items)
+            where TMessage : IRequest
         {
-            destination.WriteUVarint((uint) items.Length);
+            destination.WriteArray(items, items.Count);
+        }
 
-            for (var i = 0; i < items.Length; ++i)
+        public static void WriteTaggedFields(this Stream destination, IReadOnlyList<TaggedField> items)
+        {
+            destination.WriteUVarint((uint) items.Count);
+
+            for (var i = 0; i < items.Count; ++i)
             {
                 destination.WriteMessage(items[i]);
             }
         }
 
-        public static void WriteCompactArray<TMessage>(this Stream destination, TMessage[] items)
+        public static void WriteCompactArray<TMessage>(this Stream destination, IReadOnlyList<TMessage> items)
             where TMessage : IRequest
         {
-            destination.WriteUVarint((uint) items.Length + 1);
+            destination.WriteUVarint((uint) items.Count + 1);
 
-            for (var i = 0; i < items.Length; ++i)
+            for (var i = 0; i < items.Count; ++i)
             {
                 destination.WriteMessage(items[i]);
             }
@@ -380,7 +376,7 @@ namespace KafkaFlow.Client.Protocol.Streams
                 num >>= 7;
             } while (num != 0);
         }
-        
+
         public static Span<byte> GetSpan(this Stream destination, long offset, long count)
         {
             return new Span<byte>();

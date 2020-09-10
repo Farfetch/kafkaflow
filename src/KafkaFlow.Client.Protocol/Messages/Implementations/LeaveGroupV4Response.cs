@@ -3,11 +3,13 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class LeaveGroupV4Response : IResponseV2
+    public class LeaveGroupV4Response : ITaggedFields, ILeaveGroupResponse
     {
         public int ThrottleTimeMs { get; private set; }
+
         public ErrorCode Error { get; private set; }
-        public Member[] Members { get; private set; }
+
+        public ILeaveGroupResponse.IMember[] Members { get; private set; }
 
         public TaggedField[] TaggedFields { get; private set; }
 
@@ -19,7 +21,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
             this.TaggedFields = source.ReadTaggedFields();
         }
 
-        public class Member : IResponseV2
+        public class Member : ITaggedFields, ILeaveGroupResponse.IMember
         {
             public string MemberId { get; private set; }
 

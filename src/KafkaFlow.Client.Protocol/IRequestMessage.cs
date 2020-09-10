@@ -7,10 +7,6 @@ namespace KafkaFlow.Client.Protocol
         public Type ResponseType { get; }
     }
 
-    public interface IRequestMessageV2<TResponse> : IRequestMessage<TResponse>, IRequestV2 where TResponse : IResponseV2
-    {
-    }
-
     public interface IRequestMessage : IRequest
     {
         public ApiKey ApiKey { get; }

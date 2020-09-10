@@ -3,7 +3,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class FindCoordinatorV3Response : IResponseV2
+    public class FindCoordinatorV3Response : IResponse, ITaggedFields, IFindCoordinatorResponse
     {
         public int ThrottleTimeMs { get; private set; }
 

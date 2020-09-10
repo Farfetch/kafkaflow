@@ -4,7 +4,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class HeartbeatV4Request : IRequestMessageV2<HeartbeatV4Response>
+    public class HeartbeatV4Request : IRequestMessage<HeartbeatV4Response>, ITaggedFields, IHeartbeatRequest
     {
         public HeartbeatV4Request(string groupId, int generationId, string memberId)
         {
@@ -16,6 +16,8 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
         public ApiKey ApiKey => ApiKey.Heartbeat;
 
         public short ApiVersion => 4;
+
+        public Type ResponseType => typeof(HeartbeatV4Response);
 
         public string GroupId { get; }
 
@@ -35,7 +37,5 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
             destination.WriteCompactNullableString(this.GroupInstanceId);
             destination.WriteTaggedFields(this.TaggedFields);
         }
-
-        public Type ResponseType { get; }
     }
 }

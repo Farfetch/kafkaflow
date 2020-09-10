@@ -3,7 +3,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System;
     using System.IO;
 
-    public class ApiVersionV2Request : IRequestMessage<ApiVersionV2Response>
+    public class ApiVersionV2Request : IApiVersionRequest
     {
         public ApiKey ApiKey => ApiKey.ApiVersions;
 
@@ -13,6 +13,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
 
         public void Write(Stream destination)
         {
+            // Do Nothing
         }
     }
 }

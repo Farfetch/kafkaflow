@@ -4,44 +4,31 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class JoinGroupV7Request : IRequestMessageV2<JoinGroupV7Response>
+    internal class JoinGroupV7Request : ITaggedFields, IJoinGroupRequest
     {
-        public JoinGroupV7Request(
-            string groupId,
-            int sessionTimeoutMs,
-            int rebalanceTimeoutMs,
-            string memberId,
-            string? groupInstanceId,
-            string protocolType,
-            Protocol[] supportedProtocols)
-        {
-            this.GroupId = groupId;
-            this.SessionTimeoutMs = sessionTimeoutMs;
-            this.RebalanceTimeoutMs = rebalanceTimeoutMs;
-            this.MemberId = memberId;
-            this.GroupInstanceId = groupInstanceId;
-            this.ProtocolType = protocolType;
-            this.SupportedProtocols = supportedProtocols;
-        }
-
         public ApiKey ApiKey => ApiKey.JoinGroup;
+
         public short ApiVersion => 7;
 
-        public string GroupId { get; }
+        public Type ResponseType => typeof(JoinGroupV7Response);
 
-        public int SessionTimeoutMs { get; }
+        public string GroupId { get; set; }
 
-        public int RebalanceTimeoutMs { get; }
+        public int SessionTimeoutMs { get; set; }
 
-        public string MemberId { get; }
+        public int RebalanceTimeoutMs { get; set; }
 
-        public string? GroupInstanceId { get; }
+        public string MemberId { get; set; }
 
-        public string ProtocolType { get; }
+        public string? GroupInstanceId { get; set; }
 
-        public Protocol[] SupportedProtocols { get; }
+        public string ProtocolType { get; set; }
 
-        public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
+        public IJoinGroupRequest.IProtocol[] SupportedProtocols { get; set; }
+
+        public TaggedField[] TaggedFields { get; set; } = Array.Empty<TaggedField>();
+
+        public IJoinGroupRequest.IProtocol CreateProtocol() => new Protocol();
 
         public void Write(Stream destination)
         {
@@ -55,13 +42,13 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
             destination.WriteTaggedFields(this.TaggedFields);
         }
 
-        public class Protocol : IRequestV2
+        private class Protocol : IJoinGroupRequest.IProtocol, ITaggedFields
         {
-            public Protocol(string name, byte[] metadata)
-            {
-                this.Name = name;
-                this.Metadata = metadata;
-            }
+            public string Name { get; set; }
+
+            public byte[] Metadata { get; set; }
+
+            public TaggedField[] TaggedFields { get; set; } = Array.Empty<TaggedField>();
 
             public void Write(Stream destination)
             {
@@ -69,14 +56,6 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
                 destination.WriteCompactByteArray(this.Metadata);
                 destination.WriteTaggedFields(this.TaggedFields);
             }
-
-            public string Name { get; }
-
-            public byte[] Metadata { get; }
-
-            public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
         }
-
-        public Type ResponseType { get; }
     }
 }

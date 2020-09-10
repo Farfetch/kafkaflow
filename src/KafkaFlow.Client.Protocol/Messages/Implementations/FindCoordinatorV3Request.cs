@@ -4,7 +4,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class FindCoordinatorV3Request : IRequestMessageV2<FindCoordinatorV3Response>
+    public class FindCoordinatorV3Request : IRequestMessage<FindCoordinatorV3Response>, ITaggedFields, IFindCoordinatorRequest
     {
         public FindCoordinatorV3Request(string key, byte keyType)
         {
@@ -13,7 +13,10 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
         }
 
         public ApiKey ApiKey => ApiKey.FindCoordinator;
+
         public short ApiVersion => 3;
+
+        public Type ResponseType => typeof(FindCoordinatorV3Response);
 
         public string Key { get; }
 
@@ -27,7 +30,5 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
             destination.WriteByte(this.KeyType);
             destination.WriteTaggedFields(this.TaggedFields);
         }
-
-        public Type ResponseType { get; }
     }
 }

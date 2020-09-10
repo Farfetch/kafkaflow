@@ -2,7 +2,6 @@ namespace KafkaFlow.Client.Protocol
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
     public class Crc32CHash
     {

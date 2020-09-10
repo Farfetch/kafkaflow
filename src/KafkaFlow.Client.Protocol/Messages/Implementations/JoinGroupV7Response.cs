@@ -3,7 +3,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class JoinGroupV7Response : IResponseV2
+    internal class JoinGroupV7Response : ITaggedFields, IJoinGroupResponse
     {
         public int ThrottleTimeMs { get; private set; }
 
@@ -19,7 +19,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
 
         public string MemberId { get; private set; }
 
-        public Member[] Members { get; private set; }
+        public IJoinGroupResponse.IMember[] Members { get; private set; }
 
         public TaggedField[] TaggedFields { get; private set; }
 
@@ -36,7 +36,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations
             this.TaggedFields = source.ReadTaggedFields();
         }
 
-        public class Member : IResponseV2
+        private class Member : IJoinGroupResponse.IMember, ITaggedFields
         {
             public string MemberId { get; private set; }
 

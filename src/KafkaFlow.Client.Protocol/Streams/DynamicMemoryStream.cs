@@ -5,7 +5,6 @@ namespace KafkaFlow.Client.Protocol.Streams
     using System.IO;
     using System.Net.Sockets;
     using System.Runtime.CompilerServices;
-    using System.Runtime.InteropServices;
 
     public sealed class DynamicMemoryStream : BaseMemoryStream
     {
