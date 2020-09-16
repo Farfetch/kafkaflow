@@ -31,7 +31,10 @@ namespace KafkaFlow.Configuration
 
             this.DependencyConfigurator.AddSingleton<IProducerAccessor>(
                 resolver => new ProducerAccessor(
-                    configuration.Producers.Select(producer => new MessageProducer(resolver, producer))));
+                    configuration.Producers.Select(
+                        producer => new MessageProducer(
+                            resolver,
+                            producer))));
 
             return configuration;
         }

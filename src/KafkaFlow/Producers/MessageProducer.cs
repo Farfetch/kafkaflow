@@ -10,25 +10,17 @@ namespace KafkaFlow.Producers
     internal class MessageProducer : IMessageProducer, IDisposable
     {
         private readonly ProducerConfiguration configuration;
-        private readonly IProducer<byte[], byte[]> producer;
         private readonly MiddlewareExecutor middlewareExecutor;
         private readonly IDependencyResolverScope dependencyResolverScope;
+
+        private volatile IProducer<byte[], byte[]> producer;
+        private readonly object producerCreationSync = new object();
 
         public MessageProducer(
             IDependencyResolver dependencyResolver,
             ProducerConfiguration configuration)
         {
             this.configuration = configuration;
-
-            this.producer = new ProducerBuilder<byte[], byte[]>(configuration.GetKafkaConfig())
-                .SetErrorHandler(
-                    (p, error) =>
-                    {
-                        dependencyResolver
-                            .Resolve<ILogHandler>()
-                            .Error("Kafka Producer Error", null, new { Error = error });
-                    })
-                .Build();
 
             // Create middlewares instances inside a scope to allow scoped injections in producer middlewares
             this.dependencyResolverScope = dependencyResolver.CreateScope();
@@ -113,7 +105,7 @@ namespace KafkaFlow.Producers
                         {
                             if (report.Error.IsError)
                             {
-                                completionSource.SetException(new KafkaException(report.Error));
+                                completionSource.SetException(new ProduceException<byte[], byte[]>(report.Error, report));
                             }
                             else
                             {
@@ -147,13 +139,79 @@ namespace KafkaFlow.Producers
                 deliveryHandler);
         }
 
+        private IProducer<byte[], byte[]> EnsureProducer()
+        {
+            if (this.producer != null)
+            {
+                return this.producer;
+            }
+
+            lock (this.producerCreationSync)
+            {
+                if (this.producer != null)
+                {
+                    return this.producer;
+                }
+
+                return this.producer = new ProducerBuilder<byte[], byte[]>(this.configuration.GetKafkaConfig())
+                    .SetErrorHandler(
+                        (p, error) =>
+                        {
+                            if (error.IsFatal)
+                            {
+                                this.InvalidateProducer(error, null);
+                            }
+                            else
+                            {
+                                this.dependencyResolverScope.Resolver
+                                    .Resolve<ILogHandler>()
+                                    .Error(
+                                        "Kafka Producer Error",
+                                        new KafkaException(error),
+                                        new { Error = error });
+                            }
+                        })
+                    .Build();
+            }
+        }
+
+        private void InvalidateProducer(Error error, DeliveryResult<byte[], byte[]> result)
+        {
+            lock (this.producerCreationSync)
+            {
+                this.producer = null;
+            }
+
+            this.dependencyResolverScope.Resolver
+                .Resolve<ILogHandler>()
+                .Error(
+                    "Kafka produce fatal error occurred. The producer will be recreated",
+                    result is null ? new KafkaException(error) : new ProduceException<byte[], byte[]>(error, result),
+                    new { Error = error });
+        }
+
         private async Task<DeliveryResult<byte[], byte[]>> InternalProduceAsync(ProducerMessageContext context)
         {
-            var result = await this.producer
-                .ProduceAsync(
-                    context.Topic,
-                    CreateMessage(context))
-                .ConfigureAwait(false);
+            DeliveryResult<byte[], byte[]> result = null;
+
+            try
+            {
+                result = await this
+                    .EnsureProducer()
+                    .ProduceAsync(
+                        context.Topic,
+                        CreateMessage(context))
+                    .ConfigureAwait(false);
+            }
+            catch (ProduceException<byte[], byte[]> e)
+            {
+                if (e.Error.IsFatal)
+                {
+                    this.InvalidateProducer(e.Error, result);
+                }
+
+                throw;
+            }
 
             context.Offset = result.Offset;
             context.Partition = result.Partition;
@@ -165,12 +223,18 @@ namespace KafkaFlow.Producers
             ProducerMessageContext context,
             Action<DeliveryReport<byte[], byte[]>> deliveryHandler)
         {
-            this.producer
+            this
+                .EnsureProducer()
                 .Produce(
                     context.Topic,
                     CreateMessage(context),
                     report =>
                     {
+                        if (report.Error.IsFatal)
+                        {
+                            this.InvalidateProducer(report.Error, report);
+                        }
+
                         context.Offset = report.Offset;
                         context.Partition = report.Partition;
 

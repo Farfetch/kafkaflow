@@ -2,6 +2,7 @@
 {
     using System;
     using System.Threading.Tasks;
+    using Confluent.Kafka;
     using global::Microsoft.Extensions.DependencyInjection;
     using KafkaFlow.Admin;
     using KafkaFlow.Admin.Messages;
@@ -12,6 +13,8 @@
     using KafkaFlow.Serializer;
     using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
+    using Acks = KafkaFlow.Acks;
+    using AutoOffsetReset = KafkaFlow.AutoOffsetReset;
 
     internal static class Program
     {
@@ -28,11 +31,17 @@
                     .UseConsoleLog()
                     .AddCluster(
                         cluster => cluster
-                            .WithBrokers(new[] { "localhost:9092" })
+                            .WithBrokers(new[] { "localhost:9092", "localhost:9093" })
                             .EnableAdminMessages("kafka-flow.admin", Guid.NewGuid().ToString())
                             .AddProducer(
                                 producerName,
                                 producer => producer
+                                    .WithProducerConfig(
+                                        new ProducerConfig
+                                        {
+                                            MessageTimeoutMs = 10000,
+                                            TopicMetadataRefreshIntervalMs = 10000
+                                        })
                                     .DefaultTopic("test-topic")
                                     .AddMiddlewares(
                                         middlewares => middlewares
