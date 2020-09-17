@@ -5,24 +5,95 @@ on:
     branches: [ master ]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: wagoid/commitlint-github-action@master
+        with:
+          firstParent: false
+          failOnWarnings: true
+
   build:
 
     runs-on: ubuntu-latest
+    outputs:
+      commit_message: ${{ steps.commit_message.outputs.message }}
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        
+    - name: Get Commit Message
+      id: commit_message
+      run: |
+        MSG=$(git log --format=%B -n 1 --no-merges)
+        echo "::set-output name=message::${MSG}"
+        echo Commit Message: ${MSG}
+
+    - name: GITHUB CONTEXT
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
+
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.101
-    - name: Install dependencies
-      run: dotnet restore ./src/KafkaFlow.sln
-    - name: Build PR
+
+    - name: Build
       run: dotnet build ./src/KafkaFlow.sln -c Release
+
     - name: UnitTest
-      run: dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj -c Release --no-restore --verbosity normal
+      run: dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj -c Release
+
     - name: IntegrationTest
       run: |
         make init_broker
         dotnet test src/KafkaFlow.IntegrationTests/KafkaFlow.IntegrationTests.csproj -c Release
         make shutdown_broker
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(needs.build.outputs.commit_message, 'feat') || startsWith(needs.build.outputs.commit_message, 'fix')
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+
+    - name: Set Patch Bump
+      if: startsWith(needs.build.outputs.commit_message, 'fix')
+      run: echo "::set-env name=DEFAULT_BUMP::patch"
+
+    - name: Set Minor Bump
+      if: startsWith(needs.build.outputs.commit_message, 'feat')
+      run: echo "::set-env name=DEFAULT_BUMP::minor"
+
+    - name: Bump version and push tag
+      id: tagging
+      uses: anothrNick/github-tag-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        INITIAL_VERSION: 1.3.0
+        PRERELEASE_SUFFIX: beta
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+
+    - name: Pack
+      run: dotnet pack ./src/KafkaFlow.sln -c Release /p:Version=${{ steps.tagging.outputs.new_tag }} -o ./drop
+
+    - name: Publish
+      run: dotnet nuget push ./drop/**/*.nupkg -k ${{ secrets.NUGET_PUBLISH_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
+
+    - name: Print Version
+      run: echo ${{ steps.tagging.outputs.new_tag }}
