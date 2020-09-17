@@ -27,7 +27,7 @@ namespace KafkaFlow.Configuration
             var consumerManager = new ConsumerManager();
 
             this.dependencyConfigurator
-                .AddSingleton(typeof(ILogHandler), this.logHandler)
+                .AddTransient(typeof(ILogHandler), this.logHandler)
                 .AddSingleton<IConsumerAccessor>(consumerManager)
                 .AddSingleton<IConsumerManager>(consumerManager);
 
