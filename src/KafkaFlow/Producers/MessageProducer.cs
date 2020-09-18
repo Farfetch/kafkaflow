@@ -7,11 +7,12 @@ namespace KafkaFlow.Producers
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
 
-    internal class MessageProducer : IMessageProducer
+    internal class MessageProducer : IMessageProducer, IDisposable
     {
         private readonly ProducerConfiguration configuration;
         private readonly IProducer<byte[], byte[]> producer;
         private readonly MiddlewareExecutor middlewareExecutor;
+        private readonly IDependencyResolverScope dependencyResolverScope;
 
         public MessageProducer(
             IDependencyResolver dependencyResolver,
@@ -21,8 +22,11 @@ namespace KafkaFlow.Producers
 
             this.producer = new ProducerBuilder<byte[], byte[]>(configuration.GetKafkaConfig()).Build();
 
+            // Create middlewares instances inside a scope to allow scoped injections in producer middlewares
+            this.dependencyResolverScope = dependencyResolver.CreateScope();
+
             var middlewares = this.configuration.MiddlewareConfiguration.Factories
-                .Select(factory => factory(dependencyResolver))
+                .Select(factory => factory(this.dependencyResolverScope.Resolver))
                 .ToList();
 
             this.middlewareExecutor = new MiddlewareExecutor(middlewares);
@@ -187,6 +191,12 @@ namespace KafkaFlow.Producers
             }
 
             return value;
+        }
+
+        public void Dispose()
+        {
+            this.dependencyResolverScope.Dispose();
+            this.producer?.Dispose();
         }
     }
 }
