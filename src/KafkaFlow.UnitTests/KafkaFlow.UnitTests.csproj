@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="1.3.0" />
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
+    <PackageReference Include="Google.Protobuf" Version="3.13.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
     <PackageReference Include="Moq" Version="4.14.2" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
@@ -17,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\KafkaFlow.Compressor\KafkaFlow.Compressor.csproj" />
+    <ProjectReference Include="..\KafkaFlow.Serializer.GoogleProtobuf\KafkaFlow.Serializer.GoogleProtobuf.csproj" />
     <ProjectReference Include="..\KafkaFlow.Serializer\KafkaFlow.Serializer.csproj" />
     <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
   </ItemGroup>
