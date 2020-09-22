@@ -32,8 +32,13 @@ namespace KafkaFlow.Consumers.DistributionStrategies
         /// <returns></returns>
         public Task<IWorker> GetWorkerAsync(byte[] partitionKey, CancellationToken cancellationToken)
         {
-            return cancellationToken.IsCancellationRequested ? 
-                null : 
+            if (partitionKey is null)
+            {
+                return Task.FromResult(this.workers[0]);
+            }
+
+            return cancellationToken.IsCancellationRequested ?
+                null :
                 Task.FromResult(this.workers.ElementAtOrDefault(partitionKey.Sum(x => x) % this.workers.Count));
         }
     }
