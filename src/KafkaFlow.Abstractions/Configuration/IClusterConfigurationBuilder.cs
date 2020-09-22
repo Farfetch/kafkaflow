@@ -20,6 +20,13 @@ namespace KafkaFlow.Configuration
         IClusterConfigurationBuilder WithBrokers(IEnumerable<string> brokers);
 
         /// <summary>
+        /// Configures cluster security
+        /// </summary>
+        /// <param name="handler">A handler to sets the values</param>
+        /// <returns></returns>
+        IClusterConfigurationBuilder WithSecurityInformation(Action<SecurityInformation> handler);
+
+        /// <summary>
         /// Adds a producer to the cluster
         /// </summary>
         /// <param name="producer">A handler to configure the producer</param>
