@@ -36,7 +36,7 @@ namespace KafkaFlow.Producers
             object message,
             IMessageHeaders headers = null)
         {
-            var messageKey = Encoding.UTF8.GetBytes(partitionKey);
+            var messageKey = partitionKey is null ? null : Encoding.UTF8.GetBytes(partitionKey);
 
             DeliveryResult<byte[], byte[]> report = null;
 
@@ -83,7 +83,7 @@ namespace KafkaFlow.Producers
             IMessageHeaders headers = null,
             Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null)
         {
-            var messageKey = Encoding.UTF8.GetBytes(partitionKey);
+            var messageKey = partitionKey is null ? null : Encoding.UTF8.GetBytes(partitionKey);
 
             this.middlewareExecutor.Execute(
                 new ProducerMessageContext(
