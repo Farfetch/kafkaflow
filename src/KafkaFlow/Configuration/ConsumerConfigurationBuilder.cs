@@ -143,12 +143,13 @@ namespace KafkaFlow.Configuration
             var middlewareConfiguration = this.middlewareConfigurationBuilder.Build();
 
             this.consumerConfig ??= new ConsumerConfig();
-            this.consumerConfig.BootstrapServers = string.Join(",", clusterConfiguration.Brokers);
+            this.consumerConfig.BootstrapServers ??= string.Join(",", clusterConfiguration.Brokers);
+            this.consumerConfig.GroupId ??= this.groupId;
+            this.consumerConfig.AutoOffsetReset ??= this.autoOffsetReset;
+            this.consumerConfig.MaxPollIntervalMs ??= this.maxPollIntervalMs;
+
             this.consumerConfig.EnableAutoOffsetStore = false;
             this.consumerConfig.EnableAutoCommit = false;
-            this.consumerConfig.GroupId = this.groupId;
-            this.consumerConfig.AutoOffsetReset = this.autoOffsetReset;
-            this.consumerConfig.MaxPollIntervalMs = this.maxPollIntervalMs;
 
             return new ConsumerConfiguration(
                 this.consumerConfig,
