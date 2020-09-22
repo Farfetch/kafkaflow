@@ -10,7 +10,7 @@ namespace KafkaFlow.Configuration
         private readonly ProducerMiddlewareConfigurationBuilder middlewareConfigurationBuilder;
 
         private string topic;
-        private ProducerConfig baseProducerConfig;
+        private ProducerConfig producerConfig;
         private Acks? acks;
 
         public ProducerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator, string name)
@@ -36,7 +36,7 @@ namespace KafkaFlow.Configuration
 
         public IProducerConfigurationBuilder WithProducerConfig(ProducerConfig config)
         {
-            this.baseProducerConfig = config;
+            this.producerConfig = config;
             return this;
         }
 
@@ -48,13 +48,17 @@ namespace KafkaFlow.Configuration
 
         public ProducerConfiguration Build(ClusterConfiguration clusterConfiguration)
         {
+            this.producerConfig ??= new ProducerConfig();
+
+            this.producerConfig.ReadSecurityInformation(clusterConfiguration);
+
             var configuration = new ProducerConfiguration(
                 clusterConfiguration,
                 this.name,
                 this.topic,
                 this.acks,
                 this.middlewareConfigurationBuilder.Build(),
-                this.baseProducerConfig ?? new ProducerConfig());
+                this.producerConfig);
 
             return configuration;
         }
