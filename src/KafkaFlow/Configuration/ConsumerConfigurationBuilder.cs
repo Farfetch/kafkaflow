@@ -7,8 +7,7 @@ namespace KafkaFlow.Configuration
     using Confluent.Kafka;
     using KafkaFlow.Consumers.DistributionStrategies;
 
-    internal sealed class ConsumerConfigurationBuilder
-        : IConsumerConfigurationBuilder
+    internal sealed class ConsumerConfigurationBuilder : IConsumerConfigurationBuilder
     {
         private readonly List<string> topics = new List<string>();
         private readonly ConsumerMiddlewareConfigurationBuilder middlewareConfigurationBuilder;
@@ -16,6 +15,9 @@ namespace KafkaFlow.Configuration
         private ConsumerConfig consumerConfig;
 
         private string name;
+        private string groupId;
+        private AutoOffsetReset? autoOffsetReset;
+        private int? maxPollIntervalMs;
         private int workersCount;
         private int bufferSize;
         private bool autoStoreOffsets = true;
@@ -29,7 +31,6 @@ namespace KafkaFlow.Configuration
         {
             this.DependencyConfigurator = dependencyConfigurator;
             this.middlewareConfigurationBuilder = new ConsumerMiddlewareConfigurationBuilder(dependencyConfigurator);
-            this.consumerConfig = new ConsumerConfig();
         }
 
         public IConsumerConfigurationBuilder Topic(string topicName)
@@ -60,13 +61,13 @@ namespace KafkaFlow.Configuration
 
         public IConsumerConfigurationBuilder WithGroupId(string groupId)
         {
-            this.consumerConfig.GroupId = groupId;
+            this.groupId = groupId;
             return this;
         }
 
         public IConsumerConfigurationBuilder WithAutoOffsetReset(KafkaFlow.AutoOffsetReset autoOffsetReset)
         {
-            this.consumerConfig.AutoOffsetReset = autoOffsetReset switch
+            this.autoOffsetReset = autoOffsetReset switch
             {
                 KafkaFlow.AutoOffsetReset.Earliest => AutoOffsetReset.Earliest,
                 KafkaFlow.AutoOffsetReset.Latest => AutoOffsetReset.Latest,
@@ -87,7 +88,7 @@ namespace KafkaFlow.Configuration
 
         public IConsumerConfigurationBuilder WithMaxPollIntervalMs(int maxPollIntervalMs)
         {
-            this.consumerConfig.MaxPollIntervalMs = maxPollIntervalMs;
+            this.maxPollIntervalMs = maxPollIntervalMs;
             return this;
         }
 
@@ -107,7 +108,6 @@ namespace KafkaFlow.Configuration
             where T : class, IDistributionStrategy
         {
             this.distributionStrategyFactory = factory;
-
             return this;
         }
 
@@ -142,9 +142,13 @@ namespace KafkaFlow.Configuration
         {
             var middlewareConfiguration = this.middlewareConfigurationBuilder.Build();
 
+            this.consumerConfig ??= new ConsumerConfig();
             this.consumerConfig.BootstrapServers = string.Join(",", clusterConfiguration.Brokers);
             this.consumerConfig.EnableAutoOffsetStore = false;
             this.consumerConfig.EnableAutoCommit = false;
+            this.consumerConfig.GroupId = this.groupId;
+            this.consumerConfig.AutoOffsetReset = this.autoOffsetReset;
+            this.consumerConfig.MaxPollIntervalMs = this.maxPollIntervalMs;
 
             return new ConsumerConfiguration(
                 this.consumerConfig,
