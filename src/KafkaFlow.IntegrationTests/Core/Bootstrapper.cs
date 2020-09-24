@@ -26,7 +26,6 @@ namespace KafkaFlow.IntegrationTests.Core
         private const string ProtobufGzipTopicName = "test-protobuf-gzip";
         private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
 
-
         private static readonly Lazy<IServiceProvider> lazyProvider = new Lazy<IServiceProvider>(SetupProvider);
 
         public static IServiceProvider GetServiceProvider() => lazyProvider.Value;
@@ -69,7 +68,7 @@ namespace KafkaFlow.IntegrationTests.Core
 
             services.AddKafka(
                 kafka => kafka
-                    .UseLogHandler<TraceLoghandler>()
+                    .UseLogHandler<TraceLogHandler>()
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(brokers.Split(';'))
@@ -129,8 +128,8 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddCompressor<GzipMessageCompressor>()
-                                            .AddSerializer<JsonMessageSerializer>()
+                                            .AddCompressor(r => new GzipMessageCompressor())
+                                            .AddSerializer(r => new JsonMessageSerializer())
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -196,8 +195,8 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(ProtobufGzipTopicName2)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ProtobufMessageSerializer>()
-                                            .AddCompressor<GzipMessageCompressor>()
+                                            .AddSerializer(r => new ProtobufMessageSerializer())
+                                            .AddCompressor(r => new GzipMessageCompressor())
                                     )
                             )
                             .AddProducer<GzipProducer>(

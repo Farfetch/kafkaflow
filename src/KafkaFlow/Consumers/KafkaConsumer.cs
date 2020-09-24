@@ -106,7 +106,9 @@
 
         private void CreateBackgroundTask()
         {
-            var consumer = this.consumerBuilder.Build();
+            var consumer = this.consumerBuilder
+                .SetErrorHandler((p, error) => this.logHandler.Error("Kafka Consumer Error", null, new { Error = error }))
+                .Build();
 
             this.consumerManager.AddOrUpdate(
                 new MessageConsumer(
@@ -145,7 +147,9 @@
                                     null);
 
                                 await this.consumerWorkerPool.StopAsync().ConfigureAwait(false);
-                                _ = Task.Delay(5000).ContinueWith(t => this.CreateBackgroundTask());
+                                _ = Task
+                                    .Delay(5000, this.stopCancellationTokenSource.Token)
+                                    .ContinueWith(t => this.CreateBackgroundTask());
 
                                 break;
                             }
