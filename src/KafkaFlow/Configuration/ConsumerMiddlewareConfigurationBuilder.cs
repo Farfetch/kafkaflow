@@ -17,7 +17,6 @@ namespace KafkaFlow.Configuration
 
         public IConsumerMiddlewareConfigurationBuilder Add<T>(Factory<T> factory) where T : class, IMessageMiddleware
         {
-            this.DependencyConfigurator.AddTransient(resolver => factory(resolver));
             this.middlewaresFactories.Add(factory);
             return this;
         }
