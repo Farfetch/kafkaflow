@@ -17,14 +17,16 @@ namespace KafkaFlow.Configuration
 
         public IProducerMiddlewareConfigurationBuilder Add<T>(Factory<T> factory) where T : class, IMessageMiddleware
         {
-            this.DependencyConfigurator.AddTransient<T>();
+            this.DependencyConfigurator.AddTransient(resolver => factory(resolver));
             this.middlewaresFactories.Add(factory);
             return this;
         }
 
         public IProducerMiddlewareConfigurationBuilder Add<T>() where T : class, IMessageMiddleware
         {
-            return this.Add(resolver => resolver.Resolve<T>());
+            this.DependencyConfigurator.AddTransient<T>();
+            this.middlewaresFactories.Add(resolver => resolver.Resolve<T>());
+            return this;
         }
 
         public MiddlewareConfiguration Build() => new MiddlewareConfiguration(this.middlewaresFactories);
