@@ -20,7 +20,15 @@ namespace KafkaFlow.Producers
         {
             this.configuration = configuration;
 
-            this.producer = new ProducerBuilder<byte[], byte[]>(configuration.GetKafkaConfig()).Build();
+            this.producer = new ProducerBuilder<byte[], byte[]>(configuration.GetKafkaConfig())
+                .SetErrorHandler(
+                    (p, error) =>
+                    {
+                        dependencyResolver
+                            .Resolve<ILogHandler>()
+                            .Error("Kafka Producer Error", null, new { Error = error });
+                    })
+                .Build();
 
             // Create middlewares instances inside a scope to allow scoped injections in producer middlewares
             this.dependencyResolverScope = dependencyResolver.CreateScope();
