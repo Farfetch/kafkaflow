@@ -27,12 +27,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: ${{ github.event.pull_request.head.sha }}
-        
+        fetch-depth: 0
+
     - name: Get Commit Message
       id: commit_message
       run: |
-        MSG=$(git log --format=%B -n 1 --no-merges)
+        MSG=$(git log --format=%B -n 1 ${{github.event.pull_request.head.sha}})
         echo "::set-output name=message::${MSG}"
         echo Commit Message: ${MSG}
 
@@ -65,8 +65,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
 
     - name: Set Patch Bump
       if: startsWith(needs.build.outputs.commit_message, 'fix')
