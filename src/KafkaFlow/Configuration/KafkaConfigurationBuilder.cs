@@ -4,7 +4,6 @@ namespace KafkaFlow.Configuration
     using System.Collections.Generic;
     using System.Linq;
     using KafkaFlow.Consumers;
-    using KafkaFlow.Producers;
 
     internal class KafkaConfigurationBuilder
         : IKafkaConfigurationBuilder
@@ -27,7 +26,7 @@ namespace KafkaFlow.Configuration
             var consumerManager = new ConsumerManager();
 
             this.dependencyConfigurator
-                .AddSingleton(typeof(ILogHandler), this.logHandler)
+                .AddTransient(typeof(ILogHandler), this.logHandler)
                 .AddSingleton<IConsumerAccessor>(consumerManager)
                 .AddSingleton<IConsumerManager>(consumerManager);
 
