@@ -4,6 +4,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	<PublishRepositoryUrl>true</PublishRepositoryUrl>
     <Authors>Farfetch</Authors>
     <Company>Farfetch</Company>
     <Product>KafkaFlow</Product>
@@ -13,4 +14,7 @@
     <license>https://github.com/Farfetch/kafka-flow/blob/master/LICENSE</license>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+  </ItemGroup>
 </Project>

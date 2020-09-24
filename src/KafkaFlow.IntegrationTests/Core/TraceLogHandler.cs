@@ -1,10 +1,10 @@
-namespace KafkaFlow.IntegrationTests.Core.Middlewares
+namespace KafkaFlow.IntegrationTests.Core
 {
     using System;
     using System.Diagnostics;
     using System.Text.Json;
 
-    public class TraceLoghandler : ILogHandler
+    public class TraceLogHandler : ILogHandler
     {
         public void Error(string message, Exception ex, object data)
         {
