@@ -66,13 +66,13 @@ namespace KafkaFlow
         }
 
         /// <summary>
-        /// Registers a singleton type mapping
+        /// Registers a transient type mapping
         /// </summary>
         /// <param name="configurator">The <see cref="IDependencyConfigurator"/> object that this method was called on</param>
         /// <param name="serviceType"><see cref="Type"/> that will be requested</param>
         /// <param name="implementationType"><see cref="Type"/> that will actually be returned</param>
         /// <returns></returns>
-        public static IDependencyConfigurator AddSingleton(
+        public static IDependencyConfigurator AddTransient(
             this IDependencyConfigurator configurator,
             Type serviceType,
             Type implementationType)
@@ -80,7 +80,7 @@ namespace KafkaFlow
             return configurator.Add(
                 serviceType,
                 implementationType,
-                InstanceLifetime.Singleton);
+                InstanceLifetime.Transient);
         }
 
         /// <summary>
