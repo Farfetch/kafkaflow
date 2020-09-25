@@ -5,13 +5,13 @@ namespace KafkaFlow.Configuration
     using System.Linq;
     using KafkaFlow.Producers;
 
-    internal class ClusterConfigurationBuilder
-        : IClusterConfigurationBuilder
+    internal class ClusterConfigurationBuilder : IClusterConfigurationBuilder
     {
         private readonly List<ProducerConfigurationBuilder> producers = new List<ProducerConfigurationBuilder>();
         private readonly List<ConsumerConfigurationBuilder> consumers = new List<ConsumerConfigurationBuilder>();
 
         private IEnumerable<string> brokers;
+        private Func<SecurityInformation> securityInformationHandler;
 
         public ClusterConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
@@ -24,7 +24,8 @@ namespace KafkaFlow.Configuration
         {
             var configuration = new ClusterConfiguration(
                 kafkaConfiguration,
-                this.brokers.ToList());
+                this.brokers.ToList(),
+                this.securityInformationHandler);
 
             configuration.AddProducers(this.producers.Select(x => x.Build(configuration)));
             configuration.AddConsumers(this.consumers.Select(x => x.Build(configuration)));
@@ -35,6 +36,19 @@ namespace KafkaFlow.Configuration
         public IClusterConfigurationBuilder WithBrokers(IEnumerable<string> brokers)
         {
             this.brokers = brokers;
+            return this;
+        }
+
+        public IClusterConfigurationBuilder WithSecurityInformation(Action<SecurityInformation> handler)
+        {
+            // Uses a handler to avoid in-memory stored passwords for long periods
+            this.securityInformationHandler = () =>
+            {
+                var config = new SecurityInformation();
+                handler(config);
+                return config;
+            };
+
             return this;
         }
 

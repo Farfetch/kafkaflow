@@ -1,17 +1,21 @@
 namespace KafkaFlow.Configuration
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
     internal class ClusterConfiguration
     {
+        private readonly Func<SecurityInformation> securityInformationHandler;
         private readonly List<ProducerConfiguration> producers = new List<ProducerConfiguration>();
         private readonly List<ConsumerConfiguration> consumers = new List<ConsumerConfiguration>();
 
         public ClusterConfiguration(
             KafkaConfiguration kafka,
-            IEnumerable<string> brokers)
+            IEnumerable<string> brokers,
+            Func<SecurityInformation> securityInformationHandler)
         {
+            this.securityInformationHandler = securityInformationHandler;
             this.Kafka = kafka;
             this.Brokers = brokers.ToList();
         }
@@ -27,5 +31,7 @@ namespace KafkaFlow.Configuration
         public void AddConsumers(IEnumerable<ConsumerConfiguration> configurations) => this.consumers.AddRange(configurations);
 
         public void AddProducers(IEnumerable<ProducerConfiguration> configurations) => this.producers.AddRange(configurations);
+
+        public SecurityInformation GetSecurityInformation() => this.securityInformationHandler?.Invoke();
     }
 }

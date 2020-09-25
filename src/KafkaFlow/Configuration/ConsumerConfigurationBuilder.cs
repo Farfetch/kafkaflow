@@ -151,6 +151,8 @@ namespace KafkaFlow.Configuration
             this.consumerConfig.EnableAutoOffsetStore = false;
             this.consumerConfig.EnableAutoCommit = false;
 
+            this.consumerConfig.ReadSecurityInformation(clusterConfiguration);
+
             return new ConsumerConfiguration(
                 this.consumerConfig,
                 this.topics,
