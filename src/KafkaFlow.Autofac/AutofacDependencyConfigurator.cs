@@ -4,14 +4,16 @@ using Autofac.Builder;
 
 namespace KafkaFlow.Autofac
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// The Autofac implementation of <see cref="IDependencyConfigurator"/>
+    /// </summary>
     public class AutofacDependencyConfigurator
         : IDependencyConfigurator
     {
         private readonly ContainerBuilder builder;
 
         /// <summary>
-        ///  Creates a <see cref="AutofacDependencyConfigurator"/> instance
+        ///  Creates a <see cref="AutofacDependencyConfigurator"/> instance 
         /// </summary>
         /// <param name="builder"></param>
         public AutofacDependencyConfigurator(ContainerBuilder builder)
