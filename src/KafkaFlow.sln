@@ -31,29 +31,31 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Serializer", "Kaf
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Compressor", "KafkaFlow.Compressor\KafkaFlow.Compressor.csproj", "{D29EC709-33DE-4045-8F3B-EC6619CDB429}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.IntegrationTests", "KafkaFlow.IntegrationTests\KafkaFlow.IntegrationTests.csproj", "{36F459F4-8323-472A-A8C5-8C9D89F92012}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.IntegrationTests", "KafkaFlow.IntegrationTests\KafkaFlow.IntegrationTests.csproj", "{36F459F4-8323-472A-A8C5-8C9D89F92012}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Serializer.NewtonsoftJson", "KafkaFlow.Serializer.NewtonsoftJson\KafkaFlow.Serializer.NewtonsoftJson.csproj", "{FC622AB0-6481-4249-8D83-27BC39912103}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Serializer.NewtonsoftJson", "KafkaFlow.Serializer.NewtonsoftJson\KafkaFlow.Serializer.NewtonsoftJson.csproj", "{FC622AB0-6481-4249-8D83-27BC39912103}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DependencyResolvers", "DependencyResolvers", "{292BCEDD-55B4-49BB-B8B2-24CD834FF2AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Microsoft.DependencyInjection", "KafkaFlow.Microsoft.DependencyInjection\KafkaFlow.Microsoft.DependencyInjection.csproj", "{B86A51E3-7AC9-4EF8-BD2A-1ACC9EF0F5AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Microsoft.DependencyInjection", "KafkaFlow.Microsoft.DependencyInjection\KafkaFlow.Microsoft.DependencyInjection.csproj", "{B86A51E3-7AC9-4EF8-BD2A-1ACC9EF0F5AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Unity", "KafkaFlow.Unity\KafkaFlow.Unity.csproj", "{22DB5734-E792-4309-B565-77F02D27D88C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Unity", "KafkaFlow.Unity\KafkaFlow.Unity.csproj", "{22DB5734-E792-4309-B565-77F02D27D88C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample", "..\samples\KafkaFlow.Sample\KafkaFlow.Sample.csproj", "{E59C13AF-41E7-4DFA-B118-A65EA87F0605}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Sample", "..\samples\KafkaFlow.Sample\KafkaFlow.Sample.csproj", "{E59C13AF-41E7-4DFA-B118-A65EA87F0605}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LogHandlers", "LogHandlers", "{EF626895-FDAE-4B28-9110-BA85671CBBF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.LogHandler.Console", "KafkaFlow.LogHandler.Console\KafkaFlow.LogHandler.Console.csproj", "{6E9F7CDC-E935-4A51-9358-2E6DBB901A34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.LogHandler.Console", "KafkaFlow.LogHandler.Console\KafkaFlow.LogHandler.Console.csproj", "{6E9F7CDC-E935-4A51-9358-2E6DBB901A34}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Admin", "Admin", "{58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Admin", "KafkaFlow.Admin\KafkaFlow.Admin.csproj", "{46B6F104-D46E-4DC2-ADC2-18E76F5BBCD9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Admin", "KafkaFlow.Admin\KafkaFlow.Admin.csproj", "{46B6F104-D46E-4DC2-ADC2-18E76F5BBCD9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Admin.WebApi", "KafkaFlow.Admin.WebApi\KafkaFlow.Admin.WebApi.csproj", "{827620D3-2258-410E-A79E-E782ED42284C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Admin.WebApi", "KafkaFlow.Admin.WebApi\KafkaFlow.Admin.WebApi.csproj", "{827620D3-2258-410E-A79E-E782ED42284C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Admin.WebApi.Sample", "..\samples\KafkaFlow.Admin.WebApi.Sample\KafkaFlow.Admin.WebApi.Sample.csproj", "{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Admin.WebApi.Sample", "..\samples\KafkaFlow.Admin.WebApi.Sample\KafkaFlow.Admin.WebApi.Sample.csproj", "{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Autofac.DependencyInjection", "KafkaFlow.Autofac.DependencyInjection\KafkaFlow.Autofac.DependencyInjection.csproj", "{2392C64D-B15B-4DF6-B6F2-F2D33A8628AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -133,6 +135,10 @@ Global
 		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2392C64D-B15B-4DF6-B6F2-F2D33A8628AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2392C64D-B15B-4DF6-B6F2-F2D33A8628AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2392C64D-B15B-4DF6-B6F2-F2D33A8628AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2392C64D-B15B-4DF6-B6F2-F2D33A8628AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -156,6 +162,7 @@ Global
 		{46B6F104-D46E-4DC2-ADC2-18E76F5BBCD9} = {58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}
 		{827620D3-2258-410E-A79E-E782ED42284C} = {58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}
 		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7} = {58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}
+		{2392C64D-B15B-4DF6-B6F2-F2D33A8628AB} = {292BCEDD-55B4-49BB-B8B2-24CD834FF2AA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AE955B5-16B0-41CF-9F12-66D15B3DD1AB}
