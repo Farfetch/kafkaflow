@@ -3,7 +3,9 @@ using Autofac;
 
 namespace KafkaFlow.Autofac
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Autofac implementation of <see cref="IDependencyResolver"/>
+    /// </summary>
     public class AutofacDependencyResolver : IDependencyResolver
     {
         private readonly ILifetimeScope scope;
