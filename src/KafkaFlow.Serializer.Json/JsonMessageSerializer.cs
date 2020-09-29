@@ -42,7 +42,7 @@
         {
             var json = Encoding.UTF8.GetString(data);
 
-            return JsonSerializer.Deserialize(json, type);
+            return JsonSerializer.Deserialize(json, type, this.options);
         }
     }
 }
