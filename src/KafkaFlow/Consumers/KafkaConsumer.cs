@@ -38,8 +38,10 @@
 
             this.consumerBuilder = new ConsumerBuilder<byte[], byte[]>(kafkaConfig);
 
-            this.consumerBuilder.SetPartitionsAssignedHandler((consumer, partitions) => this.OnPartitionAssigned(consumer, partitions));
-            this.consumerBuilder.SetPartitionsRevokedHandler((consumer, partitions) => this.OnPartitionRevoked(partitions));
+            this.consumerBuilder
+                .SetPartitionsAssignedHandler((consumer, partitions) => this.OnPartitionAssigned(consumer, partitions))
+                .SetPartitionsRevokedHandler((consumer, partitions) => this.OnPartitionRevoked(partitions))
+                .SetErrorHandler((p, error) => this.logHandler.Error("Kafka Consumer Error", null, new { Error = error }));
         }
 
         private void OnPartitionRevoked(IReadOnlyCollection<TopicPartitionOffset> topicPartitions)
@@ -106,9 +108,7 @@
 
         private void CreateBackgroundTask()
         {
-            var consumer = this.consumerBuilder
-                .SetErrorHandler((p, error) => this.logHandler.Error("Kafka Consumer Error", null, new { Error = error }))
-                .Build();
+            var consumer = this.consumerBuilder.Build();
 
             this.consumerManager.AddOrUpdate(
                 new MessageConsumer(
