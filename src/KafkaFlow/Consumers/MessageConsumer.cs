@@ -33,6 +33,8 @@ namespace KafkaFlow.Consumers
 
         public string GroupId => this.configuration.GroupId;
 
+        public int WorkerCount => this.configuration.WorkerCount;
+
         public async Task OverrideOffsetsAndRestartAsync(IReadOnlyCollection<TopicPartitionOffset> offsets)
         {
             if (offsets is null)
