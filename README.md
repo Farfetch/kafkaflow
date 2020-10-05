@@ -25,7 +25,7 @@ KafkaFlow uses [Confluent Kafka Client](https://github.com/confluentinc/confluen
 
 ## Features
 
--   Multi-threared consumer with message order garantee
+-   Multi-threaded consumer with message order guarantee
 -   Middleware support implementing `IMessageMiddleware` interface
 -   Native support for topics with many message types
 -   Multiple topics in the same consumer
