@@ -1,0 +1,26 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+
+    - name: Pack
+      run: dotnet pack ./src/KafkaFlow.sln -c Release /p:Version=${{ github.event.release.tag_name }} -o ./drop
+
+    - name: Publish
+      run: dotnet nuget push ./drop/**/*.nupkg -k ${{ secrets.NUGET_PUBLISH_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
+
+    - name: Print Version
+      run: echo ${{ github.event.release.tag_name }}
