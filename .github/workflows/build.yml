@@ -1,0 +1,48 @@
+name: Build
+
+on:
+  pull_request:
+    branches: [ master ]
+
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name : GITHUB CONTEXT
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"      
+      
+    - name: Commit Lint
+      uses: wagoid/commitlint-github-action@master
+      with:
+        firstParent: false
+        failOnWarnings: true
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+
+    - name: Build
+      run: dotnet build ./src/KafkaFlow.sln -c Release
+
+    - name: UnitTest
+      run: dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj -c Release
+
+    - name: IntegrationTest
+      run: |
+        make init_broker
+        dotnet test src/KafkaFlow.IntegrationTests/KafkaFlow.IntegrationTests.csproj -c Release
+        make shutdown_broker
