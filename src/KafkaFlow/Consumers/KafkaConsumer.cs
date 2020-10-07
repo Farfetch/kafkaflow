@@ -41,7 +41,17 @@
             this.consumerBuilder
                 .SetPartitionsAssignedHandler((consumer, partitions) => this.OnPartitionAssigned(consumer, partitions))
                 .SetPartitionsRevokedHandler((consumer, partitions) => this.OnPartitionRevoked(partitions))
-                .SetErrorHandler((p, error) => this.logHandler.Error("Kafka Consumer Error", null, new { Error = error }));
+                .SetErrorHandler((p, error) =>
+                {
+                    if (error.IsFatal)
+                    {
+                        this.logHandler.Error("Kafka Consumer Fatal Error", null, new { Error = error });
+                    }
+                    else
+                    {
+                        this.logHandler.Warning("Kafka Consumer Error", new { Error = error });
+                    }
+                });
         }
 
         private void OnPartitionRevoked(IReadOnlyCollection<TopicPartitionOffset> topicPartitions)
