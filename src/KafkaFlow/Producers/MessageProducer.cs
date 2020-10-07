@@ -165,10 +165,7 @@ namespace KafkaFlow.Producers
                             {
                                 this.dependencyResolverScope.Resolver
                                     .Resolve<ILogHandler>()
-                                    .Error(
-                                        "Kafka Producer Error",
-                                        new KafkaException(error),
-                                        new { Error = error });
+                                    .Warning("Kafka Producer Error", new { Error = error });
                             }
                         })
                     .Build();
