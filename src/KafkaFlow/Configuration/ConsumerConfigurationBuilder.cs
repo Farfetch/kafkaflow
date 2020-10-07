@@ -10,6 +10,7 @@ namespace KafkaFlow.Configuration
     internal sealed class ConsumerConfigurationBuilder : IConsumerConfigurationBuilder
     {
         private readonly List<string> topics = new List<string>();
+        private readonly List<Action<string>> statisticsHandlers = new List<Action<string>>();
         private readonly ConsumerMiddlewareConfigurationBuilder middlewareConfigurationBuilder;
 
         private ConsumerConfig consumerConfig;
@@ -21,6 +22,7 @@ namespace KafkaFlow.Configuration
         private int workersCount;
         private int bufferSize;
         private bool autoStoreOffsets = true;
+        private int statisticsInterval;
 
         private Factory<IDistributionStrategy> distributionStrategyFactory = resolver => new BytesSumDistributionStrategy();
         private TimeSpan autoCommitInterval = TimeSpan.FromSeconds(5);
@@ -138,6 +140,18 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
+        public IConsumerConfigurationBuilder WithStatisticsHandler(Action<string> statisticsHandler)
+        {
+            this.statisticsHandlers.Add(statisticsHandler);
+            return this;
+        }
+
+        public IConsumerConfigurationBuilder WithStatisticsIntervalMs(int statisticsIntervalMs)
+        {
+            this.statisticsInterval = statisticsIntervalMs;
+            return this;
+        }
+
         public ConsumerConfiguration Build(ClusterConfiguration clusterConfiguration)
         {
             var middlewareConfiguration = this.middlewareConfigurationBuilder.Build();
@@ -147,6 +161,7 @@ namespace KafkaFlow.Configuration
             this.consumerConfig.GroupId ??= this.groupId;
             this.consumerConfig.AutoOffsetReset ??= this.autoOffsetReset;
             this.consumerConfig.MaxPollIntervalMs ??= this.maxPollIntervalMs;
+            this.consumerConfig.StatisticsIntervalMs ??= this.statisticsInterval;
 
             this.consumerConfig.EnableAutoOffsetStore = false;
             this.consumerConfig.EnableAutoCommit = false;
@@ -162,7 +177,8 @@ namespace KafkaFlow.Configuration
                 this.distributionStrategyFactory,
                 middlewareConfiguration,
                 this.autoStoreOffsets,
-                this.autoCommitInterval);
+                this.autoCommitInterval,
+                this.statisticsHandlers);
         }
     }
 }

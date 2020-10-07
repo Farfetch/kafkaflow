@@ -32,5 +32,19 @@ namespace KafkaFlow.Configuration
         /// <param name="acks"></param>
         /// <returns></returns>
         IProducerConfigurationBuilder WithAcks(Acks acks);
+
+        /// <summary>
+        /// Adds a handler for the Kafka producer statistics
+        /// </summary>
+        /// <param name="statisticsHandler">A handler for the statistics</param>
+        /// <returns></returns>
+        IProducerConfigurationBuilder WithStatisticsHandler(Action<string> statisticsHandler);
+
+        /// <summary>
+        /// Sets the interval the statistics are emitted
+        /// </summary>
+        /// <param name="statisticsIntervalMs">The interval in miliseconds</param>
+        /// <returns></returns>
+        IProducerConfigurationBuilder WithStatisticsIntervalMs(int statisticsIntervalMs);
     }
 }

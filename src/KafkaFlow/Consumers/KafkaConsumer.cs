@@ -51,6 +51,13 @@
                     {
                         this.logHandler.Warning("Kafka Consumer Error", new { Error = error });
                     }
+                })
+                .SetStatisticsHandler((consumer, statistics) =>
+                {
+                    foreach (var handler in configuration.StatisticsHandlers)
+                    {
+                        handler.Invoke(statistics);
+                    }
                 });
         }
 

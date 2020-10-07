@@ -119,5 +119,19 @@ namespace KafkaFlow.Configuration
         /// <param name="middlewares">A handler to register middlewares</param>
         /// <returns></returns>
         IConsumerConfigurationBuilder AddMiddlewares(Action<IConsumerMiddlewareConfigurationBuilder> middlewares);
+
+        /// <summary>
+        /// Adds a handler for the Kafka consumer statistics
+        /// </summary>
+        /// <param name="statisticsHandler">A handler for the statistics</param>
+        /// <returns></returns>
+        IConsumerConfigurationBuilder WithStatisticsHandler(Action<string> statisticsHandler);
+
+        /// <summary>
+        /// Sets the interval the statistics are emitted
+        /// </summary>
+        /// <param name="statisticsIntervalMs">The interval in miliseconds</param>
+        /// <returns></returns>
+        IConsumerConfigurationBuilder WithStatisticsIntervalMs(int statisticsIntervalMs);
     }
 }

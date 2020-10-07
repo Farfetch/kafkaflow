@@ -168,6 +168,13 @@ namespace KafkaFlow.Producers
                                     .Warning("Kafka Producer Error", new { Error = error });
                             }
                         })
+                    .SetStatisticsHandler((producer, statistics) =>
+                    {
+                        foreach (var handler in this.configuration.StatisticsHandlers)
+                        {
+                            handler.Invoke(statistics);
+                        }
+                    })
                     .Build();
             }
         }

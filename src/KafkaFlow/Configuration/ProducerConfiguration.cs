@@ -1,6 +1,7 @@
 namespace KafkaFlow.Configuration
 {
     using System;
+    using System.Collections.Generic;
     using Confluent.Kafka;
     using Acks = KafkaFlow.Acks;
 
@@ -12,7 +13,8 @@ namespace KafkaFlow.Configuration
             string defaultTopic,
             Acks? acks,
             MiddlewareConfiguration middlewareConfiguration,
-            ProducerConfig baseProducerConfig)
+            ProducerConfig baseProducerConfig,
+            IReadOnlyList<Action<string>> statisticsHandlers)
         {
             this.Cluster = cluster ?? throw new ArgumentNullException(nameof(cluster));
             this.Name = name;
@@ -20,6 +22,7 @@ namespace KafkaFlow.Configuration
             this.Acks = acks;
             this.MiddlewareConfiguration = middlewareConfiguration;
             this.BaseProducerConfig = baseProducerConfig;
+            this.StatisticsHandlers = statisticsHandlers;
         }
 
         public ClusterConfiguration Cluster { get; }
@@ -33,6 +36,8 @@ namespace KafkaFlow.Configuration
         public Acks? Acks { get; }
 
         public MiddlewareConfiguration MiddlewareConfiguration { get; }
+
+        public IReadOnlyList<Action<string>> StatisticsHandlers { get; }
 
         public ProducerConfig GetKafkaConfig()
         {
