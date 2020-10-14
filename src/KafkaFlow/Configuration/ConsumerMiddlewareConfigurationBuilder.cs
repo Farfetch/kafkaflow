@@ -21,13 +21,31 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
+        public IConsumerMiddlewareConfigurationBuilder AddAtBeginning<T>(Factory<T> factory) where T : class, IMessageMiddleware
+        {
+            this.middlewaresFactories.Insert(0, factory);
+            return this;
+        }
+
         public IConsumerMiddlewareConfigurationBuilder Add<T>() where T : class, IMessageMiddleware
         {
-            this.DependencyConfigurator.AddTransient<T>();
+            this.RegisterType<T>();
             this.middlewaresFactories.Add(resolver => resolver.Resolve<T>());
             return this;
         }
 
+        public IConsumerMiddlewareConfigurationBuilder AddAtBeginning<T>() where T : class, IMessageMiddleware
+        {
+            this.RegisterType<T>();
+            this.middlewaresFactories.Insert(0, resolver => resolver.Resolve<T>());
+            return this;
+        }        
+
         public MiddlewareConfiguration Build() => new MiddlewareConfiguration(this.middlewaresFactories);
+
+        private void RegisterType<T>() where T : class, IMessageMiddleware
+        {
+            this.DependencyConfigurator.AddTransient<T>();
+        }
     }
 }
