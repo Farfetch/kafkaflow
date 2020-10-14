@@ -1,6 +1,7 @@
 ﻿namespace KafkaFlow
 {
     using System;
+    using System.Reflection;
     using KafkaFlow.Admin;
     using KafkaFlow.Admin.Handlers;
     using KafkaFlow.Configuration;
@@ -28,7 +29,7 @@
                 .AddConsumer(
                     consumer => consumer
                         .Topic(adminTopic)
-                        .WithGroupId(adminConsumerGroup)
+                        .WithGroupId($"{adminConsumerGroup}-{Environment.MachineName}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}")
                         .WithWorkersCount(1)
                         .WithBufferSize(1)
                         .WithAutoOffsetReset(AutoOffsetReset.Latest)
@@ -46,7 +47,7 @@
             this IClusterConfigurationBuilder cluster,
             string adminTopic)
         {
-            return cluster.EnableAdminMessages(adminTopic, $"Admin.{Environment.MachineName}");
+            return cluster.EnableAdminMessages(adminTopic, $"Admin-{Assembly.GetEntryAssembly().GetName().Name}");
         }
     }
 }
