@@ -55,6 +55,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Admin.WebApi", "K
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Admin.WebApi.Sample", "..\samples\KafkaFlow.Admin.WebApi.Sample\KafkaFlow.Admin.WebApi.Sample.csproj", "{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Serializer.ApacheAvro", "KafkaFlow.Serializer.ApacheAvro\KafkaFlow.Serializer.ApacheAvro.csproj", "{06A0E302-E1B8-4888-8F76-564D6DD3D9FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -133,6 +135,10 @@ Global
 		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06A0E302-E1B8-4888-8F76-564D6DD3D9FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06A0E302-E1B8-4888-8F76-564D6DD3D9FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06A0E302-E1B8-4888-8F76-564D6DD3D9FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06A0E302-E1B8-4888-8F76-564D6DD3D9FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -156,6 +162,7 @@ Global
 		{46B6F104-D46E-4DC2-ADC2-18E76F5BBCD9} = {58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}
 		{827620D3-2258-410E-A79E-E782ED42284C} = {58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}
 		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7} = {58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}
+		{06A0E302-E1B8-4888-8F76-564D6DD3D9FD} = {ADAAA63C-E17C-4F1B-A062-3CCA071D75C2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AE955B5-16B0-41CF-9F12-66D15B3DD1AB}
