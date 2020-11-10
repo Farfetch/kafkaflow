@@ -22,6 +22,8 @@ KafkaFlow uses [Confluent Kafka Client](https://github.com/confluentinc/confluen
 | [KafkaFlow.Microsoft.DependencyInjection](https://www.nuget.org/packages/KafkaFlow.Microsoft.DependencyInjection/) | [![KafkaFlow.Microsoft.DependencyInjection](https://img.shields.io/nuget/v/KafkaFlow.Microsoft.DependencyInjection.svg)](https://www.nuget.org/packages/KafkaFlow.Microsoft.DependencyInjection/) | [![KafkaFlow.Microsoft.DependencyInjection](https://img.shields.io/nuget/dt/KafkaFlow.Microsoft.DependencyInjection.svg)](https://www.nuget.org/packages/KafkaFlow.Microsoft.DependencyInjection/) |
 | [KafkaFlow.Unity](https://www.nuget.org/packages/KafkaFlow.Unity/)                                                 | [![KafkaFlow.Unity](https://img.shields.io/nuget/v/KafkaFlow.Unity.svg)](https://www.nuget.org/packages/KafkaFlow.Unity/)                                                                         | [![KafkaFlow.Unity](https://img.shields.io/nuget/dt/KafkaFlow.Unity.svg)](https://www.nuget.org/packages/KafkaFlow.Unity/)                                                                         |
 | [KafkaFlow.LogHandler.Console](https://www.nuget.org/packages/KafkaFlow.LogHandler.Console/)                       | [![KafkaFlow.LogHandler.Console](https://img.shields.io/nuget/v/KafkaFlow.LogHandler.Console.svg)](https://www.nuget.org/packages/KafkaFlow.LogHandler.Console/)                                  | [![KafkaFlow.LogHandler.Console](https://img.shields.io/nuget/dt/KafkaFlow.LogHandler.Console.svg)](https://www.nuget.org/packages/KafkaFlow.LogHandler.Console/)                                  |
+| [KafkaFlow.Admin](https://www.nuget.org/packages/KafkaFlow.Admin/)   												 | [![KafkaFlow.Admin](https://img.shields.io/nuget/v/KafkaFlow.Admin.svg)](https://www.nuget.org/packages/KafkaFlow.Admin/)                                  										 | [![KafkaFlow.Admin](https://img.shields.io/nuget/dt/KafkaFlow.Admin.svg)](https://www.nuget.org/packages/KafkaFlow.Admin/)                                  |
+| [KafkaFlow.Admin.WebApi](https://www.nuget.org/packages/KafkaFlow.Admin.WebApi/)                       			 | [![KafkaFlow.Admin.WebApi](https://img.shields.io/nuget/v/KafkaFlow.Admin.WebApi.svg)](https://www.nuget.org/packages/KafkaFlow.Admin.WebApi/)                                  			 		 | [![KafkaFlow.Admin.WebApi](https://img.shields.io/nuget/dt/KafkaFlow.Admin.WebApi.svg)](https://www.nuget.org/packages/KafkaFlow.Admin.WebApi/)                                  |
 
 ## Features
 
@@ -36,6 +38,7 @@ KafkaFlow uses [Confluent Kafka Client](https://github.com/confluentinc/confluen
 -   Supports .NET Core and .NET Framework
 -   Can be used with any dependency injection framework (see [here](https://github.com/Farfetch/kafka-flow/wiki/Dependency-Injection))
 -   Fluent configuration
+-   Web API and kafka commands to support [administration operations](https://github.com/Farfetch/kafka-flow/wiki/admin)
 
 ## Usage
 
@@ -53,6 +56,8 @@ public class Startup
             .UseConsoleLog() 
             .AddCluster(cluster => cluster
                 .WithBrokers(new[] { "localhost:9092" })
+				// Install KafkaFlow.Admin
+				.EnableAdminMessages("kafka-flow.admin")
                 .AddConsumer(consumer => consumer
                     .Topic("test-topic")
                     .WithGroupId("print-console-handler")
