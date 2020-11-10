@@ -38,7 +38,7 @@ KafkaFlow uses [Confluent Kafka Client](https://github.com/confluentinc/confluen
 -   Supports .NET Core and .NET Framework
 -   Can be used with any dependency injection framework (see [here](https://github.com/Farfetch/kafka-flow/wiki/Dependency-Injection))
 -   Fluent configuration
--   Web API and kafka commands to support [administration operations](https://github.com/Farfetch/kafka-flow/wiki/admin)
+-   Web API and Kafka commands to support [administration operations](https://github.com/Farfetch/kafka-flow/wiki/admin)
 
 ## Usage
 
