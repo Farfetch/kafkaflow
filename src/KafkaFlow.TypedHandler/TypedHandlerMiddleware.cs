@@ -37,7 +37,7 @@ namespace KafkaFlow.TypedHandler
                     .ConfigureAwait(false);
             }
 
-            await next(context);
+            await next(context).ConfigureAwait(false);
         }
     }
 }

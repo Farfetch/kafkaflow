@@ -9,24 +9,16 @@
     /// </summary>
     public class ProtobufMessageSerializer : IMessageSerializer
     {
-        /// <summary>Serializes the message</summary>
-        /// <param name="message">The message to be serialized</param>
-        /// <returns>The serialized message</returns>
-        public byte[] Serialize(object message)
+        /// <inheritdoc/>
+        public void Serialize(object message, Stream output, global::KafkaFlow.SerializationContext context)
         {
-            using var stream = new MemoryStream();
-            Serializer.Serialize(stream, message);
-            return stream.ToArray();
+            Serializer.Serialize(output, message);
         }
-
-        /// <summary>Deserialize the message </summary>
-        /// <param name="data">The message to be deserialized</param>
-        /// <param name="type">The destination type</param>
-        /// <returns>The deserialized message</returns>
-        public object Deserialize(byte[] data, Type type)
+        
+        /// <inheritdoc/>
+        public object Deserialize(Stream input, Type type, global::KafkaFlow.SerializationContext context)
         {
-            using var stream = new MemoryStream(data);
-            return Serializer.Deserialize(type, stream);
+            return Serializer.Deserialize(type, input);
         }
     }
 }

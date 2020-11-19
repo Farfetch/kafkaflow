@@ -1,5 +1,6 @@
 namespace KafkaFlow.UnitTests.Serializers
 {
+    using System.IO;
     using System.Threading.Tasks;
     using FluentAssertions;
     using KafkaFlow.Serializer;
@@ -41,20 +42,18 @@ namespace KafkaFlow.UnitTests.Serializers
                 .Returns(deserializedMessage);
 
             this.typeResolverMock.Setup(x => x.OnProduce(this.contextMock.Object));
-            
-            this.serializerMock
-                .Setup(x => x.Serialize(deserializedMessage))
-                .Returns(rawMessage);
 
-            this.contextMock.Setup(x => x.TransformMessage(rawMessage));
-            
             // Act
             await this.target.Invoke(this.contextMock.Object, c => this.SetNextCalled());
 
             // Assert
             this.nextCalled.Should().BeTrue();
-            this.contextMock.VerifyAll();
-            this.serializerMock.VerifyAll();
+            this.contextMock.Verify(x => x.TransformMessage(It.IsAny<byte[]>()));
+            this.serializerMock.Verify(
+                x => x.Serialize(
+                    deserializedMessage,
+                    It.IsAny<Stream>(),
+                    It.IsAny<SerializationContext>()));
             this.typeResolverMock.VerifyAll();
         }
 

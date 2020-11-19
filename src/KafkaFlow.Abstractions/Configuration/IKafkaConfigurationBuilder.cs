@@ -7,6 +7,11 @@ namespace KafkaFlow.Configuration
     public interface IKafkaConfigurationBuilder
     {
         /// <summary>
+        /// Gets the dependency injection configurator
+        /// </summary>
+        IDependencyConfigurator DependencyConfigurator { get; }
+
+        /// <summary>
         /// Adds a new Cluster
         /// </summary>
         /// <param name="cluster"></param>

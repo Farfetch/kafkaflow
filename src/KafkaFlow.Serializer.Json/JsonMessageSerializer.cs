@@ -1,7 +1,7 @@
 ﻿namespace KafkaFlow.Serializer.Json
 {
     using System;
-    using System.Text;
+    using System.IO;
     using System.Text.Json;
 
     /// <summary>
@@ -19,30 +19,22 @@
             this.options = options;
         }
 
-        /// <summary>
-        /// </summary>
+        /// <inheritdoc/>
         public JsonMessageSerializer() : this(new JsonSerializerOptions())
         {
         }
 
-        /// <summary>Serializes the message</summary>
-        /// <param name="message">The message to be serialized</param>
-        /// <returns>A UTF8 JSON string</returns>
-        public byte[] Serialize(object message)
+        /// <inheritdoc/>
+        public void Serialize(object message, Stream output, SerializationContext context)
         {
-            var serialized = JsonSerializer.Serialize(message, this.options);
-            return Encoding.UTF8.GetBytes(serialized);
+            using var writer = new Utf8JsonWriter(output);
+            JsonSerializer.Serialize(writer, message, this.options);
         }
 
-        /// <summary>Deserialize the message</summary>
-        /// <param name="data">The message to be deserialized (cannot be null)</param>
-        /// <param name="type">The destination type</param>
-        /// <returns>An instance of the passed type</returns>
-        public object Deserialize(byte[] data, Type type)
+        /// <inheritdoc/>
+        public object Deserialize(Stream input, Type type, SerializationContext context)
         {
-            var json = Encoding.UTF8.GetString(data);
-
-            return JsonSerializer.Deserialize(json, type, this.options);
+            return JsonSerializer.DeserializeAsync(input, type, this.options).GetAwaiter().GetResult();
         }
     }
 }

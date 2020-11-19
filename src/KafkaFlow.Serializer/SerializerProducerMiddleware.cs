@@ -1,6 +1,7 @@
 ﻿namespace KafkaFlow.Serializer
 {
     using System.Threading.Tasks;
+    using Microsoft.IO;
 
     /// <summary>
     /// Middleware to serialize messages when producing
@@ -9,6 +10,13 @@
     {
         private readonly IMessageSerializer serializer;
         private readonly IMessageTypeResolver typeResolver;
+
+        private static readonly RecyclableMemoryStreamManager MemoryStreamManager =
+            new RecyclableMemoryStreamManager(
+                1024 * 4,
+                1024 * 1024 * 4,
+                1024 * 1024 * 16,
+                false);
 
         /// <summary>
         /// creates a <see cref="SerializerProducerMiddleware"/> instance
@@ -33,11 +41,19 @@
         {
             this.typeResolver.OnProduce(context);
 
-            var data = this.serializer.Serialize(context.Message);
-            
-            context.TransformMessage(data);
+            this.SerializeMessage(context);
 
             return next(context);
+        }
+
+        private void SerializeMessage(IMessageContext context)
+        {
+            using var stream = MemoryStreamManager.GetStream();
+
+            var serializationContext = new SerializationContext();
+            this.serializer.Serialize(context.Message, stream, serializationContext);
+
+            context.TransformMessage(stream.ToArray());
         }
     }
 }

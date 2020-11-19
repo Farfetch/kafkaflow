@@ -1,6 +1,7 @@
 namespace KafkaFlow
 {
     using System;
+    using System.IO;
 
     /// <summary>
     /// Used to implement a message serializer
@@ -11,15 +12,18 @@ namespace KafkaFlow
         /// Serializes the given message
         /// </summary>
         /// <param name="message">The message to be serialized</param>
+        /// <param name="output">A stream to write the serialized data</param>
+        /// <param name="context">An object containing metadata</param>
         /// <returns>The serialized message</returns>
-        byte[] Serialize(object message);
+        void Serialize(object message, Stream output, SerializationContext context);
 
         /// <summary>
         /// Deserializes the given message
         /// </summary>
-        /// <param name="message">The message to be deserialized</param>
+        /// <param name="input">A stream to read the data to be deserialized</param>
         /// <param name="type">The type to be created</param>
+        /// <param name="context">An object containing metadata</param>
         /// <returns>The deserialized message</returns>
-        object Deserialize(byte[] message, Type type);
+        object Deserialize(Stream input, Type type, SerializationContext context);
     }
 }

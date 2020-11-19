@@ -8,14 +8,15 @@ namespace KafkaFlow.Configuration
 
     internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
     {
-        private readonly IDependencyConfigurator dependencyConfigurator;
         private readonly List<ClusterConfigurationBuilder> clusters = new List<ClusterConfigurationBuilder>();
         private Type logHandler = typeof(NullLogHandler);
 
         public KafkaConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
-            this.dependencyConfigurator = dependencyConfigurator;
+            this.DependencyConfigurator = dependencyConfigurator;
         }
+
+        public IDependencyConfigurator DependencyConfigurator { get; }
 
         public KafkaConfiguration Build()
         {
@@ -23,7 +24,7 @@ namespace KafkaFlow.Configuration
 
             configuration.AddClusters(this.clusters.Select(x => x.Build(configuration)));
 
-            this.dependencyConfigurator.AddSingleton<IProducerAccessor>(
+            this.DependencyConfigurator.AddSingleton<IProducerAccessor>(
                 resolver => new ProducerAccessor(
                     configuration.Clusters
                         .SelectMany(x => x.Producers)
@@ -34,7 +35,7 @@ namespace KafkaFlow.Configuration
 
             var consumerManager = new ConsumerManager();
 
-            this.dependencyConfigurator
+            this.DependencyConfigurator
                 .AddTransient(typeof(ILogHandler), this.logHandler)
                 .AddSingleton<IConsumerAccessor>(consumerManager)
                 .AddSingleton<IConsumerManager>(consumerManager);
@@ -44,7 +45,7 @@ namespace KafkaFlow.Configuration
 
         public IKafkaConfigurationBuilder AddCluster(Action<IClusterConfigurationBuilder> cluster)
         {
-            var builder = new ClusterConfigurationBuilder(this.dependencyConfigurator);
+            var builder = new ClusterConfigurationBuilder(this.DependencyConfigurator);
 
             cluster(builder);
 

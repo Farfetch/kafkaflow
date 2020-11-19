@@ -1,6 +1,7 @@
 ﻿namespace KafkaFlow.Serializer.NewtonsoftJson
 {
     using System;
+    using System.IO;
     using System.Text;
     using Newtonsoft.Json;
 
@@ -26,24 +27,22 @@
         {
         }
 
-        /// <summary>Serializes the message</summary>
-        /// <param name="message">The message to be serialized</param>
-        /// <returns>A UTF8 JSON string</returns>
-        public byte[] Serialize(object message)
+        /// <inheritdoc/>
+        public void Serialize(object message, Stream output, SerializationContext context)
         {
-            var serialized = JsonConvert.SerializeObject(message, this.settings);
-            return Encoding.UTF8.GetBytes(serialized);
+            using var sw = new StreamWriter(output, Encoding.UTF8);
+            var serializer = JsonSerializer.CreateDefault(this.settings);
+
+            serializer.Serialize(sw, message);
         }
 
-        /// <summary>Deserialize the message</summary>
-        /// <param name="data">The message to be deserialized (cannot be null)</param>
-        /// <param name="type">The destination type</param>
-        /// <returns>An instance of the passed type</returns>
-        public object Deserialize(byte[] data, Type type)
+        /// <inheritdoc/>
+        public object Deserialize(Stream input, Type type, SerializationContext context)
         {
-            var json = Encoding.UTF8.GetString(data);
+            using var sr = new StreamReader(input, Encoding.UTF8);
+            var serializer = JsonSerializer.CreateDefault(this.settings);
 
-            return JsonConvert.DeserializeObject(json, type, this.settings);
+            return serializer.Deserialize(sr, type);
         }
     }
 }

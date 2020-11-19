@@ -1,7 +1,9 @@
 ﻿namespace KafkaFlow.Serializer
 {
     using System;
+    using System.IO;
     using System.Threading.Tasks;
+    using Microsoft.IO;
 
     /// <summary>
     /// Middleware to deserialize messages when consuming
@@ -50,7 +52,10 @@
                 throw new InvalidOperationException($"{nameof(context.Message)} must be a byte array to be deserialized and it is '{context.Message.GetType().FullName}'");
             }
 
-            context.TransformMessage(this.serializer.Deserialize(rawData, messageType));
+            using var stream = new MemoryStream(rawData);
+            var message = this.serializer.Deserialize(stream, messageType, new SerializationContext());
+            
+            context.TransformMessage(message);
 
             return next(context);
         }

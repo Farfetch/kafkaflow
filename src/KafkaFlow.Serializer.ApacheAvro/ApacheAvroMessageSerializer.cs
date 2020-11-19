@@ -1,8 +1,14 @@
-﻿namespace KafkaFlow.Serializer.ApacheAvro
+﻿namespace KafkaFlow.Serializer
 {
     using System;
+    using System.Collections.Concurrent;
     using System.IO;
+    using System.Runtime.CompilerServices;
+    using System.Runtime.Serialization;
+    using Avro;
+    using Avro.Generic;
     using Avro.IO;
+    using Avro.Reflect;
     using Avro.Specific;
 
     /// <summary>
@@ -10,40 +16,82 @@
     /// </summary>
     public class ApacheAvroMessageSerializer : IMessageSerializer
     {
-        /// <summary>Serializes the message</summary>
-        /// <param name="message">The message to be serialized</param>
-        /// <returns>The serialized message</returns>
-        public byte[] Serialize(object message)
-        {
-            if (!(message is ISpecificRecord avroMessage))
-            {
-                throw new InvalidOperationException(
-                    $"The message object {message.GetType().FullName} must implement the {nameof(ISpecificRecord)} interface");
-            }
+        private static readonly ConcurrentDictionary<int, Schema> ParsedSchemaCache = new ConcurrentDictionary<int, Schema>();
 
-            using var ms = new MemoryStream();
-            var writer = new SpecificDefaultWriter(avroMessage.Schema);
-            writer.Write(avroMessage, new BinaryEncoder(ms));
-            return ms.ToArray();
+        private static readonly ClassCache ClassCache = new ClassCache();
+
+        /// <inheritdoc/>
+        public void Serialize(object message, Stream output, SerializationContext context)
+        {
+            var schema = TryGetMessageSchema(message, context.WriterSchema);
+            var writer = CreateWriter(message, schema);
+            writer.Write(message, new BinaryEncoder(output));
         }
 
-        /// <summary>Deserialize the message </summary>
-        /// <param name="data">The message to be deserialized</param>
-        /// <param name="type">The destination type</param>
-        /// <returns>The deserialized message</returns>
-        public object Deserialize(byte[] data, Type type)
+        /// <inheritdoc/>
+        public object Deserialize(Stream input, Type type, SerializationContext context)
         {
-            using var ms = new MemoryStream(data);
+            var message = Activator.CreateInstance(type);
+            var readerSchema = TryGetMessageSchema(message, context.ReaderSchema);
+            var reader = CreateReader(message, GetParsedSchema(context.WriterSchema), readerSchema);
 
-            if (!(Activator.CreateInstance(type) is ISpecificRecord message))
+            return reader.Read(message, new BinaryDecoder(input));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static DefaultReader CreateReader(object message, Schema writerSchema, Schema readerSchema)
+        {
+            return message switch
             {
-                throw new InvalidOperationException(
-                    $"The message object {type.FullName} must implement the {nameof(ISpecificRecord)} interface");
+                ISpecificRecord _ => new SpecificDefaultReader(writerSchema, readerSchema),
+                GenericRecord _ => new DefaultReader(writerSchema, readerSchema),
+                _ => new ReflectDefaultReader(message.GetType(), writerSchema, readerSchema, ClassCache)
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static DefaultWriter CreateWriter(object message, Schema schema)
+        {
+            return message switch
+            {
+                ISpecificRecord _ => new SpecificDefaultWriter(schema),
+                GenericRecord _ => new DefaultWriter(schema),
+                _ => new ReflectDefaultWriter(message.GetType(), schema, ClassCache)
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Schema TryGetMessageSchema(object message, IRegisteredSchema registeredSchema)
+        {
+            Schema schema;
+
+            if (registeredSchema != null)
+            {
+                schema = GetParsedSchema(registeredSchema);
+            }
+            else
+            {
+                schema = message switch
+                {
+                    ISpecificRecord record => record.Schema,
+                    GenericRecord record => record.Schema,
+                    _ => null
+                };
             }
 
-            var reader = new SpecificDefaultReader(message.Schema, message.Schema);
-            reader.Read(message, new BinaryDecoder(ms));
-            return message;
+            if (schema is null)
+            {
+                throw new SerializationException(
+                    $"To use ApacheAvro serializer the Producer/Consumer must use Schema Registry serializer or the message object must implement {nameof(ISpecificRecord)} or inherit from class {nameof(GenericRecord)}");
+            }
+
+            return schema;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Schema GetParsedSchema(IRegisteredSchema schema)
+        {
+            return ParsedSchemaCache.GetOrAdd(schema.Id, _ => Schema.Parse(schema.SchemaString));
         }
     }
 }
