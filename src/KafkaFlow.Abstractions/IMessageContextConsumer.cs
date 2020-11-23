@@ -1,5 +1,6 @@
 namespace KafkaFlow
 {
+    using System;
     using System.Threading;
 
     /// <summary>
@@ -16,6 +17,11 @@ namespace KafkaFlow
         /// A CancellationToken that is cancelled when the worker is requested to stop
         /// </summary>
         CancellationToken WorkerStopped { get; }
+
+        /// <summary>
+        /// Message timestamp. By default is the UTC timestamp when the message was produced
+        /// </summary>
+        DateTime MessageTimestamp { get; }
 
         /// <summary>
         /// Gets or Sets if the framework should store the current offset in the end when auto store offset is used

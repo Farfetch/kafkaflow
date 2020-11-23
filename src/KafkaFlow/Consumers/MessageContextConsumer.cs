@@ -1,5 +1,6 @@
 namespace KafkaFlow.Consumers
 {
+    using System;
     using System.Threading;
     using Confluent.Kafka;
 
@@ -13,7 +14,7 @@ namespace KafkaFlow.Consumers
             IConsumer<byte[], byte[]> consumer,
             string name,
             IOffsetManager offsetManager,
-            ConsumeResult<byte[], byte[]> kafkaResult, 
+            ConsumeResult<byte[], byte[]> kafkaResult,
             CancellationToken workerStopped)
         {
             this.Name = name;
@@ -24,10 +25,12 @@ namespace KafkaFlow.Consumers
         }
 
         public string Name { get; }
-        
+
         public CancellationToken WorkerStopped { get; }
 
         public bool ShouldStoreOffset { get; set; } = true;
+
+        public DateTime MessageTimestamp => this.kafkaResult.Message.Timestamp.UtcDateTime;
 
         public void StoreOffset()
         {
