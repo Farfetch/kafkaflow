@@ -26,5 +26,12 @@ namespace KafkaFlow.Configuration
         /// <returns></returns>
         IProducerMiddlewareConfigurationBuilder Add<T>()
             where T : class, IMessageMiddleware;
+
+        /// <summary>
+        /// Sets whether to clone the context between middleware calls (defaults to true).
+        /// </summary>
+        /// <param name="cloneContext">True to clone, false to not clone.</param>
+        /// <returns></returns>
+        IProducerMiddlewareConfigurationBuilder WithCloneContext(bool cloneContext);
     }
 }

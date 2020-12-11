@@ -44,11 +44,13 @@ namespace KafkaFlow
                     .Select(factory => factory(dependencyScope.Resolver))
                     .ToList();
 
+                var cloneContext = consumerConfiguration.MiddlewareConfiguration.CloneContext;
+
                 var consumerWorkerPool = new ConsumerWorkerPool(
                     dependencyScope.Resolver,
                     consumerConfiguration,
                     this.logHandler,
-                    new MiddlewareExecutor(middlewares),
+                    new MiddlewareExecutor(middlewares, cloneContext),
                     consumerConfiguration.DistributionStrategyFactory);
 
                 var consumer = new KafkaConsumer(

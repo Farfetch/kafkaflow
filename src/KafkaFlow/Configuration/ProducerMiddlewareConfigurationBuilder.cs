@@ -10,6 +10,8 @@ namespace KafkaFlow.Configuration
         private readonly List<Factory<IMessageMiddleware>> middlewaresFactories =
             new List<Factory<IMessageMiddleware>>();
 
+        private bool cloneContext = true;
+
         public ProducerMiddlewareConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
             this.DependencyConfigurator = dependencyConfigurator;
@@ -28,6 +30,13 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public MiddlewareConfiguration Build() => new MiddlewareConfiguration(this.middlewaresFactories);
+        public IProducerMiddlewareConfigurationBuilder WithCloneContext(bool cloneContext)
+        {
+            this.cloneContext = cloneContext;
+            return this;
+        }
+
+        public MiddlewareConfiguration Build() =>
+            new MiddlewareConfiguration(this.middlewaresFactories, this.cloneContext);
     }
 }

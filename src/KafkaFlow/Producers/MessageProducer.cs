@@ -29,7 +29,9 @@ namespace KafkaFlow.Producers
                 .Select(factory => factory(this.dependencyResolverScope.Resolver))
                 .ToList();
 
-            this.middlewareExecutor = new MiddlewareExecutor(middlewares);
+            var cloneContext = this.configuration.MiddlewareConfiguration.CloneContext;
+
+            this.middlewareExecutor = new MiddlewareExecutor(middlewares, cloneContext);
         }
 
         public string ProducerName => this.configuration.Name;

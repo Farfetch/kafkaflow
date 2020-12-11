@@ -6,9 +6,12 @@ namespace KafkaFlow.Configuration
     {
         public IReadOnlyList<Factory<IMessageMiddleware>> Factories { get; }
 
-        public MiddlewareConfiguration(IReadOnlyList<Factory<IMessageMiddleware>> factories)
+        public bool CloneContext { get; }
+
+        public MiddlewareConfiguration(IReadOnlyList<Factory<IMessageMiddleware>> factories, bool cloneContext)
         {
             this.Factories = factories;
+            this.CloneContext = cloneContext;
         }
     }
 }

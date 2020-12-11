@@ -8,9 +8,12 @@ namespace KafkaFlow
     {
         private readonly IReadOnlyList<IMessageMiddleware> middlewares;
 
-        public MiddlewareExecutor(IReadOnlyList<IMessageMiddleware> middlewares)
+        private readonly bool cloneContext;
+
+        public MiddlewareExecutor(IReadOnlyList<IMessageMiddleware> middlewares, bool cloneContext)
         {
             this.middlewares = middlewares;
+            this.cloneContext = cloneContext;
         }
 
         public Task Execute(IMessageContext context, Func<IMessageContext, Task> nextOperation)
@@ -36,7 +39,7 @@ namespace KafkaFlow
                     context,
                     nextContext => this.ExecuteDefinition(
                         index + 1,
-                        nextContext.Clone(),
+                        this.cloneContext ? nextContext.Clone() : nextContext,
                         nextOperation));
         }
     }
