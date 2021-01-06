@@ -17,7 +17,7 @@
 
         private ISchemaRegistryClient schemaRegistryClient;
 
-        private AvroSerializerConfig serializerConfig; 
+        private readonly AvroSerializerConfig serializerConfig; 
         
         /// <summary>
         /// </summary>

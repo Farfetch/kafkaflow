@@ -2,13 +2,13 @@
 
 init_broker:	
 	@echo command | date
-	@echo Initializing Kafka broker
-	docker-compose -f docker-compose.yml up -d
+	@echo Initializing containers
+	$ docker-compose up -d zookeeper broker schema-registry
 
 shutdown_broker:
 	@echo command | date
-	@echo Shutting down kafka broker
-	docker-compose -f docker-compose.yml down
+	@echo Shutting down containers
+	docker-compose down
 
 restore:
 	dotnet restore src/KafkaFlow.sln
