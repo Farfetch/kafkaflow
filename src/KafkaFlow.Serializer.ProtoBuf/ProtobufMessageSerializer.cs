@@ -2,6 +2,7 @@
 {
     using System;
     using System.IO;
+    using Configuration;
     using global::ProtoBuf;
 
     /// <summary>
@@ -12,7 +13,7 @@
         /// <summary>Serializes the message</summary>
         /// <param name="message">The message to be serialized</param>
         /// <returns>The serialized message</returns>
-        public byte[] Serialize(object message)
+        public byte[] Serialize(object message, SchemaRegistryConfiguration schemaRegistryConfiguration)
         {
             using var stream = new MemoryStream();
             Serializer.Serialize(stream, message);
@@ -23,7 +24,7 @@
         /// <param name="data">The message to be deserialized</param>
         /// <param name="type">The destination type</param>
         /// <returns>The deserialized message</returns>
-        public object Deserialize(byte[] data, Type type)
+        public object Deserialize(byte[] data, Type type, SchemaRegistryConfiguration schemaRegistryConfiguration)
         {
             using var stream = new MemoryStream(data);
             return Serializer.Deserialize(type, stream);

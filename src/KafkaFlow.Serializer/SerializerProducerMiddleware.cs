@@ -1,6 +1,7 @@
 ﻿namespace KafkaFlow.Serializer
 {
     using System.Threading.Tasks;
+    using Configuration;
 
     /// <summary>
     /// Middleware to serialize messages when producing
@@ -9,6 +10,7 @@
     {
         private readonly IMessageSerializer serializer;
         private readonly IMessageTypeResolver typeResolver;
+        private readonly SchemaRegistryConfiguration schemaRegistryConfiguration;
 
         /// <summary>
         /// creates a <see cref="SerializerProducerMiddleware"/> instance
@@ -17,10 +19,12 @@
         /// <param name="typeResolver">Instance of <see cref="IMessageTypeResolver"/></param>
         public SerializerProducerMiddleware(
             IMessageSerializer serializer,
-            IMessageTypeResolver typeResolver)
+            IMessageTypeResolver typeResolver,
+            SchemaRegistryConfiguration schemaRegistryConfiguration)
         {
             this.serializer = serializer;
             this.typeResolver = typeResolver;
+            this.schemaRegistryConfiguration = schemaRegistryConfiguration;
         }
 
         /// <summary>
@@ -33,7 +37,7 @@
         {
             this.typeResolver.OnProduce(context);
 
-            var data = this.serializer.Serialize(context.Message);
+            var data = this.serializer.Serialize(context.Message, schemaRegistryConfiguration);
             
             context.TransformMessage(data);
 
