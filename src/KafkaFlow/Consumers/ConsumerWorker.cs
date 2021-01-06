@@ -85,7 +85,13 @@ namespace KafkaFlow.Consumers
                                 this.logHandler.Error(
                                     "Error executing consumer",
                                     ex,
-                                    context);
+                                    new
+                                    {
+                                        context.Message,
+                                        context.Topic,
+                                        context.PartitionKey,
+                                        ConsumerName = context.Consumer.Name
+                                    });
                             }
                             finally
                             {

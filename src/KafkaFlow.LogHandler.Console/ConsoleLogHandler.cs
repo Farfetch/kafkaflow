@@ -6,15 +6,15 @@
     internal class ConsoleLogHandler : ILogHandler
     {
         public void Error(string message, Exception ex, object data) => Print(
-            $"\nKafkaFlow: {message} | Data: {JsonSerializer.Serialize(data)} | Exception: {JsonSerializer.Serialize(ex)}",
+            $"KafkaFlow: {message} | Data: {JsonSerializer.Serialize(data)} | Exception: {JsonSerializer.Serialize(new {ex.Message, ex.Source, ex.HelpLink, ex.HResult, ex.StackTrace})}",
             ConsoleColor.Red);
 
         public void Info(string message, object data) => Print(
-            $"\nKafkaFlow: {message} | Data: {JsonSerializer.Serialize(data)}",
+            $"KafkaFlow: {message} | Data: {JsonSerializer.Serialize(data)}",
             ConsoleColor.Green);
 
         public void Warning(string message, object data) => Print(
-            $"\nKafkaFlow: {message} | Data: {JsonSerializer.Serialize(data)}",
+            $"KafkaFlow: {message} | Data: {JsonSerializer.Serialize(data)}",
             ConsoleColor.Yellow);
 
         private static void Print(string message, ConsoleColor color)
