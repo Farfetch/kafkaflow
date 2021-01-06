@@ -1,0 +1,23 @@
+{
+  "type": "record",
+  "name": "LogMessages1",
+  "namespace": "MessageTypes",
+  "doc": "A simple log message type as used by this blog post.",
+  "fields": [
+    {
+      "name": "Severity",
+      "type": {
+        "type": "enum",
+        "name": "LogLevel",
+        "doc": "Enumerates the set of allowable log levels.",
+        "symbols": [
+          "None",
+          "Verbose",
+          "Info",
+          "Warning",
+          "Error"
+        ]
+      }
+    }
+  ]
+}

@@ -2,6 +2,8 @@
 {
     using System;
     using System.Threading.Tasks;
+    using Confluent.SchemaRegistry;
+    using Confluent.SchemaRegistry.Serdes;
     using global::Microsoft.Extensions.DependencyInjection;
     using KafkaFlow.Admin;
     using KafkaFlow.Admin.Messages;
@@ -10,53 +12,107 @@
     using KafkaFlow.Consumers;
     using KafkaFlow.Producers;
     using KafkaFlow.Serializer;
-    using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
+    using MessageTypes;
+    using Serializer.ApacheAvro;
+    using Serializer.Json;
 
     internal static class Program
     {
+        const string ProducerName = "ProducerName";
+        const string ProducerAvroName = "ProducerAvroName";
+        
+        const string ConsumerName = "ConsumerName";
+        const string ConsumerAvroName = "ConsumerAvroName";
+
+        const string AdminTopicName = "kafka-flow.admin";
+        const string TopicName = "topic-kafka-flow";
+        const string TopicAvroName = "topic-avro-kafka-flow";
+        
+        const string BrokerUrl = "localhost:9092";
+        //const string SchemaRegistryUrl = "https://fast-data-dev.demo.landoop.com/api/schema-registry";
+        const string SchemaRegistryUrl = "localhost:8081";
+        
+        const string ConsumerGroupId = "consumer-kafka-flow";
+        
+        const int BufferSize = 100;
+        const int WorkersCount = 2;
+        
         private static async Task Main()
         {
             var services = new ServiceCollection();
-
-            const string producerName = "PrintConsole";
-
-            const string consumerName = "test";
 
             services.AddKafka(
                 kafka => kafka
                     .UseConsoleLog()
                     .AddCluster(
                         cluster => cluster
-                            .WithBrokers(new[] { "localhost:9092" })
-                            .EnableAdminMessages("kafka-flow.admin", Guid.NewGuid().ToString())
+                            .WithBrokers(new[] {BrokerUrl})
+                            .WithSchemaRegistry(config =>
+                            {
+                                config.Url = SchemaRegistryUrl;
+                            })
+                            .EnableAdminMessages(AdminTopicName)
                             .AddProducer(
-                                producerName,
+                                ProducerName,
                                 producer => producer
-                                    .DefaultTopic("test-topic")
+                                    .DefaultTopic(TopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ProtobufMessageSerializer>()
+                                            .AddSerializer<JsonMessageSerializer>()
                                             .AddCompressor<GzipMessageCompressor>()
                                     )
                                     .WithAcks(Acks.All)
                             )
+                            .AddProducer(
+                                ProducerAvroName,
+                                producer => producer
+                                    .DefaultTopic(TopicAvroName)
+                                    .AddMiddlewares(middlewares =>
+                                        middlewares
+                                            .AddSerializer(s =>
+                                                new ApacheAvroMessageSerializer(new AvroSerializerConfig
+                                                {
+                                                    AutoRegisterSchemas = true,
+                                                    SubjectNameStrategy = SubjectNameStrategy.Record
+                                                })))
+                                    .WithAcks(Acks.Leader)
+                            )
                             .AddConsumer(
                                 consumer => consumer
-                                    .Topic("test-topic")
-                                    .WithGroupId("print-console-handler")
-                                    .WithName(consumerName)
-                                    .WithBufferSize(100)
-                                    .WithWorkersCount(20)
+                                    .Topic(TopicAvroName)
+                                    .WithGroupId(ConsumerGroupId)
+                                    .WithName(ConsumerAvroName)
+                                    .WithBufferSize(BufferSize)
+                                    .WithWorkersCount(WorkersCount)
+                                    .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                    .AddMiddlewares(
+                                        middlewares => middlewares
+                                            .AddSerializer<ApacheAvroMessageSerializer>()
+                                            .AddTypedHandlers(
+                                                handlers => handlers
+                                                    .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                                    .AddHandler<AvroMessageHandler1>()
+                                                    .AddHandler<AvroMessageHandler2>())
+                                    )
+                            )
+                            .AddConsumer(
+                                consumer => consumer
+                                    .Topic(TopicName)
+                                    .WithGroupId(ConsumerGroupId)
+                                    .WithName(ConsumerName)
+                                    .WithBufferSize(BufferSize)
+                                    .WithWorkersCount(WorkersCount)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddCompressor<GzipMessageCompressor>()
-                                            .AddSerializer<ProtobufMessageSerializer>()
+                                            .AddSerializer<JsonMessageSerializer>()
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                    .AddHandler<PrintConsoleHandler>())
+                                                    .AddHandler<JsonMessageHandler>()
+                                            )
                                     )
                             )
                     )
@@ -83,12 +139,30 @@
                     case var _ when int.TryParse(input, out var count):
                         for (var i = 0; i < count; i++)
                         {
-                            producers[producerName]
-                                .Produce(
+                            await producers[ProducerAvroName]
+                                .ProduceAsync(
                                     Guid.NewGuid().ToString(),
-                                    new TestMessage { Text = $"Message: {Guid.NewGuid()}" });
+                                    new LogMessages1()
+                                    {
+                                        Severity = LogLevel.Error
+                                    });
+                                        
+                            await producers[ProducerAvroName]
+                                .ProduceAsync(
+                                    Guid.NewGuid().ToString(),
+                                    new LogMessages2()
+                                    {
+                                        Message = "Message 2 - " + i.ToString(),
+                                    });
+                                
+                            await producers[ProducerName]
+                                .ProduceAsync(
+                                    Guid.NewGuid().ToString(),
+                                    new TestMessage()
+                                    {
+                                        Text = "Json message"
+                                    });
                         }
-
                         break;
 
                     case "pause":
@@ -112,7 +186,7 @@
                         break;
 
                     case "reset":
-                        await adminProducer.ProduceAsync(new ResetConsumerOffset { ConsumerName = consumerName });
+                        await adminProducer.ProduceAsync(new ResetConsumerOffset { ConsumerName = ConsumerName });
 
                         break;
 
@@ -122,10 +196,10 @@
 
                         if (DateTime.TryParse(timeInput, out var time))
                         {
-                            adminProducer.ProduceAsync(
+                            await adminProducer.ProduceAsync(
                                 new RewindConsumerOffsetToDateTime
                                 {
-                                    ConsumerName = consumerName,
+                                    ConsumerName = ConsumerName,
                                     DateTime = time
                                 });
                         }
@@ -141,7 +215,7 @@
                             await adminProducer.ProduceAsync(
                                 new ChangeConsumerWorkerCount
                                 {
-                                    ConsumerName = consumerName,
+                                    ConsumerName = ConsumerName,
                                     WorkerCount = workers
                                 });
                         }

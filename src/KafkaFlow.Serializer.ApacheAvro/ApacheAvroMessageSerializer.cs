@@ -16,6 +16,23 @@
             "There is no schema registry url defined in schema registry configuration. Use 'WithSchemaRegistry' option at cluster level with a non empty url.";
 
         private ISchemaRegistryClient schemaRegistryClient;
+
+        private AvroSerializerConfig serializerConfig; 
+        
+        /// <summary>
+        /// </summary>
+        /// <param name="config">Avro serializer configuration</param>
+        public ApacheAvroMessageSerializer(AvroSerializerConfig config)
+        {
+            this.serializerConfig = config;
+        }
+
+        /// <summary>
+        /// </summary>
+        public ApacheAvroMessageSerializer() : this(new AvroSerializerConfig())
+        {
+        }
+        
         
         /// <inheritdoc/>
         public byte[] Serialize(object message, Configuration.SchemaRegistryConfiguration schemaRegistryConfiguration)
@@ -24,7 +41,7 @@
 
             return new AvroSerializer<ISpecificRecord>(
                     this.schemaRegistryClient,
-                    new AvroSerializerConfig { SubjectNameStrategy = SubjectNameStrategy.Record })
+                    this.serializerConfig)
                 .AsSyncOverAsync()
                 .Serialize((ISpecificRecord) message, SerializationContext.Empty);
         }

@@ -3,8 +3,9 @@
     using System;
     using System.Threading.Tasks;
     using KafkaFlow.TypedHandler;
+    using MessageTypes;
 
-    public class PrintConsoleHandler : IMessageHandler<TestMessage>
+    public class JsonMessageHandler : IMessageHandler<TestMessage>
     {
         public Task Handle(IMessageContext context, TestMessage message)
         {
@@ -12,7 +13,7 @@
                 "Partition: {0} | Offset: {1} | Message: {2}",
                 context.Partition,
                 context.Offset,
-                message.Text);
+                "message.Messages");
 
             return Task.CompletedTask;
         }
