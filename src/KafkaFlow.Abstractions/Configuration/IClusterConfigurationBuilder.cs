@@ -25,6 +25,13 @@ namespace KafkaFlow.Configuration
         /// <param name="handler">A handler to sets the values</param>
         /// <returns></returns>
         IClusterConfigurationBuilder WithSecurityInformation(Action<SecurityInformation> handler);
+        
+        /// <summary>
+        /// Configures schema registry
+        /// </summary>
+        /// <param name="configuration">Schema registry configuration</param>
+        /// <returns></returns>
+        IClusterConfigurationBuilder WithSchemaRegistry(Action<SchemaRegistryConfiguration> configuration);
 
         /// <summary>
         /// Adds a producer to the cluster

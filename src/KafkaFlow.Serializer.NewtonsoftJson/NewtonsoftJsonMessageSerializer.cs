@@ -2,6 +2,7 @@
 {
     using System;
     using System.Text;
+    using Configuration;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -29,7 +30,7 @@
         /// <summary>Serializes the message</summary>
         /// <param name="message">The message to be serialized</param>
         /// <returns>A UTF8 JSON string</returns>
-        public byte[] Serialize(object message)
+        public byte[] Serialize(object message, SchemaRegistryConfiguration schemaRegistryConfiguration)
         {
             var serialized = JsonConvert.SerializeObject(message, this.settings);
             return Encoding.UTF8.GetBytes(serialized);
@@ -39,7 +40,7 @@
         /// <param name="data">The message to be deserialized (cannot be null)</param>
         /// <param name="type">The destination type</param>
         /// <returns>An instance of the passed type</returns>
-        public object Deserialize(byte[] data, Type type)
+        public object Deserialize(byte[] data, Type type, SchemaRegistryConfiguration schemaRegistryConfiguration)
         {
             var json = Encoding.UTF8.GetString(data);
 

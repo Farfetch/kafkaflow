@@ -15,7 +15,7 @@
 
         public object Resolve(Type type)
         {
-            return this.serviceProvider.GetRequiredService(type);
+            return this.serviceProvider.GetService(type);
         }
 
         public IDependencyResolverScope CreateScope()

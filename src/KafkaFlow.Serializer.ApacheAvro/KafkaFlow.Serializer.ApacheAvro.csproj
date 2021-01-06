@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <RootNamespace>KafkaFlow.Serializer.ApacheAvros</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Apache.Avro" Version="1.10.1" />
+      <PackageReference Include="Confluent.Kafka" Version="1.5.3" />
+      <PackageReference Include="Confluent.SchemaRegistry" Version="1.5.3" />
+      <PackageReference Include="Confluent.SchemaRegistry.Serdes.Avro" Version="1.5.3" />
+    </ItemGroup>
+
+</Project>

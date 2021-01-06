@@ -2,6 +2,7 @@
 {
     using System;
     using System.Threading.Tasks;
+    using Configuration;
 
     /// <summary>
     /// Middleware to deserialize messages when consuming
@@ -10,6 +11,7 @@
     {
         private readonly IMessageSerializer serializer;
         private readonly IMessageTypeResolver typeResolver;
+        private readonly SchemaRegistryConfiguration schemaRegistryConfiguration;
 
         /// <summary>
         /// Creates a <see cref="SerializerConsumerMiddleware"/> instance
@@ -18,10 +20,12 @@
         /// <param name="typeResolver">Instance of <see cref="IMessageTypeResolver"/></param>
         public SerializerConsumerMiddleware(
             IMessageSerializer serializer,
-            IMessageTypeResolver typeResolver)
+            IMessageTypeResolver typeResolver,
+            SchemaRegistryConfiguration schemaRegistryConfiguration)
         {
             this.serializer = serializer;
             this.typeResolver = typeResolver;
+            this.schemaRegistryConfiguration = schemaRegistryConfiguration;
         }
 
         /// <summary>
@@ -50,7 +54,7 @@
                 throw new InvalidOperationException($"{nameof(context.Message)} must be a byte array to be deserialized and it is '{context.Message.GetType().FullName}'");
             }
 
-            context.TransformMessage(this.serializer.Deserialize(rawData, messageType));
+            context.TransformMessage(this.serializer.Deserialize(rawData, messageType, schemaRegistryConfiguration));
 
             return next(context);
         }
