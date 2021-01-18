@@ -141,7 +141,7 @@ namespace KafkaFlow.Producers
             {
                 this.dependencyResolverScope.Resolver
                     .Resolve<ILogHandler>()
-                    .Error("Error executing consumer",
+                    .Error("Error executing producer",
                         ex,
                         new
                         {
