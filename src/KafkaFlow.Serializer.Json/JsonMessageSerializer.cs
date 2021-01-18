@@ -40,7 +40,7 @@
         /// <returns>An instance of the passed type</returns>
         public object Deserialize(byte[] data, Type type)
         {
-            var json = Encoding.UTF8.GetString(data);
+            var json = Encoding.UTF8.GetString(data); 
 
             return JsonSerializer.Deserialize(json, type, this.options);
         }
