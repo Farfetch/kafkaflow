@@ -34,6 +34,16 @@ namespace KafkaFlow.Configuration
         IProducerConfigurationBuilder WithAcks(Acks acks);
 
         /// <summary>
+        /// Delay in milliseconds to wait for messages in the producer queue to accumulate before constructing message batches to transmit to brokers.
+        /// A higher value allows larger and more effective (less overhead, improved compression) batches of messages to accumulate at the expense of increased message delivery latency.
+        /// default: 0.5 (500 microseconds)
+        /// importance: high
+        /// </summary>
+        /// <param name="lingerMs">The time in milliseconds to wait to build the message batch</param>
+        /// <returns></returns>
+        IProducerConfigurationBuilder WithLingerMs(double lingerMs);
+
+        /// <summary>
         /// Adds a handler for the Kafka producer statistics
         /// </summary>
         /// <param name="statisticsHandler">A handler for the statistics</param>
