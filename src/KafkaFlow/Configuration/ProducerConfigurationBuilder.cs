@@ -15,6 +15,7 @@ namespace KafkaFlow.Configuration
         private ProducerConfig producerConfig;
         private Acks? acks;
         private int statisticsInterval;
+        private double? lingerMs;
 
         public ProducerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator, string name)
         {
@@ -49,6 +50,12 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
+        public IProducerConfigurationBuilder WithLingerMs(double lingerMs)
+        {
+            this.lingerMs = lingerMs;
+            return this;
+        }
+
         public IProducerConfigurationBuilder WithStatisticsHandler(Action<string> statisticsHandler)
         {
             this.statisticsHandlers.Add(statisticsHandler);
@@ -64,7 +71,9 @@ namespace KafkaFlow.Configuration
         public ProducerConfiguration Build(ClusterConfiguration clusterConfiguration)
         {
             this.producerConfig ??= new ProducerConfig();
+
             this.producerConfig.StatisticsIntervalMs = this.statisticsInterval;
+            this.producerConfig.LingerMs = this.lingerMs;
 
             this.producerConfig.ReadSecurityInformation(clusterConfiguration);
 
