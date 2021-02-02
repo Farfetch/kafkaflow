@@ -93,7 +93,7 @@
                                             new TestMessage { Text = $"Message: {Guid.NewGuid()}" },
                                             null))
                                     .ToList());
-
+                        
                         break;
 
                     case "pause":

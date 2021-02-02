@@ -7,6 +7,8 @@ using Microsoft.Extensions.Hosting;
 
 namespace KafkaFlow.Admin.WebApi.Sample
 {
+    using global::Microsoft.OpenApi.Models;
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -29,7 +31,28 @@ namespace KafkaFlow.Admin.WebApi.Sample
             );
 
             services
-                .AddSwaggerGen()
+                .AddSwaggerGen(
+                    c =>
+                    {
+                        c.SwaggerDoc(
+                            "kafka-flow",
+                            new OpenApiInfo
+                            {
+                                Title = "KafkaFlow Admin",
+                                Version = "kafka-flow",
+                            });
+                        c.SwaggerDoc(
+                            "v1",
+                            new OpenApiInfo
+                            {
+                                Title = "Api v1",
+                                Version = "v1",
+                            });
+                        c.DocInclusionPredicate((docName, apiDesc) =>
+                        {
+                            return apiDesc.RelativePath.StartsWith(docName.Replace("_", @"/"));
+                        });
+                    })
                 .AddControllers();
         }
 
@@ -51,7 +74,11 @@ namespace KafkaFlow.Admin.WebApi.Sample
 
             app
                 .UseSwagger()
-                .UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "KafkaFlow V1"));
+                .UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/kafka-flow/swagger.json", "KafkaFlow Admin");
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Api v1");
+                });
 
             var kafkaBus = app.ApplicationServices.CreateKafkaBus();
 
