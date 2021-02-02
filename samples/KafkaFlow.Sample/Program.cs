@@ -1,6 +1,7 @@
 ﻿namespace KafkaFlow.Sample
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using global::Microsoft.Extensions.DependencyInjection;
     using KafkaFlow.Admin;
@@ -81,13 +82,17 @@
                 switch (input)
                 {
                     case var _ when int.TryParse(input, out var count):
-                        for (var i = 0; i < count; i++)
-                        {
-                            producers[producerName]
-                                .Produce(
-                                    Guid.NewGuid().ToString(),
-                                    new TestMessage { Text = $"Message: {Guid.NewGuid()}" });
-                        }
+                        var result = await producers[producerName]
+                            .BatchProduceAsync(
+                                Enumerable
+                                    .Range(0, count)
+                                    .Select(
+                                        x => new BatchProduceItem(
+                                            "test-topic",
+                                            Guid.NewGuid().ToString(),
+                                            new TestMessage { Text = $"Message: {Guid.NewGuid()}" },
+                                            null))
+                                    .ToList());
 
                         break;
 
