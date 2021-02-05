@@ -8,7 +8,7 @@
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
 
-    internal class KafkaConsumer
+    internal class KafkaConsumer : IKafkaConsumer
     {
         private readonly ConsumerConfiguration configuration;
         private readonly IConsumerManager consumerManager;
@@ -17,6 +17,8 @@
         private readonly CancellationToken busStopCancellationToken;
 
         private readonly ConsumerBuilder<byte[], byte[]> consumerBuilder;
+
+        private IConsumer<byte[], byte[]> consumer;
 
         private CancellationTokenSource stopCancellationTokenSource;
         private Task backgroundTask;
@@ -39,27 +41,37 @@
             this.consumerBuilder = new ConsumerBuilder<byte[], byte[]>(kafkaConfig);
 
             this.consumerBuilder
-                .SetPartitionsAssignedHandler((consumer, partitions) => this.OnPartitionAssigned(consumer, partitions))
+                .SetPartitionsAssignedHandler((consumer, partitions) => this.OnPartitionAssigned(partitions))
                 .SetPartitionsRevokedHandler((consumer, partitions) => this.OnPartitionRevoked(partitions))
-                .SetErrorHandler((p, error) =>
-                {
-                    if (error.IsFatal)
+                .SetErrorHandler(
+                    (p, error) =>
                     {
-                        this.logHandler.Error("Kafka Consumer Fatal Error", null, new { Error = error });
-                    }
-                    else
+                        if (error.IsFatal)
+                        {
+                            this.logHandler.Error("Kafka Consumer Fatal Error", null, new { Error = error });
+                        }
+                        else
+                        {
+                            this.logHandler.Warning("Kafka Consumer Error", new { Error = error });
+                        }
+                    })
+                .SetStatisticsHandler(
+                    (consumer, statistics) =>
                     {
-                        this.logHandler.Warning("Kafka Consumer Error", new { Error = error });
-                    }
-                })
-                .SetStatisticsHandler((consumer, statistics) =>
-                {
-                    foreach (var handler in configuration.StatisticsHandlers)
-                    {
-                        handler.Invoke(statistics);
-                    }
-                });
+                        foreach (var handler in configuration.StatisticsHandlers)
+                        {
+                            handler.Invoke(statistics);
+                        }
+                    });
         }
+
+        public IReadOnlyList<string> Subscription => this.consumer?.Subscription;
+
+        public IReadOnlyList<TopicPartition> Assignment => this.consumer?.Assignment;
+
+        public string MemberId => this.consumer?.MemberId;
+
+        public string ClientInstanceName => this.consumer?.Name;
 
         private void OnPartitionRevoked(IReadOnlyCollection<TopicPartitionOffset> topicPartitions)
         {
@@ -70,7 +82,7 @@
             this.consumerWorkerPool.StopAsync().GetAwaiter().GetResult();
         }
 
-        private void OnPartitionAssigned(IConsumer<byte[], byte[]> consumer, IReadOnlyCollection<TopicPartition> partitions)
+        private void OnPartitionAssigned(IReadOnlyCollection<TopicPartition> partitions)
         {
             this.logHandler.Info(
                 "Partitions assigned",
@@ -78,7 +90,7 @@
 
             this.consumerWorkerPool
                 .StartAsync(
-                    consumer,
+                    this,
                     partitions,
                     this.stopCancellationTokenSource.Token)
                 .GetAwaiter()
@@ -105,7 +117,7 @@
             this.stopCancellationTokenSource =
                 CancellationTokenSource.CreateLinkedTokenSource(this.busStopCancellationToken);
 
-            this.CreateBackgroundTask();
+            this.CreateConsumerAndBackgroundTask();
 
             return Task.CompletedTask;
         }
@@ -123,30 +135,29 @@
             this.backgroundTask.Dispose();
         }
 
-        private void CreateBackgroundTask()
+        private void CreateConsumerAndBackgroundTask()
         {
-            var consumer = this.consumerBuilder.Build();
+            this.consumer = this.consumerBuilder.Build();
 
             this.consumerManager.AddOrUpdate(
                 new MessageConsumer(
-                    consumer,
                     this,
                     this.consumerWorkerPool,
                     this.configuration,
                     this.logHandler));
 
-            consumer.Subscribe(this.configuration.Topics);
+            this.consumer.Subscribe(this.configuration.Topics);
 
             this.backgroundTask = Task.Factory.StartNew(
                 async () =>
                 {
-                    using (consumer)
+                    using (this.consumer)
                     {
                         while (!this.stopCancellationTokenSource.Token.IsCancellationRequested)
                         {
                             try
                             {
-                                var message = consumer.Consume(this.stopCancellationTokenSource.Token);
+                                var message = this.consumer.Consume(this.stopCancellationTokenSource.Token);
 
                                 await this.consumerWorkerPool
                                     .EnqueueAsync(message, this.stopCancellationTokenSource.Token)
@@ -166,7 +177,7 @@
                                 await this.consumerWorkerPool.StopAsync().ConfigureAwait(false);
                                 _ = Task
                                     .Delay(5000, this.stopCancellationTokenSource.Token)
-                                    .ContinueWith(t => this.CreateBackgroundTask());
+                                    .ContinueWith(t => this.CreateConsumerAndBackgroundTask());
 
                                 break;
                             }
@@ -178,12 +189,39 @@
                             }
                         }
 
-                        consumer.Close();
+                        this.consumer.Close();
                     }
+
+                    this.consumer = null;
                 },
                 CancellationToken.None,
                 TaskCreationOptions.LongRunning,
                 TaskScheduler.Default);
+        }
+
+        public void Pause(IEnumerable<TopicPartition> topicPartitions) =>
+            this.consumer.Pause(topicPartitions);
+
+        public void Resume(IEnumerable<TopicPartition> topicPartitions) =>
+            this.consumer.Resume(topicPartitions);
+
+        public Offset GetPosition(TopicPartition topicPartition) =>
+            this.consumer.Position(topicPartition);
+
+        public WatermarkOffsets GetWatermarkOffsets(TopicPartition topicPartition) =>
+            this.consumer.GetWatermarkOffsets(topicPartition);
+
+        public WatermarkOffsets QueryWatermarkOffsets(TopicPartition topicPartition, TimeSpan timeout) =>
+            this.consumer.QueryWatermarkOffsets(topicPartition, timeout);
+
+        public List<TopicPartitionOffset> OffsetsForTimes(
+            IEnumerable<TopicPartitionTimestamp> topicPartitions,
+            TimeSpan timeout) =>
+            this.consumer.OffsetsForTimes(topicPartitions, timeout);
+
+        public void Commit(IEnumerable<TopicPartitionOffset> offsetsValues)
+        {
+            this.consumer.Commit(offsetsValues);
         }
     }
 }
