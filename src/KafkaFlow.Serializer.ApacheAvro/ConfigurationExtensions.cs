@@ -1,10 +1,10 @@
-namespace KafkaFlow
+namespace KafkaFlow.Serializer.ApacheAvro
 {
     using System;
     using System.Linq.Expressions;
     using System.Reflection;
+    using Configuration;
     using Confluent.SchemaRegistry;
-    using KafkaFlow.Configuration;
     using AuthCredentialsSource = Configuration.AuthCredentialsSource;
 
     internal static class ConfigurationExtensions

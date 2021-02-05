@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "LogMessages2",
+  "namespace": "MessageTypes",
+  "doc": "A simple log message type as used by this blog post.",
+  "fields": [
+    {
+      "name": "Message",
+      "type": "string"
+    }
+  ]
+}

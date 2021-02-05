@@ -13,6 +13,7 @@
     using KafkaFlow.Serializer;
     using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
+    using Serializer.Json;
 
     internal static class Program
     {
@@ -37,7 +38,7 @@
                                     .DefaultTopic("test-topic")
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ProtobufMessageSerializer>()
+                                            .AddSerializer<JsonMessageSerializer>()
                                             .AddCompressor<GzipMessageCompressor>()
                                     )
                                     .WithAcks(Acks.All)
@@ -53,11 +54,11 @@
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddCompressor<GzipMessageCompressor>()
-                                            .AddSerializer<ProtobufMessageSerializer>()
+                                            .AddSerializer<JsonMessageSerializer>()
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                    .AddHandler<PrintConsoleHandler>())
+                                                    .AddHandler<JsonMessageHandler>())
                                     )
                             )
                     )
@@ -90,7 +91,7 @@
                                         x => new BatchProduceItem(
                                             "test-topic",
                                             Guid.NewGuid().ToString(),
-                                            new TestMessage { Text = $"Message: {Guid.NewGuid()}" },
+                                            new TestMessage { Text = $"Message - {Guid.NewGuid()}" },
                                             null))
                                     .ToList());
                         

@@ -4,7 +4,7 @@
     using System.Threading.Tasks;
     using KafkaFlow.TypedHandler;
 
-    public class PrintConsoleHandler : IMessageHandler<TestMessage>
+    public class JsonMessageHandler : IMessageHandler<TestMessage>
     {
         public Task Handle(IMessageContext context, TestMessage message)
         {
