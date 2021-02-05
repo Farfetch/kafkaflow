@@ -8,7 +8,7 @@ namespace KafkaFlow.Consumers
 
     internal class OffsetCommitter : IOffsetCommitter
     {
-        private readonly IConsumer<byte[], byte[]> consumer;
+        private readonly IKafkaConsumer consumer;
         private readonly ILogHandler logHandler;
 
         private ConcurrentDictionary<(string, int), TopicPartitionOffset> offsetsToCommit =
@@ -17,7 +17,7 @@ namespace KafkaFlow.Consumers
         private readonly Timer commitTimer;
 
         public OffsetCommitter(
-            IConsumer<byte[], byte[]> consumer,
+            IKafkaConsumer consumer,
             TimeSpan autoCommitInterval,
             ILogHandler logHandler)
         {

@@ -9,7 +9,7 @@ namespace KafkaFlow.Consumers
 
     internal class ConsumerWorker : IConsumerWorker
     {
-        private readonly IConsumer<byte[], byte[]> consumer;
+        private readonly IKafkaConsumer consumer;
         private readonly ConsumerConfiguration configuration;
         private readonly IOffsetManager offsetManager;
         private readonly ILogHandler logHandler;
@@ -22,7 +22,7 @@ namespace KafkaFlow.Consumers
         private Action onMessageFinishedHandler;
 
         public ConsumerWorker(
-            IConsumer<byte[], byte[]> consumer,
+            IKafkaConsumer consumer,
             int workerId,
             ConsumerConfiguration configuration,
             IOffsetManager offsetManager,

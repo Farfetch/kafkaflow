@@ -14,7 +14,7 @@ namespace KafkaFlow
         private readonly KafkaConfiguration configuration;
         private readonly IConsumerManager consumerManager;
         private readonly ILogHandler logHandler;
-        private readonly IList<KafkaConsumer> consumers = new List<KafkaConsumer>();
+        private readonly IList<IKafkaConsumer> consumers = new List<IKafkaConsumer>();
 
         public KafkaBus(
             IDependencyResolver dependencyResolver,

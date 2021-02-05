@@ -9,15 +9,13 @@ namespace KafkaFlow.Consumers
 
     internal class MessageConsumer : IMessageConsumer
     {
-        private readonly IConsumer<byte[], byte[]> consumer;
-        private readonly KafkaConsumer kafkaConsumer;
+        private readonly IKafkaConsumer consumer;
         private readonly IConsumerWorkerPool workerPool;
         private readonly ConsumerConfiguration configuration;
         private readonly ILogHandler logHandler;
 
         public MessageConsumer(
-            IConsumer<byte[], byte[]> consumer,
-            KafkaConsumer kafkaConsumer,
+            IKafkaConsumer consumer,
             IConsumerWorkerPool workerPool,
             ConsumerConfiguration configuration,
             ILogHandler logHandler)
@@ -26,7 +24,6 @@ namespace KafkaFlow.Consumers
             this.configuration = configuration;
             this.logHandler = logHandler;
             this.consumer = consumer;
-            this.kafkaConsumer = kafkaConsumer;
         }
 
         public string ConsumerName => this.configuration.ConsumerName;
@@ -95,9 +92,9 @@ namespace KafkaFlow.Consumers
 
         private async Task InternalRestart()
         {
-            await this.kafkaConsumer.StopAsync().ConfigureAwait(false);
+            await this.consumer.StopAsync().ConfigureAwait(false);
             await Task.Delay(5000).ConfigureAwait(false);
-            await this.kafkaConsumer.StartAsync().ConfigureAwait(false);
+            await this.consumer.StartAsync().ConfigureAwait(false);
         }
 
         public IReadOnlyList<string> Subscription => this.consumer.Subscription;
@@ -106,7 +103,7 @@ namespace KafkaFlow.Consumers
 
         public string MemberId => this.consumer.MemberId;
 
-        public string ClientInstanceName => this.consumer.Name;
+        public string ClientInstanceName => this.consumer.ClientInstanceName;
 
         public void Pause(IEnumerable<TopicPartition> topicPartitions) =>
             this.consumer.Pause(topicPartitions);
@@ -115,7 +112,7 @@ namespace KafkaFlow.Consumers
             this.consumer.Resume(topicPartitions);
 
         public Offset GetPosition(TopicPartition topicPartition) =>
-            this.consumer.Position(topicPartition);
+            this.consumer.GetPosition(topicPartition);
 
         public WatermarkOffsets GetWatermarkOffsets(TopicPartition topicPartition) =>
             this.consumer.GetWatermarkOffsets(topicPartition);

@@ -35,7 +35,7 @@ namespace KafkaFlow.Consumers
         }
 
         public async Task StartAsync(
-            IConsumer<byte[], byte[]> consumer,
+            IKafkaConsumer consumer,
             IEnumerable<TopicPartition> partitions,
             CancellationToken stopCancellationToken = default)
         {
