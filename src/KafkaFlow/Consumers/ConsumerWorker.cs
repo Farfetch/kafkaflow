@@ -5,12 +5,10 @@ namespace KafkaFlow.Consumers
     using System.Threading.Channels;
     using System.Threading.Tasks;
     using Confluent.Kafka;
-    using KafkaFlow.Configuration;
 
     internal class ConsumerWorker : IConsumerWorker
     {
         private readonly IKafkaConsumer consumer;
-        private readonly ConsumerConfiguration configuration;
         private readonly IOffsetManager offsetManager;
         private readonly ILogHandler logHandler;
         private readonly IMiddlewareExecutor middlewareExecutor;
@@ -24,18 +22,16 @@ namespace KafkaFlow.Consumers
         public ConsumerWorker(
             IKafkaConsumer consumer,
             int workerId,
-            ConsumerConfiguration configuration,
             IOffsetManager offsetManager,
             ILogHandler logHandler,
             IMiddlewareExecutor middlewareExecutor)
         {
             this.Id = workerId;
             this.consumer = consumer;
-            this.configuration = configuration;
             this.offsetManager = offsetManager;
             this.logHandler = logHandler;
             this.middlewareExecutor = middlewareExecutor;
-            this.messagesBuffer = Channel.CreateBounded<ConsumeResult<byte[], byte[]>>(configuration.BufferSize);
+            this.messagesBuffer = Channel.CreateBounded<ConsumeResult<byte[], byte[]>>(consumer.Configuration.BufferSize);
         }
 
         public int Id { get; }
@@ -66,13 +62,12 @@ namespace KafkaFlow.Consumers
                             var context = new ConsumerMessageContext(
                                 new MessageContextConsumer(
                                     this.consumer,
-                                    this.configuration.ConsumerName,
                                     this.offsetManager,
                                     message,
                                     this.stopCancellationTokenSource.Token),
                                 message,
                                 this.Id,
-                                this.configuration.GroupId);
+                                this.consumer.Configuration.GroupId);
 
                             try
                             {
@@ -89,7 +84,7 @@ namespace KafkaFlow.Consumers
                             }
                             finally
                             {
-                                if (this.configuration.AutoStoreOffsets && context.Consumer.ShouldStoreOffset)
+                                if (this.consumer.Configuration.AutoStoreOffsets && context.Consumer.ShouldStoreOffset)
                                 {
                                     this.offsetManager.StoreOffset(message.TopicPartitionOffset);
                                 }

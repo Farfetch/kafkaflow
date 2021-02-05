@@ -5,12 +5,10 @@ namespace KafkaFlow.Consumers
     using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
-    using KafkaFlow.Configuration;
 
     internal class ConsumerWorkerPool : IConsumerWorkerPool
     {
         private readonly IDependencyResolver dependencyResolver;
-        private readonly ConsumerConfiguration configuration;
         private readonly ILogHandler logHandler;
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly Factory<IDistributionStrategy> distributionStrategyFactory;
@@ -22,13 +20,11 @@ namespace KafkaFlow.Consumers
 
         public ConsumerWorkerPool(
             IDependencyResolver dependencyResolver,
-            ConsumerConfiguration configuration,
             ILogHandler logHandler,
             IMiddlewareExecutor middlewareExecutor,
             Factory<IDistributionStrategy> distributionStrategyFactory)
         {
             this.dependencyResolver = dependencyResolver;
-            this.configuration = configuration;
             this.logHandler = logHandler;
             this.middlewareExecutor = middlewareExecutor;
             this.distributionStrategyFactory = distributionStrategyFactory;
@@ -42,20 +38,19 @@ namespace KafkaFlow.Consumers
             this.offsetManager = new OffsetManager(
                 new OffsetCommitter(
                     consumer,
-                    this.configuration.AutoCommitInterval,
+                    consumer.Configuration.AutoCommitInterval,
                     this.logHandler),
                 partitions);
 
             await Task.WhenAll(
                     Enumerable
-                        .Range(0, this.configuration.WorkerCount)
+                        .Range(0, consumer.Configuration.WorkerCount)
                         .Select(
                             workerId =>
                             {
                                 var worker = new ConsumerWorker(
                                     consumer,
                                     workerId,
-                                    this.configuration,
                                     this.offsetManager,
                                     this.logHandler,
                                     this.middlewareExecutor);

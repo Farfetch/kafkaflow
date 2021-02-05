@@ -118,10 +118,17 @@ namespace KafkaFlow.Producers
         }
     }
 
+    /// <summary>
+    /// </summary>
     public class BatchProduceException : Exception
     {
+        /// <summary>
+        /// </summary>
         public IReadOnlyCollection<BatchProduceItem> Items { get; }
 
+        /// <summary>
+        /// </summary>
+        /// <param name="items"></param>
         public BatchProduceException(IReadOnlyCollection<BatchProduceItem> items)
         {
             this.Items = items;

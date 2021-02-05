@@ -10,7 +10,6 @@
 
     internal class KafkaConsumer : IKafkaConsumer
     {
-        private readonly ConsumerConfiguration configuration;
         private readonly IConsumerManager consumerManager;
         private readonly ILogHandler logHandler;
         private readonly IConsumerWorkerPool consumerWorkerPool;
@@ -30,7 +29,7 @@
             IConsumerWorkerPool consumerWorkerPool,
             CancellationToken busStopCancellationToken)
         {
-            this.configuration = configuration;
+            this.Configuration = configuration;
             this.consumerManager = consumerManager;
             this.logHandler = logHandler;
             this.consumerWorkerPool = consumerWorkerPool;
@@ -64,6 +63,8 @@
                         }
                     });
         }
+        
+        public ConsumerConfiguration Configuration { get; }
 
         public IReadOnlyList<string> Subscription => this.consumer?.Subscription;
 
@@ -99,8 +100,8 @@
 
         private object GetConsumerLogInfo(IEnumerable<TopicPartition> partitions) => new
         {
-            this.configuration.GroupId,
-            this.configuration.ConsumerName,
+            this.Configuration.GroupId,
+            this.Configuration.ConsumerName,
             Topics = partitions
                 .GroupBy(x => x.Topic)
                 .Select(
@@ -143,10 +144,9 @@
                 new MessageConsumer(
                     this,
                     this.consumerWorkerPool,
-                    this.configuration,
                     this.logHandler));
 
-            this.consumer.Subscribe(this.configuration.Topics);
+            this.consumer.Subscribe(this.Configuration.Topics);
 
             this.backgroundTask = Task.Factory.StartNew(
                 async () =>
