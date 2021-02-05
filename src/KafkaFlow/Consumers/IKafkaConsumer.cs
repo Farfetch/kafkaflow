@@ -4,9 +4,12 @@ namespace KafkaFlow.Consumers
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Confluent.Kafka;
+    using KafkaFlow.Configuration;
 
     internal interface IKafkaConsumer
     {
+        ConsumerConfiguration Configuration { get; }
+
         IReadOnlyList<string> Subscription { get; }
 
         IReadOnlyList<TopicPartition> Assignment { get; }

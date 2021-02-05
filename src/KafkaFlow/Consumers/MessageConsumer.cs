@@ -5,32 +5,28 @@ namespace KafkaFlow.Consumers
     using System.Linq;
     using System.Threading.Tasks;
     using Confluent.Kafka;
-    using KafkaFlow.Configuration;
 
     internal class MessageConsumer : IMessageConsumer
     {
         private readonly IKafkaConsumer consumer;
         private readonly IConsumerWorkerPool workerPool;
-        private readonly ConsumerConfiguration configuration;
         private readonly ILogHandler logHandler;
 
         public MessageConsumer(
             IKafkaConsumer consumer,
             IConsumerWorkerPool workerPool,
-            ConsumerConfiguration configuration,
             ILogHandler logHandler)
         {
             this.workerPool = workerPool;
-            this.configuration = configuration;
             this.logHandler = logHandler;
             this.consumer = consumer;
         }
 
-        public string ConsumerName => this.configuration.ConsumerName;
+        public string ConsumerName => this.consumer.Configuration.ConsumerName;
 
-        public string GroupId => this.configuration.GroupId;
+        public string GroupId => this.consumer.Configuration.GroupId;
 
-        public int WorkerCount => this.configuration.WorkerCount;
+        public int WorkerCount => this.consumer.Configuration.WorkerCount;
 
         public async Task OverrideOffsetsAndRestartAsync(IReadOnlyCollection<TopicPartitionOffset> offsets)
         {
@@ -76,7 +72,8 @@ namespace KafkaFlow.Consumers
 
         public async Task ChangeWorkerCountAndRestartAsync(int workerCount)
         {
-            this.configuration.WorkerCount = workerCount;
+            this.consumer.Configuration.WorkerCount = workerCount;
+
             await this.InternalRestart().ConfigureAwait(false);
 
             this.logHandler.Info(

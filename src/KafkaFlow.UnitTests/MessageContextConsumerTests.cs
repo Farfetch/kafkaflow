@@ -24,7 +24,7 @@
                 }
             };
 
-            var target = new MessageContextConsumer(null, "consumer", null, consumerResult, CancellationToken.None);
+            var target = new MessageContextConsumer(null, null, consumerResult, CancellationToken.None);
 
             // Act
             var messageTimestamp = target.MessageTimestamp;

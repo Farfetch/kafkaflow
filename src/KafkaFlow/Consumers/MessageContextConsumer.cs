@@ -12,19 +12,17 @@ namespace KafkaFlow.Consumers
 
         public MessageContextConsumer(
             IKafkaConsumer consumer,
-            string name,
             IOffsetManager offsetManager,
             ConsumeResult<byte[], byte[]> kafkaResult,
             CancellationToken workerStopped)
         {
-            this.Name = name;
             this.WorkerStopped = workerStopped;
             this.consumer = consumer;
             this.offsetManager = offsetManager;
             this.kafkaResult = kafkaResult;
         }
 
-        public string Name { get; }
+        public string Name => this.consumer.Configuration.ConsumerName;
 
         public CancellationToken WorkerStopped { get; }
 
