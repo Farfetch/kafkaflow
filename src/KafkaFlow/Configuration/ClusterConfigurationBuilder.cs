@@ -52,17 +52,6 @@ namespace KafkaFlow.Configuration
             return this;
         }
         
-        public IClusterConfigurationBuilder WithSchemaRegistry(Action<SchemaRegistryConfiguration> handler)
-        {
-            var config = new SchemaRegistryConfiguration();
-            
-            handler(config);
-
-            this.DependencyConfigurator.AddSingleton(config);
-            
-            return this;
-        }
-
         public IClusterConfigurationBuilder AddProducer<TProducer>(Action<IProducerConfigurationBuilder> producer)
         {
             this.DependencyConfigurator.AddSingleton<IMessageProducer<TProducer>>(

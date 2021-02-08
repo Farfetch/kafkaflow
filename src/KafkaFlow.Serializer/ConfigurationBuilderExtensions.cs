@@ -23,8 +23,7 @@
             return middlewares.Add(
                 resolver => new SerializerConsumerMiddleware(
                     resolver.Resolve<TSerializer>(),
-                    resolver.Resolve<TResolver>(),
-                    resolver.Resolve<SchemaRegistryConfiguration>()));
+                    resolver.Resolve<TResolver>()));
         }
 
         /// <summary>
@@ -45,8 +44,7 @@
             return middlewares.Add(
                 resolver => new SerializerConsumerMiddleware(
                     serializerFactory(resolver),
-                    resolverFactory(resolver),
-                    resolver.Resolve<SchemaRegistryConfiguration>()));
+                    resolverFactory(resolver)));
         }
 
         /// <summary>
@@ -96,8 +94,7 @@
             return middlewares.Add(
                 resolver => new SerializerProducerMiddleware(
                     resolver.Resolve<TSerializer>(),
-                    resolver.Resolve<TResolver>(),
-                    resolver.Resolve<SchemaRegistryConfiguration>()));
+                    resolver.Resolve<TResolver>()));
         }
 
         /// <summary>
@@ -118,8 +115,7 @@
             return middlewares.Add(
                 resolver => new SerializerProducerMiddleware(
                     serializerFactory(resolver),
-                    resolverFactory(resolver),
-                    resolver.Resolve<SchemaRegistryConfiguration>()));
+                    resolverFactory(resolver)));
         }
 
         /// <summary>
@@ -135,8 +131,7 @@
             return middlewares.Add(
                 resolver => new SerializerProducerMiddleware(
                     resolver.Resolve<TSerializer>(),
-                    new DefaultMessageTypeResolver(),
-                    resolver.Resolve<SchemaRegistryConfiguration>()));
+                    new DefaultMessageTypeResolver()));
         }
 
         /// <summary>

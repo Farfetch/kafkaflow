@@ -10,8 +10,7 @@
     {
         private readonly IMessageSerializer serializer;
         private readonly IMessageTypeResolver typeResolver;
-        private readonly SchemaRegistryConfiguration schemaRegistryConfiguration;
-
+        
         /// <summary>
         /// creates a <see cref="SerializerProducerMiddleware"/> instance
         /// </summary>
@@ -19,12 +18,10 @@
         /// <param name="typeResolver">Instance of <see cref="IMessageTypeResolver"/></param>
         public SerializerProducerMiddleware(
             IMessageSerializer serializer,
-            IMessageTypeResolver typeResolver,
-            SchemaRegistryConfiguration schemaRegistryConfiguration)
+            IMessageTypeResolver typeResolver)
         {
             this.serializer = serializer;
             this.typeResolver = typeResolver;
-            this.schemaRegistryConfiguration = schemaRegistryConfiguration;
         }
 
         /// <summary>
@@ -37,7 +34,7 @@
         {
             this.typeResolver.OnProduce(context);
 
-            var data = this.serializer.Serialize(context.Message, schemaRegistryConfiguration);
+            var data = this.serializer.Serialize(context.Message);
             
             context.TransformMessage(data);
 

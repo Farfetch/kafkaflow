@@ -2,43 +2,44 @@
 {
     using System;
     using Avro.Specific;
-    using Configuration;
     using Confluent.Kafka;
     using Confluent.Kafka.SyncOverAsync;
     using Confluent.SchemaRegistry;
     using Confluent.SchemaRegistry.Serdes;
+    
     /// <summary>
     /// A message serializer using Apache.Avro library
     /// </summary>
     public class ApacheAvroMessageSerializer : IMessageSerializer
     {
         private const string NoSchemaRegistryUrlMessage =
-            "There is no schema registry url defined in schema registry configuration. Use 'WithSchemaRegistry' option at cluster level with a non empty url.";
-
-        private ISchemaRegistryClient schemaRegistryClient;
-
-        private AvroSerializerConfig serializerConfig; 
+            "There was not defined a schema registry to be used by ApachevroSerializer. Use 'WithSchemaRegistry' option at cluster level with a valid url.";
+        private readonly ISchemaRegistryClient schemaRegistryClient;
+        private readonly AvroSerializerConfig serializerConfig; 
         
         /// <summary>
         /// </summary>
-        /// <param name="config">Avro serializer configuration</param>
-        public ApacheAvroMessageSerializer(AvroSerializerConfig config)
+        /// <param name="schemaRegistryClient">Schema registry client</param>
+        public ApacheAvroMessageSerializer(ISchemaRegistryClient schemaRegistryClient): 
+            this(schemaRegistryClient, new AvroSerializerConfig())
         {
-            this.serializerConfig = config;
         }
 
         /// <summary>
         /// </summary>
-        public ApacheAvroMessageSerializer() : this(new AvroSerializerConfig())
+        /// <param name="schemaRegistryClient">Schema registry client</param>
+        /// <param name="serializerConfig">Avro serializer configuration</param>
+        public ApacheAvroMessageSerializer(
+            ISchemaRegistryClient schemaRegistryClient, 
+            AvroSerializerConfig serializerConfig)
         {
+            this.schemaRegistryClient = schemaRegistryClient ?? throw new InvalidOperationException(NoSchemaRegistryUrlMessage);
+            this.serializerConfig = serializerConfig ;
         }
-        
-        
+
         /// <inheritdoc/>
-        public byte[] Serialize(object message, Configuration.SchemaRegistryConfiguration schemaRegistryConfiguration)
+        public byte[] Serialize(object message)
         {
-            this.BuildSchemaRegistryClient(schemaRegistryConfiguration);
-
             return new AvroSerializer<ISpecificRecord>(
                     this.schemaRegistryClient,
                     this.serializerConfig)
@@ -47,10 +48,8 @@
         }
 
         /// <inheritdoc/>
-        public object Deserialize(byte[] data, Type type, Configuration.SchemaRegistryConfiguration schemaRegistryConfiguration)
+        public object Deserialize(byte[] data, Type type)
         {
-            this.BuildSchemaRegistryClient(schemaRegistryConfiguration);
-            
             dynamic deserializer = Activator
                     .CreateInstance(
                         typeof(AvroDeserializer<>).MakeGenericType(type),
@@ -62,19 +61,6 @@
                 .ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();
-        }
-        
-        private void BuildSchemaRegistryClient(SchemaRegistryConfiguration schemaRegistryConfiguration)
-        {
-            if (this.schemaRegistryClient == null)
-            {
-                if (string.IsNullOrEmpty(schemaRegistryConfiguration?.Url))
-                {
-                    throw new InvalidOperationException(NoSchemaRegistryUrlMessage);
-                }
-
-                this.schemaRegistryClient = new CachedSchemaRegistryClient(schemaRegistryConfiguration.ToConfluent());
-            }
         }
     }
 }

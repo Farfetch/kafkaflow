@@ -13,7 +13,6 @@ namespace KafkaFlow.UnitTests.Compressors
         private Mock<IMessageContext> contextMock;
         private Mock<IMessageSerializer> serializerMock;
         private Mock<IMessageTypeResolver> typeResolverMock;
-        private Mock<SchemaRegistryConfiguration> schemaRegistryConfigurationMock;
         private bool nextCalled;
         private SerializerProducerMiddleware target;
         
@@ -23,12 +22,10 @@ namespace KafkaFlow.UnitTests.Compressors
             this.contextMock = new Mock<IMessageContext>();
             this.serializerMock = new Mock<IMessageSerializer>();
             this.typeResolverMock = new Mock<IMessageTypeResolver>();
-            this.schemaRegistryConfigurationMock = new Mock<SchemaRegistryConfiguration>();
-
+        
             this.target = new SerializerProducerMiddleware(
                 this.serializerMock.Object,
-                this.typeResolverMock.Object,
-                this.schemaRegistryConfigurationMock.Object);
+                this.typeResolverMock.Object);
         }
 
         [TestMethod]
@@ -45,7 +42,7 @@ namespace KafkaFlow.UnitTests.Compressors
             this.typeResolverMock.Setup(x => x.OnProduce(this.contextMock.Object));
             
             this.serializerMock
-                .Setup(x => x.Serialize(deserializedMessage, this.schemaRegistryConfigurationMock.Object))
+                .Setup(x => x.Serialize(deserializedMessage))
                 .Returns(rawMessage);
 
             this.contextMock.Setup(x => x.TransformMessage(rawMessage));

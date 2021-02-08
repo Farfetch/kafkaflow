@@ -6,6 +6,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
+      <ProjectReference Include="..\KafkaFlow.Serializer\KafkaFlow.Serializer.csproj" />
     </ItemGroup>
 
     <ItemGroup>

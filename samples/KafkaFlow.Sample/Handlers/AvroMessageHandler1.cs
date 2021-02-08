@@ -13,7 +13,7 @@
                 "Partition: {0} | Offset: {1} | Message: {2}",
                 context.Partition,
                 context.Offset,
-                "message.Messages");
+                message.Severity.ToString());
 
             return Task.CompletedTask;
         }

@@ -13,7 +13,7 @@ namespace KafkaFlow
         /// </summary>
         /// <param name="message">The message to be serialized</param>
         /// <returns>The serialized message</returns>
-        byte[] Serialize(object message, SchemaRegistryConfiguration schemaRegistryConfiguration);
+        byte[] Serialize(object message);
 
         /// <summary>
         /// Deserializes the given message
@@ -21,6 +21,6 @@ namespace KafkaFlow
         /// <param name="message">The message to be deserialized</param>
         /// <param name="type">The type to be created</param>
         /// <returns>The deserialized message</returns>
-        object Deserialize(byte[] message, Type type, SchemaRegistryConfiguration schemaRegistryConfiguration);
+        object Deserialize(byte[] message, Type type);
     }
 }

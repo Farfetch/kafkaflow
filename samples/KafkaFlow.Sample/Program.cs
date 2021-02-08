@@ -3,6 +3,8 @@
     using System;
     using System.Linq;
     using System.Threading.Tasks;
+    using Confluent.SchemaRegistry;
+    using Confluent.SchemaRegistry.Serdes;
     using global::Microsoft.Extensions.DependencyInjection;
     using KafkaFlow.Admin;
     using KafkaFlow.Admin.Messages;
@@ -10,10 +12,9 @@
     using KafkaFlow.Compressor.Gzip;
     using KafkaFlow.Consumers;
     using KafkaFlow.Producers;
-    using KafkaFlow.Serializer;
-    using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
-    using Serializer.Json;
+    using MessageTypes;
+    using Serializer.ApacheAvro;
 
     internal static class Program
     {
@@ -23,7 +24,7 @@
 
             const string producerName = "PrintConsole";
 
-            const string consumerName = "test";
+            const string consumerName = "test-avro";
 
             services.AddKafka(
                 kafka => kafka
@@ -31,21 +32,28 @@
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(new[] { "localhost:9092" })
-                            .EnableAdminMessages("kafka-flow.admin", Guid.NewGuid().ToString())
+                            .WithSchemaRegistry(config => config.Url = "localhost:9093")
+                            //.EnableAdminMessages("kafka-flow.admin", Guid.NewGuid().ToString())
                             .AddProducer(
                                 producerName,
                                 producer => producer
                                     .DefaultTopic("test-topic")
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<JsonMessageSerializer>()
+                                            //.AddSerializer<JsonMessageSerializer>()
+                                            .AddApacheAvroSerializer(
+                                                new AvroSerializerConfig
+                                                {
+                                                    AutoRegisterSchemas = true,
+                                                    SubjectNameStrategy = SubjectNameStrategy.Record
+                                                })
                                             .AddCompressor<GzipMessageCompressor>()
                                     )
                                     .WithAcks(Acks.All)
                             )
                             .AddConsumer(
                                 consumer => consumer
-                                    .Topic("test-topic")
+                                    .Topic("test-topic-avro")
                                     .WithGroupId("print-console-handler")
                                     .WithName(consumerName)
                                     .WithBufferSize(100)
@@ -54,11 +62,12 @@
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddCompressor<GzipMessageCompressor>()
-                                            .AddSerializer<JsonMessageSerializer>()
+                                            //.AddSerializer<JsonMessageSerializer>()
+                                            .AddApacheAvroSerializer()
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                    .AddHandler<JsonMessageHandler>())
+                                                    .AddHandler<AvroMessageHandler1>())
                                     )
                             )
                     )
@@ -89,9 +98,10 @@
                                     .Range(0, count)
                                     .Select(
                                         x => new BatchProduceItem(
-                                            "test-topic",
+                                            "test-topic-avro",
                                             Guid.NewGuid().ToString(),
-                                            new TestMessage { Text = $"Message - {Guid.NewGuid()}" },
+                                            //new TestMessage { Text = $"Message - {Guid.NewGuid()}" },
+                                            new LogMessages1(){Severity = LogLevel.Error},
                                             null))
                                     .ToList());
                         

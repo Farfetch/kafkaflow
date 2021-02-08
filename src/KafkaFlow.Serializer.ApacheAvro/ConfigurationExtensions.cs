@@ -1,53 +1,51 @@
 namespace KafkaFlow.Serializer.ApacheAvro
 {
     using System;
-    using System.Linq.Expressions;
-    using System.Reflection;
     using Configuration;
     using Confluent.SchemaRegistry;
-    using AuthCredentialsSource = Configuration.AuthCredentialsSource;
-
-    internal static class ConfigurationExtensions
+    using Confluent.SchemaRegistry.Serdes;
+    
+    public static class ClusterConfigurationBuilderExtensions
     {
-        public static SchemaRegistryConfig ToConfluent(this SchemaRegistryConfiguration configuration)
+        public static IClusterConfigurationBuilder WithSchemaRegistry(
+            this IClusterConfigurationBuilder cluster,
+            Action<SchemaRegistryConfig> handler)
         {
             var config = new SchemaRegistryConfig();
-            config
-                .SetIfNotNull(c => c.Url, configuration.Url)
-                .SetIfNotNull(c => c.BasicAuthCredentialsSource, configuration.BasicAuthCredentialsSource?.ToConfluent())
-                .SetIfNotNull(c => c.RequestTimeoutMs, configuration.RequestTimeoutMs)
-                .SetIfNotNull(c => c.SslCaLocation, configuration.SslCaLocation)
-                .SetIfNotNull(c => c.SslKeystoreLocation, configuration.SslKeystoreLocation)
-                .SetIfNotNull(c => c.SslKeystorePassword, configuration.SslKeystorePassword)
-                .SetIfNotNull(c => c.EnableSslCertificateVerification, configuration.EnableSslCertificateVerification)
-                .SetIfNotNull(c => c.BasicAuthUserInfo, configuration.BasicAuthUserInfo)
-                .SetIfNotNull(c => c.MaxCachedSchemas, configuration.MaxCachedSchemas);
-            
-            return config;
+            handler(config);
+            cluster.DependencyConfigurator.AddTransient<ISchemaRegistryClient>(factory => new CachedSchemaRegistryClient(config));
+            return cluster;
         }
-
-        private static Confluent.SchemaRegistry.AuthCredentialsSource ToConfluent(this AuthCredentialsSource authCredentialsSource) => authCredentialsSource switch
+        
+        public static IProducerMiddlewareConfigurationBuilder AddApacheAvroSerializer(
+            this IProducerMiddlewareConfigurationBuilder middlewares)
         {
-            AuthCredentialsSource.SaslInherit => Confluent.SchemaRegistry.AuthCredentialsSource.SaslInherit,
-            AuthCredentialsSource.UserInfo => Confluent.SchemaRegistry.AuthCredentialsSource.UserInfo,
-            _ => throw new ArgumentOutOfRangeException()
-        };
-
-        private static SchemaRegistryConfig SetIfNotNull<TProperty>
-        (
-            this SchemaRegistryConfig arg,
-            Expression<Func<SchemaRegistryConfig, TProperty>> propertyPicker,
-            object value
-        )
+            return middlewares.AddApacheAvroSerializer(new AvroSerializerConfig());
+        }
+        
+        public static IProducerMiddlewareConfigurationBuilder AddApacheAvroSerializer(
+            this IProducerMiddlewareConfigurationBuilder middlewares,
+            AvroSerializerConfig serializerConfig)
         {
-            if (value == null)
-            {
-                return arg;
-            }
+            middlewares.DependencyConfigurator.AddTransient<ApacheAvroMessageSerializer>();
             
-            var prop = (PropertyInfo)((MemberExpression)propertyPicker.Body).Member;
-            prop.SetValue(arg, value, null);
-            return arg;
+            return middlewares.Add(
+                resolver => new SerializerProducerMiddleware(
+                    new ApacheAvroMessageSerializer( 
+                        resolver.Resolve<ISchemaRegistryClient>(),
+                        serializerConfig),
+                    new DefaultMessageTypeResolver()));
+        }
+        
+        public static IConsumerMiddlewareConfigurationBuilder AddApacheAvroSerializer(
+            this IConsumerMiddlewareConfigurationBuilder middlewares)
+        {
+            middlewares.DependencyConfigurator.AddTransient<ApacheAvroMessageSerializer>();
+            
+            return middlewares.Add(
+                resolver => new SerializerConsumerMiddleware(
+                    new ApacheAvroMessageSerializer(resolver.Resolve<ISchemaRegistryClient>()),
+                    new DefaultMessageTypeResolver()));
         }
     }
 }
