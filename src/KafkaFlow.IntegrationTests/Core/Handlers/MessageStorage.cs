@@ -5,13 +5,16 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using Avro.Specific;
     using global::Microsoft.VisualStudio.TestTools.UnitTesting;
     using Messages;
+    using MessageTypes;
 
     public static class MessageStorage
     {
         private const int timeoutSec = 5;
         private static readonly ConcurrentBag<ITestMessage> testMessages = new ConcurrentBag<ITestMessage>();
+        private static readonly ConcurrentBag<LogMessages2> avroMessages = new ConcurrentBag<LogMessages2>();
         private static readonly ConcurrentBag<(long, int)> versions = new ConcurrentBag<(long, int)>();
         private static readonly ConcurrentBag<byte[]> byteMessages = new ConcurrentBag<byte[]>();
 
@@ -19,6 +22,11 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
         {
             versions.Add((DateTime.Now.Ticks, message.Version));
             testMessages.Add(message);
+        }
+        
+        public static void Add(LogMessages2 message)
+        {
+            avroMessages.Add(message);
         }
         
         public static void Add(byte[] message)
@@ -47,6 +55,22 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
             var start = DateTime.Now;
 
             while (!testMessages.Any(x => x.Id == message.Id && x.Value == message.Value))
+            {
+                if (DateTime.Now.Subtract(start).Seconds > timeoutSec)
+                {
+                    Assert.Fail("Message not received");
+                    return;
+                }
+
+                await Task.Delay(100).ConfigureAwait(false);
+            }
+        }
+        
+        public static async Task AssertMessageAsync(LogMessages2 message)
+        {
+            var start = DateTime.Now;
+
+            while (!avroMessages.Any(x => x.Message == message.Message && x.Schema.Fullname == message.Schema.Fullname))
             {
                 if (DateTime.Now.Subtract(start).Seconds > timeoutSec)
                 {

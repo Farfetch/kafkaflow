@@ -11,6 +11,7 @@ namespace KafkaFlow.IntegrationTests
     using global::Microsoft.VisualStudio.TestTools.UnitTesting;
     using KafkaFlow.IntegrationTests.Core;
     using KafkaFlow.Producers;
+    using MessageTypes;
 
     [TestClass]
     public class SerializationTest
@@ -53,6 +54,24 @@ namespace KafkaFlow.IntegrationTests
 
             // Act
             await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
+            
+
+            // Assert
+            foreach (var message in messages)
+            {
+                await MessageStorage.AssertMessageAsync(message);
+            }
+        }
+        
+        [TestMethod]
+        public async Task AvroMessageTest()
+        {
+            // Arrange
+            var producer = this.provider.GetRequiredService<IMessageProducer<AvroProducer>>();
+            var messages = this.fixture.CreateMany<LogMessages2>(10).ToList();
+
+            // Act
+            await Task.WhenAll(messages.Select(m => producer.ProduceAsync(Guid.NewGuid().ToString(), m)));
             
 
             // Assert

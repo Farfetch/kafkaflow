@@ -3,6 +3,8 @@ namespace KafkaFlow.IntegrationTests.Core
     using System;
     using System.IO;
     using System.Threading;
+    using Confluent.SchemaRegistry;
+    using Confluent.SchemaRegistry.Serdes;
     using global::Microsoft.Extensions.Configuration;
     using global::Microsoft.Extensions.DependencyInjection;
     using global::Microsoft.Extensions.Hosting;
@@ -16,6 +18,7 @@ namespace KafkaFlow.IntegrationTests.Core
     using KafkaFlow.Serializer.Json;
     using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
+    using Serializer.ApacheAvro;
 
     public static class Bootstrapper
     {
@@ -25,6 +28,7 @@ namespace KafkaFlow.IntegrationTests.Core
         private const string JsonGzipTopicName = "test-json-gzip";
         private const string ProtobufGzipTopicName = "test-protobuf-gzip";
         private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
+        private const string AvroTopicName = "test-avro";
 
         private static readonly Lazy<IServiceProvider> lazyProvider = new Lazy<IServiceProvider>(SetupProvider);
 
@@ -69,6 +73,40 @@ namespace KafkaFlow.IntegrationTests.Core
             services.AddKafka(
                 kafka => kafka
                     .UseLogHandler<TraceLogHandler>()
+                    .AddCluster(
+                        cluster => cluster
+                            .WithBrokers(new[] { "localhost:9092" })
+                            .WithSchemaRegistry(config => config.Url = "localhost:8081")
+                            .AddProducer<AvroProducer>(
+                                producer => producer
+                                    .DefaultTopic(AvroTopicName)
+                                    .AddMiddlewares(
+                                        middlewares => middlewares
+                                            .AddApacheAvroSerializer(
+                                                new AvroSerializerConfig
+                                                {
+                                                    AutoRegisterSchemas = true,
+                                                    SubjectNameStrategy = SubjectNameStrategy.Record
+                                                })
+                                    )
+                            )
+                            .AddConsumer(
+                                consumer => consumer
+                                    .Topic(AvroTopicName)
+                                    .WithGroupId("consumer-avro")
+                                    .WithBufferSize(100)
+                                    .WithWorkersCount(10)
+                                    .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                    .AddMiddlewares(
+                                        middlewares => middlewares
+                                            .AddApacheAvroSerializer()
+                                            .AddTypedHandlers(
+                                                handlers => handlers
+                                                    .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                                    .AddHandler<AvroMessageHandler>())
+                                    )
+                            )
+                    )
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(brokers.Split(';'))
