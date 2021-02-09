@@ -42,12 +42,12 @@ namespace KafkaFlow.Consumers
 
         public void Pause()
         {
-            this.consumer.Pause(this.consumer.Assignment);
+            this.consumer.FlowManager.Pause(this.consumer.Assignment);
         }
 
         public void Resume()
         {
-            this.consumer.Resume(this.consumer.Assignment);
+            this.consumer.FlowManager.Resume(this.consumer.Assignment);
         }
     }
 }

@@ -63,12 +63,14 @@
                         }
                     });
         }
-        
+
         public ConsumerConfiguration Configuration { get; }
 
         public IReadOnlyList<string> Subscription => this.consumer?.Subscription;
 
         public IReadOnlyList<TopicPartition> Assignment => this.consumer?.Assignment;
+
+        public IKafkaConsumerFlowManager FlowManager { get; private set; }
 
         public string MemberId => this.consumer?.MemberId;
 
@@ -139,6 +141,10 @@
         private void CreateConsumerAndBackgroundTask()
         {
             this.consumer = this.consumerBuilder.Build();
+            this.FlowManager = new KafkaConsumerFlowManager(
+                this.consumer,
+                this.stopCancellationTokenSource.Token,
+                this.logHandler);
 
             this.consumerManager.AddOrUpdate(
                 new MessageConsumer(
@@ -153,7 +159,7 @@
                 {
                     using (this.consumer)
                     {
-                        while (!this.stopCancellationTokenSource.Token.IsCancellationRequested)
+                        while (!this.stopCancellationTokenSource.IsCancellationRequested)
                         {
                             try
                             {
@@ -198,12 +204,6 @@
                 TaskCreationOptions.LongRunning,
                 TaskScheduler.Default);
         }
-
-        public void Pause(IEnumerable<TopicPartition> topicPartitions) =>
-            this.consumer.Pause(topicPartitions);
-
-        public void Resume(IEnumerable<TopicPartition> topicPartitions) =>
-            this.consumer.Resume(topicPartitions);
 
         public Offset GetPosition(TopicPartition topicPartition) =>
             this.consumer.Position(topicPartition);

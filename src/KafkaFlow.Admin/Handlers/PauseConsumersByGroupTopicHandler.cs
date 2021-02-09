@@ -19,7 +19,9 @@ namespace KafkaFlow.Admin.Handlers
 
             foreach (var consumer in consumers)
             {
-                consumer.Pause(consumer.Assignment.Where(x => x.Topic == message.Topic));
+                consumer.Pause(consumer.Assignment
+                    .Where(x => x.Topic == message.Topic)
+                    .ToList());
             }
 
             return Task.CompletedTask;
