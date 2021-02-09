@@ -3,7 +3,6 @@
     using System;
     using System.Text;
     using System.Text.Json;
-    using Configuration;
 
     /// <summary>
     /// A message serializer using System.Text.Json library

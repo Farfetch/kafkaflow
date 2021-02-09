@@ -1,7 +1,6 @@
 namespace KafkaFlow
 {
     using System;
-    using Configuration;
 
     /// <summary>
     /// Used to implement a message serializer

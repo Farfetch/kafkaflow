@@ -2,7 +2,6 @@
 {
     using System;
     using System.Threading.Tasks;
-    using Configuration;
 
     /// <summary>
     /// Middleware to deserialize messages when consuming
@@ -11,7 +10,7 @@
     {
         private readonly IMessageSerializer serializer;
         private readonly IMessageTypeResolver typeResolver;
-        
+
         /// <summary>
         /// Creates a <see cref="SerializerConsumerMiddleware"/> instance
         /// </summary>

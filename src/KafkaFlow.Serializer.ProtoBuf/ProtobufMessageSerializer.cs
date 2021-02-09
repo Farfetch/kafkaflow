@@ -2,7 +2,6 @@
 {
     using System;
     using System.IO;
-    using Configuration;
     using global::ProtoBuf;
 
     /// <summary>

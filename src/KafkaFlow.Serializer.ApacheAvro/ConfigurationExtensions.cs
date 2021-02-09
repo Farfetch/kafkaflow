@@ -23,6 +23,12 @@ namespace KafkaFlow.Serializer.ApacheAvro
             return middlewares.AddApacheAvroSerializer(new AvroSerializerConfig());
         }
         
+        public static IProducerMiddlewareConfigurationBuilder AddApacheAvroSerializer<TResolver>(
+            this IProducerMiddlewareConfigurationBuilder middlewares) where TResolver : class, IMessageTypeResolver
+        {
+            return middlewares.AddApacheAvroSerializer<TResolver>(new AvroSerializerConfig());
+        }
+        
         public static IProducerMiddlewareConfigurationBuilder AddApacheAvroSerializer(
             this IProducerMiddlewareConfigurationBuilder middlewares,
             AvroSerializerConfig serializerConfig)
@@ -37,6 +43,21 @@ namespace KafkaFlow.Serializer.ApacheAvro
                     new DefaultMessageTypeResolver()));
         }
         
+        public static IProducerMiddlewareConfigurationBuilder AddApacheAvroSerializer<TResolver>(
+            this IProducerMiddlewareConfigurationBuilder middlewares,
+            AvroSerializerConfig serializerConfig) where TResolver : class, IMessageTypeResolver
+        {
+            middlewares.DependencyConfigurator.AddTransient<TResolver>();
+            middlewares.DependencyConfigurator.AddTransient<ApacheAvroMessageSerializer>();
+            
+            return middlewares.Add(
+                resolver => new SerializerProducerMiddleware(
+                    new ApacheAvroMessageSerializer( 
+                        resolver.Resolve<ISchemaRegistryClient>(),
+                        serializerConfig),
+                    resolver.Resolve<TResolver>()));
+        }
+
         public static IConsumerMiddlewareConfigurationBuilder AddApacheAvroSerializer(
             this IConsumerMiddlewareConfigurationBuilder middlewares)
         {
@@ -47,5 +68,16 @@ namespace KafkaFlow.Serializer.ApacheAvro
                     new ApacheAvroMessageSerializer(resolver.Resolve<ISchemaRegistryClient>()),
                     new DefaultMessageTypeResolver()));
         }
+        
+        public static IConsumerMiddlewareConfigurationBuilder AddApacheAvroSerializer<TResolver>(
+            this IConsumerMiddlewareConfigurationBuilder middlewares) where TResolver : class, IMessageTypeResolver
+        {
+            middlewares.DependencyConfigurator.AddTransient<ApacheAvroMessageSerializer>();
+            
+            return middlewares.Add(
+                resolver => new SerializerConsumerMiddleware(
+                    new ApacheAvroMessageSerializer(resolver.Resolve<ISchemaRegistryClient>()),
+                    resolver.Resolve<TResolver>()));
+        } 
     }
 }

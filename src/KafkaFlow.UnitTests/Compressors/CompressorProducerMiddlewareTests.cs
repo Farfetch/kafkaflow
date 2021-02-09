@@ -1,7 +1,6 @@
 namespace KafkaFlow.UnitTests.Compressors
 {
     using System.Threading.Tasks;
-    using Configuration;
     using FluentAssertions;
     using KafkaFlow.Serializer;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -22,7 +21,7 @@ namespace KafkaFlow.UnitTests.Compressors
             this.contextMock = new Mock<IMessageContext>();
             this.serializerMock = new Mock<IMessageSerializer>();
             this.typeResolverMock = new Mock<IMessageTypeResolver>();
-        
+
             this.target = new SerializerProducerMiddleware(
                 this.serializerMock.Object,
                 this.typeResolverMock.Object);

@@ -44,37 +44,20 @@ namespace KafkaFlow.Producers
 
             DeliveryResult<byte[], byte[]> report = null;
 
-            try
-            {
-                await this.middlewareExecutor
-                    .Execute(
-                        new ProducerMessageContext(
-                            message,
-                            messageKey,
-                            headers,
-                            topic),
-                        async context =>
-                        {
-                            report = await this
-                                .InternalProduceAsync((ProducerMessageContext) context)
-                                .ConfigureAwait(false);
-                        })
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex) when (!(ex is ProduceException<byte[], byte[]> || ex is KafkaException))
-            {
-                this.dependencyResolverScope.Resolver
-                    .Resolve<ILogHandler>()
-                    .Error("Error executing producer",
-                        ex,
-                        new
-                        {
-                            message,
-                            topic,
-                            partitionKey
-                        });
-                throw;
-            }
+            await this.middlewareExecutor
+                .Execute(
+                    new ProducerMessageContext(
+                        message,
+                        messageKey,
+                        headers,
+                        topic),
+                    async context =>
+                    {
+                        report = await this
+                            .InternalProduceAsync((ProducerMessageContext) context)
+                            .ConfigureAwait(false);
+                    })
+                .ConfigureAwait(false);
 
             return report;
         }
@@ -106,8 +89,6 @@ namespace KafkaFlow.Producers
         {
             var messageKey = partitionKey is null ? null : Encoding.UTF8.GetBytes(partitionKey);
 
-            try
-            {
             this.middlewareExecutor.Execute(
                 new ProducerMessageContext(
                     message,
@@ -136,21 +117,6 @@ namespace KafkaFlow.Producers
 
                     return completionSource.Task;
                 });
-            }
-            catch (Exception ex) when (!(ex is ProduceException<byte[], byte[]> || ex is KafkaException))
-            {
-                this.dependencyResolverScope.Resolver
-                    .Resolve<ILogHandler>()
-                    .Error("Error executing producer",
-                        ex,
-                        new
-                        {
-                            message,
-                            topic,
-                            partitionKey
-                        });
-                throw;
-            }
         }
 
         public void Produce(

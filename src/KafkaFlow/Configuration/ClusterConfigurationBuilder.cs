@@ -51,7 +51,7 @@ namespace KafkaFlow.Configuration
 
             return this;
         }
-        
+
         public IClusterConfigurationBuilder AddProducer<TProducer>(Action<IProducerConfigurationBuilder> producer)
         {
             this.DependencyConfigurator.AddSingleton<IMessageProducer<TProducer>>(
