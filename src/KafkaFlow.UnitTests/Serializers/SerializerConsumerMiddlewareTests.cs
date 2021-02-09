@@ -68,6 +68,7 @@ namespace KafkaFlow.UnitTests.Serializers
             // Assert
             this.nextCalled.Should().BeTrue();
             this.serializerMock.Verify(x => x.Deserialize(It.IsAny<byte[]>(), It.IsAny<Type>()), Times.Never);
+            this.typeResolverMock.VerifyAll();
         }
 
         [TestMethod]
