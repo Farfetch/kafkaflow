@@ -37,7 +37,7 @@ namespace KafkaFlow.Consumers
 
             try
             {
-                this.consumer.Pause(this.consumer.Assignment);
+                this.consumer.FlowManager.Pause(this.consumer.Assignment);
                 await this.workerPool.StopAsync().ConfigureAwait(false);
 
                 this.consumer.Commit(offsets);
@@ -102,11 +102,11 @@ namespace KafkaFlow.Consumers
 
         public string ClientInstanceName => this.consumer.ClientInstanceName;
 
-        public void Pause(IEnumerable<TopicPartition> topicPartitions) =>
-            this.consumer.Pause(topicPartitions);
+        public void Pause(IReadOnlyCollection<TopicPartition> topicPartitions) =>
+            this.consumer.FlowManager.Pause(topicPartitions);
 
-        public void Resume(IEnumerable<TopicPartition> topicPartitions) =>
-            this.consumer.Resume(topicPartitions);
+        public void Resume(IReadOnlyCollection<TopicPartition> topicPartitions) =>
+            this.consumer.FlowManager.Resume(topicPartitions);
 
         public Offset GetPosition(TopicPartition topicPartition) =>
             this.consumer.GetPosition(topicPartition);

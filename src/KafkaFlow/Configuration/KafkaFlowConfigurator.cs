@@ -1,7 +1,6 @@
 namespace KafkaFlow.Configuration
 {
     using System;
-    using System.Linq;
     using KafkaFlow.Consumers;
     using KafkaFlow.Producers;
 

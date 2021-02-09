@@ -81,7 +81,7 @@ namespace KafkaFlow.Consumers
         /// <exception cref="T:Confluent.Kafka.TopicPartitionException">
         ///     Per partition success or error.
         /// </exception>
-        void Pause(IEnumerable<TopicPartition> partitions);
+        void Pause(IReadOnlyCollection<TopicPartition> partitions);
 
         /// <summary>
         ///     Resume consumption for the provided list of partitions.
@@ -95,7 +95,7 @@ namespace KafkaFlow.Consumers
         /// <exception cref="T:Confluent.Kafka.TopicPartitionException">
         ///     Per partition success or error.
         /// </exception>
-        void Resume(IEnumerable<TopicPartition> partitions);
+        void Resume(IReadOnlyCollection<TopicPartition> partitions);
 
         /// <summary>
         ///     Gets the current position (offset) for the

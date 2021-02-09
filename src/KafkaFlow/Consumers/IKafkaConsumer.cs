@@ -14,6 +14,8 @@ namespace KafkaFlow.Consumers
 
         IReadOnlyList<TopicPartition> Assignment { get; }
 
+        IKafkaConsumerFlowManager FlowManager { get; }
+
         string MemberId { get; }
 
         string ClientInstanceName { get; }
@@ -21,10 +23,6 @@ namespace KafkaFlow.Consumers
         Task StartAsync();
 
         Task StopAsync();
-
-        void Pause(IEnumerable<TopicPartition> topicPartitions);
-
-        void Resume(IEnumerable<TopicPartition> topicPartitions);
 
         Offset GetPosition(TopicPartition topicPartition);
 
