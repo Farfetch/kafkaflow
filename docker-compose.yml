@@ -2,7 +2,7 @@ version: '3'
 
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.4.0
+    image: confluentinc/cp-zookeeper:6.1.0
     hostname: zookeeper
     container_name: zookeeper
     ports:
@@ -35,7 +35,7 @@ services:
       CONFLUENT_SUPPORT_CUSTOMER_ID: "anonymous"
       
   schema-registry:
-    image: confluentinc/cp-schema-registry:5.4.0
+    image: confluentinc/cp-schema-registry:6.1.0
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -46,3 +46,10 @@ services:
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: "zookeeper:2181"
+      
+  kafka-tools:
+    image: confluentinc/cp-kafka:6.1.0
+    hostname: kafka
+    container_name: kafka
+    command: ["tail", "-f", "/dev/null"]
+    network_mode: "host"
