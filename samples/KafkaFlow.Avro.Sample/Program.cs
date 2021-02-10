@@ -36,7 +36,7 @@
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(new[] { "localhost:9092" })
-                            .WithSchemaRegistry(config => config.Url = "http://localhost:8081")
+                            .WithSchemaRegistry(config => config.Url = "localhost:8081")
                             .AddProducer(
                                 producerName,
                                 producer => producer

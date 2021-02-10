@@ -68,15 +68,16 @@ namespace KafkaFlow.IntegrationTests.Core
 
         private static void SetupServices(HostBuilderContext context, IServiceCollection services)
         {
-            var brokers = context.Configuration.GetValue<string>("Kafka:Brokers");
+            var kafkaBrokers = context.Configuration.GetValue<string>("Kafka:Brokers");
+            var schemaRegistryUrl = context.Configuration.GetValue<string>("SchemaRegistry:Url");
 
             services.AddKafka(
                 kafka => kafka
                     .UseLogHandler<TraceLogHandler>()
                     .AddCluster(
                         cluster => cluster
-                            .WithBrokers(new[] { "localhost:9092" })
-                            .WithSchemaRegistry(config => config.Url = "localhost:8081")
+                            .WithBrokers(kafkaBrokers.Split(';'))
+                            .WithSchemaRegistry(config => config.Url = schemaRegistryUrl)
                             .AddProducer<AvroProducer>(
                                 producer => producer
                                     .DefaultTopic(AvroTopicName)
@@ -109,7 +110,7 @@ namespace KafkaFlow.IntegrationTests.Core
                     )
                     .AddCluster(
                         cluster => cluster
-                            .WithBrokers(brokers.Split(';'))
+                            .WithBrokers(kafkaBrokers.Split(';'))
                             .AddConsumer(
                                 consumer => consumer
                                     .Topic(ProtobufTopicName)
