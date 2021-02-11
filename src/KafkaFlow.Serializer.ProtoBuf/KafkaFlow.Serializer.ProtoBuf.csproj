@@ -5,6 +5,7 @@
     <LangVersion>latest</LangVersion>
     <PackageId>KafkaFlow.Serializer.ProtoBuf</PackageId>
     <Description>ProtoBuf implementation for KafkaFlow serializer middleware using protobuf-net</Description>
+    <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
   </PropertyGroup>
 
   <ItemGroup>

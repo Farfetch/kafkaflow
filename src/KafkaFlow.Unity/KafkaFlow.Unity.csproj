@@ -4,6 +4,7 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <PackageId>KafkaFlow.Unity</PackageId>
         <Description>Adapts KafkaFlow to use Unity Dependency Injection</Description>
+        <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
     </PropertyGroup>
 
     <ItemGroup>
