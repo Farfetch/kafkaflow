@@ -21,6 +21,7 @@
     <ProjectReference Include="..\KafkaFlow.Compressor.Gzip\KafkaFlow.Compressor.Gzip.csproj" />
     <ProjectReference Include="..\KafkaFlow.Compressor\KafkaFlow.Compressor.csproj" />
     <ProjectReference Include="..\KafkaFlow.Microsoft.DependencyInjection\KafkaFlow.Microsoft.DependencyInjection.csproj" />
+    <ProjectReference Include="..\KafkaFlow.Serializer.ApacheAvro\KafkaFlow.Serializer.ApacheAvro.csproj" />
     <ProjectReference Include="..\KafkaFlow.Serializer.Json\KafkaFlow.Serializer.Json.csproj" />
     <ProjectReference Include="..\KafkaFlow.Serializer.ProtoBuf\KafkaFlow.Serializer.ProtoBuf.csproj" />
     <ProjectReference Include="..\KafkaFlow.Serializer\KafkaFlow.Serializer.csproj" />
