@@ -4,6 +4,8 @@ namespace KafkaFlow.IntegrationTests.Core
     using System.IO;
     using System.Threading;
     using Confluent.Kafka;
+    using Confluent.SchemaRegistry;
+    using Confluent.SchemaRegistry.Serdes;
     using global::Microsoft.Extensions.Configuration;
     using global::Microsoft.Extensions.DependencyInjection;
     using global::Microsoft.Extensions.Hosting;
@@ -17,6 +19,7 @@ namespace KafkaFlow.IntegrationTests.Core
     using KafkaFlow.Serializer.Json;
     using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
+    using Serializer.ApacheAvro;
     using AutoOffsetReset = KafkaFlow.AutoOffsetReset;
 
     public static class Bootstrapper
@@ -27,6 +30,7 @@ namespace KafkaFlow.IntegrationTests.Core
         private const string JsonGzipTopicName = "test-json-gzip";
         private const string ProtobufGzipTopicName = "test-protobuf-gzip";
         private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
+        private const string AvroTopicName = "test-avro";
         public const string PauseResumeTopicName = "test-pause-resume";
         
         private const string ProtobufGroupId = "consumer-protobuf";
@@ -76,14 +80,50 @@ namespace KafkaFlow.IntegrationTests.Core
 
         private static void SetupServices(HostBuilderContext context, IServiceCollection services)
         {
-            var brokers = context.Configuration.GetValue<string>("Kafka:Brokers");
+            var kafkaBrokers = context.Configuration.GetValue<string>("Kafka:Brokers");
+            var schemaRegistryUrl = context.Configuration.GetValue<string>("SchemaRegistry:Url");
 
             services.AddKafka(
                 kafka => kafka
                     .UseLogHandler<TraceLogHandler>()
                     .AddCluster(
                         cluster => cluster
-                            .WithBrokers(brokers.Split(';'))
+                            .WithBrokers(kafkaBrokers.Split(';'))
+                            .WithSchemaRegistry(config => config.Url = schemaRegistryUrl)
+                            .AddProducer<AvroProducer>(
+                                producer => producer
+                                    .DefaultTopic(AvroTopicName)
+                                    .AddMiddlewares(
+                                        middlewares => middlewares
+                                            .AddSerializer(resolver => new ApacheAvroMessageSerializer(
+                                                resolver, 
+                                                new AvroSerializerConfig
+                                                {
+                                                    AutoRegisterSchemas = true,
+                                                    SubjectNameStrategy = SubjectNameStrategy.Record
+                                                }))
+                                    )
+                            )
+                            .AddConsumer(
+                                consumer => consumer
+                                    .Topic(AvroTopicName)
+                                    .WithGroupId("consumer-avro")
+                                    .WithBufferSize(100)
+                                    .WithWorkersCount(10)
+                                    .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                    .AddMiddlewares(
+                                        middlewares => middlewares
+                                            .AddSerializer<ApacheAvroMessageSerializer>()
+                                            .AddTypedHandlers(
+                                                handlers => handlers
+                                                    .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                                    .AddHandler<AvroMessageHandler>())
+                                    )
+                            )
+                    )
+                    .AddCluster(
+                        cluster => cluster
+                            .WithBrokers(kafkaBrokers.Split(';'))
                             .AddConsumer(
                                 consumer => consumer
                                     .Topic(ProtobufTopicName)
