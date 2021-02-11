@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>KafkaFlow.Serializer</PackageId>
     <Description>Serializer middleware for KafkaFlow</Description>
+    <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
   </PropertyGroup>
 
   <ItemGroup>

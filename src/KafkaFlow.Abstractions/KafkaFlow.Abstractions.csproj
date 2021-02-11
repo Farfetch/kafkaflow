@@ -6,6 +6,7 @@
     <RootNamespace>KafkaFlow</RootNamespace>
     <PackageId>KafkaFlow.Abstractions</PackageId>
     <Description>Contains all KafkaFlow extendable interfaces</Description>
+    <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
   </PropertyGroup>
 
 </Project>

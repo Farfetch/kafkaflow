@@ -5,6 +5,7 @@
     <LangVersion>latest</LangVersion>
     <PackageId>KafkaFlow.Compressor.Gzip</PackageId>
     <Description>Gzip implementation for KafkaFlow compression middleware</Description>
+    <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
   </PropertyGroup>
 
   <ItemGroup>
