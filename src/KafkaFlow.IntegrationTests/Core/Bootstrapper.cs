@@ -83,12 +83,13 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(AvroTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddApacheAvroSerializer(
+                                            .AddSerializer(resolver => new ApacheAvroMessageSerializer(
+                                                resolver, 
                                                 new AvroSerializerConfig
                                                 {
                                                     AutoRegisterSchemas = true,
                                                     SubjectNameStrategy = SubjectNameStrategy.Record
-                                                })
+                                                }))
                                     )
                             )
                             .AddConsumer(
@@ -100,7 +101,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddApacheAvroSerializer()
+                                            .AddSerializer<ApacheAvroMessageSerializer>()
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)

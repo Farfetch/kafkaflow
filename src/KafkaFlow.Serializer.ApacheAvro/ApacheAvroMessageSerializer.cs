@@ -12,39 +12,44 @@
     /// </summary>
     public class ApacheAvroMessageSerializer : IMessageSerializer
     {
-        private const string NoSchemaRegistryUrlMessage =
-            "There was not defined a schema registry to be used by ApachevroSerializer. Use 'WithSchemaRegistry' option at cluster level with a valid url.";
         private readonly ISchemaRegistryClient schemaRegistryClient;
         private readonly AvroSerializerConfig serializerConfig; 
         
         /// <summary>
         /// </summary>
-        /// <param name="schemaRegistryClient">Schema registry client</param>
-        public ApacheAvroMessageSerializer(ISchemaRegistryClient schemaRegistryClient): 
-            this(schemaRegistryClient, new AvroSerializerConfig())
+        /// <param name="resolver">The <see cref="IDependencyResolver"/> to be used by the framework</param>
+        public ApacheAvroMessageSerializer(IDependencyResolver resolver): 
+            this(resolver, new AvroSerializerConfig())
         {
         }
 
         /// <summary>
         /// </summary>
-        /// <param name="schemaRegistryClient">Schema registry client</param>
+        /// <param name="resolver">The <see cref="IDependencyResolver"/> to be used by the framework</param>
         /// <param name="serializerConfig">Avro serializer configuration</param>
-        public ApacheAvroMessageSerializer(
-            ISchemaRegistryClient schemaRegistryClient, 
+        public ApacheAvroMessageSerializer( 
+            IDependencyResolver resolver,
             AvroSerializerConfig serializerConfig)
         {
-            this.schemaRegistryClient = schemaRegistryClient ?? throw new InvalidOperationException(NoSchemaRegistryUrlMessage);
+            this.schemaRegistryClient = resolver.Resolve<ISchemaRegistryClient>() ?? 
+                                        throw new InvalidOperationException("There was not defined a schema registry to be used by ApacheAvroSerializer. Use 'WithSchemaRegistry' option at cluster level with a valid url.");
+            
             this.serializerConfig = serializerConfig ;
         }
 
         /// <inheritdoc/>
         public byte[] Serialize(object message)
         {
+            if (!(message is ISpecificRecord record))
+            {
+                throw new InvalidCastException($"The message type {message.GetType().FullName} must implement {nameof(ISpecificRecord)} interface.");
+            }
+            
             return new AvroSerializer<ISpecificRecord>(
                     this.schemaRegistryClient,
                     this.serializerConfig)
                 .AsSyncOverAsync()
-                .Serialize((ISpecificRecord) message, SerializationContext.Empty);
+                .Serialize(record, SerializationContext.Empty);
         }
 
         /// <inheritdoc/>
@@ -58,7 +63,6 @@
             
             return deserializer
                 .DeserializeAsync(data, data == null, SerializationContext.Empty)
-                .ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();
         }

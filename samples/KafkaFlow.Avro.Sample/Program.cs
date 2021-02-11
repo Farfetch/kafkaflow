@@ -1,24 +1,17 @@
 ﻿namespace KafkaFlow.Avro.Sample
 {
     using System;
-    using System.Linq;
     using System.Threading.Tasks;
-    using Confluent.Kafka;
     using Confluent.SchemaRegistry;
     using Confluent.SchemaRegistry.Serdes;
     using global::Microsoft.Extensions.DependencyInjection;
-    using KafkaFlow.Admin;
-    using KafkaFlow.Admin.Messages;
-    using KafkaFlow.Compressor;
-    using KafkaFlow.Compressor.Gzip;
-    using KafkaFlow.Consumers;
     using KafkaFlow.Producers;
     using KafkaFlow.Sample;
     using KafkaFlow.TypedHandler;
     using MessageTypes;
+    using Serializer;
     using Serializer.ApacheAvro;
-    using AutoOffsetReset = KafkaFlow.AutoOffsetReset;
-
+    
     internal static class Program
     {
         private static async Task Main()
@@ -43,12 +36,13 @@
                                     .DefaultTopic(topicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddApacheAvroSerializer(
+                                            .AddSerializer(resolver => new ApacheAvroMessageSerializer(
+                                                resolver, 
                                                 new AvroSerializerConfig
                                                 {
                                                     AutoRegisterSchemas = true,
                                                     SubjectNameStrategy = SubjectNameStrategy.Record
-                                                })
+                                                }))
                                     )
                             )
                             .AddConsumer(
@@ -61,7 +55,7 @@
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddApacheAvroSerializer()
+                                            .AddSerializer<ApacheAvroMessageSerializer>()
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)
@@ -76,10 +70,8 @@
             var bus = provider.CreateKafkaBus();
             await bus.StartAsync();
 
-            var consumers = provider.GetRequiredService<IConsumerAccessor>();
             var producers = provider.GetRequiredService<IProducerAccessor>();
-
-            var adminProducer = provider.GetService<IAdminProducer>();
+            var producer = producers[producerName];
 
             while (true)
             {
@@ -92,10 +84,10 @@
                         for (var i = 0; i < count; i++)
                         {
                             await Task.WhenAll(
-                                producers[producerName].ProduceAsync(
-                                        Guid.NewGuid().ToString(),
-                                        new LogMessages1{Severity = LogLevel.Info}),
-                                producers[producerName].ProduceAsync(
+                                producer.ProduceAsync(
+                                    Guid.NewGuid().ToString(),
+                                    new LogMessages1{Severity = LogLevel.Info}),
+                                producer.ProduceAsync(
                                     Guid.NewGuid().ToString(),
                                     new LogMessages2{Message = Guid.NewGuid().ToString()}));
                         }
