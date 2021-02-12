@@ -3,6 +3,7 @@ namespace KafkaFlow.IntegrationTests.Core
     using System;
     using System.IO;
     using System.Threading;
+    using Confluent.Kafka;
     using global::Microsoft.Extensions.Configuration;
     using global::Microsoft.Extensions.DependencyInjection;
     using global::Microsoft.Extensions.Hosting;
@@ -16,6 +17,7 @@ namespace KafkaFlow.IntegrationTests.Core
     using KafkaFlow.Serializer.Json;
     using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
+    using AutoOffsetReset = KafkaFlow.AutoOffsetReset;
 
     public static class Bootstrapper
     {
@@ -25,6 +27,16 @@ namespace KafkaFlow.IntegrationTests.Core
         private const string JsonGzipTopicName = "test-json-gzip";
         private const string ProtobufGzipTopicName = "test-protobuf-gzip";
         private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
+        public const string PauseResumeTopicName = "test-pause-resume";
+        
+        private const string ProtobufGroupId = "consumer-protobuf";
+        private const string JsonGroupId = "consumer-json";
+        private const string GzipGroupId = "consumer-gzip";
+        private const string JsonGzipGroupId = "consumer-json-gzip";
+        private const string ProtobufGzipGroupId = "consumer-protobuf-gzip";
+        private const string PauseResumeGroupId = "consumer-pause-resume";
+
+        public const int MaxPollIntervalMs = 7000;
 
         private static readonly Lazy<IServiceProvider> lazyProvider = new Lazy<IServiceProvider>(SetupProvider);
 
@@ -75,7 +87,7 @@ namespace KafkaFlow.IntegrationTests.Core
                             .AddConsumer(
                                 consumer => consumer
                                     .Topic(ProtobufTopicName)
-                                    .WithGroupId("consumer-protobuf")
+                                    .WithGroupId(ProtobufGroupId)
                                     .WithBufferSize(100)
                                     .WithWorkersCount(10)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
@@ -91,8 +103,30 @@ namespace KafkaFlow.IntegrationTests.Core
                             )
                             .AddConsumer(
                                 consumer => consumer
+                                    .Topic(PauseResumeTopicName)
+                                    .WithGroupId(PauseResumeGroupId)
+                                    .WithBufferSize(3)
+                                    .WithWorkersCount(3)
+                                    .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                    .WithConsumerConfig(new ConsumerConfig
+                                    {
+                                        MaxPollIntervalMs = MaxPollIntervalMs, 
+                                        SessionTimeoutMs = MaxPollIntervalMs
+                                    })
+                                    .AddMiddlewares(
+                                        middlewares => middlewares
+                                            .AddSingleTypeSerializer<TestMessage1, ProtobufMessageSerializer>()
+                                            .AddTypedHandlers(
+                                                handlers =>
+                                                    handlers
+                                                        .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                                        .AddHandler<PauseResumeHandler>())
+                                    )
+                            )
+                            .AddConsumer(
+                                consumer => consumer
                                     .Topic(JsonTopicName)
-                                    .WithGroupId("consumer-json")
+                                    .WithGroupId(JsonGzipGroupId)
                                     .WithBufferSize(100)
                                     .WithWorkersCount(10)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
@@ -103,13 +137,14 @@ namespace KafkaFlow.IntegrationTests.Core
                                                 handlers =>
                                                     handlers
                                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                        .AddHandlersFromAssemblyOf<MessageHandler>())
+                                                        .AddHandler<MessageHandler>()
+                                                        .AddHandler<MessageHandler2>())
                                     )
                             )
                             .AddConsumer(
                                 consumer => consumer
                                     .Topics(GzipTopicName)
-                                    .WithGroupId("consumer-gzip")
+                                    .WithGroupId(GzipGroupId)
                                     .WithBufferSize(100)
                                     .WithWorkersCount(10)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
@@ -122,7 +157,7 @@ namespace KafkaFlow.IntegrationTests.Core
                             .AddConsumer(
                                 consumer => consumer
                                     .Topics(JsonGzipTopicName)
-                                    .WithGroupId("consumer-json-gzip")
+                                    .WithGroupId(JsonGzipGroupId)
                                     .WithBufferSize(100)
                                     .WithWorkersCount(10)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
@@ -140,7 +175,7 @@ namespace KafkaFlow.IntegrationTests.Core
                             .AddConsumer(
                                 consumer => consumer
                                     .Topics(ProtobufGzipTopicName, ProtobufGzipTopicName2)
-                                    .WithGroupId("consumer-protobuf-gzip")
+                                    .WithGroupId(ProtobufGzipGroupId)
                                     .WithBufferSize(100)
                                     .WithWorkersCount(10)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
