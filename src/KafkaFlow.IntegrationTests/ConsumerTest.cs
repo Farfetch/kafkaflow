@@ -100,5 +100,27 @@ namespace KafkaFlow.IntegrationTests
 
             CollectionAssert.AreEqual(versionsSent, versionsReceived);
         }
+        
+        [TestMethod]
+        public async Task PauseResumeHeartbeatTest()
+        {
+            // Arrange
+            var producer = this.provider.GetRequiredService<IMessageProducer<ProtobufProducer>>();
+            var messages = this.fixture.CreateMany<TestMessage1>(10).ToList();
+
+            // Act
+            await Task.WhenAll(messages.Select(m => producer.ProduceAsync(
+                Bootstrapper.PauseResumeTopicName,
+                m.Id.ToString(), 
+                m)));
+            
+            await Task.Delay(60000);
+            
+            // Assert
+            foreach (var message in messages)
+            {
+                await MessageStorage.AssertMessageAsync(message);
+            }
+        }
     }
 }
