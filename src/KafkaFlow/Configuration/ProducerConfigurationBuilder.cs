@@ -16,6 +16,7 @@ namespace KafkaFlow.Configuration
         private Acks? acks;
         private int statisticsInterval;
         private double? lingerMs;
+        private ProducerCustomFactory customFactory = (producer, resolver) => producer; 
 
         public ProducerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator, string name)
         {
@@ -68,6 +69,12 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
+        public IProducerConfigurationBuilder WithCustomFactory(ProducerCustomFactory customFactory)
+        {
+            this.customFactory = customFactory;
+            return this;
+        }
+
         public ProducerConfiguration Build(ClusterConfiguration clusterConfiguration)
         {
             this.producerConfig ??= new ProducerConfig();
@@ -84,7 +91,8 @@ namespace KafkaFlow.Configuration
                 this.acks,
                 this.middlewareConfigurationBuilder.Build(),
                 this.producerConfig,
-                this.statisticsHandlers);
+                this.statisticsHandlers,
+                this.customFactory);
 
             return configuration;
         }

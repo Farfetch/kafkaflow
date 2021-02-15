@@ -14,7 +14,8 @@ namespace KafkaFlow.Configuration
             Acks? acks,
             MiddlewareConfiguration middlewareConfiguration,
             ProducerConfig baseProducerConfig,
-            IReadOnlyList<Action<string>> statisticsHandlers)
+            IReadOnlyList<Action<string>> statisticsHandlers,
+            ProducerCustomFactory customFactory)
         {
             this.Cluster = cluster ?? throw new ArgumentNullException(nameof(cluster));
             this.Name = name;
@@ -23,6 +24,7 @@ namespace KafkaFlow.Configuration
             this.MiddlewareConfiguration = middlewareConfiguration;
             this.BaseProducerConfig = baseProducerConfig;
             this.StatisticsHandlers = statisticsHandlers;
+            this.CustomFactory = customFactory;
         }
 
         public ClusterConfiguration Cluster { get; }
@@ -38,6 +40,8 @@ namespace KafkaFlow.Configuration
         public MiddlewareConfiguration MiddlewareConfiguration { get; }
 
         public IReadOnlyList<Action<string>> StatisticsHandlers { get; }
+
+        public ProducerCustomFactory CustomFactory { get; }
 
         public ProducerConfig GetKafkaConfig()
         {

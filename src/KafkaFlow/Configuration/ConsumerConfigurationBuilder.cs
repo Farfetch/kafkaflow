@@ -27,6 +27,8 @@ namespace KafkaFlow.Configuration
         private Factory<IDistributionStrategy> distributionStrategyFactory = resolver => new BytesSumDistributionStrategy();
         private TimeSpan autoCommitInterval = TimeSpan.FromSeconds(5);
 
+        private ConsumerCustomFactory customFactory = (consumer, resolver) => consumer;
+
         public IDependencyConfigurator DependencyConfigurator { get; }
 
         public ConsumerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
@@ -152,6 +154,12 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
+        public IConsumerConfigurationBuilder WithCustomFactory(ConsumerCustomFactory customFactory)
+        {
+            this.customFactory = customFactory;
+            return this;
+        }
+
         public ConsumerConfiguration Build(ClusterConfiguration clusterConfiguration)
         {
             var middlewareConfiguration = this.middlewareConfigurationBuilder.Build();
@@ -178,7 +186,8 @@ namespace KafkaFlow.Configuration
                 middlewareConfiguration,
                 this.autoStoreOffsets,
                 this.autoCommitInterval,
-                this.statisticsHandlers);
+                this.statisticsHandlers,
+                this.customFactory);
         }
     }
 }

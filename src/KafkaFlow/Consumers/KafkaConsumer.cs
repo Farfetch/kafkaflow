@@ -13,6 +13,7 @@
         private readonly IConsumerManager consumerManager;
         private readonly ILogHandler logHandler;
         private readonly IConsumerWorkerPool consumerWorkerPool;
+        private readonly IDependencyResolver dependencyResolver;
         private readonly CancellationToken busStopCancellationToken;
 
         private readonly ConsumerBuilder<byte[], byte[]> consumerBuilder;
@@ -27,12 +28,14 @@
             IConsumerManager consumerManager,
             ILogHandler logHandler,
             IConsumerWorkerPool consumerWorkerPool,
+            IDependencyResolver dependencyResolver,
             CancellationToken busStopCancellationToken)
         {
             this.Configuration = configuration;
             this.consumerManager = consumerManager;
             this.logHandler = logHandler;
             this.consumerWorkerPool = consumerWorkerPool;
+            this.dependencyResolver = dependencyResolver;
             this.busStopCancellationToken = busStopCancellationToken;
 
             var kafkaConfig = configuration.GetKafkaConfig();
@@ -140,7 +143,10 @@
 
         private void CreateConsumerAndBackgroundTask()
         {
-            this.consumer = this.consumerBuilder.Build();
+            this.consumer = this.Configuration.CustomFactory(
+                this.consumerBuilder.Build(),
+                this.dependencyResolver);
+
             this.FlowManager = new KafkaConsumerFlowManager(
                 this.consumer,
                 this.stopCancellationTokenSource.Token,

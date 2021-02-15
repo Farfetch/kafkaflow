@@ -153,7 +153,7 @@ namespace KafkaFlow.Producers
                     return this.producer;
                 }
 
-                return this.producer = new ProducerBuilder<byte[], byte[]>(this.configuration.GetKafkaConfig())
+                var producerBuilder = new ProducerBuilder<byte[], byte[]>(this.configuration.GetKafkaConfig())
                     .SetErrorHandler(
                         (p, error) =>
                         {
@@ -168,14 +168,18 @@ namespace KafkaFlow.Producers
                                     .Warning("Kafka Producer Error", new { Error = error });
                             }
                         })
-                    .SetStatisticsHandler((producer, statistics) =>
-                    {
-                        foreach (var handler in this.configuration.StatisticsHandlers)
+                    .SetStatisticsHandler(
+                        (producer, statistics) =>
                         {
-                            handler.Invoke(statistics);
-                        }
-                    })
-                    .Build();
+                            foreach (var handler in this.configuration.StatisticsHandlers)
+                            {
+                                handler.Invoke(statistics);
+                            }
+                        });
+
+                return this.producer = this.configuration.CustomFactory(
+                    producerBuilder.Build(),
+                    this.dependencyResolverScope.Resolver);
             }
         }
 

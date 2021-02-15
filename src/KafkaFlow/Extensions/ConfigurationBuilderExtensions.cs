@@ -16,8 +16,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IProducerConfigurationBuilder WithProducerConfig(this IProducerConfigurationBuilder builder, ProducerConfig config)
         {
-            ((ProducerConfigurationBuilder) builder).WithProducerConfig(config);
-            return builder;
+            return ((ProducerConfigurationBuilder) builder).WithProducerConfig(config);
         }
 
         /// <summary>
@@ -28,8 +27,33 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IConsumerConfigurationBuilder WithConsumerConfig(this IConsumerConfigurationBuilder builder, ConsumerConfig config)
         {
-            ((ConsumerConfigurationBuilder)builder).WithConsumerConfig(config);
-            return builder;
+            return ((ConsumerConfigurationBuilder) builder).WithConsumerConfig(config);
+        }
+
+        /// <summary>
+        /// Register a custom consumer factory to be internally used by the framework
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="decoratorFactory">The factory method</param>
+        /// <returns></returns>
+        public static IConsumerConfigurationBuilder WithCustomFactory(
+            this IConsumerConfigurationBuilder builder,
+            ConsumerCustomFactory decoratorFactory)
+        {
+            return ((ConsumerConfigurationBuilder) builder).WithCustomFactory(decoratorFactory);
+        }
+
+        /// <summary>
+        /// Register a custom producer factory to be internally used by the framework
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="decoratorFactory">The factory method</param>
+        /// <returns></returns>
+        public static IProducerConfigurationBuilder WithCustomFactory(
+            this IProducerConfigurationBuilder builder,
+            ProducerCustomFactory decoratorFactory)
+        {
+            return ((ProducerConfigurationBuilder) builder).WithCustomFactory(decoratorFactory);
         }
     }
 }
