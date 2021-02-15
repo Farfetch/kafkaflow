@@ -55,6 +55,7 @@ namespace KafkaFlow
                     this.consumerManager,
                     this.logHandler,
                     consumerWorkerPool,
+                    this.dependencyResolver,
                     stopCancellationToken);
 
                 this.consumers.Add(consumer);
