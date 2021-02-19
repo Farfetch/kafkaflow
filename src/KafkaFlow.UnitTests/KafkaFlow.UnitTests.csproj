@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\KafkaFlow.BatchConsume\KafkaFlow.BatchConsume.csproj" />
     <ProjectReference Include="..\KafkaFlow.Compressor\KafkaFlow.Compressor.csproj" />
     <ProjectReference Include="..\KafkaFlow.Serializer\KafkaFlow.Serializer.csproj" />
     <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
