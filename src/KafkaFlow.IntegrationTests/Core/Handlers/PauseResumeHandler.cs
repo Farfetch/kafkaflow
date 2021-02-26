@@ -4,9 +4,9 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
     using KafkaFlow.TypedHandler;
     using Messages;
 
-    public class PauseResumeHandler : IMessageHandler<TestMessage1>
+    public class PauseResumeHandler : IMessageHandler<PauseResumeMessage>
     {
-        public async Task Handle(IMessageContext context, TestMessage1 message)
+        public async Task Handle(IMessageContext context, PauseResumeMessage message)
         {
             context.Consumer.Pause();
             

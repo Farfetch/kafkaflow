@@ -68,6 +68,23 @@ namespace KafkaFlow.IntegrationTests
                 await MessageStorage.AssertCountMessageAsync(message, 2);
             }
         }
+        
+        [TestMethod]
+        public async Task MultipleHandlersSingleTypeConsumerTest()
+        {
+            // Arrange
+            var producer = this.provider.GetRequiredService<IMessageProducer<JsonProducer>>();
+            var messages = this.fixture.CreateMany<TestMessage1>(5).ToList();
+
+            // Act
+            messages.ForEach(m => producer.Produce(m.Id.ToString(), m));
+
+            // Assert
+            foreach (var message in messages)
+            {
+                await MessageStorage.AssertCountMessageAsync(message, 2);
+            }
+        }
 
         [TestMethod]
         public async Task MessageOrderingTest()
@@ -102,12 +119,11 @@ namespace KafkaFlow.IntegrationTests
         }
         
         [TestMethod]
-        [Ignore]
         public async Task PauseResumeHeartbeatTest()
         {
             // Arrange
             var producer = this.provider.GetRequiredService<IMessageProducer<ProtobufProducer>>();
-            var messages = this.fixture.CreateMany<TestMessage1>(5).ToList();
+            var messages = this.fixture.CreateMany<PauseResumeMessage>(5).ToList();
 
             // Act
             await Task.WhenAll(messages.Select(m => producer.ProduceAsync(
@@ -123,5 +139,5 @@ namespace KafkaFlow.IntegrationTests
                 await MessageStorage.AssertMessageAsync(message);
             }
         }
-    }
+    }        
 }

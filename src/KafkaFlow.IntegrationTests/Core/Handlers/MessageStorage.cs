@@ -5,7 +5,6 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Avro.Specific;
     using global::Microsoft.VisualStudio.TestTools.UnitTesting;
     using Messages;
     using MessageTypes;
@@ -58,7 +57,7 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
             {
                 if (DateTime.Now.Subtract(start).Seconds > timeoutSec)
                 {
-                    Assert.Fail("Message not received");
+                    Assert.Fail("Message (ITestMessage) not received");
                     return;
                 }
 
@@ -74,7 +73,7 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
             {
                 if (DateTime.Now.Subtract(start).Seconds > timeoutSec)
                 {
-                    Assert.Fail("Message not received");
+                    Assert.Fail("Message (LogMessages2) not received");
                     return;
                 }
 
@@ -90,7 +89,7 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
             {
                 if (DateTime.Now.Subtract(start).Seconds > timeoutSec)
                 {
-                    Assert.Fail("Message not received");
+                    Assert.Fail("Message (byte[]) not received");
                     return;
                 }
 
