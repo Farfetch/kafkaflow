@@ -4,7 +4,7 @@ namespace KafkaFlow.Configuration
 
     internal class KafkaConfiguration
     {
-        private readonly List<ClusterConfiguration> clusters = new List<ClusterConfiguration>();
+        private readonly List<ClusterConfiguration> clusters = new();
 
         public IReadOnlyCollection<ClusterConfiguration> Clusters => this.clusters;
 

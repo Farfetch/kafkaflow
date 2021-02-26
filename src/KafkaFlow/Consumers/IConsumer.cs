@@ -2,27 +2,32 @@ namespace KafkaFlow.Consumers
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
 
-    internal interface IKafkaConsumer
+    internal interface IConsumer : IDisposable
     {
-        ConsumerConfiguration Configuration { get; }
+        void OnPartitionsAssigned(Action<IConsumer<byte[], byte[]>, List<TopicPartition>> handler);
+
+        void OnPartitionsRevoked(Action<IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler);
+
+        void OnError(Action<IConsumer<byte[], byte[]>, Error> handler);
+
+        void OnStatistics(Action<IConsumer<byte[], byte[]>, string> handler);
+
+        IConsumerConfiguration Configuration { get; }
 
         IReadOnlyList<string> Subscription { get; }
 
         IReadOnlyList<TopicPartition> Assignment { get; }
 
-        IKafkaConsumerFlowManager FlowManager { get; }
+        IConsumerFlowManager FlowManager { get; }
 
         string MemberId { get; }
 
         string ClientInstanceName { get; }
-
-        Task StartAsync();
-
-        Task StopAsync();
 
         Offset GetPosition(TopicPartition topicPartition);
 
@@ -35,5 +40,7 @@ namespace KafkaFlow.Consumers
             TimeSpan timeout);
 
         void Commit(IEnumerable<TopicPartitionOffset> offsetsValues);
+
+        ValueTask<ConsumeResult<byte[], byte[]>> ConsumeAsync(CancellationToken cancellationToken);
     }
 }

@@ -6,12 +6,12 @@ namespace KafkaFlow.Consumers
 
     internal class MessageContextConsumer : IMessageContextConsumer
     {
-        private readonly IKafkaConsumer consumer;
+        private readonly IConsumer consumer;
         private readonly IOffsetManager offsetManager;
         private readonly ConsumeResult<byte[], byte[]> kafkaResult;
 
         public MessageContextConsumer(
-            IKafkaConsumer consumer,
+            IConsumer consumer,
             IOffsetManager offsetManager,
             ConsumeResult<byte[], byte[]> kafkaResult,
             CancellationToken workerStopped)

@@ -7,8 +7,9 @@ namespace KafkaFlow.Configuration
     internal class ClusterConfiguration
     {
         private readonly Func<SecurityInformation> securityInformationHandler;
-        private readonly List<ProducerConfiguration> producers = new List<ProducerConfiguration>();
-        private readonly List<ConsumerConfiguration> consumers = new List<ConsumerConfiguration>();
+
+        private readonly List<IProducerConfiguration> producers = new();
+        private readonly List<IConsumerConfiguration> consumers = new();
 
         public ClusterConfiguration(
             KafkaConfiguration kafka,
@@ -24,13 +25,13 @@ namespace KafkaFlow.Configuration
 
         public IReadOnlyCollection<string> Brokers { get; }
 
-        public IReadOnlyCollection<ProducerConfiguration> Producers => this.producers.AsReadOnly();
+        public IReadOnlyCollection<IProducerConfiguration> Producers => this.producers.AsReadOnly();
 
-        public IReadOnlyCollection<ConsumerConfiguration> Consumers => this.consumers.AsReadOnly();
+        public IReadOnlyCollection<IConsumerConfiguration> Consumers => this.consumers.AsReadOnly();
 
-        public void AddConsumers(IEnumerable<ConsumerConfiguration> configurations) => this.consumers.AddRange(configurations);
+        public void AddConsumers(IEnumerable<IConsumerConfiguration> configurations) => this.consumers.AddRange(configurations);
 
-        public void AddProducers(IEnumerable<ProducerConfiguration> configurations) => this.producers.AddRange(configurations);
+        public void AddProducers(IEnumerable<IProducerConfiguration> configurations) => this.producers.AddRange(configurations);
 
         public SecurityInformation GetSecurityInformation() => this.securityInformationHandler?.Invoke();
     }

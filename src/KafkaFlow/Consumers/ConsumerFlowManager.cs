@@ -7,24 +7,21 @@ namespace KafkaFlow.Consumers
     using System.Threading.Tasks;
     using Confluent.Kafka;
 
-    internal class KafkaConsumerFlowManager : IKafkaConsumerFlowManager
+    internal class ConsumerFlowManager : IConsumerFlowManager
     {
         private readonly IConsumer<byte[], byte[]> consumer;
-        private readonly CancellationToken stopCancellationToken;
         private readonly ILogHandler logHandler;
 
         private CancellationTokenSource heartbeatTokenSource;
         private Task heartbeatTask;
 
-        private readonly List<TopicPartition> pausedPartitions = new List<TopicPartition>();
+        private readonly List<TopicPartition> pausedPartitions = new();
 
-        public KafkaConsumerFlowManager(
+        public ConsumerFlowManager(
             IConsumer<byte[], byte[]> consumer,
-            CancellationToken stopCancellationToken,
             ILogHandler logHandler)
         {
             this.consumer = consumer;
-            this.stopCancellationToken = stopCancellationToken;
             this.logHandler = logHandler;
         }
 
@@ -47,7 +44,7 @@ namespace KafkaFlow.Consumers
                     return;
                 }
 
-                this.heartbeatTokenSource = CancellationTokenSource.CreateLinkedTokenSource(this.stopCancellationToken);
+                this.heartbeatTokenSource = new CancellationTokenSource();
 
                 this.heartbeatTask = Task.Run(
                     () =>
@@ -106,6 +103,15 @@ namespace KafkaFlow.Consumers
 
                 this.consumer.Resume(topicPartitions);
             }
+        }
+
+        public void Dispose()
+        {
+            this.heartbeatTokenSource?.Cancel();
+            this.heartbeatTokenSource?.Dispose();
+
+            this.heartbeatTask?.GetAwaiter().GetResult();
+            this.heartbeatTask?.Dispose();
         }
 
         private bool HasRunningPartitions()

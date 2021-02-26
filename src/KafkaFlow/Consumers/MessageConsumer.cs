@@ -8,25 +8,20 @@ namespace KafkaFlow.Consumers
 
     internal class MessageConsumer : IMessageConsumer
     {
-        private readonly IKafkaConsumer consumer;
-        private readonly IConsumerWorkerPool workerPool;
+        private readonly IConsumerManager consumerManager;
         private readonly ILogHandler logHandler;
 
         public MessageConsumer(
-            IKafkaConsumer consumer,
-            IConsumerWorkerPool workerPool,
+            IConsumerManager consumerManager,
             ILogHandler logHandler)
         {
-            this.workerPool = workerPool;
+            this.consumerManager = consumerManager;
             this.logHandler = logHandler;
-            this.consumer = consumer;
         }
 
-        public string ConsumerName => this.consumer.Configuration.ConsumerName;
+        public string ConsumerName => this.consumerManager.Consumer.Configuration.ConsumerName;
 
-        public string GroupId => this.consumer.Configuration.GroupId;
-
-        public int WorkerCount => this.consumer.Configuration.WorkerCount;
+        public string GroupId => this.consumerManager.Consumer.Configuration.GroupId;
 
         public async Task OverrideOffsetsAndRestartAsync(IReadOnlyCollection<TopicPartitionOffset> offsets)
         {
@@ -37,10 +32,10 @@ namespace KafkaFlow.Consumers
 
             try
             {
-                this.consumer.FlowManager.Pause(this.consumer.Assignment);
-                await this.workerPool.StopAsync().ConfigureAwait(false);
+                await this.consumerManager.Feeder.StopAsync().ConfigureAwait(false);
+                await this.consumerManager.WorkerPool.StopAsync().ConfigureAwait(false);
 
-                this.consumer.Commit(offsets);
+                this.consumerManager.Consumer.Commit(offsets);
 
                 await this.InternalRestart().ConfigureAwait(false);
 
@@ -72,7 +67,7 @@ namespace KafkaFlow.Consumers
 
         public async Task ChangeWorkerCountAndRestartAsync(int workerCount)
         {
-            this.consumer.Configuration.WorkerCount = workerCount;
+            this.consumerManager.Consumer.Configuration.WorkerCount = workerCount;
 
             await this.InternalRestart().ConfigureAwait(false);
 
@@ -89,37 +84,37 @@ namespace KafkaFlow.Consumers
 
         private async Task InternalRestart()
         {
-            await this.consumer.StopAsync().ConfigureAwait(false);
+            await this.consumerManager.StopAsync().ConfigureAwait(false);
             await Task.Delay(5000).ConfigureAwait(false);
-            await this.consumer.StartAsync().ConfigureAwait(false);
+            await this.consumerManager.StartAsync().ConfigureAwait(false);
         }
 
-        public IReadOnlyList<string> Subscription => this.consumer.Subscription;
+        public IReadOnlyList<string> Subscription => this.consumerManager.Consumer.Subscription;
 
-        public IReadOnlyList<TopicPartition> Assignment => this.consumer.Assignment;
+        public IReadOnlyList<TopicPartition> Assignment => this.consumerManager.Consumer.Assignment;
 
-        public string MemberId => this.consumer.MemberId;
+        public string MemberId => this.consumerManager.Consumer.MemberId;
 
-        public string ClientInstanceName => this.consumer.ClientInstanceName;
+        public string ClientInstanceName => this.consumerManager.Consumer.ClientInstanceName;
 
         public void Pause(IReadOnlyCollection<TopicPartition> topicPartitions) =>
-            this.consumer.FlowManager.Pause(topicPartitions);
+            this.consumerManager.Consumer.FlowManager.Pause(topicPartitions);
 
         public void Resume(IReadOnlyCollection<TopicPartition> topicPartitions) =>
-            this.consumer.FlowManager.Resume(topicPartitions);
+            this.consumerManager.Consumer.FlowManager.Resume(topicPartitions);
 
         public Offset GetPosition(TopicPartition topicPartition) =>
-            this.consumer.GetPosition(topicPartition);
+            this.consumerManager.Consumer.GetPosition(topicPartition);
 
         public WatermarkOffsets GetWatermarkOffsets(TopicPartition topicPartition) =>
-            this.consumer.GetWatermarkOffsets(topicPartition);
+            this.consumerManager.Consumer.GetWatermarkOffsets(topicPartition);
 
         public WatermarkOffsets QueryWatermarkOffsets(TopicPartition topicPartition, TimeSpan timeout) =>
-            this.consumer.QueryWatermarkOffsets(topicPartition, timeout);
+            this.consumerManager.Consumer.QueryWatermarkOffsets(topicPartition, timeout);
 
         public List<TopicPartitionOffset> OffsetsForTimes(
             IEnumerable<TopicPartitionTimestamp> topicPartitions,
             TimeSpan timeout) =>
-            this.consumer.OffsetsForTimes(topicPartitions, timeout);
+            this.consumerManager.Consumer.OffsetsForTimes(topicPartitions, timeout);
     }
 }

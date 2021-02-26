@@ -12,61 +12,54 @@ namespace KafkaFlow
     {
         private readonly IDependencyResolver dependencyResolver;
         private readonly KafkaConfiguration configuration;
-        private readonly IConsumerManager consumerManager;
-        private readonly ILogHandler logHandler;
-        private readonly IList<IKafkaConsumer> consumers = new List<IKafkaConsumer>();
+        private readonly IConsumerManagerFactory consumerManagerFactory;
+
+        private readonly List<IConsumerManager> consumerManagers = new();
 
         public KafkaBus(
             IDependencyResolver dependencyResolver,
-            IConsumerManager consumerManager,
-            IProducerAccessor accessor,
-            ILogHandler logHandler,
-            KafkaConfiguration configuration)
+            KafkaConfiguration configuration,
+            IConsumerManagerFactory consumerManagerFactory,
+            IConsumerAccessor consumers,
+            IProducerAccessor producers)
         {
             this.dependencyResolver = dependencyResolver;
             this.configuration = configuration;
-            this.consumerManager = consumerManager;
-            this.logHandler = logHandler;
-            this.Producers = accessor;
+            this.consumerManagerFactory = consumerManagerFactory;
+            this.Consumers = consumers;
+            this.Producers = producers;
         }
 
-        public IConsumerAccessor Consumers => this.consumerManager;
+        public IConsumerAccessor Consumers { get; }
 
         public IProducerAccessor Producers { get; }
 
         public async Task StartAsync(CancellationToken stopCancellationToken = default)
         {
+            var stopTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stopCancellationToken);
+
+            stopTokenSource.Token.Register(() => this.StopAsync().GetAwaiter().GetResult());
+
             foreach (var consumerConfiguration in this.configuration.Clusters.SelectMany(cl => cl.Consumers))
             {
                 var dependencyScope = this.dependencyResolver.CreateScope();
 
-                var middlewares = consumerConfiguration.MiddlewareConfiguration.Factories
-                    .Select(factory => factory(dependencyScope.Resolver))
-                    .ToList();
+                var consumerManager = this.consumerManagerFactory.Create(consumerConfiguration, dependencyScope.Resolver);
 
-                var consumerWorkerPool = new ConsumerWorkerPool(
-                    dependencyScope.Resolver,
-                    this.logHandler,
-                    new MiddlewareExecutor(middlewares),
-                    consumerConfiguration.DistributionStrategyFactory);
+                this.consumerManagers.Add(consumerManager);
+                this.Consumers.Add(
+                    new MessageConsumer(
+                        consumerManager,
+                        dependencyScope.Resolver.Resolve<ILogHandler>()));
 
-                var consumer = new KafkaConsumer(
-                    consumerConfiguration,
-                    this.consumerManager,
-                    this.logHandler,
-                    consumerWorkerPool,
-                    this.dependencyResolver,
-                    stopCancellationToken);
-
-                this.consumers.Add(consumer);
-
-                await consumer.StartAsync().ConfigureAwait(false);
+                await consumerManager.StartAsync().ConfigureAwait(false);
             }
         }
 
+
         public Task StopAsync()
         {
-            return Task.WhenAll(this.consumers.Select(x => x.StopAsync()));
+            return Task.WhenAll(this.consumerManagers.Select(x => x.StopAsync()));
         }
     }
 }

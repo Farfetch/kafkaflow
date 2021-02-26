@@ -8,48 +8,47 @@ namespace KafkaFlow.Consumers
 
     internal class ConsumerWorkerPool : IConsumerWorkerPool
     {
+        private readonly IConsumer consumer;
         private readonly IDependencyResolver dependencyResolver;
         private readonly ILogHandler logHandler;
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly Factory<IDistributionStrategy> distributionStrategyFactory;
 
-        private List<IConsumerWorker> workers = new List<IConsumerWorker>();
+        private List<IConsumerWorker> workers = new();
 
         private IDistributionStrategy distributionStrategy;
         private OffsetManager offsetManager;
 
         public ConsumerWorkerPool(
+            IConsumer consumer,
             IDependencyResolver dependencyResolver,
             ILogHandler logHandler,
             IMiddlewareExecutor middlewareExecutor,
             Factory<IDistributionStrategy> distributionStrategyFactory)
         {
+            this.consumer = consumer;
             this.dependencyResolver = dependencyResolver;
             this.logHandler = logHandler;
             this.middlewareExecutor = middlewareExecutor;
             this.distributionStrategyFactory = distributionStrategyFactory;
         }
 
-        public async Task StartAsync(
-            IKafkaConsumer consumer,
-            IEnumerable<TopicPartition> partitions,
-            CancellationToken stopCancellationToken = default)
+        public async Task StartAsync(IEnumerable<TopicPartition> partitions)
         {
             this.offsetManager = new OffsetManager(
                 new OffsetCommitter(
-                    consumer,
-                    consumer.Configuration.AutoCommitInterval,
+                    this.consumer,
                     this.logHandler),
                 partitions);
 
             await Task.WhenAll(
                     Enumerable
-                        .Range(0, consumer.Configuration.WorkerCount)
+                        .Range(0, this.consumer.Configuration.WorkerCount)
                         .Select(
                             workerId =>
                             {
                                 var worker = new ConsumerWorker(
-                                    consumer,
+                                    this.consumer,
                                     workerId,
                                     this.offsetManager,
                                     this.logHandler,
@@ -57,7 +56,7 @@ namespace KafkaFlow.Consumers
 
                                 this.workers.Add(worker);
 
-                                return worker.StartAsync(stopCancellationToken);
+                                return worker.StartAsync();
                             }))
                 .ConfigureAwait(false);
 
@@ -76,7 +75,7 @@ namespace KafkaFlow.Consumers
             this.offsetManager = null;
         }
 
-        public async Task EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken = default)
+        public async Task EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken)
         {
             var worker = (IConsumerWorker) await this.distributionStrategy
                 .GetWorkerAsync(message.Message.Key, stopCancellationToken)

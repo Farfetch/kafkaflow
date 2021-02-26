@@ -9,14 +9,14 @@ namespace KafkaFlow.Configuration
     {
         private readonly string name;
         private readonly ProducerMiddlewareConfigurationBuilder middlewareConfigurationBuilder;
-        private readonly List<Action<string>> statisticsHandlers = new List<Action<string>>();
+        private readonly List<Action<string>> statisticsHandlers = new();
 
         private string topic;
         private ProducerConfig producerConfig;
         private Acks? acks;
         private int statisticsInterval;
         private double? lingerMs;
-        private ProducerCustomFactory customFactory = (producer, resolver) => producer; 
+        private ProducerCustomFactory customFactory = (producer, resolver) => producer;
 
         public ProducerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator, string name)
         {
@@ -75,7 +75,7 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public ProducerConfiguration Build(ClusterConfiguration clusterConfiguration)
+        public IProducerConfiguration Build(ClusterConfiguration clusterConfiguration)
         {
             this.producerConfig ??= new ProducerConfig();
 
