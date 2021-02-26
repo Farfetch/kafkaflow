@@ -12,7 +12,7 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
     [TestClass]
     public class ConsumerConfigurationBuilderTests
     {
-        private readonly Fixture fixture = new Fixture();
+        private readonly Fixture fixture = new();
 
         private Mock<IDependencyConfigurator> dependencyConfiguratorMock;
 

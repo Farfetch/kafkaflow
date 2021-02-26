@@ -7,8 +7,8 @@ namespace KafkaFlow.Configuration
 
     internal class ClusterConfigurationBuilder : IClusterConfigurationBuilder
     {
-        private readonly List<ProducerConfigurationBuilder> producers = new List<ProducerConfigurationBuilder>();
-        private readonly List<ConsumerConfigurationBuilder> consumers = new List<ConsumerConfigurationBuilder>();
+        private readonly List<ProducerConfigurationBuilder> producers = new();
+        private readonly List<ConsumerConfigurationBuilder> consumers = new();
 
         private IEnumerable<string> brokers;
         private Func<SecurityInformation> securityInformationHandler;

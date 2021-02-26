@@ -7,8 +7,8 @@ namespace KafkaFlow.Consumers
 
     internal class PartitionOffsets
     {
-        private readonly SortedSet<long> pendingOffsets = new SortedSet<long>();
-        private readonly LinkedList<long> offsetsOrder = new LinkedList<long>();
+        private readonly SortedSet<long> pendingOffsets = new();
+        private readonly LinkedList<long> offsetsOrder = new();
 
         public long LastOffset { get; private set; } = -1;
 

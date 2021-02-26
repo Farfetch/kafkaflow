@@ -24,5 +24,7 @@ namespace KafkaFlow.Consumers
         /// </summary>
         /// <param name="name"></param>
         IMessageConsumer this[string name] { get; }
+
+        internal void Add(IMessageConsumer consumer);
     }
 }

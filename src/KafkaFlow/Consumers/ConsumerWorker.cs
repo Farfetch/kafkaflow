@@ -8,7 +8,7 @@ namespace KafkaFlow.Consumers
 
     internal class ConsumerWorker : IConsumerWorker
     {
-        private readonly IKafkaConsumer consumer;
+        private readonly IConsumer consumer;
         private readonly IOffsetManager offsetManager;
         private readonly ILogHandler logHandler;
         private readonly IMiddlewareExecutor middlewareExecutor;
@@ -20,7 +20,7 @@ namespace KafkaFlow.Consumers
         private Action onMessageFinishedHandler;
 
         public ConsumerWorker(
-            IKafkaConsumer consumer,
+            IConsumer consumer,
             int workerId,
             IOffsetManager offsetManager,
             ILogHandler logHandler,
@@ -43,10 +43,9 @@ namespace KafkaFlow.Consumers
             return this.messagesBuffer.Writer.WriteAsync(message, stopCancellationToken);
         }
 
-        public Task StartAsync(CancellationToken stopCancellationToken)
+        public Task StartAsync()
         {
-            this.stopCancellationTokenSource =
-                CancellationTokenSource.CreateLinkedTokenSource(stopCancellationToken);
+            this.stopCancellationTokenSource = new CancellationTokenSource();
 
             this.backgroundTask = Task.Factory.StartNew(
                 async () =>
@@ -72,7 +71,7 @@ namespace KafkaFlow.Consumers
                             try
                             {
                                 await this.middlewareExecutor
-                                    .Execute(context, con => Task.CompletedTask)
+                                    .Execute(context, _ => Task.CompletedTask)
                                     .ConfigureAwait(false);
                             }
                             catch (Exception ex)
@@ -110,8 +109,6 @@ namespace KafkaFlow.Consumers
 
             return Task.CompletedTask;
         }
-
-        public Task StartAsync() => this.StartAsync(default);
 
         public async Task StopAsync()
         {

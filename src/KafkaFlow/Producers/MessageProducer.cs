@@ -9,16 +9,16 @@ namespace KafkaFlow.Producers
 
     internal class MessageProducer : IMessageProducer, IDisposable
     {
-        private readonly ProducerConfiguration configuration;
+        private readonly IProducerConfiguration configuration;
         private readonly MiddlewareExecutor middlewareExecutor;
         private readonly IDependencyResolverScope dependencyResolverScope;
 
         private volatile IProducer<byte[], byte[]> producer;
-        private readonly object producerCreationSync = new object();
+        private readonly object producerCreationSync = new();
 
         public MessageProducer(
             IDependencyResolver dependencyResolver,
-            ProducerConfiguration configuration)
+            IProducerConfiguration configuration)
         {
             this.configuration = configuration;
 
@@ -252,7 +252,7 @@ namespace KafkaFlow.Producers
 
         private static Message<byte[], byte[]> CreateMessage(IMessageContext context)
         {
-            return new Message<byte[], byte[]>
+            return new()
             {
                 Key = context.PartitionKey,
                 Value = GetMessageContent(context),

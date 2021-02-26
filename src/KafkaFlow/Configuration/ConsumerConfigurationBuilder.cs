@@ -9,8 +9,8 @@ namespace KafkaFlow.Configuration
 
     internal sealed class ConsumerConfigurationBuilder : IConsumerConfigurationBuilder
     {
-        private readonly List<string> topics = new List<string>();
-        private readonly List<Action<string>> statisticsHandlers = new List<Action<string>>();
+        private readonly List<string> topics = new();
+        private readonly List<Action<string>> statisticsHandlers = new();
         private readonly ConsumerMiddlewareConfigurationBuilder middlewareConfigurationBuilder;
 
         private ConsumerConfig consumerConfig;
@@ -160,7 +160,7 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public ConsumerConfiguration Build(ClusterConfiguration clusterConfiguration)
+        public IConsumerConfiguration Build(ClusterConfiguration clusterConfiguration)
         {
             var middlewareConfiguration = this.middlewareConfigurationBuilder.Build();
 

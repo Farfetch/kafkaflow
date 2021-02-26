@@ -1,7 +1,17 @@
 namespace KafkaFlow.Consumers
 {
-    internal interface IConsumerManager : IConsumerAccessor
+    using System.Threading.Tasks;
+
+    internal interface IConsumerManager
     {
-        void AddOrUpdate(IMessageConsumer consumer);
+        IWorkerPoolFeeder Feeder { get; }
+
+        IConsumerWorkerPool WorkerPool { get; }
+
+        IConsumer Consumer { get; }
+
+        Task StartAsync();
+
+        Task StopAsync();
     }
 }

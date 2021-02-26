@@ -38,10 +38,10 @@ namespace KafkaFlow.Configuration
 
             return new KafkaBus(
                 scope.Resolver,
-                scope.Resolver.Resolve<IConsumerManager>(),
-                scope.Resolver.Resolve<IProducerAccessor>(),
-                scope.Resolver.Resolve<ILogHandler>(),
-                this.configuration);
+                this.configuration,
+                scope.Resolver.Resolve<IConsumerManagerFactory>(),
+                scope.Resolver.Resolve<IConsumerAccessor>(),
+                scope.Resolver.Resolve<IProducerAccessor>());
         }
     }
 }

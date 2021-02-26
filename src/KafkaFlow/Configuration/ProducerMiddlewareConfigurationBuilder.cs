@@ -7,8 +7,7 @@ namespace KafkaFlow.Configuration
     {
         public IDependencyConfigurator DependencyConfigurator { get; }
 
-        private readonly List<Factory<IMessageMiddleware>> middlewaresFactories =
-            new List<Factory<IMessageMiddleware>>();
+        private readonly List<Factory<IMessageMiddleware>> middlewaresFactories = new();
 
         public ProducerMiddlewareConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
@@ -28,6 +27,6 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public MiddlewareConfiguration Build() => new MiddlewareConfiguration(this.middlewaresFactories);
+        public MiddlewareConfiguration Build() => new(this.middlewaresFactories);
     }
 }

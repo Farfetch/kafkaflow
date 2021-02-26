@@ -9,8 +9,8 @@ namespace KafkaFlow.Configuration
     internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
     {
         private readonly IDependencyConfigurator dependencyConfigurator;
-        private readonly List<ClusterConfigurationBuilder> clusters = new List<ClusterConfigurationBuilder>();
-        private Type logHandler = typeof(NullLogHandler);
+        private readonly List<ClusterConfigurationBuilder> clusters = new();
+        private Type logHandlerType = typeof(NullLogHandler);
 
         public KafkaConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
@@ -32,12 +32,10 @@ namespace KafkaFlow.Configuration
                                 resolver,
                                 producer))));
 
-            var consumerManager = new ConsumerManager();
-
             this.dependencyConfigurator
-                .AddTransient(typeof(ILogHandler), this.logHandler)
-                .AddSingleton<IConsumerAccessor>(consumerManager)
-                .AddSingleton<IConsumerManager>(consumerManager);
+                .AddTransient(typeof(ILogHandler), this.logHandlerType)
+                .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
+                .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory());
 
             return configuration;
         }
@@ -55,7 +53,7 @@ namespace KafkaFlow.Configuration
 
         public IKafkaConfigurationBuilder UseLogHandler<TLogHandler>() where TLogHandler : ILogHandler
         {
-            this.logHandler = typeof(TLogHandler);
+            this.logHandlerType = typeof(TLogHandler);
             return this;
         }
     }

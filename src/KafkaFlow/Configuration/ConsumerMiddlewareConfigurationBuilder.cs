@@ -7,8 +7,7 @@ namespace KafkaFlow.Configuration
     {
         public IDependencyConfigurator DependencyConfigurator { get; }
 
-        private readonly List<Factory<IMessageMiddleware>> middlewaresFactories =
-            new List<Factory<IMessageMiddleware>>();
+        private readonly List<Factory<IMessageMiddleware>> middlewaresFactories = new();
 
         public ConsumerMiddlewareConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
@@ -39,9 +38,9 @@ namespace KafkaFlow.Configuration
             this.RegisterType<T>();
             this.middlewaresFactories.Insert(0, resolver => resolver.Resolve<T>());
             return this;
-        }        
+        }
 
-        public MiddlewareConfiguration Build() => new MiddlewareConfiguration(this.middlewaresFactories);
+        public MiddlewareConfiguration Build() => new(this.middlewaresFactories);
 
         private void RegisterType<T>() where T : class, IMessageMiddleware
         {

@@ -5,6 +5,7 @@
     <PackageId>KafkaFlow</PackageId>
     <Description>KafkaFlow main package</Description>
     <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
