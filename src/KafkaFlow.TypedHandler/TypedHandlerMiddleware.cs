@@ -1,5 +1,6 @@
 namespace KafkaFlow.TypedHandler
 {
+    using System.Linq;
     using System.Threading.Tasks;
 
     internal class TypedHandlerMiddleware : IMessageMiddleware
@@ -19,21 +20,17 @@ namespace KafkaFlow.TypedHandler
         {
             using (var scope = this.dependencyResolver.CreateScope())
             {
-                var handlerType = this.configuration.HandlerMapping.GetHandlerType(context.Message.GetType());
-
-                if (handlerType == null)
-                {
-                    return;
-                }
-
-                var handler = scope.Resolver.Resolve(handlerType);
-
-                await HandlerExecutor
-                    .GetExecutor(context.Message.GetType())
-                    .Execute(
-                        handler,
-                        context,
-                        context.Message)
+                await Task.WhenAll(
+                    this.configuration
+                        .HandlerMapping
+                        .GetHandlersTypes(context.Message.GetType())
+                        .Select(t =>
+                            HandlerExecutor
+                                .GetExecutor(context.Message.GetType())
+                                .Execute(
+                                    scope.Resolver.Resolve(t),
+                                    context,
+                                    context.Message)))
                     .ConfigureAwait(false);
             }
 

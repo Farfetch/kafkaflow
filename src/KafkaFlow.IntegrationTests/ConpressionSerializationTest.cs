@@ -54,7 +54,6 @@ namespace KafkaFlow.IntegrationTests
             // Act
             await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
             
-
             // Assert
             foreach (var message in messages)
             {

@@ -155,7 +155,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     })
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSingleTypeSerializer<TestMessage1, ProtobufMessageSerializer>()
+                                            .AddSingleTypeSerializer<PauseResumeMessage, ProtobufMessageSerializer>()
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -177,8 +177,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                                 handlers =>
                                                     handlers
                                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                        .AddHandler<MessageHandler>()
-                                                        .AddHandler<MessageHandler2>())
+                                                        .AddHandlersFromAssemblyOf<MessageHandler>())
                                     )
                             )
                             .AddConsumer(
