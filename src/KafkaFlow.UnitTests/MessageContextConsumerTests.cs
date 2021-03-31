@@ -30,7 +30,7 @@
             var messageTimestamp = target.MessageTimestamp;
 
             // Assert
-            messageTimestamp.Should().Be(expectedMessageTimestamp);
+            messageTimestamp.Should().Be(expectedMessageTimestamp.ToUniversalTime());
         }
     }
 }
