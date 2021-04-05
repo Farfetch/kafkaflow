@@ -62,8 +62,11 @@ namespace KafkaFlow.Consumers
 
         public Task StopAsync()
         {
-            this.stopTokenSource?.Cancel();
-            this.stopTokenSource?.Dispose();
+            if (this.stopTokenSource != null && !this.stopTokenSource.IsCancellationRequested)
+            {
+                this.stopTokenSource.Cancel();
+                this.stopTokenSource.Dispose();
+            }
 
             return this.feederTask ?? Task.CompletedTask;
         }
