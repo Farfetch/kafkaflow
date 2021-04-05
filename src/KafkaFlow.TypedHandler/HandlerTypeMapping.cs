@@ -6,18 +6,23 @@ namespace KafkaFlow.TypedHandler
 
     internal class HandlerTypeMapping
     {
-        private readonly Dictionary<Type, IEnumerable<Type>> mapping = new Dictionary<Type, IEnumerable<Type>>();
+        private readonly Dictionary<Type, List<Type>> mapping = new();
 
         public void AddMapping(Type messageType, Type handlerType)
         {
-            var handlers = this.GetHandlersTypes(messageType);
-            
-            this.mapping[messageType] = handlers.Append(handlerType);
+            if (!this.mapping.TryGetValue(messageType, out var handlers))
+            {
+                this.mapping.Add(messageType, handlers = new List<Type>());
+            }
+
+            handlers.Add(handlerType);
         }
 
         public IEnumerable<Type> GetHandlersTypes(Type messageType)
         {
-            return this.mapping.TryGetValue(messageType, out var handlerType) ? handlerType : Enumerable.Empty<Type>();
+            return this.mapping.TryGetValue(messageType, out var handlerType) ?
+                handlerType :
+                Enumerable.Empty<Type>();
         }
     }
 }
