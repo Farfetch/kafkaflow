@@ -12,7 +12,8 @@ namespace KafkaFlow.TypedHandler
         {
             if (!this.mapping.TryGetValue(messageType, out var handlers))
             {
-                this.mapping.Add(messageType, handlers = new List<Type>());
+                handlers = new List<Type>();
+                this.mapping.Add(messageType, handlers);
             }
 
             handlers.Add(handlerType);
