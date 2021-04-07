@@ -68,6 +68,8 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             Action<string> statisticsHandler = s => { };
             const int statisticsIntervalMs = 100;
             var producerConfig = new ProducerConfig();
+            var compressionType = CompressionType.Lz4;
+            var compressionLevel = 5;
 
             this.target
                 .DefaultTopic(defaultTopic)
@@ -77,6 +79,7 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
                 .WithStatisticsHandler(statisticsHandler)
                 .WithStatisticsIntervalMs(statisticsIntervalMs)
                 .WithProducerConfig(producerConfig)
+                .WithCompression(compressionType, compressionLevel)
                 .AddMiddlewares(m => m.Add<IMessageMiddleware>());
 
             // Act
@@ -88,6 +91,8 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             configuration.DefaultTopic.Should().Be(defaultTopic);
             configuration.Acks.Should().Be(acks);
             configuration.BaseProducerConfig.LingerMs.Should().Be(lingerMs);
+            configuration.BaseProducerConfig.CompressionType.Should().Be(compressionType);
+            configuration.BaseProducerConfig.CompressionLevel.Should().Be(compressionLevel);
             configuration.BaseProducerConfig.StatisticsIntervalMs.Should().Be(statisticsIntervalMs);
             configuration.StatisticsHandlers.Should().HaveElementAt(0, statisticsHandler);
             configuration.BaseProducerConfig.Should().BeSameAs(producerConfig);
