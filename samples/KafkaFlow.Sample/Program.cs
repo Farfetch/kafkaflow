@@ -3,16 +3,17 @@
     using System;
     using System.Linq;
     using System.Threading.Tasks;
+    using Confluent.Kafka;
     using global::Microsoft.Extensions.DependencyInjection;
     using KafkaFlow.Admin;
     using KafkaFlow.Admin.Messages;
-    using KafkaFlow.Compressor;
-    using KafkaFlow.Compressor.Gzip;
     using KafkaFlow.Consumers;
     using KafkaFlow.Producers;
     using KafkaFlow.Serializer;
     using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
+    using Acks = KafkaFlow.Acks;
+    using AutoOffsetReset = KafkaFlow.AutoOffsetReset;
 
     internal static class Program
     {
@@ -35,10 +36,10 @@
                                 producerName,
                                 producer => producer
                                     .DefaultTopic("test-topic")
+                                    .WithCompression(CompressionType.Gzip)
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSerializer<ProtobufMessageSerializer>()
-                                            .AddCompressor<GzipMessageCompressor>()
                                     )
                                     .WithAcks(Acks.All)
                             )
@@ -52,7 +53,6 @@
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddCompressor<GzipMessageCompressor>()
                                             .AddSerializer<ProtobufMessageSerializer>()
                                             .AddTypedHandlers(
                                                 handlers => handlers

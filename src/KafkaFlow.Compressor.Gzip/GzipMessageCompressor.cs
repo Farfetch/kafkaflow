@@ -5,7 +5,7 @@
 
     /// <summary>
     /// A GZIP message compressor
-    /// </summary>    
+    /// </summary>
     public class GzipMessageCompressor : IMessageCompressor
     {
         /// <summary>Compress the given message into gzip format</summary>

@@ -20,6 +20,28 @@ namespace KafkaFlow
         }
 
         /// <summary>
+        /// Sets compression configurations in the producer 
+        /// </summary>
+        /// <param name="builder">A class that implements <see cref="IProducerConfigurationBuilder"/></param>
+        /// <param name="compressionType">
+        /// <see cref="P:Confluent.Kafka.CompressionType"/> enum to select the compression codec to use for compressing message sets. This is the default value for all topics, may be overridden by the topic configuration property `compression.codec`.
+        /// default: none
+        /// importance: medium</param>
+        /// <param name="compressionLevel">
+        /// Compression level parameter for algorithm selected by <see cref="P:Confluent.Kafka.CompressionType"/> enum. Higher values will result in better compression at the cost of more CPU usage. Usable range is algorithm-dependent: [0-9] for gzip; [0-12] for lz4; only 0 for snappy; -1 = codec-dependent default compression level.
+        /// default: -1
+        /// importance: medium
+        /// </param>
+        /// <returns></returns>
+        public static IProducerConfigurationBuilder WithCompression(
+            this IProducerConfigurationBuilder builder,
+            CompressionType compressionType, 
+            int? compressionLevel = null)
+        {
+            return ((ProducerConfigurationBuilder) builder).WithCompression(compressionType, compressionLevel);
+        }
+
+        /// <summary>
         /// Sets configurations in the consumer based on a <see cref="P:Confluent.Kafka.ConsumerConfig"/> instance 
         /// </summary>
         /// <param name="builder">A class that implements <see cref="IConsumerConfigurationBuilder"/></param>

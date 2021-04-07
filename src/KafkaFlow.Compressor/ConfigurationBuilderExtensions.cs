@@ -33,6 +33,7 @@
 
         /// <summary>
         /// Registers a middleware to compress the message
+        /// It is highly recommended to use the producer native compression ('WithCompression()' method) instead of using the compressor middleware
         /// </summary>
         /// <typeparam name="T">A class that implements <see cref="IMessageCompressor"/></typeparam>
         public static IProducerMiddlewareConfigurationBuilder AddCompressor<T>(this IProducerMiddlewareConfigurationBuilder middlewares)
@@ -44,6 +45,7 @@
 
         /// <summary>
         /// Registers a middleware to compress the message
+        /// It is highly recommended to use the producer native compression ('WithCompression()' method) instead of using the compressor middleware
         /// </summary>
         /// <param name="middlewares"></param>
         /// <param name="factory">A factory to create the <see cref="IMessageCompressor"/> instance</param>

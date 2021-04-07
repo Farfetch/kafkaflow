@@ -202,7 +202,6 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddCompressor(r => new GzipMessageCompressor())
                                             .AddSerializer(r => new JsonMessageSerializer())
                                             .AddTypedHandlers(
                                                 handlers =>
@@ -241,10 +240,10 @@ namespace KafkaFlow.IntegrationTests.Core
                             .AddProducer<JsonGzipProducer>(
                                 producer => producer
                                     .DefaultTopic(JsonGzipTopicName)
+                                    .WithCompression(CompressionType.Gzip)
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSerializer<JsonMessageSerializer>()
-                                            .AddCompressor<GzipMessageCompressor>()
                                     )
                             )
                             .AddProducer<ProtobufProducer>(

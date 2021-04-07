@@ -45,6 +45,14 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
+        public IProducerConfigurationBuilder WithCompression(CompressionType compressionType, int? compressionLevel)
+        {
+            this.producerConfig ??= new ProducerConfig();
+            this.producerConfig.CompressionType = compressionType;
+            this.producerConfig.CompressionLevel = compressionLevel;
+            return this;
+        }
+
         public IProducerConfigurationBuilder WithAcks(Acks acks)
         {
             this.acks = acks;
