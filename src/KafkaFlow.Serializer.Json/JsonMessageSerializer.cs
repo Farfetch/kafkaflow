@@ -30,8 +30,7 @@
         /// <returns>A UTF8 JSON string</returns>
         public byte[] Serialize(object message)
         {
-            var serialized = JsonSerializer.Serialize(message, this.options);
-            return Encoding.UTF8.GetBytes(serialized);
+            return JsonSerializer.SerializeToUtf8Bytes(message, this.options);
         }
 
         /// <summary>Deserialize the message</summary>
@@ -40,9 +39,7 @@
         /// <returns>An instance of the passed type</returns>
         public object Deserialize(byte[] data, Type type)
         {
-            var json = Encoding.UTF8.GetString(data);
-
-            return JsonSerializer.Deserialize(json, type, this.options);
+            return JsonSerializer.Deserialize(data, type, this.options);
         }
     }
 }
