@@ -72,10 +72,7 @@ See the [setup page](https://github.com/Farfetch/kafka-flow/wiki/Setup) and [sam
 
 ## Contributing
 
-1.  Fork this repository
-2.  Follow project guidelines
-3.  Do your stuff
-4.  Open a pull request following [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
+Read the [Contributing guidelines](CONTRIBUTING.md)
 
 ## Maintainers
 
