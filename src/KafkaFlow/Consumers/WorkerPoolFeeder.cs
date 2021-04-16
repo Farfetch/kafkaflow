@@ -11,7 +11,7 @@ namespace KafkaFlow.Consumers
         private readonly ILogHandler logHandler;
 
         private CancellationTokenSource stopTokenSource;
-        private Task<Task> feederTask;
+        private Task feederTask;
 
         public WorkerPoolFeeder(
             IConsumer consumer,
@@ -26,20 +26,21 @@ namespace KafkaFlow.Consumers
         public void Start()
         {
             this.stopTokenSource = new CancellationTokenSource();
-
-            this.feederTask = Task.Factory.StartNew(
+            var token = stopTokenSource.Token;
+            
+            this.feederTask = Task.Run(
                 async () =>
                 {
-                    while (!this.stopTokenSource.IsCancellationRequested)
+                    while (!token.IsCancellationRequested)
                     {
                         try
                         {
                             var message = await this.consumer
-                                .ConsumeAsync(this.stopTokenSource.Token)
+                                .ConsumeAsync(token)
                                 .ConfigureAwait(false);
 
                             await this.workerPool
-                                .EnqueueAsync(message, this.stopTokenSource.Token)
+                                .EnqueueAsync(message, token)
                                 .ConfigureAwait(false);
                         }
                         catch (OperationCanceledException)
@@ -54,10 +55,7 @@ namespace KafkaFlow.Consumers
                                 null);
                         }
                     }
-                },
-                CancellationToken.None,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+                }, token);
         }
 
         public Task StopAsync()
