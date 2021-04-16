@@ -47,7 +47,7 @@ namespace KafkaFlow.Consumers
         {
             this.stopCancellationTokenSource = new CancellationTokenSource();
 
-            this.backgroundTask = Task.Factory.StartNew(
+            this.backgroundTask = Task.Run(
                 async () =>
                 {
                     while (!this.stopCancellationTokenSource.IsCancellationRequested)
@@ -102,10 +102,7 @@ namespace KafkaFlow.Consumers
                             // Ignores the exception
                         }
                     }
-                },
-                CancellationToken.None,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+                });
 
             return Task.CompletedTask;
         }

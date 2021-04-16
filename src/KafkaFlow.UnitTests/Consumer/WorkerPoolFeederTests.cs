@@ -40,16 +40,16 @@ namespace KafkaFlow.UnitTests.Consumer
 
         [TestMethod]
         [Timeout(1000)]
-        public async Task StopAsync_BlockedOnConsume_MustStop()
+        public async Task StopAsync_WaitingOnConsumeWithCancellation_MustStop()
         {
             // Arrange
-            var consumeResult = new ConsumeResult<byte[], byte[]>();
-
             this.consumerMock
                 .Setup(x => x.ConsumeAsync(It.IsAny<CancellationToken>()))
-                .Returns(
-                    new ValueTask<ConsumeResult<byte[], byte[]>>(
-                        Task.Delay(Timeout.Infinite).ContinueWith(_ => consumeResult)));
+                .Returns(async (CancellationToken ct) =>
+                {
+                    await Task.Delay(Timeout.Infinite, ct).ConfigureAwait(false);
+                    return default; // Never reached
+                });
 
             // Act
             this.target.Start();
@@ -62,7 +62,7 @@ namespace KafkaFlow.UnitTests.Consumer
 
         [TestMethod]
         [Timeout(1000)]
-        public async Task StopAsync_BlockedOnQueuing_MustStop()
+        public async Task StopAsync_WaitingOnQueuingWithCancellation_MustStop()
         {
             // Arrange
             var consumeResult = new ConsumeResult<byte[], byte[]>();
@@ -73,7 +73,7 @@ namespace KafkaFlow.UnitTests.Consumer
 
             this.workerPoolMock
                 .Setup(x => x.EnqueueAsync(consumeResult, It.IsAny<CancellationToken>()))
-                .Returns(Task.Delay(Timeout.Infinite));
+                .Returns((ConsumeResult<byte[],byte[]> _, CancellationToken ct) => Task.Delay(Timeout.Infinite, ct));
 
             // Act
             this.target.Start();
@@ -100,7 +100,7 @@ namespace KafkaFlow.UnitTests.Consumer
 
             this.workerPoolMock
                 .Setup(x => x.EnqueueAsync(consumeResult, It.IsAny<CancellationToken>()))
-                .Returns(Task.Delay(Timeout.Infinite));
+                .Returns((ConsumeResult<byte[], byte[]> _, CancellationToken ct) => Task.Delay(Timeout.Infinite, ct));
 
             this.logHandlerMock
                 .Setup(x => x.Error(It.IsAny<string>(), exception, It.IsAny<object>()));
@@ -128,11 +128,19 @@ namespace KafkaFlow.UnitTests.Consumer
                 .Setup(x => x.ConsumeAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(consumeResult);
 
+            var hasThrown = false;
             this.workerPoolMock
-                .SetupSequence(x => x.EnqueueAsync(consumeResult, It.IsAny<CancellationToken>()))
-                .Throws(exception)
-                .Returns(Task.Delay(Timeout.Infinite));
-
+                .Setup(x => x.EnqueueAsync(consumeResult, It.IsAny<CancellationToken>()))
+                .Returns((ConsumeResult<byte[], byte[]> _, CancellationToken ct) =>
+                {
+                    if (!hasThrown)
+                    {
+                        hasThrown = true;
+                        throw exception;
+                    }
+                    return Task.Delay(Timeout.Infinite, ct);
+                });
+            
             this.logHandlerMock
                 .Setup(x => x.Error(It.IsAny<string>(), exception, It.IsAny<object>()));
 
