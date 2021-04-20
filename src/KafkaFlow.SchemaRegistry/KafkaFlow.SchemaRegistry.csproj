@@ -2,12 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageId>KafkaFlow.Serializer</PackageId>
-    <Description>Serializer middleware for KafkaFlow</Description>
+    <PackageId>KafkaFlow.SchemaRegistry</PackageId>
+    <Description>???</Description>
     <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
     <RootNamespace>KafkaFlow</RootNamespace>
     <LangVersion>9</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Confluent.SchemaRegistry" Version="1.6.3" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
