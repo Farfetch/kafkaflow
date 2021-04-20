@@ -1,10 +1,12 @@
-namespace KafkaFlow.Serializer.ApacheAvro
+namespace KafkaFlow
 {
     using System;
-    using Configuration;
     using Confluent.SchemaRegistry;
-    using Confluent.SchemaRegistry.Serdes;
-    
+    using KafkaFlow.Configuration;
+
+    /// <summary>
+    /// 
+    /// </summary>
     public static class ClusterConfigurationBuilderExtensions
     {
         /// <summary>
@@ -19,7 +21,7 @@ namespace KafkaFlow.Serializer.ApacheAvro
         {
             var config = new SchemaRegistryConfig();
             handler(config);
-            cluster.DependencyConfigurator.AddTransient<ISchemaRegistryClient>(factory => new CachedSchemaRegistryClient(config));
+            cluster.DependencyConfigurator.AddTransient<ISchemaRegistryClient>(_ => new CachedSchemaRegistryClient(config));
             return cluster;
         }
     }

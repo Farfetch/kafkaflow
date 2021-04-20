@@ -8,15 +8,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj"/>
-        <ProjectReference Include="..\KafkaFlow.Serializer\KafkaFlow.Serializer.csproj"/>
+        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
+        <ProjectReference Include="..\KafkaFlow.SchemaRegistry\KafkaFlow.SchemaRegistry.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Apache.Avro" Version="1.10.1"/>
-        <PackageReference Include="Confluent.Kafka" Version="1.5.3"/>
-        <PackageReference Include="Confluent.SchemaRegistry" Version="1.5.3"/>
-        <PackageReference Include="Confluent.SchemaRegistry.Serdes.Avro" Version="1.5.3"/>
+        <PackageReference Include="Apache.Avro" Version="1.10.2" />
+        <PackageReference Include="Confluent.Kafka" Version="1.6.3" />
+        <PackageReference Include="Confluent.SchemaRegistry" Version="1.6.3" />
+        <PackageReference Include="Confluent.SchemaRegistry.Serdes.Avro" Version="1.6.3" />
     </ItemGroup>
 
 </Project>
