@@ -16,6 +16,8 @@ namespace KafkaFlow.IntegrationTests.Core
     using KafkaFlow.IntegrationTests.Core.Middlewares;
     using KafkaFlow.IntegrationTests.Core.Middlewares.Producers;
     using KafkaFlow.Serializer;
+    using KafkaFlow.Serializer.ConfluentJson;
+    using KafkaFlow.Serializer.ConfluentProtoBuf;
     using KafkaFlow.Serializer.Json;
     using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
@@ -25,6 +27,8 @@ namespace KafkaFlow.IntegrationTests.Core
     public static class Bootstrapper
     {
         private const string ProtobufTopicName = "test-protobuf";
+        private const string ProtobufSchemaRegistryTopicName = "test-protobuf-sr";
+        private const string JsonSchemaRegistryTopicName = "test-json-sr";
         private const string JsonTopicName = "test-json";
         private const string GzipTopicName = "test-gzip";
         private const string JsonGzipTopicName = "test-json-gzip";
@@ -32,7 +36,7 @@ namespace KafkaFlow.IntegrationTests.Core
         private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
         private const string AvroTopicName = "test-avro";
         public const string PauseResumeTopicName = "test-pause-resume";
-        
+
         private const string ProtobufGroupId = "consumer-protobuf";
         private const string JsonGroupId = "consumer-json";
         private const string GzipGroupId = "consumer-gzip";
@@ -96,7 +100,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSerializer(resolver => new ApacheAvroMessageSerializer(
-                                                resolver, 
+                                                resolver,
                                                 new AvroSerializerConfig
                                                 {
                                                     AutoRegisterSchemas = true,
@@ -118,6 +122,66 @@ namespace KafkaFlow.IntegrationTests.Core
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)
                                                     .AddHandler<AvroMessageHandler>())
+                                    )
+                            )
+                            .AddProducer<ConfluentProtobufProducer>(
+                                producer => producer
+                                    .DefaultTopic(ProtobufSchemaRegistryTopicName)
+                                    .AddMiddlewares(
+                                        middlewares => middlewares
+                                            .AddSerializer(resolver => new ConfluentProtobufSerializer(
+                                                resolver,
+                                                new ProtobufSerializerConfig
+                                                {
+                                                    AutoRegisterSchemas = true,
+                                                    SubjectNameStrategy = SubjectNameStrategy.Record
+                                                }))
+                                    )
+                            )
+                            .AddConsumer(
+                                consumer => consumer
+                                    .Topic(ProtobufSchemaRegistryTopicName)
+                                    .WithGroupId("consumer-protobuf")
+                                    .WithBufferSize(100)
+                                    .WithWorkersCount(10)
+                                    .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                    .AddMiddlewares(
+                                        middlewares => middlewares
+                                            .AddSerializer<ConfluentProtobufSerializer>()
+                                            .AddTypedHandlers(
+                                                handlers => handlers
+                                                    .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                                    .AddHandler<ConfluentProtobufMessageHandler>())
+                                    )
+                            )
+                            .AddProducer<ConfluentJsonProducer>(
+                                producer => producer
+                                    .DefaultTopic(JsonSchemaRegistryTopicName)
+                                    .AddMiddlewares(
+                                        middlewares => middlewares
+                                            .AddSerializer(resolver => new ConfluentJsonSerializer(
+                                                resolver,
+                                                new JsonSerializerConfig
+                                                {
+                                                    AutoRegisterSchemas = true,
+                                                    SubjectNameStrategy = SubjectNameStrategy.Record
+                                                }))
+                                    )
+                            )
+                            .AddConsumer(
+                                consumer => consumer
+                                    .Topic(JsonSchemaRegistryTopicName)
+                                    .WithGroupId("consumer-json")
+                                    .WithBufferSize(100)
+                                    .WithWorkersCount(10)
+                                    .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                    .AddMiddlewares(
+                                        middlewares => middlewares
+                                            .AddSerializer<ConfluentJsonSerializer>()
+                                            .AddTypedHandlers(
+                                                handlers => handlers
+                                                    .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                                    .AddHandler<ConfluentJsonMessageHandler>())
                                     )
                             )
                     )
