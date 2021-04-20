@@ -7,10 +7,10 @@
     using global::Microsoft.Extensions.DependencyInjection;
     using KafkaFlow.Producers;
     using KafkaFlow.Sample.Avro.Handlers;
+    using KafkaFlow.Serializer;
     using KafkaFlow.TypedHandler;
     using MessageTypes;
-    using Serializer;
-    using Serializer.ApacheAvro;
+    using KafkaFlow.Serializer.ApacheAvro;
 
     internal static class Program
     {
