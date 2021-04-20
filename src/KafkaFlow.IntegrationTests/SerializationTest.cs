@@ -36,7 +36,6 @@ namespace KafkaFlow.IntegrationTests
 
             // Act
             await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
-            
 
             // Assert
             foreach (var message in messages)
@@ -44,7 +43,7 @@ namespace KafkaFlow.IntegrationTests
                 await MessageStorage.AssertMessageAsync(message);
             }
         }
-        
+
         [TestMethod]
         public async Task ProtobufMessageTest()
         {
@@ -54,7 +53,6 @@ namespace KafkaFlow.IntegrationTests
 
             // Act
             await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
-            
 
             // Assert
             foreach (var message in messages)
@@ -62,7 +60,7 @@ namespace KafkaFlow.IntegrationTests
                 await MessageStorage.AssertMessageAsync(message);
             }
         }
-        
+
         [TestMethod]
         public async Task AvroMessageTest()
         {
@@ -72,7 +70,40 @@ namespace KafkaFlow.IntegrationTests
 
             // Act
             await Task.WhenAll(messages.Select(m => producer.ProduceAsync(Guid.NewGuid().ToString(), m)));
-            
+
+            // Assert
+            foreach (var message in messages)
+            {
+                await MessageStorage.AssertMessageAsync(message);
+            }
+        }
+
+        [TestMethod]
+        public async Task ProtobufSchemaRegistryMessageTest()
+        {
+            // Arrange
+            var producer = this.provider.GetRequiredService<IMessageProducer<ConfluentProtobufProducer>>();
+            var messages = this.fixture.CreateMany<TestProtoMessage>(10).ToList();
+
+            // Act
+            await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id, m)));
+
+            // Assert
+            foreach (var message in messages)
+            {
+                await MessageStorage.AssertMessageAsync(message);
+            }
+        }
+
+        [TestMethod]
+        public async Task JsonSchemaRegistryMessageTest()
+        {
+            // Arrange
+            var producer = this.provider.GetRequiredService<IMessageProducer<ConfluentJsonProducer>>();
+            var messages = this.fixture.CreateMany<TestMessage3>(10).ToList();
+
+            // Act
+            await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
 
             // Assert
             foreach (var message in messages)

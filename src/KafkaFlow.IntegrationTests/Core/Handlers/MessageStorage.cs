@@ -11,9 +11,10 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
 
     public static class MessageStorage
     {
-        private const int timeoutSec = 8;
+        private const int timeoutSec = 20;
         private static readonly ConcurrentBag<ITestMessage> testMessages = new ConcurrentBag<ITestMessage>();
         private static readonly ConcurrentBag<LogMessages2> avroMessages = new ConcurrentBag<LogMessages2>();
+        private static readonly ConcurrentBag<TestProtoMessage> protoMessages = new ConcurrentBag<TestProtoMessage>();
         private static readonly ConcurrentBag<(long, int)> versions = new ConcurrentBag<(long, int)>();
         private static readonly ConcurrentBag<byte[]> byteMessages = new ConcurrentBag<byte[]>();
 
@@ -22,12 +23,17 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
             versions.Add((DateTime.Now.Ticks, message.Version));
             testMessages.Add(message);
         }
-        
+
         public static void Add(LogMessages2 message)
         {
             avroMessages.Add(message);
         }
-        
+
+        public static void Add(TestProtoMessage message)
+        {
+            protoMessages.Add(message);
+        }
+
         public static void Add(byte[] message)
         {
             byteMessages.Add(message);
@@ -64,7 +70,7 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
                 await Task.Delay(100).ConfigureAwait(false);
             }
         }
-        
+
         public static async Task AssertMessageAsync(LogMessages2 message)
         {
             var start = DateTime.Now;
@@ -74,6 +80,22 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
                 if (DateTime.Now.Subtract(start).Seconds > timeoutSec)
                 {
                     Assert.Fail("Message (LogMessages2) not received");
+                    return;
+                }
+
+                await Task.Delay(100).ConfigureAwait(false);
+            }
+        }
+
+        public static async Task AssertMessageAsync(TestProtoMessage message)
+        {
+            var start = DateTime.Now;
+
+            while (!protoMessages.Any(x => x.Id == message.Id && x.Value == message.Value && x.Version == message.Version))
+            {
+                if (DateTime.Now.Subtract(start).Seconds > timeoutSec)
+                {
+                    Assert.Fail("Message (TestProtoMessage) not received");
                     return;
                 }
 
@@ -107,6 +129,7 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
             versions.Clear();
             testMessages.Clear();
             byteMessages.Clear();
+            protoMessages.Clear();
         }
     }
 }
