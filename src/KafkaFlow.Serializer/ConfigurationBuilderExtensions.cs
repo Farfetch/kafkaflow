@@ -10,8 +10,10 @@
         /// <summary>
         /// Registers a middleware to deserialize messages
         /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
         /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
         /// <typeparam name="TResolver">A class that implements <see cref="IMessageTypeResolver"/></typeparam>
+        /// <returns></returns>
         public static IConsumerMiddlewareConfigurationBuilder AddSerializer<TSerializer, TResolver>(
             this IConsumerMiddlewareConfigurationBuilder middlewares)
             where TSerializer : class, IMessageSerializer
@@ -29,11 +31,12 @@
         /// <summary>
         /// Register a middleware to deserialize messages
         /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
         /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
         /// <typeparam name="TResolver">A class that implements <see cref="IMessageTypeResolver"/></typeparam>
-        /// <param name="middlewares"></param>
         /// <param name="serializerFactory">A factory to create a <see cref="IMessageSerializer"/></param>
         /// <param name="resolverFactory">A factory to create a <see cref="IMessageTypeResolver"/></param>
+        /// <returns></returns>
         public static IConsumerMiddlewareConfigurationBuilder AddSerializer<TSerializer, TResolver>(
             this IConsumerMiddlewareConfigurationBuilder middlewares,
             Factory<TSerializer> serializerFactory,
@@ -50,7 +53,9 @@
         /// <summary>
         /// Registers a middleware to deserialize messages
         /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
         /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
+        /// <returns></returns>
         public static IConsumerMiddlewareConfigurationBuilder AddSerializer<TSerializer>(
             this IConsumerMiddlewareConfigurationBuilder middlewares)
             where TSerializer : class, IMessageSerializer
@@ -66,8 +71,9 @@
         /// Register a middleware to deserialize messages
         /// </summary>
         /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
-        /// <param name="middlewares"></param>
+        /// <param name="middlewares">The middleware configuration builder</param>
         /// <param name="serializerFactory">A factory to create a <see cref="IMessageSerializer"/></param>
+        /// <returns></returns>
         public static IConsumerMiddlewareConfigurationBuilder AddSerializer<TSerializer>(
             this IConsumerMiddlewareConfigurationBuilder middlewares,
             Factory<TSerializer> serializerFactory)
@@ -81,8 +87,10 @@
         /// <summary>
         /// Registers a middleware to serialize messages
         /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
         /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
         /// <typeparam name="TResolver">A class that implements <see cref="IMessageTypeResolver"/></typeparam>
+        /// <returns></returns>
         public static IProducerMiddlewareConfigurationBuilder AddSerializer<TSerializer, TResolver>(
             this IProducerMiddlewareConfigurationBuilder middlewares)
             where TSerializer : class, IMessageSerializer
@@ -100,11 +108,12 @@
         /// <summary>
         /// Registers a middleware to serialize messages
         /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
         /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
         /// <typeparam name="TResolver">A class that implements <see cref="IMessageTypeResolver"/></typeparam>
-        /// <param name="middlewares"></param>
         /// <param name="serializerFactory">A factory to create a <see cref="IMessageSerializer"/></param>
         /// <param name="resolverFactory">A factory to create a <see cref="IMessageTypeResolver"/></param>
+        /// <returns></returns>
         public static IProducerMiddlewareConfigurationBuilder AddSerializer<TSerializer, TResolver>(
             this IProducerMiddlewareConfigurationBuilder middlewares,
             Factory<TSerializer> serializerFactory,
@@ -121,7 +130,9 @@
         /// <summary>
         /// Registers a middleware to serialize messages
         /// </summary>
-        /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>x
+        /// <param name="middlewares">The middleware configuration builder</param>
+        /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
+        /// <returns></returns>x
         public static IProducerMiddlewareConfigurationBuilder AddSerializer<TSerializer>(
             this IProducerMiddlewareConfigurationBuilder middlewares)
             where TSerializer : class, IMessageSerializer
@@ -137,9 +148,10 @@
         /// <summary>
         /// Registers a middleware to serialize messages
         /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
         /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
-        /// <param name="middlewares"></param>
         /// <param name="serializerFactory">A factory to create a <see cref="IMessageSerializer"/></param>
+        /// <returns></returns>
         public static IProducerMiddlewareConfigurationBuilder AddSerializer<TSerializer>(
             this IProducerMiddlewareConfigurationBuilder middlewares,
             Factory<TSerializer> serializerFactory)
@@ -153,7 +165,7 @@
         /// <summary>
         /// Register a middleware to deserialize the message to a fixed type
         /// </summary>
-        /// <param name="middlewares"></param>
+        /// <param name="middlewares">The middleware configuration builder</param>
         /// <param name="serializerFactory">A factory to create a <see cref="IMessageSerializer"/></param>
         /// <typeparam name="TMessage">The message type</typeparam>
         /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
@@ -171,9 +183,9 @@
         /// <summary>
         /// Register a middleware to deserialize the message to a fixed type
         /// </summary>
-        /// <param name="middlewares"></param>
-        /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
+        /// <param name="middlewares">The middleware configuration builder</param>
         /// <typeparam name="TMessage">The message type</typeparam>
+        /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
         /// <returns></returns>
         public static IConsumerMiddlewareConfigurationBuilder AddSingleTypeSerializer<TMessage, TSerializer>(
             this IConsumerMiddlewareConfigurationBuilder middlewares)
@@ -185,7 +197,7 @@
         /// <summary>
         /// Register a middleware to serialize the message to a fixed type
         /// </summary>
-        /// <param name="middlewares"></param>
+        /// <param name="middlewares">The middleware configuration builder</param>
         /// <param name="serializerFactory">A factory to create a <see cref="IMessageSerializer"/></param>
         /// <typeparam name="TMessage">The message type</typeparam>
         /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
@@ -203,9 +215,9 @@
         /// <summary>
         /// Register a middleware to serialize the message to a fixed type
         /// </summary>
-        /// <param name="middlewares"></param>
-        /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
+        /// <param name="middlewares">The middleware configuration builder</param>
         /// <typeparam name="TMessage">The message type</typeparam>
+        /// <typeparam name="TSerializer">A class that implements <see cref="IMessageSerializer"/></typeparam>
         /// <returns></returns>
         public static IProducerMiddlewareConfigurationBuilder AddSingleTypeSerializer<TMessage, TSerializer>(
             this IProducerMiddlewareConfigurationBuilder middlewares)

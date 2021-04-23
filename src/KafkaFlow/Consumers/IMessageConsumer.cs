@@ -37,7 +37,7 @@ namespace KafkaFlow.Consumers
 
         /// <summary>
         ///     Gets the name of this client instance.
-        /// 
+        ///
         ///     Contains (but is not equal to) the client.id
         ///     configuration parameter.
         /// </summary>
@@ -63,7 +63,7 @@ namespace KafkaFlow.Consumers
         Task ChangeWorkerCountAndRestartAsync(int workerCount);
 
         /// <summary>
-        /// Restart KafkaFlow consumer and recreate the internal Confluent Consumer 
+        /// Restart KafkaFlow consumer and recreate the internal Confluent Consumer
         /// </summary>
         /// <returns></returns>
         Task RestartAsync();
@@ -100,7 +100,7 @@ namespace KafkaFlow.Consumers
         /// <summary>
         ///     Gets the current position (offset) for the
         ///     specified topic / partition.
-        /// 
+        ///
         ///     The offset field of each requested partition
         ///     will be set to the offset of the last consumed
         ///     message + 1, or Offset.Unset in case there was

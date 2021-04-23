@@ -12,29 +12,20 @@ namespace KafkaFlow
         private readonly Headers headers;
 
         /// <summary>
-        /// Creates a <see cref="MessageHeaders"/> instance
+        /// Initializes a new instance of the <see cref="MessageHeaders"/> class.
         /// </summary>
-        /// <param name="headers"></param>
+        /// <param name="headers">The Confluent headers</param>
         public MessageHeaders(Headers headers)
         {
             this.headers = headers;
         }
 
         /// <summary>
-        /// Creates a <see cref="MessageHeaders"/> instance
+        /// Initializes a new instance of the <see cref="MessageHeaders"/> class.
         /// </summary>
-        public MessageHeaders() : this(new Headers())
+        public MessageHeaders()
+            : this(new Headers())
         {
-        }
-
-        /// <summary>
-        /// Adds a new header to the enumeration
-        /// </summary>
-        /// <param name="key">The header key.</param>
-        /// <param name="value">The header value (possibly null)</param>
-        public void Add(string key, byte[] value)
-        {
-            this.headers.Add(key, value);
         }
 
         /// <summary>
@@ -52,12 +43,21 @@ namespace KafkaFlow
         }
 
         /// <summary>
+        /// Adds a new header to the enumeration
+        /// </summary>
+        /// <param name="key">The header key.</param>
+        /// <param name="value">The header value (possibly null)</param>
+        public void Add(string key, byte[] value)
+        {
+            this.headers.Add(key, value);
+        }
+
+        /// <summary>
         /// Gets all the kafka headers
         /// </summary>
         /// <returns></returns>
         public Headers GetKafkaHeaders() => this.headers;
 
-        
         /// <summary>
         /// Gets an enumerator that iterates through <see cref="Headers"/>
         /// </summary>
@@ -70,6 +70,7 @@ namespace KafkaFlow
             }
         }
 
+        /// <inheritdoc cref="GetEnumerator"/>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();

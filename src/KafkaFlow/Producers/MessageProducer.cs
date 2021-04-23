@@ -13,8 +13,9 @@ namespace KafkaFlow.Producers
         private readonly MiddlewareExecutor middlewareExecutor;
         private readonly IDependencyResolverScope dependencyResolverScope;
 
-        private volatile IProducer<byte[], byte[]> producer;
         private readonly object producerCreationSync = new();
+
+        private volatile IProducer<byte[], byte[]> producer;
 
         public MessageProducer(
             IDependencyResolver dependencyResolver,
@@ -139,6 +140,35 @@ namespace KafkaFlow.Producers
                 deliveryHandler);
         }
 
+        public void Dispose()
+        {
+            this.dependencyResolverScope.Dispose();
+            this.producer?.Dispose();
+        }
+
+        private static Message<byte[], byte[]> CreateMessage(IMessageContext context)
+        {
+            return new()
+            {
+                Key = context.PartitionKey,
+                Value = GetMessageContent(context),
+                Headers = ((MessageHeaders) context.Headers).GetKafkaHeaders(),
+                Timestamp = Timestamp.Default,
+            };
+        }
+
+        private static byte[] GetMessageContent(IMessageContext context)
+        {
+            if (!(context.Message is byte[] value))
+            {
+                throw new InvalidOperationException(
+                    $"{nameof(context.Message)} must be a byte array to be produced, it is a {context.Message.GetType().FullName}." +
+                    "You should serialize or encode your message object using a middleware");
+            }
+
+            return value;
+        }
+
         private IProducer<byte[], byte[]> EnsureProducer()
         {
             if (this.producer != null)
@@ -155,7 +185,7 @@ namespace KafkaFlow.Producers
 
                 var producerBuilder = new ProducerBuilder<byte[], byte[]>(this.configuration.GetKafkaConfig())
                     .SetErrorHandler(
-                        (p, error) =>
+                        (_, error) =>
                         {
                             if (error.IsFatal)
                             {
@@ -169,7 +199,7 @@ namespace KafkaFlow.Producers
                             }
                         })
                     .SetStatisticsHandler(
-                        (producer, statistics) =>
+                        (_, statistics) =>
                         {
                             foreach (var handler in this.configuration.StatisticsHandlers)
                             {
@@ -248,35 +278,6 @@ namespace KafkaFlow.Producers
 
                         deliveryHandler(report);
                     });
-        }
-
-        private static Message<byte[], byte[]> CreateMessage(IMessageContext context)
-        {
-            return new()
-            {
-                Key = context.PartitionKey,
-                Value = GetMessageContent(context),
-                Headers = ((MessageHeaders) context.Headers).GetKafkaHeaders(),
-                Timestamp = Timestamp.Default
-            };
-        }
-
-        private static byte[] GetMessageContent(IMessageContext context)
-        {
-            if (!(context.Message is byte[] value))
-            {
-                throw new InvalidOperationException(
-                    $"{nameof(context.Message)} must be a byte array to be produced, it is a {context.Message.GetType().FullName}." +
-                    "You should serialize or encode your message object using a middleware");
-            }
-
-            return value;
-        }
-
-        public void Dispose()
-        {
-            this.dependencyResolverScope.Dispose();
-            this.producer?.Dispose();
         }
     }
 }

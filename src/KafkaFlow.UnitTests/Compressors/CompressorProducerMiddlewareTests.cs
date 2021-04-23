@@ -7,14 +7,14 @@ namespace KafkaFlow.UnitTests.Compressors
     using Moq;
 
     [TestClass]
-    public class CompressorProducerMiddlewareTests
+    internal class CompressorProducerMiddlewareTests
     {
         private Mock<IMessageContext> contextMock;
         private Mock<IMessageSerializer> serializerMock;
         private Mock<IMessageTypeResolver> typeResolverMock;
         private bool nextCalled;
         private SerializerProducerMiddleware target;
-        
+
         [TestInitialize]
         public void Setup()
         {
@@ -39,15 +39,15 @@ namespace KafkaFlow.UnitTests.Compressors
                 .Returns(deserializedMessage);
 
             this.typeResolverMock.Setup(x => x.OnProduce(this.contextMock.Object));
-            
+
             this.serializerMock
                 .Setup(x => x.Serialize(deserializedMessage))
                 .Returns(rawMessage);
 
             this.contextMock.Setup(x => x.TransformMessage(rawMessage));
-            
+
             // Act
-            await this.target.Invoke(this.contextMock.Object, c => this.SetNextCalled());
+            await this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
 
             // Assert
             this.nextCalled.Should().BeTrue();

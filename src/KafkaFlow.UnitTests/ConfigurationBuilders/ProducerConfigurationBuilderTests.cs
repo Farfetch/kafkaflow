@@ -9,7 +9,7 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
     using Moq;
 
     [TestClass]
-    public class ProducerConfigurationBuilderTests
+    internal class ProducerConfigurationBuilderTests
     {
         private readonly Fixture fixture = new();
 
@@ -64,8 +64,8 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             var defaultTopic = this.fixture.Create<string>();
             var acks = this.fixture.Create<KafkaFlow.Acks>();
             const int lingerMs = 50;
-            ProducerCustomFactory customFactory = (producer, resolver) => producer;
-            Action<string> statisticsHandler = s => { };
+            ProducerCustomFactory customFactory = (producer, _) => producer;
+            Action<string> statisticsHandler = _ => { };
             const int statisticsIntervalMs = 100;
             var producerConfig = new ProducerConfig();
             var compressionType = CompressionType.Lz4;

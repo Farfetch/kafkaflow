@@ -2,10 +2,9 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
 {
     using System.Threading.Tasks;
     using KafkaFlow.TypedHandler;
-    using Messages;
     using MessageTypes;
 
-    public class AvroMessageHandler : IMessageHandler<LogMessages2>
+    internal class AvroMessageHandler : IMessageHandler<LogMessages2>
     {
         public Task Handle(IMessageContext context, LogMessages2 message)
         {

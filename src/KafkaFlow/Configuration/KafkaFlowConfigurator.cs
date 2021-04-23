@@ -12,7 +12,7 @@ namespace KafkaFlow.Configuration
         private readonly KafkaConfiguration configuration;
 
         /// <summary>
-        /// Creates a <see cref="KafkaFlowConfigurator"/> instance
+        /// Initializes a new instance of the <see cref="KafkaFlowConfigurator"/> class.
         /// </summary>
         /// <param name="dependencyConfigurator">Dependency injection configurator</param>
         /// <param name="kafka">A handler to setup the configuration</param>

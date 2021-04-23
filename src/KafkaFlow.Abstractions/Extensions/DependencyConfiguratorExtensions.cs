@@ -14,8 +14,7 @@ namespace KafkaFlow
         /// <typeparam name="TService"><see cref="Type"/> that will be requested.</typeparam>
         /// <typeparam name="TImplementation"><see cref="Type"/> that will actually be returned.</typeparam>
         /// <returns></returns>
-        public static IDependencyConfigurator AddSingleton<TService, TImplementation>(
-            this IDependencyConfigurator configurator)
+        public static IDependencyConfigurator AddSingleton<TService, TImplementation>(this IDependencyConfigurator configurator)
             where TImplementation : class, TService
             where TService : class
         {
@@ -35,10 +34,11 @@ namespace KafkaFlow
         }
 
         /// <summary>
-        /// Registers a singleton type mapping where the returned instance will be the given <typeparam name="TService"/> implementation
+        /// Registers a singleton type mapping where the returned instance will be the given implementation
         /// </summary>
         /// <param name="configurator">The <see cref="IDependencyConfigurator"/> object that this method was called on</param>
         /// <param name="service"><see cref="Type"/> that will be returned</param>
+        /// <typeparam name="TService">Type that will be created</typeparam>
         /// <returns></returns>
         public static IDependencyConfigurator AddSingleton<TService>(
             this IDependencyConfigurator configurator,

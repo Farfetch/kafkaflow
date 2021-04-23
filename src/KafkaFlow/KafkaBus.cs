@@ -56,7 +56,6 @@ namespace KafkaFlow
             }
         }
 
-
         public Task StopAsync()
         {
             return Task.WhenAll(this.consumerManagers.Select(x => x.StopAsync()));

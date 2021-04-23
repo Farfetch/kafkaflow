@@ -8,6 +8,17 @@ namespace KafkaFlow.Producers
     public interface IProducerAccessor
     {
         /// <summary>
+        /// Gets all configured producers
+        /// </summary>
+        IEnumerable<IMessageProducer> All { get; }
+
+        /// <summary>
+        /// Gets a producer by its name
+        /// </summary>
+        /// <param name="name">producer name</param>
+        IMessageProducer this[string name] { get; }
+
+        /// <summary>
         /// Gets a producer by its name
         /// </summary>
         /// <param name="name">The name defined in the producer configuration</param>
@@ -20,16 +31,5 @@ namespace KafkaFlow.Producers
         /// <typeparam name="TProducer">The type defined in the configuration</typeparam>
         /// <returns></returns>
         IMessageProducer GetProducer<TProducer>();
-
-        /// <summary>
-        /// Returns all configured producers
-        /// </summary>
-        IEnumerable<IMessageProducer> All { get; }
-
-        /// <summary>
-        /// Gets a producer by its name
-        /// </summary>
-        /// <param name="name"></param>
-        IMessageProducer this[string name] { get; }
     }
 }

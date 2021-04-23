@@ -5,7 +5,7 @@ namespace KafkaFlow
     using KafkaFlow.Configuration;
 
     /// <summary>
-    /// 
+    /// No needed
     /// </summary>
     public static class ClusterConfigurationBuilderExtensions
     {

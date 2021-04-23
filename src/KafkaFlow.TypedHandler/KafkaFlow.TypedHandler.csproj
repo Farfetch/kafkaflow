@@ -4,12 +4,10 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <PackageId>KafkaFlow.TypedHandler</PackageId>
         <Description>A KafkaFlow middleware to execute a handler class when a specific message arrives</Description>
-        <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
-        <LangVersion>9</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
+        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj"/>
     </ItemGroup>
 
 </Project>

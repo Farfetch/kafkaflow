@@ -1,7 +1,6 @@
-﻿namespace KafkaFlow.Microsoft.DependencyInjection
+﻿namespace KafkaFlow
 {
     using System;
-    using System.Collections.Generic;
     using global::Microsoft.Extensions.DependencyInjection;
 
     internal class MicrosoftDependencyResolver : IDependencyResolver

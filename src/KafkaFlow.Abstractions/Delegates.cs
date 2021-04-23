@@ -9,7 +9,7 @@ namespace KafkaFlow
     public delegate Task MiddlewareDelegate(IMessageContext context);
 
     /// <summary>
-    /// Defines a factory to create an instance of <typeparamref name="T" /> type 
+    /// Defines a factory to create an instance of <typeparamref name="T" /> type
     /// </summary>
     /// <param name="resolver">A <see cref="IDependencyResolver"/> instance</param>
     public delegate T Factory<out T>(IDependencyResolver resolver);

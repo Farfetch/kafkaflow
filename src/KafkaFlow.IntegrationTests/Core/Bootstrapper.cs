@@ -14,18 +14,21 @@ namespace KafkaFlow.IntegrationTests.Core
     using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Messages;
     using KafkaFlow.IntegrationTests.Core.Middlewares;
-    using KafkaFlow.IntegrationTests.Core.Middlewares.Producers;
+    using KafkaFlow.IntegrationTests.Core.Producers;
     using KafkaFlow.Serializer;
+    using KafkaFlow.Serializer.ApacheAvro;
     using KafkaFlow.Serializer.ConfluentJson;
     using KafkaFlow.Serializer.ConfluentProtoBuf;
     using KafkaFlow.Serializer.Json;
     using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
-    using Serializer.ApacheAvro;
     using AutoOffsetReset = KafkaFlow.AutoOffsetReset;
 
-    public static class Bootstrapper
+    internal static class Bootstrapper
     {
+        public const string PauseResumeTopicName = "test-pause-resume";
+        public const int MaxPollIntervalMs = 7000;
+
         private const string ProtobufTopicName = "test-protobuf";
         private const string ProtobufSchemaRegistryTopicName = "test-protobuf-sr";
         private const string JsonSchemaRegistryTopicName = "test-json-sr";
@@ -35,27 +38,23 @@ namespace KafkaFlow.IntegrationTests.Core
         private const string ProtobufGzipTopicName = "test-protobuf-gzip";
         private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
         private const string AvroTopicName = "test-avro";
-        public const string PauseResumeTopicName = "test-pause-resume";
 
         private const string ProtobufGroupId = "consumer-protobuf";
-        private const string JsonGroupId = "consumer-json";
         private const string GzipGroupId = "consumer-gzip";
         private const string JsonGzipGroupId = "consumer-json-gzip";
         private const string ProtobufGzipGroupId = "consumer-protobuf-gzip";
         private const string PauseResumeGroupId = "consumer-pause-resume";
 
-        public const int MaxPollIntervalMs = 7000;
+        private static readonly Lazy<IServiceProvider> LazyProvider = new(SetupProvider);
 
-        private static readonly Lazy<IServiceProvider> lazyProvider = new Lazy<IServiceProvider>(SetupProvider);
-
-        public static IServiceProvider GetServiceProvider() => lazyProvider.Value;
+        public static IServiceProvider GetServiceProvider() => LazyProvider.Value;
 
         private static IServiceProvider SetupProvider()
         {
             var builder = Host
                 .CreateDefaultBuilder()
                 .ConfigureAppConfiguration(
-                    (builderContext, config) =>
+                    (_, config) =>
                     {
                         config
                             .SetBasePath(Directory.GetCurrentDirectory())
@@ -67,7 +66,7 @@ namespace KafkaFlow.IntegrationTests.Core
                     })
                 .ConfigureServices(SetupServices)
                 .UseDefaultServiceProvider(
-                    (context, options) =>
+                    (_, options) =>
                     {
                         options.ValidateScopes = true;
                         options.ValidateOnBuild = true;
@@ -76,7 +75,8 @@ namespace KafkaFlow.IntegrationTests.Core
             var host = builder.Build();
             var bus = host.Services.CreateKafkaBus();
             bus.StartAsync().GetAwaiter().GetResult();
-            //Wait partition assignment
+
+            // Wait partition assignment
             Thread.Sleep(10000);
 
             return host.Services;
@@ -99,15 +99,14 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(AvroTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer(resolver => new ApacheAvroMessageSerializer(
-                                                resolver,
-                                                new AvroSerializerConfig
-                                                {
-                                                    AutoRegisterSchemas = true,
-                                                    SubjectNameStrategy = SubjectNameStrategy.Record
-                                                }))
-                                    )
-                            )
+                                            .AddSerializer(
+                                                resolver => new ApacheAvroMessageSerializer(
+                                                    resolver,
+                                                    new AvroSerializerConfig
+                                                    {
+                                                        AutoRegisterSchemas = true,
+                                                        SubjectNameStrategy = SubjectNameStrategy.Record,
+                                                    }))))
                             .AddConsumer(
                                 consumer => consumer
                                     .Topic(AvroTopicName)
@@ -121,23 +120,20 @@ namespace KafkaFlow.IntegrationTests.Core
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                    .AddHandler<AvroMessageHandler>())
-                                    )
-                            )
+                                                    .AddHandler<AvroMessageHandler>())))
                             .AddProducer<ConfluentProtobufProducer>(
                                 producer => producer
                                     .DefaultTopic(ProtobufSchemaRegistryTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer(resolver => new ConfluentProtobufSerializer(
-                                                resolver,
-                                                new ProtobufSerializerConfig
-                                                {
-                                                    AutoRegisterSchemas = true,
-                                                    SubjectNameStrategy = SubjectNameStrategy.Record
-                                                }))
-                                    )
-                            )
+                                            .AddSerializer(
+                                                resolver => new ConfluentProtobufSerializer(
+                                                    resolver,
+                                                    new ProtobufSerializerConfig
+                                                    {
+                                                        AutoRegisterSchemas = true,
+                                                        SubjectNameStrategy = SubjectNameStrategy.Record,
+                                                    }))))
                             .AddConsumer(
                                 consumer => consumer
                                     .Topic(ProtobufSchemaRegistryTopicName)
@@ -151,23 +147,20 @@ namespace KafkaFlow.IntegrationTests.Core
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                    .AddHandler<ConfluentProtobufMessageHandler>())
-                                    )
-                            )
+                                                    .AddHandler<ConfluentProtobufMessageHandler>())))
                             .AddProducer<ConfluentJsonProducer>(
                                 producer => producer
                                     .DefaultTopic(JsonSchemaRegistryTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer(resolver => new ConfluentJsonSerializer(
-                                                resolver,
-                                                new JsonSerializerConfig
-                                                {
-                                                    AutoRegisterSchemas = true,
-                                                    SubjectNameStrategy = SubjectNameStrategy.Record
-                                                }))
-                                    )
-                            )
+                                            .AddSerializer(
+                                                resolver => new ConfluentJsonSerializer(
+                                                    resolver,
+                                                    new JsonSerializerConfig
+                                                    {
+                                                        AutoRegisterSchemas = true,
+                                                        SubjectNameStrategy = SubjectNameStrategy.Record,
+                                                    }))))
                             .AddConsumer(
                                 consumer => consumer
                                     .Topic(JsonSchemaRegistryTopicName)
@@ -181,10 +174,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                    .AddHandler<ConfluentJsonMessageHandler>())
-                                    )
-                            )
-                    )
+                                                    .AddHandler<ConfluentJsonMessageHandler>()))))
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(kafkaBrokers.Split(';'))
@@ -202,9 +192,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                                 handlers =>
                                                     handlers
                                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                        .AddHandler<MessageHandler>())
-                                    )
-                            )
+                                                        .AddHandler<MessageHandler>())))
                             .AddConsumer(
                                 consumer => consumer
                                     .Topic(PauseResumeTopicName)
@@ -212,11 +200,12 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithBufferSize(3)
                                     .WithWorkersCount(3)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
-                                    .WithConsumerConfig(new ConsumerConfig
-                                    {
-                                        MaxPollIntervalMs = MaxPollIntervalMs, 
-                                        SessionTimeoutMs = MaxPollIntervalMs
-                                    })
+                                    .WithConsumerConfig(
+                                        new ConsumerConfig
+                                        {
+                                            MaxPollIntervalMs = MaxPollIntervalMs,
+                                            SessionTimeoutMs = MaxPollIntervalMs,
+                                        })
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSingleTypeSerializer<PauseResumeMessage, ProtobufMessageSerializer>()
@@ -224,9 +213,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                                 handlers =>
                                                     handlers
                                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                        .AddHandler<PauseResumeHandler>())
-                                    )
-                            )
+                                                        .AddHandler<PauseResumeHandler>())))
                             .AddConsumer(
                                 consumer => consumer
                                     .Topic(JsonTopicName)
@@ -241,9 +228,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                                 handlers =>
                                                     handlers
                                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                        .AddHandlersFromAssemblyOf<MessageHandler>())
-                                    )
-                            )
+                                                        .AddHandlersFromAssemblyOf<MessageHandler>())))
                             .AddConsumer(
                                 consumer => consumer
                                     .Topics(GzipTopicName)
@@ -254,9 +239,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddCompressor<GzipMessageCompressor>()
-                                            .Add<GzipMiddleware>()
-                                    )
-                            )
+                                            .Add<GzipMiddleware>()))
                             .AddConsumer(
                                 consumer => consumer
                                     .Topics(JsonGzipTopicName)
@@ -266,14 +249,12 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer(r => new JsonMessageSerializer())
+                                            .AddSerializer(_ => new JsonMessageSerializer())
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
                                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                        .AddHandler<MessageHandler>())
-                                    )
-                            )
+                                                        .AddHandler<MessageHandler>())))
                             .AddConsumer(
                                 consumer => consumer
                                     .Topics(ProtobufGzipTopicName, ProtobufGzipTopicName2)
@@ -290,62 +271,46 @@ namespace KafkaFlow.IntegrationTests.Core
                                                 handlers =>
                                                     handlers
                                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                        .AddHandler<MessageHandler>())
-                                    )
-                            )
+                                                        .AddHandler<MessageHandler>())))
                             .AddProducer<JsonProducer>(
                                 producer => producer
                                     .DefaultTopic(JsonTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<JsonMessageSerializer>()
-                                    )
-                            )
+                                            .AddSerializer<JsonMessageSerializer>()))
                             .AddProducer<JsonGzipProducer>(
                                 producer => producer
                                     .DefaultTopic(JsonGzipTopicName)
                                     .WithCompression(CompressionType.Gzip)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<JsonMessageSerializer>()
-                                    )
-                            )
+                                            .AddSerializer<JsonMessageSerializer>()))
                             .AddProducer<ProtobufProducer>(
                                 producer => producer
                                     .DefaultTopic(ProtobufTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSingleTypeSerializer<TestMessage1, ProtobufMessageSerializer>()
-                                    )
-                            )
+                                            .AddSingleTypeSerializer<TestMessage1, ProtobufMessageSerializer>()))
                             .AddProducer<ProtobufGzipProducer>(
                                 producer => producer
                                     .DefaultTopic(ProtobufGzipTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSerializer<ProtobufMessageSerializer>()
-                                            .AddCompressor<GzipMessageCompressor>()
-                                    )
-                            )
+                                            .AddCompressor<GzipMessageCompressor>()))
                             .AddProducer<ProtobufGzipProducer2>(
                                 producer => producer
                                     .DefaultTopic(ProtobufGzipTopicName2)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer(r => new ProtobufMessageSerializer())
-                                            .AddCompressor(r => new GzipMessageCompressor())
-                                    )
-                            )
+                                            .AddSerializer(_ => new ProtobufMessageSerializer())
+                                            .AddCompressor(_ => new GzipMessageCompressor())))
                             .AddProducer<GzipProducer>(
                                 producer => producer
                                     .DefaultTopic(GzipTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddCompressor<GzipMessageCompressor>()
-                                    )
-                            )
-                    )
-            );
+                                            .AddCompressor<GzipMessageCompressor>()))));
 
             services.AddSingleton<JsonProducer>();
             services.AddSingleton<JsonGzipProducer>();
