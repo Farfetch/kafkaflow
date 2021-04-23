@@ -7,10 +7,9 @@
     using global::Microsoft.Extensions.DependencyInjection;
     using KafkaFlow.Producers;
     using KafkaFlow.Sample.Avro.Handlers;
-    using KafkaFlow.Serializer;
+    using KafkaFlow.Serializer.SchemaRegistry;
     using KafkaFlow.TypedHandler;
     using MessageTypes;
-    using KafkaFlow.Serializer.ApacheAvro;
 
     internal static class Program
     {
@@ -37,7 +36,7 @@
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSerializer(
-                                                resolver => new ApacheAvroMessageSerializer(
+                                                resolver => new ConfluentAvroSerializer(
                                                     resolver,
                                                     new AvroSerializerConfig
                                                     {
@@ -56,7 +55,7 @@
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ApacheAvroMessageSerializer>()
+                                            .AddSerializer<ConfluentAvroSerializer>()
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)

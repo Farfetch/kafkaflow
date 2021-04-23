@@ -1,4 +1,4 @@
-﻿namespace KafkaFlow.Serializer.NewtonsoftJson
+﻿namespace KafkaFlow.Serializer
 {
     using System;
     using System.Text;
@@ -7,23 +7,23 @@
     /// <summary>
     /// A message serializer using NewtonsoftJson library
     /// </summary>
-    public class NewtonsoftJsonMessageSerializer : IMessageSerializer
+    public class NewtonsoftJsonSerializer : IMessageSerializer
     {
         private readonly JsonSerializerSettings settings;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NewtonsoftJsonMessageSerializer"/> class.
+        /// Initializes a new instance of the <see cref="NewtonsoftJsonSerializer"/> class.
         /// </summary>
         /// <param name="settings">Json serializer settings</param>
-        public NewtonsoftJsonMessageSerializer(JsonSerializerSettings settings)
+        public NewtonsoftJsonSerializer(JsonSerializerSettings settings)
         {
             this.settings = settings;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NewtonsoftJsonMessageSerializer"/> class.
+        /// Initializes a new instance of the <see cref="NewtonsoftJsonSerializer"/> class.
         /// </summary>
-        public NewtonsoftJsonMessageSerializer()
+        public NewtonsoftJsonSerializer()
             : this(new JsonSerializerSettings())
         {
         }

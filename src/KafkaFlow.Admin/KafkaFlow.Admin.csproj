@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj"/>
-        <ProjectReference Include="..\KafkaFlow.Serializer.ProtoBuf\KafkaFlow.Serializer.ProtoBuf.csproj"/>
-        <ProjectReference Include="..\KafkaFlow.Serializer\KafkaFlow.Serializer.csproj"/>
-        <ProjectReference Include="..\KafkaFlow.TypedHandler\KafkaFlow.TypedHandler.csproj"/>
-        <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj"/>
+        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
+        <ProjectReference Include="..\KafkaFlow.Serializer.ProtobufNet\KafkaFlow.Serializer.ProtobufNet.csproj" />
+        <ProjectReference Include="..\KafkaFlow.Serializer\KafkaFlow.Serializer.csproj" />
+        <ProjectReference Include="..\KafkaFlow.TypedHandler\KafkaFlow.TypedHandler.csproj" />
+        <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
     </ItemGroup>
 
 </Project>

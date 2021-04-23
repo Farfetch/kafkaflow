@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageId>KafkaFlow.Serializer.ApacheAvro</PackageId>
-        <Description>Avro implementation for KafkaFlow serializer middleware using Apache.Avro package</Description>
+        <PackageId>KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro</PackageId>
+        <Description>Avro implementation for KafkaFlow serializer middleware using Confluent.SchemaRegistry.Serdes.Avro package</Description>
         <RootNamespace>KafkaFlow.Serializer.SchemaRegistry</RootNamespace>
     </PropertyGroup>
 
