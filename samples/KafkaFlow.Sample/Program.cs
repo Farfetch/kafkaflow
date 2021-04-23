@@ -77,12 +77,12 @@
             while (true)
             {
                 Console.Write("Number of messages to produce, Pause, Resume, or Exit:");
-                var input = Console.ReadLine().ToLower();
+                var input = Console.ReadLine()?.ToLower();
 
                 switch (input)
                 {
                     case var _ when int.TryParse(input, out var count):
-                        var result = await producers[producerName]
+                        await producers[producerName]
                             .BatchProduceAsync(
                                 Enumerable
                                     .Range(0, count)
@@ -127,7 +127,7 @@
 
                         if (DateTime.TryParse(timeInput, out var time))
                         {
-                            adminProducer.ProduceAsync(
+                            await adminProducer.ProduceAsync(
                                 new RewindConsumerOffsetToDateTime
                                 {
                                     ConsumerName = consumerName,

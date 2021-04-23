@@ -5,6 +5,7 @@ namespace KafkaFlow.TypedHandler
     /// <summary>
     /// Used to create a message handler
     /// </summary>
+    /// <typeparam name="TMessage">The message type</typeparam>
     public interface IMessageHandler<in TMessage> : IMessageHandler
     {
         /// <summary>

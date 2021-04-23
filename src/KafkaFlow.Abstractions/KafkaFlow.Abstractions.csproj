@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <RootNamespace>KafkaFlow</RootNamespace>
-    <PackageId>KafkaFlow.Abstractions</PackageId>
-    <Description>Contains all KafkaFlow extendable interfaces</Description>
-    <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <RootNamespace>KafkaFlow</RootNamespace>
+        <PackageId>KafkaFlow.Abstractions</PackageId>
+        <Description>Contains all KafkaFlow extendable interfaces</Description>
+    </PropertyGroup>
 
 </Project>

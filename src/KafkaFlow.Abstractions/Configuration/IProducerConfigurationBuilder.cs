@@ -29,7 +29,7 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Sets the <see cref="Acks"/> to be used when producing messages
         /// </summary>
-        /// <param name="acks"></param>
+        /// <param name="acks">The <see cref="Acks"/> enum value</param>
         /// <returns></returns>
         IProducerConfigurationBuilder WithAcks(Acks acks);
 

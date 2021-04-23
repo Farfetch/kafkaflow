@@ -4,11 +4,11 @@ namespace KafkaFlow.Configuration
 
     internal class MiddlewareConfiguration
     {
-        public IReadOnlyList<Factory<IMessageMiddleware>> Factories { get; }
-
         public MiddlewareConfiguration(IReadOnlyList<Factory<IMessageMiddleware>> factories)
         {
             this.Factories = factories;
         }
+
+        public IReadOnlyList<Factory<IMessageMiddleware>> Factories { get; }
     }
 }

@@ -12,7 +12,7 @@
         private readonly IMessageTypeResolver typeResolver;
 
         /// <summary>
-        /// Creates a <see cref="SerializerConsumerMiddleware"/> instance
+        /// Initializes a new instance of the <see cref="SerializerConsumerMiddleware"/> class.
         /// </summary>
         /// <param name="serializer">Instance of <see cref="IMessageSerializer"/></param>
         /// <param name="typeResolver">Instance of <see cref="IMessageTypeResolver"/></param>
@@ -39,7 +39,7 @@
             {
                 return Task.CompletedTask;
             }
-            
+
             if (context.Message is null)
             {
                 return next(context);
@@ -47,7 +47,8 @@
 
             if (!(context.Message is byte[] rawData))
             {
-                throw new InvalidOperationException($"{nameof(context.Message)} must be a byte array to be deserialized and it is '{context.Message.GetType().FullName}'");
+                throw new InvalidOperationException(
+                    $"{nameof(context.Message)} must be a byte array to be deserialized and it is '{context.Message.GetType().FullName}'");
             }
 
             context.TransformMessage(this.serializer.Deserialize(rawData, messageType));

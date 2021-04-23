@@ -2,6 +2,6 @@ namespace KafkaFlow.TypedHandler
 {
     internal class TypedHandlerConfiguration
     {
-        public HandlerTypeMapping HandlerMapping { get; } = new HandlerTypeMapping();
+        public HandlerTypeMapping HandlerMapping { get; } = new();
     }
 }

@@ -51,7 +51,8 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public IKafkaConfigurationBuilder UseLogHandler<TLogHandler>() where TLogHandler : ILogHandler
+        public IKafkaConfigurationBuilder UseLogHandler<TLogHandler>()
+            where TLogHandler : ILogHandler
         {
             this.logHandlerType = typeof(TLogHandler);
             return this;

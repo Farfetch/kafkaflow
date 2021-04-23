@@ -1,7 +1,6 @@
 ﻿namespace KafkaFlow.Serializer.Json
 {
     using System;
-    using System.Text;
     using System.Text.Json;
 
     /// <summary>
@@ -12,6 +11,7 @@
         private readonly JsonSerializerOptions options;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="JsonMessageSerializer"/> class.
         /// </summary>
         /// <param name="options">Json serializer options</param>
         public JsonMessageSerializer(JsonSerializerOptions options)
@@ -20,8 +20,10 @@
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="JsonMessageSerializer"/> class.
         /// </summary>
-        public JsonMessageSerializer() : this(new JsonSerializerOptions())
+        public JsonMessageSerializer()
+            : this(new JsonSerializerOptions())
         {
         }
 

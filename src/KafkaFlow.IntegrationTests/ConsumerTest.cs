@@ -4,20 +4,20 @@ namespace KafkaFlow.IntegrationTests
     using System.Linq;
     using System.Threading.Tasks;
     using AutoFixture;
-    using Core.Handlers;
-    using Core.Messages;
-    using Core.Middlewares.Producers;
     using global::Microsoft.Extensions.DependencyInjection;
     using global::Microsoft.VisualStudio.TestTools.UnitTesting;
     using KafkaFlow.IntegrationTests.Core;
+    using KafkaFlow.IntegrationTests.Core.Handlers;
+    using KafkaFlow.IntegrationTests.Core.Messages;
+    using KafkaFlow.IntegrationTests.Core.Producers;
     using KafkaFlow.Producers;
 
     [TestClass]
-    public class ConsumerTest
+    internal class ConsumerTest
     {
-        private IServiceProvider provider;
+        private readonly Fixture fixture = new();
 
-        private readonly Fixture fixture = new Fixture();
+        private IServiceProvider provider;
 
         [TestInitialize]
         public void Setup()
@@ -33,7 +33,7 @@ namespace KafkaFlow.IntegrationTests
             var producer = this.provider.GetRequiredService<IMessageProducer<JsonProducer>>();
             var messages1 = this.fixture.CreateMany<TestMessage1>(5).ToList();
             var messages2 = this.fixture.CreateMany<TestMessage2>(5).ToList();
-            
+
             // Act
             await Task.WhenAll(messages1.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
             await Task.WhenAll(messages2.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
@@ -43,7 +43,7 @@ namespace KafkaFlow.IntegrationTests
             {
                 await MessageStorage.AssertMessageAsync(message);
             }
-            
+
             foreach (var message in messages2)
             {
                 await MessageStorage.AssertMessageAsync(message);
@@ -68,7 +68,7 @@ namespace KafkaFlow.IntegrationTests
                 await MessageStorage.AssertCountMessageAsync(message, 2);
             }
         }
-        
+
         [TestMethod]
         public async Task MultipleHandlersSingleTypeConsumerTest()
         {
@@ -110,14 +110,14 @@ namespace KafkaFlow.IntegrationTests
             await Task.Delay(8000).ConfigureAwait(false);
             var versionsSent = messages.Select(m => m.Version).ToList();
             var versionsReceived = MessageStorage
-                    .GetVersions()
-                    .OrderBy(r => r.ticks)
-                    .Select(r => r.version)
-                    .ToList();
+                .GetVersions()
+                .OrderBy(r => r.ticks)
+                .Select(r => r.version)
+                .ToList();
 
             CollectionAssert.AreEqual(versionsSent, versionsReceived);
         }
-        
+
         [TestMethod]
         public async Task PauseResumeHeartbeatTest()
         {
@@ -126,18 +126,20 @@ namespace KafkaFlow.IntegrationTests
             var messages = this.fixture.CreateMany<PauseResumeMessage>(5).ToList();
 
             // Act
-            await Task.WhenAll(messages.Select(m => producer.ProduceAsync(
-                Bootstrapper.PauseResumeTopicName,
-                m.Id.ToString(), 
-                m)));
-            
+            await Task.WhenAll(
+                messages.Select(
+                    m => producer.ProduceAsync(
+                        Bootstrapper.PauseResumeTopicName,
+                        m.Id.ToString(),
+                        m)));
+
             await Task.Delay(40000);
-            
+
             // Assert
             foreach (var message in messages)
             {
                 await MessageStorage.AssertMessageAsync(message);
             }
         }
-    }        
+    }
 }

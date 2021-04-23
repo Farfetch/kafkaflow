@@ -9,7 +9,7 @@ namespace KafkaFlow.UnitTests.Consumer
     using Moq;
 
     [TestClass]
-    public class WorkerPoolFeederTests
+    internal class WorkerPoolFeederTests
     {
         private WorkerPoolFeeder target;
 
@@ -45,11 +45,12 @@ namespace KafkaFlow.UnitTests.Consumer
             // Arrange
             this.consumerMock
                 .Setup(x => x.ConsumeAsync(It.IsAny<CancellationToken>()))
-                .Returns(async (CancellationToken ct) =>
-                {
-                    await Task.Delay(Timeout.Infinite, ct).ConfigureAwait(false);
-                    return default; // Never reached
-                });
+                .Returns(
+                    async (CancellationToken ct) =>
+                    {
+                        await Task.Delay(Timeout.Infinite, ct).ConfigureAwait(false);
+                        return default; // Never reached
+                    });
 
             // Act
             this.target.Start();
@@ -73,7 +74,7 @@ namespace KafkaFlow.UnitTests.Consumer
 
             this.workerPoolMock
                 .Setup(x => x.EnqueueAsync(consumeResult, It.IsAny<CancellationToken>()))
-                .Returns((ConsumeResult<byte[],byte[]> _, CancellationToken ct) => Task.Delay(Timeout.Infinite, ct));
+                .Returns((ConsumeResult<byte[], byte[]> _, CancellationToken ct) => Task.Delay(Timeout.Infinite, ct));
 
             // Act
             this.target.Start();
@@ -131,16 +132,18 @@ namespace KafkaFlow.UnitTests.Consumer
             var hasThrown = false;
             this.workerPoolMock
                 .Setup(x => x.EnqueueAsync(consumeResult, It.IsAny<CancellationToken>()))
-                .Returns((ConsumeResult<byte[], byte[]> _, CancellationToken ct) =>
-                {
-                    if (!hasThrown)
+                .Returns(
+                    (ConsumeResult<byte[], byte[]> _, CancellationToken ct) =>
                     {
-                        hasThrown = true;
-                        throw exception;
-                    }
-                    return Task.Delay(Timeout.Infinite, ct);
-                });
-            
+                        if (!hasThrown)
+                        {
+                            hasThrown = true;
+                            throw exception;
+                        }
+
+                        return Task.Delay(Timeout.Infinite, ct);
+                    });
+
             this.logHandlerMock
                 .Setup(x => x.Error(It.IsAny<string>(), exception, It.IsAny<object>()));
 

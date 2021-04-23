@@ -6,46 +6,46 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
     using System.Linq;
     using System.Threading.Tasks;
     using global::Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Messages;
+    using KafkaFlow.IntegrationTests.Core.Messages;
     using MessageTypes;
 
-    public static class MessageStorage
+    internal static class MessageStorage
     {
-        private const int timeoutSec = 20;
-        private static readonly ConcurrentBag<ITestMessage> testMessages = new ConcurrentBag<ITestMessage>();
-        private static readonly ConcurrentBag<LogMessages2> avroMessages = new ConcurrentBag<LogMessages2>();
-        private static readonly ConcurrentBag<TestProtoMessage> protoMessages = new ConcurrentBag<TestProtoMessage>();
-        private static readonly ConcurrentBag<(long, int)> versions = new ConcurrentBag<(long, int)>();
-        private static readonly ConcurrentBag<byte[]> byteMessages = new ConcurrentBag<byte[]>();
+        private const int TimeoutSec = 8;
+        private static readonly ConcurrentBag<ITestMessage> TestMessages = new();
+        private static readonly ConcurrentBag<LogMessages2> AvroMessages = new();
+        private static readonly ConcurrentBag<TestProtoMessage> ProtoMessages = new();
+        private static readonly ConcurrentBag<(long, int)> Versions = new();
+        private static readonly ConcurrentBag<byte[]> ByteMessages = new();
 
         public static void Add(ITestMessage message)
         {
-            versions.Add((DateTime.Now.Ticks, message.Version));
-            testMessages.Add(message);
+            Versions.Add((DateTime.Now.Ticks, message.Version));
+            TestMessages.Add(message);
         }
 
         public static void Add(LogMessages2 message)
         {
-            avroMessages.Add(message);
+            AvroMessages.Add(message);
         }
 
         public static void Add(TestProtoMessage message)
         {
-            protoMessages.Add(message);
+            ProtoMessages.Add(message);
         }
 
         public static void Add(byte[] message)
         {
-            byteMessages.Add(message);
+            ByteMessages.Add(message);
         }
 
         public static async Task AssertCountMessageAsync(ITestMessage message, int count)
         {
             var start = DateTime.Now;
 
-            while (testMessages.Count(x => x.Id == message.Id && x.Value == message.Value) != count)
+            while (TestMessages.Count(x => x.Id == message.Id && x.Value == message.Value) != count)
             {
-                if (DateTime.Now.Subtract(start).Seconds > timeoutSec)
+                if (DateTime.Now.Subtract(start).Seconds > TimeoutSec)
                 {
                     Assert.Fail("Message not received.");
                     return;
@@ -59,9 +59,9 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
         {
             var start = DateTime.Now;
 
-            while (!testMessages.Any(x => x.Id == message.Id && x.Value == message.Value))
+            while (!TestMessages.Any(x => x.Id == message.Id && x.Value == message.Value))
             {
-                if (DateTime.Now.Subtract(start).Seconds > timeoutSec)
+                if (DateTime.Now.Subtract(start).Seconds > TimeoutSec)
                 {
                     Assert.Fail("Message (ITestMessage) not received");
                     return;
@@ -75,9 +75,9 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
         {
             var start = DateTime.Now;
 
-            while (!avroMessages.Any(x => x.Message == message.Message && x.Schema.Fullname == message.Schema.Fullname))
+            while (!AvroMessages.Any(x => x.Message == message.Message && x.Schema.Fullname == message.Schema.Fullname))
             {
-                if (DateTime.Now.Subtract(start).Seconds > timeoutSec)
+                if (DateTime.Now.Subtract(start).Seconds > TimeoutSec)
                 {
                     Assert.Fail("Message (LogMessages2) not received");
                     return;
@@ -91,9 +91,9 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
         {
             var start = DateTime.Now;
 
-            while (!protoMessages.Any(x => x.Id == message.Id && x.Value == message.Value && x.Version == message.Version))
+            while (!ProtoMessages.Any(x => x.Id == message.Id && x.Value == message.Value && x.Version == message.Version))
             {
-                if (DateTime.Now.Subtract(start).Seconds > timeoutSec)
+                if (DateTime.Now.Subtract(start).Seconds > TimeoutSec)
                 {
                     Assert.Fail("Message (TestProtoMessage) not received");
                     return;
@@ -107,9 +107,9 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
         {
             var start = DateTime.Now;
 
-            while (!byteMessages.Any(x => x.SequenceEqual(message)))
+            while (!ByteMessages.Any(x => x.SequenceEqual(message)))
             {
-                if (DateTime.Now.Subtract(start).Seconds > timeoutSec)
+                if (DateTime.Now.Subtract(start).Seconds > TimeoutSec)
                 {
                     Assert.Fail("Message (byte[]) not received");
                     return;
@@ -121,15 +121,15 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
 
         public static List<(long ticks, int version)> GetVersions()
         {
-            return versions.ToList();
+            return Versions.ToList();
         }
 
         public static void Clear()
         {
-            versions.Clear();
-            testMessages.Clear();
-            byteMessages.Clear();
-            protoMessages.Clear();
+            Versions.Clear();
+            TestMessages.Clear();
+            ByteMessages.Clear();
+            ProtoMessages.Clear();
         }
     }
 }

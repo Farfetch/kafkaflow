@@ -8,22 +8,22 @@ namespace KafkaFlow.Consumers
     public interface IConsumerAccessor
     {
         /// <summary>
-        /// Gets a consumer by its name
-        /// </summary>
-        /// <param name="name">The name defined in the consumer configuration</param>
-        /// <returns></returns>
-        IMessageConsumer GetConsumer(string name);
-
-        /// <summary>
-        /// Returns all configured consumers
+        /// Gets all configured consumers
         /// </summary>
         IEnumerable<IMessageConsumer> All { get; }
 
         /// <summary>
         /// Gets a consumer by its name
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="name">consumer name</param>
         IMessageConsumer this[string name] { get; }
+
+        /// <summary>
+        /// Gets a consumer by its name
+        /// </summary>
+        /// <param name="name">The name defined in the consumer configuration</param>
+        /// <returns></returns>
+        IMessageConsumer GetConsumer(string name);
 
         internal void Add(IMessageConsumer consumer);
     }

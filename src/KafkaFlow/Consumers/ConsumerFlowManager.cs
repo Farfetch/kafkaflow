@@ -11,11 +11,10 @@ namespace KafkaFlow.Consumers
     {
         private readonly IConsumer<byte[], byte[]> consumer;
         private readonly ILogHandler logHandler;
+        private readonly List<TopicPartition> pausedPartitions = new();
 
         private CancellationTokenSource heartbeatTokenSource;
         private Task heartbeatTask;
-
-        private readonly List<TopicPartition> pausedPartitions = new();
 
         public ConsumerFlowManager(
             IConsumer<byte[], byte[]> consumer,

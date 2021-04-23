@@ -1,15 +1,14 @@
 namespace KafkaFlow.UnitTests.TypedHandler
 {
-    using System;
     using FluentAssertions;
     using KafkaFlow.TypedHandler;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class HandlerTypeMappingTests
+    internal class HandlerTypeMappingTests
     {
         private HandlerTypeMapping target;
-        
+
         [TestInitialize]
         public void Setup()
         {
@@ -25,10 +24,12 @@ namespace KafkaFlow.UnitTests.TypedHandler
             this.target.AddMapping(typeof(int), typeof(bool));
 
             // Assert
-            this.target.GetHandlersTypes(typeof(int)).Should().BeEquivalentTo(
-                typeof(string), 
-                typeof(double),
-                typeof(bool));
+            this.target.GetHandlersTypes(typeof(int))
+                .Should()
+                .BeEquivalentTo(
+                    typeof(string),
+                    typeof(double),
+                    typeof(bool));
         }
     }
 }

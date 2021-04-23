@@ -33,6 +33,28 @@
 
         public IConsumer Consumer { get; }
 
+        public Task StartAsync()
+        {
+            this.stopCancellationTokenSource = new CancellationTokenSource();
+
+            this.Feeder.Start();
+
+            return Task.CompletedTask;
+        }
+
+        public async Task StopAsync()
+        {
+            if (this.stopCancellationTokenSource != null && this.stopCancellationTokenSource.Token.CanBeCanceled)
+            {
+                this.stopCancellationTokenSource.Cancel();
+            }
+
+            await this.Feeder.StopAsync().ConfigureAwait(false);
+            await this.WorkerPool.StopAsync().ConfigureAwait(false);
+
+            this.Consumer.Dispose();
+        }
+
         private void OnPartitionRevoked(IEnumerable<TopicPartitionOffset> topicPartitions)
         {
             this.logHandler.Warning(
@@ -65,30 +87,8 @@
                     {
                         x.First().Topic,
                         PartitionsCount = x.Count(),
-                        Partitions = x.Select(y => y.Partition.Value)
-                    })
+                        Partitions = x.Select(y => y.Partition.Value),
+                    }),
         };
-
-        public Task StartAsync()
-        {
-            this.stopCancellationTokenSource = new CancellationTokenSource();
-
-            this.Feeder.Start();
-
-            return Task.CompletedTask;
-        }
-
-        public async Task StopAsync()
-        {
-            if (this.stopCancellationTokenSource != null && this.stopCancellationTokenSource.Token.CanBeCanceled)
-            {
-                this.stopCancellationTokenSource.Cancel();
-            }
-
-            await this.Feeder.StopAsync().ConfigureAwait(false);
-            await this.WorkerPool.StopAsync().ConfigureAwait(false);
-
-            this.Consumer.Dispose();
-        }
     }
 }
