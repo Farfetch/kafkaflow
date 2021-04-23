@@ -6,7 +6,6 @@
     using KafkaFlow.Admin.Handlers;
     using KafkaFlow.Configuration;
     using KafkaFlow.Serializer;
-    using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
 
     /// <summary>
@@ -34,7 +33,7 @@
                         .DefaultTopic(adminTopic)
                         .AddMiddlewares(
                             middlewares => middlewares
-                                .AddSerializer<ProtobufMessageSerializer>()))
+                                .AddSerializer<ProtobufNetSerializer>()))
                 .AddConsumer(
                     consumer => consumer
                         .Topic(adminTopic)
@@ -45,7 +44,7 @@
                         .WithAutoOffsetReset(AutoOffsetReset.Latest)
                         .AddMiddlewares(
                             middlewares => middlewares
-                                .AddSerializer<ProtobufMessageSerializer>()
+                                .AddSerializer<ProtobufNetSerializer>()
                                 .AddTypedHandlers(
                                     handlers => handlers
                                         .WithHandlerLifetime(InstanceLifetime.Singleton)

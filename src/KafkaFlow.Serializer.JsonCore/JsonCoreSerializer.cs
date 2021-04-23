@@ -1,4 +1,4 @@
-﻿namespace KafkaFlow.Serializer.Json
+﻿namespace KafkaFlow.Serializer
 {
     using System;
     using System.Text.Json;
@@ -6,23 +6,23 @@
     /// <summary>
     /// A message serializer using System.Text.Json library
     /// </summary>
-    public class JsonMessageSerializer : IMessageSerializer
+    public class JsonCoreSerializer : IMessageSerializer
     {
         private readonly JsonSerializerOptions options;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonMessageSerializer"/> class.
+        /// Initializes a new instance of the <see cref="JsonCoreSerializer"/> class.
         /// </summary>
         /// <param name="options">Json serializer options</param>
-        public JsonMessageSerializer(JsonSerializerOptions options)
+        public JsonCoreSerializer(JsonSerializerOptions options)
         {
             this.options = options;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonMessageSerializer"/> class.
+        /// Initializes a new instance of the <see cref="JsonCoreSerializer"/> class.
         /// </summary>
-        public JsonMessageSerializer()
+        public JsonCoreSerializer()
             : this(new JsonSerializerOptions())
         {
         }

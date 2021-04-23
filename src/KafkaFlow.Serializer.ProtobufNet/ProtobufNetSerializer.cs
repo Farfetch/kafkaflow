@@ -1,13 +1,13 @@
-﻿namespace KafkaFlow.Serializer.ProtoBuf
+﻿namespace KafkaFlow.Serializer
 {
     using System;
     using System.IO;
-    using global::ProtoBuf;
+    using ProtoBuf;
 
     /// <summary>
     /// A message serializer using protobuf-net library
     /// </summary>
-    public class ProtobufMessageSerializer : IMessageSerializer
+    public class ProtobufNetSerializer : IMessageSerializer
     {
         /// <summary>Serializes the message</summary>
         /// <param name="message">The message to be serialized</param>
