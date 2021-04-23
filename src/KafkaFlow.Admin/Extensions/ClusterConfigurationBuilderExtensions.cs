@@ -9,8 +9,18 @@
     using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
 
+    /// <summary>
+    /// No needed
+    /// </summary>
     public static class ClusterConfigurationBuilderExtensions
     {
+        /// <summary>
+        /// Creates the admin producer and consumer to control the application consumers and telemetry messages
+        /// </summary>
+        /// <param name="cluster">The cluster configuration builder</param>
+        /// <param name="adminTopic">The topic to be used by the admin commands</param>
+        /// <param name="adminConsumerGroup">The consumer group prefix</param>
+        /// <returns></returns>
         public static IClusterConfigurationBuilder EnableAdminMessages(
             this IClusterConfigurationBuilder cluster,
             string adminTopic,
@@ -24,12 +34,12 @@
                         .DefaultTopic(adminTopic)
                         .AddMiddlewares(
                             middlewares => middlewares
-                                .AddSerializer<ProtobufMessageSerializer>()
-                        ))
+                                .AddSerializer<ProtobufMessageSerializer>()))
                 .AddConsumer(
                     consumer => consumer
                         .Topic(adminTopic)
-                        .WithGroupId($"{adminConsumerGroup}-{Environment.MachineName}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}")
+                        .WithGroupId(
+                            $"{adminConsumerGroup}-{Environment.MachineName}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}")
                         .WithWorkersCount(1)
                         .WithBufferSize(1)
                         .WithAutoOffsetReset(AutoOffsetReset.Latest)
@@ -39,10 +49,10 @@
                                 .AddTypedHandlers(
                                     handlers => handlers
                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                        .AddHandlersFromAssemblyOf<ResetConsumerOffsetHandler>()))
-                );
+                                        .AddHandlersFromAssemblyOf<ResetConsumerOffsetHandler>())));
         }
 
+        /// <inheritdoc cref="EnableAdminMessages(KafkaFlow.Configuration.IClusterConfigurationBuilder,string,string)"/>
         public static IClusterConfigurationBuilder EnableAdminMessages(
             this IClusterConfigurationBuilder cluster,
             string adminTopic)

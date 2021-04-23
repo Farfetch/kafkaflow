@@ -26,8 +26,8 @@ namespace KafkaFlow.Consumers
         public void Start()
         {
             this.stopTokenSource = new CancellationTokenSource();
-            var token = stopTokenSource.Token;
-            
+            var token = this.stopTokenSource.Token;
+
             this.feederTask = Task.Run(
                 async () =>
                 {

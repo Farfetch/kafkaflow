@@ -10,7 +10,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
 
     [Route("kafka-flow/groups/{groupId}/consumers")]
     [ApiController]
-    public class ConsumersController : ControllerBase
+    internal class ConsumersController : ControllerBase
     {
         private readonly IConsumerAccessor consumers;
         private readonly IAdminProducer adminProducer;
@@ -66,7 +66,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             await this.adminProducer.ProduceAsync(
                 new PauseConsumerByName
                 {
-                    ConsumerName = consumerName
+                    ConsumerName = consumerName,
                 });
 
             return this.Accepted();
@@ -91,7 +91,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             await this.adminProducer.ProduceAsync(
                 new ResumeConsumerByName
                 {
-                    ConsumerName = consumerName
+                    ConsumerName = consumerName,
                 });
 
             return this.Accepted();
@@ -116,7 +116,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             await this.adminProducer.ProduceAsync(
                 new RestartConsumerByName
                 {
-                    ConsumerName = consumerName
+                    ConsumerName = consumerName,
                 });
 
             return this.Accepted();
@@ -148,7 +148,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             await this.adminProducer.ProduceAsync(
                 new ResetConsumerOffset
                 {
-                    ConsumerName = consumerName
+                    ConsumerName = consumerName,
                 });
 
             return this.Accepted();
@@ -181,7 +181,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 new RewindConsumerOffsetToDateTime
                 {
                     ConsumerName = consumerName,
-                    DateTime = request.Date
+                    DateTime = request.Date,
                 });
 
             return this.Accepted();
@@ -195,7 +195,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         public async Task<IActionResult> ChangeWorkerCount(
             [FromRoute] string groupId,
             [FromRoute] string consumerName,
-            [FromBody] ChangeWorketCountRequest request)
+            [FromBody] ChangeWorkerCountRequest request)
         {
             if (request is null || request.WorkerCount <= 0)
             {
@@ -214,7 +214,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 new ChangeConsumerWorkerCount
                 {
                     ConsumerName = consumerName,
-                    WorkerCount = request.WorkerCount
+                    WorkerCount = request.WorkerCount,
                 });
 
             return this.Accepted();

@@ -12,11 +12,11 @@ namespace KafkaFlow.UnitTests.Consumer
     using Moq;
 
     [TestClass]
-    public class ConsumerManagerTests
+    internal class ConsumerManagerTests
     {
-        private ConsumerManager target;
-
         private readonly Fixture fixture = new();
+
+        private ConsumerManager target;
 
         private Mock<IConsumer> consumerMock;
         private Mock<IConsumerWorkerPool> workerPoolMock;

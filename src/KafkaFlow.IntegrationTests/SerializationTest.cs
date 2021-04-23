@@ -4,21 +4,21 @@ namespace KafkaFlow.IntegrationTests
     using System.Linq;
     using System.Threading.Tasks;
     using AutoFixture;
-    using Core.Handlers;
-    using Core.Messages;
-    using Core.Middlewares.Producers;
     using global::Microsoft.Extensions.DependencyInjection;
     using global::Microsoft.VisualStudio.TestTools.UnitTesting;
     using KafkaFlow.IntegrationTests.Core;
+    using KafkaFlow.IntegrationTests.Core.Handlers;
+    using KafkaFlow.IntegrationTests.Core.Messages;
+    using KafkaFlow.IntegrationTests.Core.Producers;
     using KafkaFlow.Producers;
     using MessageTypes;
 
     [TestClass]
-    public class SerializationTest
+    internal class SerializationTest
     {
-        private IServiceProvider provider;
+        private readonly Fixture fixture = new();
 
-        private readonly Fixture fixture = new Fixture();
+        private IServiceProvider provider;
 
         [TestInitialize]
         public void Setup()

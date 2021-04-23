@@ -8,7 +8,7 @@ namespace KafkaFlow.UnitTests.Serializers
     using Moq;
 
     [TestClass]
-    public class SerializerConsumerMiddlewareTests
+    internal class SerializerConsumerMiddlewareTests
     {
         private Mock<IMessageContext> contextMock;
         private Mock<IMessageSerializer> serializerMock;
@@ -39,7 +39,7 @@ namespace KafkaFlow.UnitTests.Serializers
                 .Returns((Type) null);
 
             // Act
-            await this.target.Invoke(this.contextMock.Object, c => this.SetNextCalled());
+            await this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
 
             // Assert
             this.nextCalled.Should().BeFalse();
@@ -63,7 +63,7 @@ namespace KafkaFlow.UnitTests.Serializers
                 .Returns(messageType);
 
             // Act
-            await this.target.Invoke(this.contextMock.Object, c => this.SetNextCalled());
+            await this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
 
             // Assert
             this.nextCalled.Should().BeTrue();
@@ -86,7 +86,7 @@ namespace KafkaFlow.UnitTests.Serializers
                 .Returns(messageType);
 
             // Act
-            Func<Task> act = () => this.target.Invoke(this.contextMock.Object, c => this.SetNextCalled());
+            Func<Task> act = () => this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
 
             // Assert
             act.Should().Throw<InvalidOperationException>();
@@ -117,7 +117,7 @@ namespace KafkaFlow.UnitTests.Serializers
                 .Returns(deserializedMessage);
 
             // Act
-            await this.target.Invoke(this.contextMock.Object, c => this.SetNextCalled());
+            await this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
 
             // Assert
             this.nextCalled.Should().BeTrue();

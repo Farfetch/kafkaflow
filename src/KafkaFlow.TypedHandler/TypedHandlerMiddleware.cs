@@ -21,20 +21,21 @@ namespace KafkaFlow.TypedHandler
             using (var scope = this.dependencyResolver.CreateScope())
             {
                 await Task.WhenAll(
-                    this.configuration
-                        .HandlerMapping
-                        .GetHandlersTypes(context.Message.GetType())
-                        .Select(t =>
-                            HandlerExecutor
-                                .GetExecutor(context.Message.GetType())
-                                .Execute(
-                                    scope.Resolver.Resolve(t),
-                                    context,
-                                    context.Message)))
+                        this.configuration
+                            .HandlerMapping
+                            .GetHandlersTypes(context.Message.GetType())
+                            .Select(
+                                handler =>
+                                    HandlerExecutor
+                                        .GetExecutor(context.Message.GetType())
+                                        .Execute(
+                                            scope.Resolver.Resolve(handler),
+                                            context,
+                                            context.Message)))
                     .ConfigureAwait(false);
             }
 
-            await next(context);
+            await next(context).ConfigureAwait(false);
         }
     }
 }

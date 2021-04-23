@@ -3,18 +3,17 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp2.1</TargetFramework>
         <OutputType>Library</OutputType>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
-        <IsPackable>true</IsPackable>
-        <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
+        <PackageId>KafkaFlow.Admin.WebApi</PackageId>
+        <Description>Allows KafkaFlow to use the Admin Web API</Description>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\KafkaFlow.Admin\KafkaFlow.Admin.csproj" />
-        <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
+        <ProjectReference Include="..\KafkaFlow.Admin\KafkaFlow.Admin.csproj"/>
+        <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj"/>
     </ItemGroup>
 
 </Project>

@@ -7,7 +7,7 @@ namespace KafkaFlow.UnitTests.Serializers
     using Moq;
 
     [TestClass]
-    public class SerializerProducerMiddlewareTests
+    internal class SerializerProducerMiddlewareTests
     {
         private Mock<IMessageContext> contextMock;
         private Mock<IMessageSerializer> serializerMock;
@@ -41,15 +41,15 @@ namespace KafkaFlow.UnitTests.Serializers
                 .Returns(deserializedMessage);
 
             this.typeResolverMock.Setup(x => x.OnProduce(this.contextMock.Object));
-            
+
             this.serializerMock
                 .Setup(x => x.Serialize(deserializedMessage))
                 .Returns(rawMessage);
 
             this.contextMock.Setup(x => x.TransformMessage(rawMessage));
-            
+
             // Act
-            await this.target.Invoke(this.contextMock.Object, c => this.SetNextCalled());
+            await this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
 
             // Assert
             this.nextCalled.Should().BeTrue();
