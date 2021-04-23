@@ -12,7 +12,7 @@
                 {
                     Type = ex.GetType().FullName,
                     ex.Message,
-                    ex.StackTrace
+                    ex.StackTrace,
                 });
 
             Print(

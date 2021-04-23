@@ -13,20 +13,15 @@
         private readonly IUnityContainer container;
 
         /// <summary>
-        /// Creates a <see cref="UnityDependencyConfigurator"/> instance
+        /// Initializes a new instance of the <see cref="UnityDependencyConfigurator"/> class.
         /// </summary>
-        /// <param name="container"></param>
+        /// <param name="container">The Unity container instance</param>
         public UnityDependencyConfigurator(IUnityContainer container)
         {
             this.container = container;
         }
 
-        /// <summary>
-        /// Configures a type mapping
-        /// </summary>
-        /// <param name="serviceType"></param>
-        /// <param name="implementationType"></param>
-        /// <param name="lifetime"></param>
+        /// <inheritdoc />
         public IDependencyConfigurator Add(
             Type serviceType,
             Type implementationType,
@@ -39,38 +34,24 @@
             return this;
         }
 
-        /// <summary>
-        /// Configures a type mapping
-        /// </summary>
-        /// <param name="lifetime"></param>
-        /// <typeparam name="TService"></typeparam>
-        /// <typeparam name="TImplementation"></typeparam>
-        /// <returns></returns>
+        /// <inheritdoc />
         public IDependencyConfigurator Add<TService, TImplementation>(InstanceLifetime lifetime)
-            where TService : class where TImplementation : class, TService
+            where TService : class
+            where TImplementation : class, TService
         {
             this.container.RegisterType<TService, TImplementation>((ITypeLifetimeManager) ParseLifetime(lifetime));
             return this;
         }
 
-        /// <summary>
-        /// Configures a type mapping
-        /// </summary>
-        /// <param name="lifetime"></param>
-        /// <typeparam name="TService"></typeparam>
-        /// <returns></returns>
-        public IDependencyConfigurator Add<TService>(InstanceLifetime lifetime) where TService : class
+        /// <inheritdoc />
+        public IDependencyConfigurator Add<TService>(InstanceLifetime lifetime)
+            where TService : class
         {
             this.container.RegisterType<TService>((ITypeLifetimeManager) ParseLifetime(lifetime));
             return this;
         }
 
-        /// <summary>
-        /// Configures a type mapping
-        /// </summary>
-        /// <param name="service"></param>
-        /// <typeparam name="TImplementation"></typeparam>
-        /// <returns></returns>
+        /// <inheritdoc />
         public IDependencyConfigurator Add<TImplementation>(TImplementation service)
             where TImplementation : class
         {
@@ -78,14 +59,7 @@
             return this;
         }
 
-        /// <summary>
-        /// Configures a type mapping
-        /// </summary>
-        /// <param name="serviceType"></param>
-        /// <param name="factory"></param>
-        /// <param name="lifetime"></param>
-        /// <typeparam name="TImplementation"></typeparam>
-        /// <returns></returns>
+        /// <inheritdoc />
         public IDependencyConfigurator Add<TImplementation>(
             Type serviceType,
             Func<IDependencyResolver, TImplementation> factory,

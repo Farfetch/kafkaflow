@@ -10,6 +10,9 @@
         /// <summary>
         /// Registers a middleware to decompress the message
         /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
+        /// <typeparam name="T">The compressor type</typeparam>
+        /// <returns></returns>
         public static IConsumerMiddlewareConfigurationBuilder AddCompressor<T>(this IConsumerMiddlewareConfigurationBuilder middlewares)
             where T : class, IMessageCompressor
         {
@@ -20,7 +23,8 @@
         /// <summary>
         /// Registers a middleware to decompress the message
         /// </summary>
-        /// <param name="middlewares"></param>
+        /// <param name="middlewares">The middleware configuration builder</param>
+        /// <typeparam name="T">The compressor type that implements <see cref="IMessageCompressor"/></typeparam>
         /// <param name="factory">A factory to create the <see cref="IMessageCompressor"/> instance</param>
         /// <returns></returns>
         public static IConsumerMiddlewareConfigurationBuilder AddCompressor<T>(
@@ -35,7 +39,9 @@
         /// Registers a middleware to compress the message
         /// It is highly recommended to use the producer native compression ('WithCompression()' method) instead of using the compressor middleware
         /// </summary>
-        /// <typeparam name="T">A class that implements <see cref="IMessageCompressor"/></typeparam>
+        /// <param name="middlewares">The middleware configuration builder</param>
+        /// <typeparam name="T">The compressor type that implements <see cref="IMessageCompressor"/></typeparam>
+        /// <returns></returns>
         public static IProducerMiddlewareConfigurationBuilder AddCompressor<T>(this IProducerMiddlewareConfigurationBuilder middlewares)
             where T : class, IMessageCompressor
         {
@@ -47,8 +53,10 @@
         /// Registers a middleware to compress the message
         /// It is highly recommended to use the producer native compression ('WithCompression()' method) instead of using the compressor middleware
         /// </summary>
-        /// <param name="middlewares"></param>
+        /// <param name="middlewares">The middleware configuration builder</param>
+        /// <typeparam name="T">The compressor type that implements <see cref="IMessageCompressor"/></typeparam>
         /// <param name="factory">A factory to create the <see cref="IMessageCompressor"/> instance</param>
+        /// <returns></returns>
         public static IProducerMiddlewareConfigurationBuilder AddCompressor<T>(
             this IProducerMiddlewareConfigurationBuilder middlewares,
             Factory<T> factory)

@@ -13,17 +13,19 @@
     public class ApacheAvroMessageSerializer : IMessageSerializer
     {
         private readonly ISchemaRegistryClient schemaRegistryClient;
-        private readonly AvroSerializerConfig serializerConfig; 
+        private readonly AvroSerializerConfig serializerConfig;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ApacheAvroMessageSerializer"/> class.
         /// </summary>
         /// <param name="resolver">The <see cref="IDependencyResolver"/> to be used by the framework</param>
-        public ApacheAvroMessageSerializer(IDependencyResolver resolver):
-            this(resolver, new AvroSerializerConfig())
+        public ApacheAvroMessageSerializer(IDependencyResolver resolver)
+            : this(resolver, new AvroSerializerConfig())
         {
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ApacheAvroMessageSerializer"/> class.
         /// </summary>
         /// <param name="resolver">The <see cref="IDependencyResolver"/> to be used by the framework</param>
         /// <param name="serializerConfig">Avro serializer configuration</param>
@@ -32,7 +34,8 @@
             AvroSerializerConfig serializerConfig)
         {
             this.schemaRegistryClient = resolver.Resolve<ISchemaRegistryClient>() ??
-                                        throw new InvalidOperationException($"No schema registry configuration was found. Set it using {nameof(ClusterConfigurationBuilderExtensions.WithSchemaRegistry)} on cluster configuration");
+                                        throw new InvalidOperationException(
+                                            $"No schema registry configuration was found. Set it using {nameof(ClusterConfigurationBuilderExtensions.WithSchemaRegistry)} on cluster configuration");
 
             this.serializerConfig = serializerConfig;
         }
@@ -42,7 +45,8 @@
         {
             if (!(message is ISpecificRecord record))
             {
-                throw new InvalidCastException($"The message type {message.GetType().FullName} must implement {nameof(ISpecificRecord)} interface.");
+                throw new InvalidCastException(
+                    $"The message type {message.GetType().FullName} must implement {nameof(ISpecificRecord)} interface.");
             }
 
             return new AvroSerializer<ISpecificRecord>(
@@ -56,10 +60,10 @@
         public object Deserialize(byte[] data, Type type)
         {
             dynamic deserializer = Activator
-                    .CreateInstance(
-                        typeof(AvroDeserializer<>).MakeGenericType(type),
-                        this.schemaRegistryClient,
-                        new AvroDeserializerConfig());
+                .CreateInstance(
+                    typeof(AvroDeserializer<>).MakeGenericType(type),
+                    this.schemaRegistryClient,
+                    new AvroDeserializerConfig());
 
             return deserializer
                 .DeserializeAsync(data, data == null, SerializationContext.Empty)

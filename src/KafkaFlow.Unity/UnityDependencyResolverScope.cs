@@ -12,8 +12,8 @@ namespace KafkaFlow.Unity
             this.Resolver = new UnityDependencyResolver(container);
         }
 
-        public void Dispose() => this.container.Dispose();
-
         public IDependencyResolver Resolver { get; }
+
+        public void Dispose() => this.container.Dispose();
     }
 }

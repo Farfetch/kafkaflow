@@ -11,7 +11,7 @@
         private readonly IWorkerBatchFactory workerBatchFactory;
         private readonly ILogHandler logHandler;
 
-        private readonly ConcurrentDictionary<int, IWorkerBatch> batches = new ConcurrentDictionary<int, IWorkerBatch>();
+        private readonly ConcurrentDictionary<int, IWorkerBatch> batches = new();
 
         public BatchConsumeMiddleware(
             int batchSize,

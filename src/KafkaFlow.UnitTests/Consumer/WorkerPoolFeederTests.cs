@@ -9,7 +9,7 @@ namespace KafkaFlow.UnitTests.Consumer
     using Moq;
 
     [TestClass]
-    public class WorkerPoolFeederTests
+    internal class WorkerPoolFeederTests
     {
         private WorkerPoolFeeder target;
 
@@ -44,15 +44,16 @@ namespace KafkaFlow.UnitTests.Consumer
         {
             // Arrange
             var ready = new ManualResetEvent(false);
-            
+
             this.consumerMock
                 .Setup(x => x.ConsumeAsync(It.IsAny<CancellationToken>()))
-                .Returns(async (CancellationToken ct) =>
-                {
-                    ready.Set();
-                    await Task.Delay(Timeout.Infinite, ct);
-                    return default; // Never reached
-                });
+                .Returns(
+                    async (CancellationToken ct) =>
+                    {
+                        ready.Set();
+                        await Task.Delay(Timeout.Infinite, ct);
+                        return default; // Never reached
+                    });
 
             // Act
             this.target.Start();
@@ -77,7 +78,7 @@ namespace KafkaFlow.UnitTests.Consumer
 
             this.workerPoolMock
                 .Setup(x => x.EnqueueAsync(consumeResult, It.IsAny<CancellationToken>()))
-                .Returns((ConsumeResult<byte[],byte[]> _, CancellationToken ct) =>
+                .Returns((ConsumeResult<byte[], byte[]> _, CancellationToken ct) =>
                 {
                     ready.Set();
                     return Task.Delay(Timeout.Infinite, ct);
@@ -157,7 +158,7 @@ namespace KafkaFlow.UnitTests.Consumer
 
                     return Task.Delay(Timeout.Infinite, ct);
                 });
-            
+
             this.logHandlerMock
                 .Setup(x => x.Error(It.IsAny<string>(), exception, It.IsAny<object>()));
 

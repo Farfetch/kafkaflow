@@ -2,7 +2,7 @@
 {
     using System;
 
-    public interface ITestMessage
+    internal interface ITestMessage
     {
         Guid Id { get; set; }
 

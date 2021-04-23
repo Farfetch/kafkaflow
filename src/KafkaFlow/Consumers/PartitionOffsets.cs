@@ -41,7 +41,8 @@ namespace KafkaFlow.Consumers
                 {
                     this.LastOffset = this.offsetsOrder.First.Value;
                     this.offsetsOrder.RemoveFirst();
-                } while (this.offsetsOrder.Count > 0 && this.pendingOffsets.Remove(this.offsetsOrder.First.Value));
+                }
+                while (this.offsetsOrder.Count > 0 && this.pendingOffsets.Remove(this.offsetsOrder.First.Value));
             }
 
             return true;

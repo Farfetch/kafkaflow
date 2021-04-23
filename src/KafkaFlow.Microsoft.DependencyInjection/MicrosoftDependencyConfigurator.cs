@@ -1,7 +1,7 @@
-namespace KafkaFlow.Microsoft.DependencyInjection
+namespace KafkaFlow
 {
     using System;
-    using global::Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.DependencyInjection;
 
     internal class MicrosoftDependencyConfigurator : IDependencyConfigurator
     {
