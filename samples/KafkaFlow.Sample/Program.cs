@@ -10,7 +10,6 @@
     using KafkaFlow.Consumers;
     using KafkaFlow.Producers;
     using KafkaFlow.Serializer;
-    using KafkaFlow.Serializer.ProtoBuf;
     using KafkaFlow.TypedHandler;
     using Acks = KafkaFlow.Acks;
     using AutoOffsetReset = KafkaFlow.AutoOffsetReset;
@@ -39,7 +38,7 @@
                                     .WithCompression(CompressionType.Gzip)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ProtobufMessageSerializer>()
+                                            .AddSerializer<ProtobufNetSerializer>()
                                     )
                                     .WithAcks(Acks.All)
                             )
@@ -53,7 +52,7 @@
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ProtobufMessageSerializer>()
+                                            .AddSerializer<ProtobufNetSerializer>()
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)

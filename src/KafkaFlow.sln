@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow", "KafkaFlow\Kafk
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Compressor.Gzip", "KafkaFlow.Compressor.Gzip\KafkaFlow.Compressor.Gzip.csproj", "{B668ACDA-5E45-4985-9D33-6EDFF9059D9A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Serializer.Json", "KafkaFlow.Serializer.Json\KafkaFlow.Serializer.Json.csproj", "{42CFFA0D-3BF2-42F0-A1B0-BDCD30CBB470}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Serializer.JsonCore", "KafkaFlow.Serializer.JsonCore\KafkaFlow.Serializer.JsonCore.csproj", "{42CFFA0D-3BF2-42F0-A1B0-BDCD30CBB470}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Serializer.ProtoBuf", "KafkaFlow.Serializer.ProtoBuf\KafkaFlow.Serializer.ProtoBuf.csproj", "{8917E0B9-A943-46FB-8E91-6E9B91F976F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Serializer.ProtobufNet", "KafkaFlow.Serializer.ProtobufNet\KafkaFlow.Serializer.ProtobufNet.csproj", "{8917E0B9-A943-46FB-8E91-6E9B91F976F6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.UnitTests", "KafkaFlow.UnitTests\KafkaFlow.UnitTests.csproj", "{CE82B50F-6C03-4875-ADF5-63FD5B7F1AF8}"
 EndProject
@@ -71,7 +71,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.SchemaRegistry", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Serializer.SchemaRegistry.ConfluentJson", "KafkaFlow.Serializer.SchemaRegistry.ConfluentJson\KafkaFlow.Serializer.SchemaRegistry.ConfluentJson.csproj", "{582D0B0C-F331-45A0-B4D8-CE9DC24F5389}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Serializer.SchemaRegistry.ConfluentProtoBuf", "KafkaFlow.Serializer.SchemaRegistry.ConfluentProtoBuf\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtoBuf.csproj", "{F212D09B-9AD6-428F-9008-38BF1F470B3A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf", "KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf.csproj", "{F212D09B-9AD6-428F-9008-38BF1F470B3A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
