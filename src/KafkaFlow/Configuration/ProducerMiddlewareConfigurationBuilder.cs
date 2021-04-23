@@ -5,8 +5,6 @@ namespace KafkaFlow.Configuration
     internal class ProducerMiddlewareConfigurationBuilder
         : IProducerMiddlewareConfigurationBuilder
     {
-        public IDependencyConfigurator DependencyConfigurator { get; }
-
         private readonly List<Factory<IMessageMiddleware>> middlewaresFactories = new();
 
         public ProducerMiddlewareConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
@@ -14,13 +12,17 @@ namespace KafkaFlow.Configuration
             this.DependencyConfigurator = dependencyConfigurator;
         }
 
-        public IProducerMiddlewareConfigurationBuilder Add<T>(Factory<T> factory) where T : class, IMessageMiddleware
+        public IDependencyConfigurator DependencyConfigurator { get; }
+
+        public IProducerMiddlewareConfigurationBuilder Add<T>(Factory<T> factory)
+            where T : class, IMessageMiddleware
         {
             this.middlewaresFactories.Add(factory);
             return this;
         }
 
-        public IProducerMiddlewareConfigurationBuilder Add<T>() where T : class, IMessageMiddleware
+        public IProducerMiddlewareConfigurationBuilder Add<T>()
+            where T : class, IMessageMiddleware
         {
             this.DependencyConfigurator.AddTransient<T>();
             this.middlewaresFactories.Add(resolver => resolver.Resolve<T>());

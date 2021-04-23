@@ -2,19 +2,18 @@ namespace KafkaFlow.UnitTests.Compressors
 {
     using System;
     using System.Threading.Tasks;
-    using Compressor;
     using FluentAssertions;
+    using KafkaFlow.Compressor;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
 
     [TestClass]
-    public class CompressorConsumerMiddlewareTests
+    internal class CompressorConsumerMiddlewareTests
     {
         private Mock<IMessageContext> contextMock;
         private Mock<IMessageCompressor> compressorMock;
         private bool nextCalled;
         private CompressorConsumerMiddleware target;
-
 
         [TestInitialize]
         public void Setup()
@@ -33,7 +32,7 @@ namespace KafkaFlow.UnitTests.Compressors
                 .Returns(new object());
 
             // Act
-            Func<Task> act = () => this.target.Invoke(this.contextMock.Object, c => this.SetNextCalled());
+            Func<Task> act = () => this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
 
             // Assert
             act.Should().Throw<InvalidOperationException>();
@@ -58,7 +57,7 @@ namespace KafkaFlow.UnitTests.Compressors
                 .Returns(decompressed);
 
             // Act
-            await this.target.Invoke(this.contextMock.Object, c => this.SetNextCalled());
+            await this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
 
             // Assert
             this.nextCalled.Should().BeTrue();

@@ -4,9 +4,7 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <PackageId>KafkaFlow.Serializer.ApacheAvro</PackageId>
         <Description>Avro implementation for KafkaFlow serializer middleware using Apache.Avro package</Description>
-        <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
         <RootNamespace>KafkaFlow.Serializer.SchemaRegistry</RootNamespace>
-        <LangVersion>9</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

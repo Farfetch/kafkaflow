@@ -4,6 +4,7 @@ namespace KafkaFlow.Configuration
     using System.Collections.Generic;
 
     /// <summary>
+    /// A interface to build the cluster configuration
     /// </summary>
     public interface IClusterConfigurationBuilder
     {
@@ -15,7 +16,7 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Set the Kafka Brokers to be used
         /// </summary>
-        /// <param name="brokers"></param>
+        /// <param name="brokers">The brokers address to be used</param>
         /// <returns></returns>
         IClusterConfigurationBuilder WithBrokers(IEnumerable<string> brokers);
 
@@ -36,7 +37,7 @@ namespace KafkaFlow.Configuration
 
         /// <summary>
         /// Adds a producer to the cluster
-        /// </summary> 
+        /// </summary>
         /// <param name="name">The producer name used to get its instance</param>
         /// <param name="producer">A handler to configure the producer</param>
         /// <returns></returns>

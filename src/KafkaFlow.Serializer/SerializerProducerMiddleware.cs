@@ -11,7 +11,7 @@
         private readonly IMessageTypeResolver typeResolver;
 
         /// <summary>
-        /// creates a <see cref="SerializerProducerMiddleware"/> instance
+        /// Initializes a new instance of the <see cref="SerializerProducerMiddleware"/> class.
         /// </summary>
         /// <param name="serializer">Instance of <see cref="IMessageSerializer"/></param>
         /// <param name="typeResolver">Instance of <see cref="IMessageTypeResolver"/></param>
@@ -34,7 +34,7 @@
             this.typeResolver.OnProduce(context);
 
             var data = this.serializer.Serialize(context.Message);
-            
+
             context.TransformMessage(data);
 
             return next(context);

@@ -12,6 +12,7 @@
         private readonly JsonSerializerSettings settings;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="NewtonsoftJsonMessageSerializer"/> class.
         /// </summary>
         /// <param name="settings">Json serializer settings</param>
         public NewtonsoftJsonMessageSerializer(JsonSerializerSettings settings)
@@ -20,6 +21,7 @@
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="NewtonsoftJsonMessageSerializer"/> class.
         /// </summary>
         public NewtonsoftJsonMessageSerializer()
             : this(new JsonSerializerSettings())

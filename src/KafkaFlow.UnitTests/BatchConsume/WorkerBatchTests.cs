@@ -8,28 +8,19 @@ namespace KafkaFlow.UnitTests.BatchConsume
     using Moq;
 
     [TestClass]
-    public class WorkerBatchTests
+    internal class WorkerBatchTests
     {
-        private Mock<ILogHandler> logHandlerMock;
-
         private const int BatchSize = 3;
 
         private readonly TimeSpan batchTimeout = TimeSpan.FromMilliseconds(1000);
         private readonly TimeSpan waitForTaskExecution = TimeSpan.FromMilliseconds(100);
 
+        private Mock<ILogHandler> logHandlerMock;
+
         private IMessageContext nextContext;
         private int timesNextWasCalled;
 
         private WorkerBatch target;
-
-        private Task NextCallback(IMessageContext ctx)
-        {
-            this.nextContext = ctx;
-            this.timesNextWasCalled++;
-            return Task.CompletedTask;
-        }
-
-        private Task WaitBatchTimeoutAsync() => Task.Delay(this.batchTimeout + this.waitForTaskExecution);
 
         [TestInitialize]
         public void Setup()
@@ -130,11 +121,20 @@ namespace KafkaFlow.UnitTests.BatchConsume
             var ex = new Exception();
 
             // Act
-            await this.target.AddAsync(contextMock.Object, ctx => throw ex);
+            await this.target.AddAsync(contextMock.Object, _ => throw ex);
 
             // Assert
             await this.WaitBatchTimeoutAsync();
             this.logHandlerMock.Verify(x => x.Error(It.IsAny<string>(), ex, It.IsAny<object>()), Times.Once);
+        }
+
+        private Task WaitBatchTimeoutAsync() => Task.Delay(this.batchTimeout + this.waitForTaskExecution);
+
+        private Task NextCallback(IMessageContext ctx)
+        {
+            this.nextContext = ctx;
+            this.timesNextWasCalled++;
+            return Task.CompletedTask;
         }
     }
 }

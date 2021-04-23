@@ -4,7 +4,7 @@
     using System.Runtime.Serialization;
 
     [DataContract]
-    public class TestMessage1 : ITestMessage
+    internal class TestMessage1 : ITestMessage
     {
         [DataMember(Order = 1)]
         public Guid Id { get; set; }

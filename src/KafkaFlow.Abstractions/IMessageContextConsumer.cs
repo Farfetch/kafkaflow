@@ -9,22 +9,22 @@ namespace KafkaFlow
     public interface IMessageContextConsumer
     {
         /// <summary>
-        /// The consumer unique name defined in configuration
+        /// Gets the consumer unique name defined in configuration
         /// </summary>
         string Name { get; }
 
         /// <summary>
-        /// A CancellationToken that is cancelled when the worker is requested to stop
+        /// Gets a CancellationToken that is cancelled when the worker is requested to stop
         /// </summary>
         CancellationToken WorkerStopped { get; }
 
         /// <summary>
-        /// Message timestamp. By default is the UTC timestamp when the message was produced
+        /// Gets message timestamp. By default is the UTC timestamp when the message was produced
         /// </summary>
         DateTime MessageTimestamp { get; }
 
         /// <summary>
-        /// Gets or Sets if the framework should store the current offset in the end when auto store offset is used
+        /// Gets or sets a value indicating whether if the framework should store the current offset in the end when auto store offset is used
         /// </summary>
         bool ShouldStoreOffset { get; set; }
 
