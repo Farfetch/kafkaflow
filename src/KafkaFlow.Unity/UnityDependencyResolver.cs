@@ -1,7 +1,6 @@
 namespace KafkaFlow.Unity
 {
     using System;
-    using System.Collections.Generic;
     using global::Unity;
 
     /// <summary>
@@ -12,7 +11,7 @@ namespace KafkaFlow.Unity
         private readonly IUnityContainer container;
 
         /// <summary>
-        /// Creates a <see cref="UnityDependencyResolver"/> instance
+        /// Initializes a new instance of the <see cref="UnityDependencyResolver"/> class.
         /// </summary>
         /// <param name="container">A Unity container instance</param>
         public UnityDependencyResolver(IUnityContainer container) => this.container = container;

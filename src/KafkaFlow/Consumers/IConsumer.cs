@@ -9,14 +9,6 @@ namespace KafkaFlow.Consumers
 
     public interface IConsumer : IDisposable
     {
-        void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler);
-
-        void OnPartitionsRevoked(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler);
-
-        void OnError(Action<IConsumer<byte[], byte[]>, Error> handler);
-
-        void OnStatistics(Action<IConsumer<byte[], byte[]>, string> handler);
-
         IConsumerConfiguration Configuration { get; }
 
         IReadOnlyList<string> Subscription { get; }
@@ -28,6 +20,14 @@ namespace KafkaFlow.Consumers
         string MemberId { get; }
 
         string ClientInstanceName { get; }
+
+        void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler);
+
+        void OnPartitionsRevoked(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler);
+
+        void OnError(Action<IConsumer<byte[], byte[]>, Error> handler);
+
+        void OnStatistics(Action<IConsumer<byte[], byte[]>, string> handler);
 
         Offset GetPosition(TopicPartition topicPartition);
 

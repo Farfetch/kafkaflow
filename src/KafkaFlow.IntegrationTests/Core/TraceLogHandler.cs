@@ -4,7 +4,7 @@ namespace KafkaFlow.IntegrationTests.Core
     using System.Diagnostics;
     using System.Text.Json;
 
-    public class TraceLogHandler : ILogHandler
+    internal class TraceLogHandler : ILogHandler
     {
         public void Error(string message, Exception ex, object data)
         {
@@ -14,7 +14,7 @@ namespace KafkaFlow.IntegrationTests.Core
                     {
                         Message = message,
                         Exception = ex,
-                        Data = data
+                        Data = data,
                     }));
         }
 
@@ -25,7 +25,7 @@ namespace KafkaFlow.IntegrationTests.Core
                     new
                     {
                         Message = message,
-                        Data = data
+                        Data = data,
                     }));
         }
 
@@ -36,7 +36,7 @@ namespace KafkaFlow.IntegrationTests.Core
                     new
                     {
                         Message = message,
-                        Data = data
+                        Data = data,
                     }));
         }
     }

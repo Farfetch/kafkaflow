@@ -2,7 +2,6 @@ namespace KafkaFlow.Consumers.DistributionStrategies
 {
     using System.Collections.Generic;
     using System.Linq;
-    using System.Linq.Expressions;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -15,21 +14,13 @@ namespace KafkaFlow.Consumers.DistributionStrategies
     {
         private IReadOnlyList<IWorker> workers;
 
-        /// <summary>
-        /// Initializes the distribution strategy
-        /// </summary>
-        /// <param name="workers"></param>
+        /// <inheritdoc />
         public void Init(IReadOnlyList<IWorker> workers)
         {
             this.workers = workers;
         }
 
-        /// <summary>
-        /// Gets the worker based on the partition key informed 
-        /// </summary>
-        /// <param name="partitionKey">Message partition key</param>
-        /// <param name="cancellationToken">A <see cref="T:System.Threading.CancellationToken" /> used to cancel the operation.</param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public Task<IWorker> GetWorkerAsync(byte[] partitionKey, CancellationToken cancellationToken)
         {
             if (partitionKey is null)

@@ -13,9 +13,9 @@ namespace KafkaFlow.Consumers
         private readonly ILogHandler logHandler;
         private readonly IMiddlewareExecutor middlewareExecutor;
 
-        private CancellationTokenSource stopCancellationTokenSource;
-
         private readonly Channel<ConsumeResult<byte[], byte[]>> messagesBuffer;
+
+        private CancellationTokenSource stopCancellationTokenSource;
         private Task backgroundTask;
         private Action onMessageFinishedHandler;
 
@@ -84,7 +84,7 @@ namespace KafkaFlow.Consumers
                                         context.Message,
                                         context.Topic,
                                         context.PartitionKey,
-                                        ConsumerName = context.Consumer.Name
+                                        ConsumerName = context.Consumer.Name,
                                     });
                             }
                             finally

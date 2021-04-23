@@ -8,6 +8,9 @@
 			"documentPrivateElements":  false,
 			"documentPrivateFields": false,
 			"xmlHeader": false
+		},
+		"layoutRules": {
+			"newlineAtEndOfFile": "require"
 		}
 	}
 }

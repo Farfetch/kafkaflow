@@ -15,7 +15,7 @@ namespace KafkaFlow
         /// <param name="lifetime">The <see cref="InstanceLifetime"/> that controls the lifetime of the returned instance</param>
         /// <returns>The <see cref="IDependencyConfigurator"/> object that this method was called on</returns>
         IDependencyConfigurator Add(Type serviceType, Type implementationType, InstanceLifetime lifetime);
-        
+
         /// <summary>
         /// Registers a type mapping where the created instances will use the given <see cref="InstanceLifetime"/>.
         /// </summary>

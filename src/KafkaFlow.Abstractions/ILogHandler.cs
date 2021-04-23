@@ -16,7 +16,7 @@ namespace KafkaFlow
         void Error(string message, Exception ex, object data);
 
         /// <summary>
-        /// Writes a info log entry 
+        /// Writes a info log entry
         /// </summary>
         /// <param name="message">Info message</param>
         /// <param name="data">Additional data related to the info</param>

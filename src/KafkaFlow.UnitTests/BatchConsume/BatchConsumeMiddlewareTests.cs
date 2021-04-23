@@ -7,13 +7,13 @@ namespace KafkaFlow.UnitTests.BatchConsume
     using Moq;
 
     [TestClass]
-    public class BatchConsumeMiddlewareTests
+    internal class BatchConsumeMiddlewareTests
     {
+        private const int BatchSize = 10;
+        private readonly TimeSpan batchTimeout = TimeSpan.FromSeconds(3);
+
         private Mock<IWorkerBatchFactory> workerBatchFactoryMock;
         private Mock<ILogHandler> logHandlerMock;
-
-        private const int batchSize = 10;
-        private readonly TimeSpan batchTimeout = TimeSpan.FromSeconds(3);
 
         private BatchConsumeMiddleware target;
 
@@ -24,7 +24,7 @@ namespace KafkaFlow.UnitTests.BatchConsume
             this.logHandlerMock = new Mock<ILogHandler>(MockBehavior.Strict);
 
             this.target = new BatchConsumeMiddleware(
-                batchSize,
+                BatchSize,
                 this.batchTimeout,
                 this.workerBatchFactoryMock.Object,
                 this.logHandlerMock.Object);
@@ -74,7 +74,7 @@ namespace KafkaFlow.UnitTests.BatchConsume
                 .Returns(Task.CompletedTask);
 
             this.workerBatchFactoryMock
-                .SetupSequence(x => x.Create(batchSize, this.batchTimeout, this.logHandlerMock.Object))
+                .SetupSequence(x => x.Create(BatchSize, this.batchTimeout, this.logHandlerMock.Object))
                 .Returns(worker1Batch.Object)
                 .Returns(worker2Batch.Object);
 

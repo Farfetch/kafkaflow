@@ -11,7 +11,7 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
     using AutoOffsetReset = KafkaFlow.AutoOffsetReset;
 
     [TestClass]
-    public class ConsumerConfigurationBuilderTests
+    internal class ConsumerConfigurationBuilderTests
     {
         private readonly Fixture fixture = new();
 
@@ -83,10 +83,10 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             var groupId = this.fixture.Create<string>();
             const int autoCommitInterval = 10000;
             const int maxPollIntervalMs = 500000;
-            ConsumerCustomFactory customFactory = (producer, resolver) => producer;
-            Action<string> statisticsHandler = s => { };
-            Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler = (a, p) => { };
-            Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler = (a, p) => { };
+            ConsumerCustomFactory customFactory = (producer, _) => producer;
+            Action<string> statisticsHandler = _ => { };
+            Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler = (_, _) => { };
+            Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler = (_, _) => { };
             const int statisticsIntervalMs = 100;
             var consumerConfig = new ConsumerConfig();
 

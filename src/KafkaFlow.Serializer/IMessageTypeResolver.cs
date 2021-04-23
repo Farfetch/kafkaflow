@@ -13,12 +13,11 @@
         /// <param name="context">The <see cref="IMessageContext"/> containing the message and the metadata</param>
         /// <returns></returns>
         Type OnConsume(IMessageContext context);
-        
+
         /// <summary>
         /// Must store the message type somewhere
         /// </summary>
         /// <param name="context">The <see cref="IMessageContext"/> containing the message and the metadata</param>
-        /// <returns></returns>
         void OnProduce(IMessageContext context);
     }
 }

@@ -6,12 +6,12 @@ namespace KafkaFlow
     using KafkaFlow.Configuration;
 
     /// <summary>
-    /// Provides extension methods over <see cref="IConsumerConfigurationBuilder"/> and <see cref="IProducerConfigurationBuilder"/> 
+    /// Provides extension methods over <see cref="IConsumerConfigurationBuilder"/> and <see cref="IProducerConfigurationBuilder"/>
     /// </summary>
     public static class ConfigurationBuilderExtensions
     {
         /// <summary>
-        /// Sets configurations in the producer based on a <see cref="P:Confluent.Kafka.ProducerConfig"/> instance 
+        /// Sets configurations in the producer based on a <see cref="P:Confluent.Kafka.ProducerConfig"/> instance
         /// </summary>
         /// <param name="builder">A class that implements <see cref="IProducerConfigurationBuilder"/></param>
         /// <param name="config"><see cref="P:Confluent.Kafka.ProducerConfig"/> instance</param>
@@ -22,7 +22,7 @@ namespace KafkaFlow
         }
 
         /// <summary>
-        /// Sets compression configurations in the producer 
+        /// Sets compression configurations in the producer
         /// </summary>
         /// <param name="builder">A class that implements <see cref="IProducerConfigurationBuilder"/></param>
         /// <param name="compressionType">
@@ -37,14 +37,14 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IProducerConfigurationBuilder WithCompression(
             this IProducerConfigurationBuilder builder,
-            CompressionType compressionType, 
+            CompressionType compressionType,
             int? compressionLevel = null)
         {
             return ((ProducerConfigurationBuilder) builder).WithCompression(compressionType, compressionLevel);
         }
 
         /// <summary>
-        /// Sets configurations in the consumer based on a <see cref="P:Confluent.Kafka.ConsumerConfig"/> instance 
+        /// Sets configurations in the consumer based on a <see cref="P:Confluent.Kafka.ConsumerConfig"/> instance
         /// </summary>
         /// <param name="builder">A class that implements <see cref="IConsumerConfigurationBuilder"/></param>
         /// <param name="config"><see cref="P:Confluent.Kafka.ConsumerConfig"/> instance</param>
@@ -85,7 +85,7 @@ namespace KafkaFlow
         /// <summary>
         /// Register a custom consumer factory to be internally used by the framework
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="builder">The configuration builder</param>
         /// <param name="decoratorFactory">The factory method</param>
         /// <returns></returns>
         public static IConsumerConfigurationBuilder WithCustomFactory(
@@ -98,7 +98,7 @@ namespace KafkaFlow
         /// <summary>
         /// Register a custom producer factory to be internally used by the framework
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="builder">The configuration builder</param>
         /// <param name="decoratorFactory">The factory method</param>
         /// <returns></returns>
         public static IProducerConfigurationBuilder WithCustomFactory(

@@ -16,7 +16,7 @@ namespace MessageTypes
 	/// <summary>
 	/// A simple log message type as used by this blog post.
 	/// </summary>
-	public partial class LogMessages2 : ISpecificRecord
+	internal partial class LogMessages2 : ISpecificRecord
 	{
 		public static Schema _SCHEMA = Avro.Schema.Parse("{\"type\":\"record\",\"name\":\"LogMessages2\",\"namespace\":\"MessageTypes\",\"fields\":[{\"nam" +
 				"e\":\"Message\",\"type\":\"string\"}]}");

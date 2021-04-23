@@ -13,10 +13,10 @@ namespace KafkaFlow.BatchConsume
 
         private readonly List<IMessageContext> batch;
 
+        private readonly SemaphoreSlim semaphore = new(1, 1);
+
         private Task<Task> dispatchTask;
         private CancellationTokenSource cancelScheduleTokenSource;
-
-        private readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 
         public WorkerBatch(int batchSize, TimeSpan batchTimeout, ILogHandler logHandler)
         {
@@ -46,7 +46,7 @@ namespace KafkaFlow.BatchConsume
                 this.semaphore.Release();
             }
 
-            // stores the Task in a local variable to avoid NullReferenceException in case the schedule Task ends before the await below 
+            // stores the Task in a local variable to avoid NullReferenceException in case the schedule Task ends before the await below
             var localTask = this.dispatchTask;
 
             if (localTask != null)
@@ -101,7 +101,7 @@ namespace KafkaFlow.BatchConsume
                     {
                         context.Topic,
                         context.GroupId,
-                        context.WorkerId
+                        context.WorkerId,
                     });
             }
             finally

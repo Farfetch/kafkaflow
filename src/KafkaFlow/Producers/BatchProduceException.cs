@@ -1,0 +1,25 @@
+namespace KafkaFlow.Producers
+{
+    using System;
+    using System.Collections.Generic;
+
+    /// <summary>
+    /// Exception thrown by <see cref="BatchProduceExtension.BatchProduceAsync"/>
+    /// </summary>
+    public class BatchProduceException : Exception
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BatchProduceException"/> class.
+        /// </summary>
+        /// <param name="items">The items contained in the batch</param>
+        public BatchProduceException(IReadOnlyCollection<BatchProduceItem> items)
+        {
+            this.Items = items;
+        }
+
+        /// <summary>
+        /// Gets the requested items to produce with <see cref="BatchProduceItem.DeliveryReport"/> filled
+        /// </summary>
+        public IReadOnlyCollection<BatchProduceItem> Items { get; }
+    }
+}
