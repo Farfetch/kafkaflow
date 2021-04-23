@@ -44,7 +44,7 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Sets the group id used by the consumer
         /// </summary>
-        /// <param name="groupId"></param>
+        /// <param name="groupId">The consumer id value</param>
         /// <returns></returns>
         IConsumerConfigurationBuilder WithGroupId(string groupId);
 
@@ -52,7 +52,7 @@ namespace KafkaFlow.Configuration
         /// Sets the initial offset strategy used by new consumer groups.
         /// If your consumer group (set by method <see cref="WithGroupId(string)"/>) has no offset stored in Kafka, this configuration will be used
         /// </summary>
-        /// <param name="autoOffsetReset"></param>
+        /// <param name="autoOffsetReset">The <see cref="AutoOffsetReset"/> enum value</param>
         /// <returns></returns>
         IConsumerConfigurationBuilder WithAutoOffsetReset(AutoOffsetReset autoOffsetReset);
 
@@ -73,7 +73,7 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Sets the number of threads that will be used to consume the messages
         /// </summary>
-        /// <param name="workersCount"></param>
+        /// <param name="workersCount">The number of workers</param>
         /// <returns></returns>
         IConsumerConfigurationBuilder WithWorkersCount(int workersCount);
 
@@ -130,7 +130,7 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Sets the interval the statistics are emitted
         /// </summary>
-        /// <param name="statisticsIntervalMs">The interval in miliseconds</param>
+        /// <param name="statisticsIntervalMs">The interval in milliseconds</param>
         /// <returns></returns>
         IConsumerConfigurationBuilder WithStatisticsIntervalMs(int statisticsIntervalMs);
     }

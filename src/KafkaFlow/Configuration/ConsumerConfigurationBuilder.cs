@@ -26,18 +26,18 @@ namespace KafkaFlow.Configuration
         private bool autoStoreOffsets = true;
         private int statisticsInterval;
 
-        private Factory<IDistributionStrategy> distributionStrategyFactory = resolver => new BytesSumDistributionStrategy();
+        private Factory<IDistributionStrategy> distributionStrategyFactory = _ => new BytesSumDistributionStrategy();
         private TimeSpan autoCommitInterval = TimeSpan.FromSeconds(5);
 
-        private ConsumerCustomFactory customFactory = (consumer, resolver) => consumer;
-
-        public IDependencyConfigurator DependencyConfigurator { get; }
+        private ConsumerCustomFactory customFactory = (consumer, _) => consumer;
 
         public ConsumerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
             this.DependencyConfigurator = dependencyConfigurator;
             this.middlewareConfigurationBuilder = new ConsumerMiddlewareConfigurationBuilder(dependencyConfigurator);
         }
+
+        public IDependencyConfigurator DependencyConfigurator { get; }
 
         public IConsumerConfigurationBuilder Topic(string topicName)
         {

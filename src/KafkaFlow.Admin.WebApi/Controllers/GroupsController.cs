@@ -10,7 +10,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
 
     [Route("kafka-flow/groups")]
     [ApiController]
-    public class GroupsController : ControllerBase
+    internal class GroupsController : ControllerBase
     {
         private readonly IConsumerAccessor consumers;
         private readonly IAdminProducer adminProducer;
@@ -34,7 +34,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                         x => new GroupResponse
                         {
                             GroupId = x.First().GroupId,
-                            Consumers = x.Select(y => y)
+                            Consumers = x.Select(y => y),
                         }));
         }
 
@@ -46,7 +46,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             await this.adminProducer.ProduceAsync(
                 new PauseConsumersByGroup
                 {
-                    GroupId = groupId
+                    GroupId = groupId,
                 });
 
             return this.Accepted();
@@ -60,7 +60,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             await this.adminProducer.ProduceAsync(
                 new ResumeConsumersByGroup
                 {
-                    GroupId = groupId
+                    GroupId = groupId,
                 });
 
             return this.Accepted();

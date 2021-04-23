@@ -11,7 +11,17 @@ namespace KafkaFlow
     public interface IKafkaBus
     {
         /// <summary>
-        /// Starts all consumers 
+        /// Gets all configured consumers
+        /// </summary>
+        IConsumerAccessor Consumers { get; }
+
+        /// <summary>
+        /// Gets all configured producers
+        /// </summary>
+        IProducerAccessor Producers { get; }
+
+        /// <summary>
+        /// Starts all consumers
         /// </summary>
         /// <param name="stopCancellationToken">A <see cref="T:System.Threading.CancellationToken" /> used to stop the operation.</param>
         /// <returns></returns>
@@ -22,15 +32,5 @@ namespace KafkaFlow
         /// </summary>
         /// <returns></returns>
         Task StopAsync();
-
-        /// <summary>
-        /// Give access to all configured consumers
-        /// </summary>
-        IConsumerAccessor Consumers { get; }
-
-        /// <summary>
-        /// Give access to all configured producers
-        /// </summary>
-        IProducerAccessor Producers { get; }
     }
 }

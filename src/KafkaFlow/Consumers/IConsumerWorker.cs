@@ -7,7 +7,7 @@ namespace KafkaFlow.Consumers
     internal interface IConsumerWorker : IWorker
     {
         ValueTask EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken = default);
-        
+
         Task StartAsync();
 
         Task StopAsync();

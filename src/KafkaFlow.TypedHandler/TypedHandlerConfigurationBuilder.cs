@@ -11,11 +11,12 @@ namespace KafkaFlow.TypedHandler
     public class TypedHandlerConfigurationBuilder
     {
         private readonly IDependencyConfigurator dependencyConfigurator;
-        private readonly List<Type> handlers = new List<Type>();
+        private readonly List<Type> handlers = new();
 
         private InstanceLifetime serviceLifetime = InstanceLifetime.Singleton;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="TypedHandlerConfigurationBuilder"/> class.
         /// </summary>
         /// <param name="dependencyConfigurator">Dependency injection configurator</param>
         public TypedHandlerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
@@ -33,13 +34,14 @@ namespace KafkaFlow.TypedHandler
         /// <summary>
         /// Adds all classes that implements the <see cref="IMessageHandler{TMessage}"/> interface from the assemblies of the provided types
         /// </summary>
-        /// <param name="assemblyMarkerTypes"></param>
+        /// <param name="assemblyMarkerTypes">Types contained in the assemblies to be searched</param>
         /// <returns></returns>
         public TypedHandlerConfigurationBuilder AddHandlersFromAssemblyOf(params Type[] assemblyMarkerTypes)
         {
             var handlerTypes = assemblyMarkerTypes
                 .SelectMany(t => t.GetTypeInfo().Assembly.GetTypes())
-                .Where(x => x.IsClass && !x.IsAbstract && typeof(IMessageHandler).IsAssignableFrom(x));
+                .Where(x => x.IsClass && !x.IsAbstract && typeof(IMessageHandler).IsAssignableFrom(x))
+                .Distinct();
 
             this.handlers.AddRange(handlerTypes);
             return this;
@@ -48,7 +50,7 @@ namespace KafkaFlow.TypedHandler
         /// <summary>
         /// Manually adds the message handlers
         /// </summary>
-        /// <param name="handlers"></param>
+        /// <param name="handlers">The handlers to execute the messages</param>
         /// <returns></returns>
         public TypedHandlerConfigurationBuilder AddHandlers(IEnumerable<Type> handlers)
         {
@@ -71,7 +73,7 @@ namespace KafkaFlow.TypedHandler
         /// <summary>
         /// Set the handler lifetime. The default value is <see cref="InstanceLifetime.Singleton"/>
         /// </summary>
-        /// <param name="lifetime"></param>
+        /// <param name="lifetime">The <see cref="InstanceLifetime"/> enum value</param>
         /// <returns></returns>
         public TypedHandlerConfigurationBuilder WithHandlerLifetime(InstanceLifetime lifetime)
         {

@@ -7,6 +7,7 @@ namespace KafkaFlow.Producers
     /// <summary>
     /// Provides access to the kafka message producer
     /// </summary>
+    /// <typeparam name="TProducer">The producer associated type</typeparam>
     public interface IMessageProducer<TProducer> : IMessageProducer
     {
     }
@@ -20,7 +21,7 @@ namespace KafkaFlow.Producers
         /// Gets the unique producer's name defined in the configuration
         /// </summary>
         string ProducerName { get; }
-        
+
         /// <summary>
         /// Produces a new message
         /// </summary>
@@ -56,7 +57,6 @@ namespace KafkaFlow.Producers
         /// <param name="message">The message object to be encoded or serialized</param>
         /// <param name="headers">The message headers</param>
         /// <param name="deliveryHandler">A handler with the operation result</param>
-        /// <returns></returns>
         void Produce(
             string topic,
             string partitionKey,
@@ -72,7 +72,6 @@ namespace KafkaFlow.Producers
         /// <param name="message">The message object to be encoded or serialized</param>
         /// <param name="headers">The message headers</param>
         /// <param name="deliveryHandler">A handler with the operation result</param>
-        /// <returns></returns>
         void Produce(
             string partitionKey,
             object message,

@@ -5,6 +5,7 @@
     using KafkaFlow.Configuration;
 
     /// <summary>
+    /// No needed
     /// </summary>
     public static class ServiceCollectionExtensions
     {

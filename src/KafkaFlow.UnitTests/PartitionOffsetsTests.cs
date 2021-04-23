@@ -8,7 +8,7 @@ namespace KafkaFlow.UnitTests
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class PartitionOffsetsTests
+    internal class PartitionOffsetsTests
     {
         [TestMethod]
         public void AddOffset_InitializeTheValue_DoNothing()
@@ -51,7 +51,6 @@ namespace KafkaFlow.UnitTests
             Assert.AreEqual(1, offsets.LastOffset);
         }
 
-
         [TestMethod]
         public void ShouldUpdateOffset_WithOneGap_ShouldNotUpdate()
         {
@@ -66,7 +65,6 @@ namespace KafkaFlow.UnitTests
             Assert.IsFalse(shouldUpdate);
             Assert.AreEqual(-1, offsets.LastOffset);
         }
-
 
         [TestMethod]
         public void ShouldUpdateOffset_WithManyGaps_ShouldUpdate()
@@ -91,64 +89,64 @@ namespace KafkaFlow.UnitTests
                     ShouldUpdateResult = offsets.ShouldUpdateOffset(7),
                     ShouldUpdateExpected = false,
                     LastOffsetResult = offsets.LastOffset,
-                    LastOffsetExpected = -1
+                    LastOffsetExpected = -1,
                 },
                 new
                 {
                     ShouldUpdateResult = offsets.ShouldUpdateOffset(1),
                     ShouldUpdateExpected = true,
                     LastOffsetResult = offsets.LastOffset,
-                    LastOffsetExpected = 1
+                    LastOffsetExpected = 1,
                 },
                 new
                 {
                     ShouldUpdateResult = offsets.ShouldUpdateOffset(2),
                     ShouldUpdateExpected = true,
                     LastOffsetResult = offsets.LastOffset,
-                    LastOffsetExpected = 2
+                    LastOffsetExpected = 2,
                 },
                 new
                 {
                     ShouldUpdateResult = offsets.ShouldUpdateOffset(20),
                     ShouldUpdateExpected = false,
                     LastOffsetResult = offsets.LastOffset,
-                    LastOffsetExpected = 2
+                    LastOffsetExpected = 2,
                 },
                 new
                 {
                     ShouldUpdateResult = offsets.ShouldUpdateOffset(5),
                     ShouldUpdateExpected = false,
                     LastOffsetResult = offsets.LastOffset,
-                    LastOffsetExpected = 2
+                    LastOffsetExpected = 2,
                 },
                 new
                 {
                     ShouldUpdateResult = offsets.ShouldUpdateOffset(8),
                     ShouldUpdateExpected = false,
                     LastOffsetResult = offsets.LastOffset,
-                    LastOffsetExpected = 2
+                    LastOffsetExpected = 2,
                 },
                 new
                 {
                     ShouldUpdateResult = offsets.ShouldUpdateOffset(4),
                     ShouldUpdateExpected = true,
                     LastOffsetResult = offsets.LastOffset,
-                    LastOffsetExpected = 8
+                    LastOffsetExpected = 8,
                 },
                 new
                 {
                     ShouldUpdateResult = offsets.ShouldUpdateOffset(15),
                     ShouldUpdateExpected = true,
                     LastOffsetResult = offsets.LastOffset,
-                    LastOffsetExpected = 20
+                    LastOffsetExpected = 20,
                 },
                 new
                 {
                     ShouldUpdateResult = offsets.ShouldUpdateOffset(50),
                     ShouldUpdateExpected = true,
                     LastOffsetResult = offsets.LastOffset,
-                    LastOffsetExpected = 50
-                }
+                    LastOffsetExpected = 50,
+                },
             };
 
             // Assert
@@ -158,7 +156,6 @@ namespace KafkaFlow.UnitTests
                 Assert.AreEqual(result.LastOffsetExpected, result.LastOffsetResult);
             }
         }
-
 
         [TestMethod]
         public void ShouldUpdateOffset_WithManyConcurrentOffsets_ShouldUpdate()

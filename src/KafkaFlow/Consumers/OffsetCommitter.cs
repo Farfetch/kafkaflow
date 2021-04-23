@@ -11,9 +11,9 @@ namespace KafkaFlow.Consumers
         private readonly IConsumer consumer;
         private readonly ILogHandler logHandler;
 
-        private ConcurrentDictionary<(string, int), TopicPartitionOffset> offsetsToCommit = new();
-
         private readonly Timer commitTimer;
+
+        private ConcurrentDictionary<(string, int), TopicPartitionOffset> offsetsToCommit = new();
 
         public OffsetCommitter(
             IConsumer consumer,
@@ -27,6 +27,20 @@ namespace KafkaFlow.Consumers
                 null,
                 consumer.Configuration.AutoCommitInterval,
                 consumer.Configuration.AutoCommitInterval);
+        }
+
+        public void Dispose()
+        {
+            this.commitTimer.Dispose();
+            this.CommitHandler();
+        }
+
+        public void StoreOffset(TopicPartitionOffset tpo)
+        {
+            this.offsetsToCommit.AddOrUpdate(
+                (tpo.Topic, tpo.Partition.Value),
+                tpo,
+                (_, _) => tpo);
         }
 
         private void CommitHandler()
@@ -50,20 +64,6 @@ namespace KafkaFlow.Consumers
                     e,
                     null);
             }
-        }
-
-        public void Dispose()
-        {
-            this.commitTimer.Dispose();
-            this.CommitHandler();
-        }
-
-        public void StoreOffset(TopicPartitionOffset tpo)
-        {
-            this.offsetsToCommit.AddOrUpdate(
-                (tpo.Topic, tpo.Partition.Value),
-                tpo,
-                (_, _) => tpo);
         }
     }
 }

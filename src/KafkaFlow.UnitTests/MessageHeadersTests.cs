@@ -6,10 +6,10 @@ namespace KafkaFlow.UnitTests
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class MessageHeadersTests
+    internal class MessageHeadersTests
     {
-        private const string key = "abc";
-        private const string strValue = "123";
+        private const string Key = "abc";
+        private const string StrValue = "123";
         private readonly byte[] value = Encoding.UTF8.GetBytes("123");
 
         [TestMethod]
@@ -19,17 +19,17 @@ namespace KafkaFlow.UnitTests
             var header = new MessageHeaders();
 
             // Act
-            header.Add(key, this.value);
+            header.Add(Key, this.value);
 
             // Assert
-            header[key].Should().BeEquivalentTo(this.value);
+            header[Key].Should().BeEquivalentTo(this.value);
         }
 
         [TestMethod]
         public void GetKafkaHeader_ShouldReturnKafkaHeaders()
         {
             // Arrange
-            var kafkaHeaders = new Headers { { key, this.value } };
+            var kafkaHeaders = new Headers { { Key, this.value } };
             var messageHeaders = new MessageHeaders(kafkaHeaders);
 
             // Act
@@ -46,10 +46,10 @@ namespace KafkaFlow.UnitTests
             var header = new MessageHeaders();
 
             // Act
-            header.SetString(key, strValue);
+            header.SetString(Key, StrValue);
 
             // Assert
-            header.GetString(key).Should().BeEquivalentTo(strValue);
+            header.GetString(Key).Should().BeEquivalentTo(StrValue);
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace KafkaFlow.Microsoft.DependencyInjection
+namespace KafkaFlow
 {
     using global::Microsoft.Extensions.DependencyInjection;
 
@@ -12,11 +12,11 @@ namespace KafkaFlow.Microsoft.DependencyInjection
             this.Resolver = new MicrosoftDependencyResolver(scope.ServiceProvider);
         }
 
+        public IDependencyResolver Resolver { get; }
+
         public void Dispose()
         {
             this.scope.Dispose();
         }
-
-        public IDependencyResolver Resolver { get; }
     }
 }

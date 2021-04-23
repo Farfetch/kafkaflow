@@ -8,13 +8,13 @@
         <Rule Id="SA1000"  Action="None" />          <!-- Keywords should be spaced correctly -->
         <Rule Id="SA1001"  Action="Warning" />          <!-- Commas should be spaced correctly -->
         <Rule Id="SA1002"  Action="Warning" />          <!-- Semicolons should be spaced correctly -->
-        <Rule Id="SA1003"  Action="Warning" />          <!-- Symbols should be spaced correctly -->
+        <Rule Id="SA1003"  Action="None" />          <!-- Symbols should be spaced correctly -->
         <Rule Id="SA1004"  Action="Warning" />          <!-- Documentation lines should begin with single space -->
         <Rule Id="SA1005"  Action="Warning" />          <!-- Single line comments should begin with single space -->
         <Rule Id="SA1006"  Action="Warning" />          <!-- Preprocessor keywords should not be preceded by space -->
         <Rule Id="SA1007"  Action="Warning" />          <!-- Operator keyword should be followed by space -->
         <Rule Id="SA1008"  Action="Warning" />          <!-- Opening parenthesis should be spaced correctly -->
-        <Rule Id="SA1009"  Action="Warning" />          <!-- Closing parenthesis should be spaced correctly -->
+        <Rule Id="SA1009"  Action="None" />          <!-- Closing parenthesis should be spaced correctly -->
         <Rule Id="SA1010"  Action="Warning" />          <!-- Opening square brackets should be spaced correctly -->
         <Rule Id="SA1011"  Action="Warning" />          <!-- Closing square brackets should be spaced correctly -->
         <Rule Id="SA1012"  Action="Warning" />          <!-- Opening braces should be spaced correctly -->

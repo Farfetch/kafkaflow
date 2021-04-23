@@ -1,13 +1,13 @@
 namespace KafkaFlow.IntegrationTests.Core.Middlewares
 {
     using System.Threading.Tasks;
-    using Handlers;
+    using KafkaFlow.IntegrationTests.Core.Handlers;
 
-    public class GzipMiddleware : IMessageMiddleware
+    internal class GzipMiddleware : IMessageMiddleware
     {
-      public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
+        public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
-            MessageStorage.Add((byte[]) context.Message);        
+            MessageStorage.Add((byte[]) context.Message);
             await next(context);
         }
     }

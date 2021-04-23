@@ -24,14 +24,14 @@ namespace KafkaFlow.Serializer
         /// <summary>
         /// Fills the type metadata when producing
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">The message context</param>
         public void OnProduce(IMessageContext context)
         {
             if (context.Message is null)
             {
                 return;
             }
-            
+
             context.Headers.SetString(
                 MessageType,
                 $"{context.Message.GetType().FullName}, {context.Message.GetType().Assembly.GetName().Name}");
