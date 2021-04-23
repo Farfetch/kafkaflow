@@ -1,4 +1,4 @@
-﻿namespace KafkaFlow.Serializer.ConfluentJson
+﻿namespace KafkaFlow.Serializer.SchemaRegistry
 {
     using System;
     using System.Collections.Generic;

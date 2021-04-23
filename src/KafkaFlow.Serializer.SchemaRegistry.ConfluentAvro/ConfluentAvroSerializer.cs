@@ -1,4 +1,4 @@
-﻿namespace KafkaFlow.Serializer.ApacheAvro
+﻿namespace KafkaFlow.Serializer.SchemaRegistry
 {
     using System;
     using Avro.Specific;
@@ -10,26 +10,26 @@
     /// <summary>
     /// A message serializer using Apache.Avro library
     /// </summary>
-    public class ApacheAvroMessageSerializer : IMessageSerializer
+    public class ConfluentAvroSerializer : IMessageSerializer
     {
         private readonly ISchemaRegistryClient schemaRegistryClient;
         private readonly AvroSerializerConfig serializerConfig;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApacheAvroMessageSerializer"/> class.
+        /// Initializes a new instance of the <see cref="ConfluentAvroSerializer"/> class.
         /// </summary>
         /// <param name="resolver">The <see cref="IDependencyResolver"/> to be used by the framework</param>
-        public ApacheAvroMessageSerializer(IDependencyResolver resolver)
+        public ConfluentAvroSerializer(IDependencyResolver resolver)
             : this(resolver, new AvroSerializerConfig())
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApacheAvroMessageSerializer"/> class.
+        /// Initializes a new instance of the <see cref="ConfluentAvroSerializer"/> class.
         /// </summary>
         /// <param name="resolver">The <see cref="IDependencyResolver"/> to be used by the framework</param>
         /// <param name="serializerConfig">Avro serializer configuration</param>
-        public ApacheAvroMessageSerializer(
+        public ConfluentAvroSerializer(
             IDependencyResolver resolver,
             AvroSerializerConfig serializerConfig)
         {

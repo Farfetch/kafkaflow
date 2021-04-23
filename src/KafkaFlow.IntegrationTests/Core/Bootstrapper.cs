@@ -16,11 +16,7 @@ namespace KafkaFlow.IntegrationTests.Core
     using KafkaFlow.IntegrationTests.Core.Middlewares;
     using KafkaFlow.IntegrationTests.Core.Producers;
     using KafkaFlow.Serializer;
-    using KafkaFlow.Serializer.ApacheAvro;
-    using KafkaFlow.Serializer.ConfluentJson;
-    using KafkaFlow.Serializer.ConfluentProtoBuf;
-    using KafkaFlow.Serializer.Json;
-    using KafkaFlow.Serializer.ProtoBuf;
+    using KafkaFlow.Serializer.SchemaRegistry;
     using KafkaFlow.TypedHandler;
     using AutoOffsetReset = KafkaFlow.AutoOffsetReset;
 
@@ -100,7 +96,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSerializer(
-                                                resolver => new ApacheAvroMessageSerializer(
+                                                resolver => new ConfluentAvroSerializer(
                                                     resolver,
                                                     new AvroSerializerConfig
                                                     {
@@ -116,7 +112,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ApacheAvroMessageSerializer>()
+                                            .AddSerializer<ConfluentAvroSerializer>()
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)
@@ -187,7 +183,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSingleTypeSerializer<TestMessage1, ProtobufMessageSerializer>()
+                                            .AddSingleTypeSerializer<TestMessage1, ProtobufNetSerializer>()
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -208,7 +204,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                         })
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSingleTypeSerializer<PauseResumeMessage, ProtobufMessageSerializer>()
+                                            .AddSingleTypeSerializer<PauseResumeMessage, ProtobufNetSerializer>()
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -223,7 +219,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<JsonMessageSerializer>()
+                                            .AddSerializer<JsonCoreSerializer>()
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -249,7 +245,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer(_ => new JsonMessageSerializer())
+                                            .AddSerializer(_ => new JsonCoreSerializer())
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -266,7 +262,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddCompressor<GzipMessageCompressor>()
-                                            .AddSerializer<ProtobufMessageSerializer>()
+                                            .AddSerializer<ProtobufNetSerializer>()
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -277,33 +273,33 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(JsonTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<JsonMessageSerializer>()))
+                                            .AddSerializer<JsonCoreSerializer>()))
                             .AddProducer<JsonGzipProducer>(
                                 producer => producer
                                     .DefaultTopic(JsonGzipTopicName)
                                     .WithCompression(CompressionType.Gzip)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<JsonMessageSerializer>()))
+                                            .AddSerializer<JsonCoreSerializer>()))
                             .AddProducer<ProtobufProducer>(
                                 producer => producer
                                     .DefaultTopic(ProtobufTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSingleTypeSerializer<TestMessage1, ProtobufMessageSerializer>()))
+                                            .AddSingleTypeSerializer<TestMessage1, ProtobufNetSerializer>()))
                             .AddProducer<ProtobufGzipProducer>(
                                 producer => producer
                                     .DefaultTopic(ProtobufGzipTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ProtobufMessageSerializer>()
+                                            .AddSerializer<ProtobufNetSerializer>()
                                             .AddCompressor<GzipMessageCompressor>()))
                             .AddProducer<ProtobufGzipProducer2>(
                                 producer => producer
                                     .DefaultTopic(ProtobufGzipTopicName2)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer(_ => new ProtobufMessageSerializer())
+                                            .AddSerializer(_ => new ProtobufNetSerializer())
                                             .AddCompressor(_ => new GzipMessageCompressor())))
                             .AddProducer<GzipProducer>(
                                 producer => producer
