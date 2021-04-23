@@ -2,8 +2,9 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageId>KafkaFlow.Serializer.ProtoBuf</PackageId>
-        <Description>ProtoBuf implementation for KafkaFlow serializer middleware using protobuf-net</Description>
+        <PackageId>KafkaFlow.Serializer.ProtobufNet</PackageId>
+        <Description>Protobuf implementation for KafkaFlow serializer middleware using protobuf-net</Description>
+        <RootNamespace>KafkaFlow.Serializer</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

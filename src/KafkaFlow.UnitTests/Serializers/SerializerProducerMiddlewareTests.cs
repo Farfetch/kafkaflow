@@ -2,7 +2,6 @@ namespace KafkaFlow.UnitTests.Serializers
 {
     using System.Threading.Tasks;
     using FluentAssertions;
-    using KafkaFlow.Serializer;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
 

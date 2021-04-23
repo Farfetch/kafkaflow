@@ -2,8 +2,9 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageId>KafkaFlow.Serializer.Json</PackageId>
+        <PackageId>KafkaFlow.Serializer.JsonCore</PackageId>
         <Description>JSON implementation for KafkaFlow serializer middleware using System.Text.Json</Description>
+        <RootNamespace>KafkaFlow.Serializer</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,5 +14,4 @@
     <ItemGroup>
         <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj"/>
     </ItemGroup>
-
 </Project>

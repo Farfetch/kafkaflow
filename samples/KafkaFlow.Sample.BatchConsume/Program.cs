@@ -7,7 +7,6 @@
     using KafkaFlow.BatchConsume;
     using KafkaFlow.Producers;
     using KafkaFlow.Serializer;
-    using KafkaFlow.Serializer.Json;
 
     internal static class Program
     {
@@ -30,7 +29,7 @@
                                 producerBuilder => producerBuilder
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<JsonMessageSerializer>()
+                                            .AddSerializer<JsonCoreSerializer>()
                                     )
                             )
                             .AddConsumer(
@@ -41,7 +40,7 @@
                                     .WithWorkersCount(1)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<JsonMessageSerializer>()
+                                            .AddSerializer<JsonCoreSerializer>()
                                             .BatchConsume(10, TimeSpan.FromSeconds(10))
                                             .Add<PrintConsoleMiddleware>()
                                     )
