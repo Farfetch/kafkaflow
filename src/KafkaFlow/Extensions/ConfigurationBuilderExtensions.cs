@@ -20,6 +20,23 @@ namespace KafkaFlow
         }
 
         /// <summary>
+        /// Sets transaction configuration in the producer
+        /// </summary>
+        /// <param name="builder">A class that implements <see cref="IProducerConfigurationBuilder"/></param>
+        /// <param name="transactionalId">TransactionalId</param>
+        /// <param name="transactionAutoCommitIntervalMs">Transaction auto commit interval</param>
+        /// <param name="transactionTimeoutMs">Transaction timeout</param>
+        /// <returns></returns>
+        public static IProducerConfigurationBuilder WithTransaction(
+            this IProducerConfigurationBuilder builder,
+            string transactionalId,
+            int transactionAutoCommitIntervalMs = 5000,
+            int transactionTimeoutMs = 10000)
+        {
+            return ((ProducerConfigurationBuilder)builder).WithTransaction(transactionalId, transactionAutoCommitIntervalMs, transactionTimeoutMs);
+        }
+
+        /// <summary>
         /// Sets compression configurations in the producer
         /// </summary>
         /// <param name="builder">A class that implements <see cref="IProducerConfigurationBuilder"/></param>

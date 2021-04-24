@@ -7,4 +7,8 @@
         <Description>Contains all KafkaFlow extendable interfaces</Description>
     </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Confluent.Kafka" Version="1.6.3" />
+  </ItemGroup>
+
 </Project>

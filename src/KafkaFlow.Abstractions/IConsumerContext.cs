@@ -2,6 +2,7 @@ namespace KafkaFlow
 {
     using System;
     using System.Threading;
+    using Confluent.Kafka;
 
     /// <summary>
     /// Represents the message consumer
@@ -49,6 +50,13 @@ namespace KafkaFlow
         DateTime MessageTimestamp { get; }
 
         /// <summary>
+        /// Gets the current consumer group metadata associated with this consumer,
+        /// or null if a GroupId has not been specified for the consumer.
+        /// This metadata object should be passed to the transactional producer's method.
+        /// </summary>
+        IConsumerGroupMetadata ConsumerGroupMetadata { get; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether if the framework should store the current offset in the end when auto store offset is used
         /// </summary>
         bool ShouldStoreOffset { get; set; }
@@ -57,6 +65,13 @@ namespace KafkaFlow
         /// Store the message offset when manual store option is used
         /// </summary>
         void StoreOffset();
+
+        /// <summary>
+        /// Register producer as part of a Consumer/Producer transaction
+        /// </summary>
+        /// <param name="producer">Producer</param>
+        /// <param name="consumerProducerTransactionCoordinator">Consumer/Producer transaction coordinator</param>
+        void RegisterProducer(IProducer<byte[], byte[]> producer, IConsumerProducerTransactionCoordinator consumerProducerTransactionCoordinator);
 
         /// <summary>
         /// Get offset watermark data

@@ -17,6 +17,8 @@ namespace KafkaFlow.Configuration
 
         Acks? Acks { get; }
 
+        public int TransactionAutoCommitIntervalMs { get; }
+
         MiddlewareConfiguration MiddlewareConfiguration { get; }
 
         IReadOnlyList<Action<string>> StatisticsHandlers { get; }

@@ -2,7 +2,6 @@ namespace KafkaFlow.Consumers
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Runtime.CompilerServices;
 
     internal class PartitionOffsets
@@ -25,7 +24,7 @@ namespace KafkaFlow.Consumers
         {
             lock (this.offsetsOrder)
             {
-                if (!this.offsetsOrder.Any())
+                if (this.offsetsOrder.Count == 0)
                 {
                     throw new InvalidOperationException(
                         $"There is no offsets in the queue. Call {nameof(this.AddOffset)} first");

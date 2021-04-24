@@ -21,6 +21,8 @@ namespace KafkaFlow.Consumers
 
         string ClientInstanceName { get; }
 
+        IConsumerGroupMetadata ConsumerGroupMetadata { get; }
+
         void OnPartitionsAssigned(Action<IConsumer<byte[], byte[]>, List<TopicPartition>> handler);
 
         void OnPartitionsRevoked(Action<IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler);

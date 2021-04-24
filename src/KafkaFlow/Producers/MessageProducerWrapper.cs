@@ -15,6 +15,8 @@ namespace KafkaFlow.Producers
 
         public string ProducerName => this.producer.ProducerName;
 
+        public string ProducerId => this.producer.ProducerId;
+
         public Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
             string topic,
             object messageKey,
@@ -65,6 +67,11 @@ namespace KafkaFlow.Producers
                 message,
                 headers,
                 deliveryHandler);
+        }
+
+        public void RegisterConsumerProducerTransaction(IConsumerContext consumerContext)
+        {
+            this.producer.RegisterConsumerProducerTransaction(consumerContext);
         }
     }
 }

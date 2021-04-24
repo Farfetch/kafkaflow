@@ -43,6 +43,8 @@ namespace KafkaFlow.Consumers
 
         public string ClientInstanceName => this.consumer?.Name;
 
+        public IConsumerGroupMetadata ConsumerGroupMetadata => this.consumer.ConsumerGroupMetadata;
+
         public void OnPartitionsAssigned(Action<IConsumer<byte[], byte[]>, List<TopicPartition>> handler) =>
             this.partitionsAssignedHandlers.Add(handler);
 

@@ -23,6 +23,11 @@ namespace KafkaFlow
         string ProducerName { get; }
 
         /// <summary>
+        /// Gets producerId
+        /// </summary>
+        string ProducerId { get; }
+
+        /// <summary>
         /// Produces a new message
         /// </summary>
         /// <param name="topic">The topic where the message wil be produced</param>
@@ -77,5 +82,11 @@ namespace KafkaFlow
             object messageValue,
             IMessageHeaders headers = null,
             Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null);
+
+        /// <summary>
+        /// Register consumer/producer as part of a transaction
+        /// </summary>
+        /// <param name="consumerContext">Consumer context</param>
+        void RegisterConsumerProducerTransaction(IConsumerContext consumerContext);
     }
 }

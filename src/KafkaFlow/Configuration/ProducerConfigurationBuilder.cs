@@ -16,6 +16,9 @@ namespace KafkaFlow.Configuration
         private Acks? acks;
         private int statisticsInterval;
         private double? lingerMs;
+        private string transactionalId;
+        private int transactionTimeoutMs = 10000;
+        private int transanctionAutoCommitIntervalMs = 5000;
         private ProducerCustomFactory customFactory = (producer, resolver) => producer;
 
         public ProducerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator, string name)
@@ -41,6 +44,12 @@ namespace KafkaFlow.Configuration
 
         public IProducerConfigurationBuilder WithProducerConfig(ProducerConfig config)
         {
+            // Apply defaults value to producer transaction values
+            if (!string.IsNullOrWhiteSpace(config.TransactionalId))
+            {
+                config.TransactionTimeoutMs ??= 10000;
+            }
+
             this.producerConfig = config;
             return this;
         }
@@ -83,12 +92,22 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
+        public IProducerConfigurationBuilder WithTransaction(string transactionalId, int transactionAutoCommitIntervalMs, int transactionTimeoutMs)
+        {
+            this.transactionalId = transactionalId;
+            this.transactionTimeoutMs = transactionTimeoutMs;
+            this.transanctionAutoCommitIntervalMs = transactionAutoCommitIntervalMs;
+            return this;
+        }
+
         public IProducerConfiguration Build(ClusterConfiguration clusterConfiguration)
         {
             this.producerConfig ??= new ProducerConfig();
 
             this.producerConfig.StatisticsIntervalMs = this.statisticsInterval;
             this.producerConfig.LingerMs = this.lingerMs;
+            this.producerConfig.TransactionalId = this.transactionalId;
+            this.producerConfig.TransactionTimeoutMs = this.transactionTimeoutMs;
 
             this.producerConfig.ReadSecurityInformation(clusterConfiguration);
 
@@ -97,6 +116,7 @@ namespace KafkaFlow.Configuration
                 this.name,
                 this.topic,
                 this.acks,
+                this.transanctionAutoCommitIntervalMs,
                 this.middlewareConfigurationBuilder.Build(),
                 this.producerConfig,
                 this.statisticsHandlers,

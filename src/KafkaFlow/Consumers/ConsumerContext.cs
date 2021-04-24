@@ -38,9 +38,14 @@ namespace KafkaFlow.Consumers
 
         public string GroupId => this.consumer.Configuration.GroupId;
 
+        public IConsumerGroupMetadata ConsumerGroupMetadata => this.consumer.ConsumerGroupMetadata;
+
         public bool ShouldStoreOffset { get; set; } = true;
 
         public DateTime MessageTimestamp => this.kafkaResult.Message.Timestamp.UtcDateTime;
+
+        public void RegisterProducer(IProducer<byte[], byte[]> producer, IConsumerProducerTransactionCoordinator consumerProducerTransactionCoordinator) =>
+            this.offsetManager.RegisterProducerConsumer(producer, consumerProducerTransactionCoordinator, this);
 
         public void StoreOffset() => this.offsetManager.StoreOffset(this.kafkaResult.TopicPartitionOffset);
 

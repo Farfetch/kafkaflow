@@ -25,6 +25,8 @@ namespace KafkaFlow.IntegrationTests.Core
         public const string PauseResumeTopicName = "test-pause-resume";
         public const int MaxPollIntervalMs = 7000;
 
+        private const string InboundJsonTopicName = "test-inbound-json";
+        private const string OutboundJsonTopicName = "test-outbound-json";
         private const string ProtobufTopicName = "test-protobuf";
         private const string ProtobufSchemaRegistryTopicName = "test-protobuf-sr";
         private const string JsonSchemaRegistryTopicName = "test-json-sr";
@@ -35,6 +37,7 @@ namespace KafkaFlow.IntegrationTests.Core
         private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
         private const string AvroTopicName = "test-avro";
 
+        private const string JsonGroupId = "consumer-json";
         private const string ProtobufGroupId = "consumer-protobuf";
         private const string GzipGroupId = "consumer-gzip";
         private const string JsonGzipGroupId = "consumer-json-gzip";
@@ -81,6 +84,7 @@ namespace KafkaFlow.IntegrationTests.Core
         private static void SetupServices(HostBuilderContext context, IServiceCollection services)
         {
             var kafkaBrokers = context.Configuration.GetValue<string>("Kafka:Brokers");
+            var securityProtocol = Enum.Parse<Configuration.SecurityProtocol>(context.Configuration.GetValue<string>("Kafka:SecurityProtocol"));
             var schemaRegistryUrl = context.Configuration.GetValue<string>("SchemaRegistry:Url");
 
             services.AddKafka(
@@ -89,6 +93,42 @@ namespace KafkaFlow.IntegrationTests.Core
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(kafkaBrokers.Split(';'))
+                            .WithSecurityInformation(config => config.SecurityProtocol = securityProtocol)
+                            .AddProducer<JsonInboundProducer>(producer => producer
+                                    .DefaultTopic(InboundJsonTopicName)
+                                    .WithAcks(KafkaFlow.Acks.Leader)
+                                    .AddMiddlewares(middlewares => middlewares
+                                            .AddSerializer<JsonCoreSerializer>()))
+                            .AddProducer("JsonOtboundProducer", producer => producer
+                                    .DefaultTopic(OutboundJsonTopicName)
+                                    .WithAcks(KafkaFlow.Acks.All)
+                                    .WithTransaction(transactionalId: typeof(JsonOutboundProducer).Name, transactionAutoCommitIntervalMs: 300, transactionTimeoutMs: 10000)
+                                    .WithProducerConfig(new ProducerConfig
+                                    {
+                                        EnableIdempotence = true,
+                                    })
+                                    .AddMiddlewares(middlewares => middlewares
+                                            .AddSerializer<JsonCoreSerializer>()))
+                            .AddConsumer(
+                                consumer => consumer
+                                    .Topic(InboundJsonTopicName)
+                                    .WithGroupId(JsonGroupId)
+                                    .WithBufferSize(2)
+                                    .WithWorkersCount(1)
+                                    .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                    .WithConsumerConfig(new ConsumerConfig
+                                    {
+                                        EnableAutoCommit = false,
+                                    })
+                                    .AddMiddlewares(middlewares => middlewares
+                                            .AddSingleTypeSerializer<TestMessage3, JsonCoreSerializer>()
+                                            .AddTypedHandlers(handlers => handlers
+                                                    .WithHandlerLifetime(InstanceLifetime.Scoped)
+                                                    .AddHandler<StreamingMessageHandler>()))))
+                    .AddCluster(
+                        cluster => cluster
+                            .WithBrokers(kafkaBrokers.Split(';'))
+                            .WithSecurityInformation(config => config.SecurityProtocol = securityProtocol)
                             .WithSchemaRegistry(config => config.Url = schemaRegistryUrl)
                             .AddProducer<AvroProducer>(
                                 producer => producer
@@ -174,6 +214,7 @@ namespace KafkaFlow.IntegrationTests.Core
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(kafkaBrokers.Split(';'))
+                            .WithSecurityInformation(config => config.SecurityProtocol = securityProtocol)
                             .AddConsumer(
                                 consumer => consumer
                                     .Topic(ProtobufTopicName)

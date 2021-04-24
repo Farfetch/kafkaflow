@@ -3,17 +3,19 @@ namespace KafkaFlow.Producers
     using System;
     using System.Linq;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
 
-    internal class MessageProducer : IMessageProducer, IDisposable
+    internal class MessageProducer : IMessageProducer, IConsumerProducerTransactionCoordinator, IDisposable
     {
         private readonly IProducerConfiguration configuration;
         private readonly MiddlewareExecutor middlewareExecutor;
         private readonly IDependencyResolverScope dependencyResolverScope;
 
         private readonly object producerCreationSync = new();
+        private readonly ManualResetEvent waitHandle = new(true);
 
         private volatile IProducer<byte[], byte[]> producer;
 
@@ -34,6 +36,8 @@ namespace KafkaFlow.Producers
         }
 
         public string ProducerName => this.configuration.Name;
+
+        public string ProducerId => this.producer.Name;
 
         public async Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
             string topic,
@@ -136,6 +140,30 @@ namespace KafkaFlow.Producers
                 deliveryHandler);
         }
 
+        public void RegisterConsumerProducerTransaction(IConsumerContext consumerContext)
+        {
+            if (string.IsNullOrWhiteSpace(this.configuration.GetKafkaConfig().TransactionalId))
+            {
+                throw new InvalidOperationException("Producer not configured to support transaction");
+            }
+
+            // StoreOffset is disabled as consumer offsets are committed inside the producer transaction
+            consumerContext.ShouldStoreOffset = false;
+            consumerContext.RegisterProducer(this.EnsureProducer(), this);
+        }
+
+        /// <inheritdoc />
+        void IConsumerProducerTransactionCoordinator.Initiated()
+        {
+            this.waitHandle.Reset();
+        }
+
+        /// <inheritdoc />
+        void IConsumerProducerTransactionCoordinator.Completed()
+        {
+            this.waitHandle.Set();
+        }
+
         public void Dispose()
         {
             this.dependencyResolverScope.Dispose();
@@ -191,7 +219,9 @@ namespace KafkaFlow.Producers
                     return this.producer;
                 }
 
-                var producerBuilder = new ProducerBuilder<byte[], byte[]>(this.configuration.GetKafkaConfig())
+                var producerConfig = this.configuration.GetKafkaConfig();
+
+                var producerBuilder = new ProducerBuilder<byte[], byte[]>(producerConfig)
                     .SetErrorHandler(
                         (_, error) =>
                         {
@@ -215,9 +245,17 @@ namespace KafkaFlow.Producers
                             }
                         });
 
-                return this.producer = this.configuration.CustomFactory(
+                this.producer = this.configuration.CustomFactory(
                     producerBuilder.Build(),
                     this.dependencyResolverScope.Resolver);
+
+                if (!string.IsNullOrWhiteSpace(producerConfig.TransactionalId))
+                {
+                    this.producer.InitTransactions(TimeSpan.FromMilliseconds(producerConfig.TransactionTimeoutMs.Value));
+                    this.producer.BeginTransaction();
+                }
+
+                return this.producer;
             }
         }
 
@@ -240,26 +278,29 @@ namespace KafkaFlow.Producers
         {
             DeliveryResult<byte[], byte[]> result = null;
 
-            try
+            if (this.waitHandle.WaitOne())
             {
-                result = await this
-                    .EnsureProducer()
-                    .ProduceAsync(
-                        context.ProducerContext.Topic,
-                        CreateMessage(context))
-                    .ConfigureAwait(false);
-            }
-            catch (ProduceException<byte[], byte[]> e)
-            {
-                if (e.Error.IsFatal)
+                try
                 {
-                    this.InvalidateProducer(e.Error, result);
+                    result = await this
+                        .EnsureProducer()
+                        .ProduceAsync(
+                            context.ProducerContext.Topic,
+                            CreateMessage(context))
+                        .ConfigureAwait(false);
+                }
+                catch (ProduceException<byte[], byte[]> e)
+                {
+                    if (e.Error.IsFatal)
+                    {
+                        this.InvalidateProducer(e.Error, result);
+                    }
+
+                    throw;
                 }
 
-                throw;
+                FillContextWithResultMetadata(context, result);
             }
-
-            FillContextWithResultMetadata(context, result);
 
             return result;
         }
@@ -268,22 +309,25 @@ namespace KafkaFlow.Producers
             IMessageContext context,
             Action<DeliveryReport<byte[], byte[]>> deliveryHandler)
         {
-            this
-                .EnsureProducer()
-                .Produce(
-                    context.ProducerContext.Topic,
-                    CreateMessage(context),
-                    report =>
-                    {
-                        if (report.Error.IsFatal)
+            if (this.waitHandle.WaitOne())
+            {
+                this
+                    .EnsureProducer()
+                    .Produce(
+                        context.ProducerContext.Topic,
+                        CreateMessage(context),
+                        report =>
                         {
-                            this.InvalidateProducer(report.Error, report);
-                        }
+                            if (report.Error.IsFatal)
+                            {
+                                this.InvalidateProducer(report.Error, report);
+                            }
 
-                        FillContextWithResultMetadata(context, report);
+                            FillContextWithResultMetadata(context, report);
 
-                        deliveryHandler(report);
-                    });
+                            deliveryHandler(report);
+                        });
+            }
         }
     }
 }

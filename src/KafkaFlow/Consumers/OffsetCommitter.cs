@@ -2,7 +2,6 @@ namespace KafkaFlow.Consumers
 {
     using System;
     using System.Collections.Concurrent;
-    using System.Linq;
     using System.Threading;
     using Confluent.Kafka;
 
@@ -14,6 +13,9 @@ namespace KafkaFlow.Consumers
         private readonly Timer commitTimer;
 
         private ConcurrentDictionary<(string, int), TopicPartitionOffset> offsetsToCommit = new();
+        private IProducer<byte[], byte[]> producer;
+        private IConsumerProducerTransactionCoordinator consumerProducerTransactionCoordinator;
+        private IConsumerGroupMetadata consumerGroupMetadata;
 
         public OffsetCommitter(
             IConsumer consumer,
@@ -35,6 +37,16 @@ namespace KafkaFlow.Consumers
             this.CommitHandler();
         }
 
+        public void RegisterProducerConsumer(
+            IProducer<byte[], byte[]> producer,
+            IConsumerProducerTransactionCoordinator consumerProducerTransactionCoordinator,
+            IConsumerContext consumerContext)
+        {
+            this.producer = producer;
+            this.consumerProducerTransactionCoordinator = consumerProducerTransactionCoordinator;
+            this.consumerGroupMetadata = consumerContext.ConsumerGroupMetadata;
+        }
+
         public void StoreOffset(TopicPartitionOffset tpo)
         {
             this.offsetsToCommit.AddOrUpdate(
@@ -45,22 +57,33 @@ namespace KafkaFlow.Consumers
 
         private void CommitHandler()
         {
-            if (!this.offsetsToCommit.Any())
+            if (this.offsetsToCommit.Count == 0)
             {
                 return;
             }
 
-            var offsets = this.offsetsToCommit;
+            var offsets = this.offsetsToCommit.Values;
             this.offsetsToCommit = new ConcurrentDictionary<(string, int), TopicPartitionOffset>();
 
             try
             {
-                this.consumer.Commit(offsets.Values);
+                if (this.producer != null)
+                {
+                    this.consumerProducerTransactionCoordinator.Initiated();
+                    this.producer.SendOffsetsToTransaction(offsets, this.consumerGroupMetadata, Timeout.InfiniteTimeSpan);
+                    this.producer.CommitTransaction();
+                    this.producer.BeginTransaction();
+                    this.consumerProducerTransactionCoordinator.Completed();
+                }
+                else
+                {
+                    this.consumer.Commit(offsets);
+                }
             }
             catch (Exception e)
             {
                 this.logHandler.Error(
-                    "Error Commiting Offsets",
+                    "Error Committing offsets",
                     e,
                     null);
             }

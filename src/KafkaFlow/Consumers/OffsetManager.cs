@@ -4,6 +4,7 @@ namespace KafkaFlow.Consumers
     using System.Collections.Generic;
     using System.Linq;
     using Confluent.Kafka;
+    using KafkaFlow;
 
     internal class OffsetManager : IOffsetManager, IDisposable
     {
@@ -47,6 +48,14 @@ namespace KafkaFlow.Consumers
             {
                 offsets.AddOffset(offset.Offset.Value);
             }
+        }
+
+        public void RegisterProducerConsumer(
+            IProducer<byte[], byte[]> producer,
+            IConsumerProducerTransactionCoordinator consumerProducerTransactionCoordinator,
+            IConsumerContext consumerContext)
+        {
+            this.committer.RegisterProducerConsumer(producer, consumerProducerTransactionCoordinator, consumerContext);
         }
 
         public void Dispose()
