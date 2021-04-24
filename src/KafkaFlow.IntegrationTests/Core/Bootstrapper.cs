@@ -32,7 +32,7 @@ namespace KafkaFlow.IntegrationTests.Core
         private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
         private const string AvroTopicName = "test-avro";
         public const string PauseResumeTopicName = "test-pause-resume";
-        
+
         private const string ProtobufGroupId = "consumer-protobuf";
         private const string JsonGroupId = "consumer-json";
         private const string GzipGroupId = "consumer-gzip";
@@ -96,7 +96,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSerializer(resolver => new ApacheAvroMessageSerializer(
-                                                resolver, 
+                                                resolver,
                                                 new AvroSerializerConfig
                                                 {
                                                     AutoRegisterSchemas = true,
@@ -150,7 +150,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .WithConsumerConfig(new ConsumerConfig
                                     {
-                                        MaxPollIntervalMs = MaxPollIntervalMs, 
+                                        MaxPollIntervalMs = MaxPollIntervalMs,
                                         SessionTimeoutMs = MaxPollIntervalMs
                                     })
                                     .AddMiddlewares(
@@ -177,7 +177,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                                 handlers =>
                                                     handlers
                                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                        .AddHandlersFromAssemblyOf<MessageHandler>())
+                                                        .AddHandlersFromAssemblyOf(typeof(Bootstrapper)))
                                     )
                             )
                             .AddConsumer(

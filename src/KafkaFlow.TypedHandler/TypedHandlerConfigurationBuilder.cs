@@ -3,6 +3,7 @@ namespace KafkaFlow.TypedHandler
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
 
     /// <summary>
     /// Builder class for typed handler configuration
@@ -27,15 +28,20 @@ namespace KafkaFlow.TypedHandler
         /// </summary>
         /// <typeparam name="T">A type that implements the <see cref="IMessageHandler{TMessage}"/> interface</typeparam>
         /// <returns></returns>
-        public TypedHandlerConfigurationBuilder AddHandlersFromAssemblyOf<T>()
-            where T : IMessageHandler
+        public TypedHandlerConfigurationBuilder AddHandlersFromAssemblyOf<T>() => this.AddHandlersFromAssemblyOf(typeof(T));
+
+        /// <summary>
+        /// Adds all classes that implements the <see cref="IMessageHandler{TMessage}"/> interface from the assemblies of the provided types
+        /// </summary>
+        /// <param name="assemblyMarkerTypes"></param>
+        /// <returns></returns>
+        public TypedHandlerConfigurationBuilder AddHandlersFromAssemblyOf(params Type[] assemblyMarkerTypes)
         {
-            var handlersType = typeof(T).Assembly
-                .GetTypes()
+            var handlerTypes = assemblyMarkerTypes
+                .SelectMany(t => t.GetTypeInfo().Assembly.GetTypes())
                 .Where(x => x.IsClass && !x.IsAbstract && typeof(IMessageHandler).IsAssignableFrom(x));
 
-            this.handlers.AddRange(handlersType);
-
+            this.handlers.AddRange(handlerTypes);
             return this;
         }
 
