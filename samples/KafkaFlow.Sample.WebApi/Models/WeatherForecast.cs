@@ -1,4 +1,4 @@
-namespace KafkaFlow.Admin.WebApi.Sample.Models
+namespace KafkaFlow.Sample.WebApi.Models
 {
     using System;
 
