@@ -1,10 +1,10 @@
-namespace KafkaFlow.Admin.WebApi.Sample.Controllers
+namespace KafkaFlow.Sample.WebApi.Controllers
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using global::Microsoft.AspNetCore.Mvc;
-    using KafkaFlow.Admin.WebApi.Sample.Models;
+    using Microsoft.AspNetCore.Mvc;
+    using Models;
 
     [ApiController]
     [Route("v1/WeatherForecast")]
@@ -26,8 +26,7 @@ namespace KafkaFlow.Admin.WebApi.Sample.Controllers
                         Date = DateTime.Now.AddDays(index),
                         TemperatureC = rng.Next(-20, 55),
                         Summary = Summaries[rng.Next(Summaries.Length)]
-                    })
-                .ToArray();
+                    });
         }
     }
 }

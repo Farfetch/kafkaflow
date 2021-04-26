@@ -1,23 +1,13 @@
-using System;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-
-namespace KafkaFlow.Admin.WebApi.Sample
+namespace KafkaFlow.Sample.WebApi
 {
-    using global::Microsoft.OpenApi.Models;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
+    using Microsoft.OpenApi.Models;
 
     public class Startup
     {
-        public Startup(IConfiguration configuration)
-        {
-            this.Configuration = configuration;
-        }
-
-        private IConfiguration Configuration { get; }
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -27,7 +17,7 @@ namespace KafkaFlow.Admin.WebApi.Sample
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(new[] { "localhost:9092" })
-                            .EnableAdminMessages("kafka-flow.admin", Guid.NewGuid().ToString()))
+                            .EnableAdminMessages("kafka-flow.admin"))
             );
 
             services
@@ -48,10 +38,7 @@ namespace KafkaFlow.Admin.WebApi.Sample
                                 Title = "Api v1",
                                 Version = "v1",
                             });
-                        c.DocInclusionPredicate((docName, apiDesc) =>
-                        {
-                            return apiDesc.RelativePath.StartsWith(docName.Replace("_", @"/"));
-                        });
+                        c.DocInclusionPredicate((docName, apiDesc) => apiDesc.RelativePath.StartsWith(docName.Replace("_", @"/")));
                     })
                 .AddControllers();
         }
@@ -65,11 +52,8 @@ namespace KafkaFlow.Admin.WebApi.Sample
             }
 
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
             app
@@ -80,9 +64,7 @@ namespace KafkaFlow.Admin.WebApi.Sample
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Api v1");
                 });
 
-            var kafkaBus = app.ApplicationServices.CreateKafkaBus();
-
-            lifetime.ApplicationStarted.Register(() => kafkaBus.StartAsync(lifetime.ApplicationStopped));
+            lifetime.ApplicationStarted.Register(() => app.ApplicationServices.CreateKafkaBus().StartAsync(lifetime.ApplicationStopped));
         }
     }
 }
