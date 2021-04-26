@@ -10,7 +10,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
 
     [Route("kafka-flow/groups")]
     [ApiController]
-    internal class GroupsController : ControllerBase
+    public class GroupsController : ControllerBase
     {
         private readonly IConsumerAccessor consumers;
         private readonly IAdminProducer adminProducer;
