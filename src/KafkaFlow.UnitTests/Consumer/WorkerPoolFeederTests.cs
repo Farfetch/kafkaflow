@@ -43,21 +43,24 @@ namespace KafkaFlow.UnitTests.Consumer
         public async Task StopAsync_WaitingOnConsumeWithCancellation_MustStop()
         {
             // Arrange
+            var ready = new ManualResetEvent(false);
+            
             this.consumerMock
                 .Setup(x => x.ConsumeAsync(It.IsAny<CancellationToken>()))
                 .Returns(async (CancellationToken ct) =>
                 {
-                    await Task.Delay(Timeout.Infinite, ct).ConfigureAwait(false);
+                    ready.Set();
+                    await Task.Delay(Timeout.Infinite, ct);
                     return default; // Never reached
                 });
 
             // Act
             this.target.Start();
-            await Task.Delay(100);
+            ready.WaitOne();
             await this.target.StopAsync();
 
             // Assert
-            this.consumerMock.VerifyAll();
+            this.consumerMock.Verify(x => x.ConsumeAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [TestMethod]
@@ -66,6 +69,7 @@ namespace KafkaFlow.UnitTests.Consumer
         {
             // Arrange
             var consumeResult = new ConsumeResult<byte[], byte[]>();
+            var ready = new ManualResetEvent(false);
 
             this.consumerMock
                 .Setup(x => x.ConsumeAsync(It.IsAny<CancellationToken>()))
@@ -73,11 +77,15 @@ namespace KafkaFlow.UnitTests.Consumer
 
             this.workerPoolMock
                 .Setup(x => x.EnqueueAsync(consumeResult, It.IsAny<CancellationToken>()))
-                .Returns((ConsumeResult<byte[],byte[]> _, CancellationToken ct) => Task.Delay(Timeout.Infinite, ct));
+                .Returns((ConsumeResult<byte[],byte[]> _, CancellationToken ct) =>
+                {
+                    ready.Set();
+                    return Task.Delay(Timeout.Infinite, ct);
+                });
 
             // Act
             this.target.Start();
-            await Task.Delay(100);
+            ready.WaitOne();
             await this.target.StopAsync();
 
             // Assert
@@ -92,6 +100,7 @@ namespace KafkaFlow.UnitTests.Consumer
             // Arrange
             var consumeResult = new ConsumeResult<byte[], byte[]>();
             var exception = new Exception();
+            var ready = new ManualResetEvent(false);
 
             this.consumerMock
                 .SetupSequence(x => x.ConsumeAsync(It.IsAny<CancellationToken>()))
@@ -100,14 +109,18 @@ namespace KafkaFlow.UnitTests.Consumer
 
             this.workerPoolMock
                 .Setup(x => x.EnqueueAsync(consumeResult, It.IsAny<CancellationToken>()))
-                .Returns((ConsumeResult<byte[], byte[]> _, CancellationToken ct) => Task.Delay(Timeout.Infinite, ct));
+                .Returns((ConsumeResult<byte[], byte[]> _, CancellationToken ct) =>
+                {
+                    ready.Set();
+                    return Task.Delay(Timeout.Infinite, ct);
+                });
 
             this.logHandlerMock
                 .Setup(x => x.Error(It.IsAny<string>(), exception, It.IsAny<object>()));
 
             // Act
             this.target.Start();
-            await Task.Delay(100);
+            ready.WaitOne();
             await this.target.StopAsync();
 
             // Assert
@@ -123,6 +136,7 @@ namespace KafkaFlow.UnitTests.Consumer
             // Arrange
             var consumeResult = new ConsumeResult<byte[], byte[]>();
             var exception = new Exception();
+            var ready = new ManualResetEvent(false);
 
             this.consumerMock
                 .Setup(x => x.ConsumeAsync(It.IsAny<CancellationToken>()))
@@ -133,11 +147,14 @@ namespace KafkaFlow.UnitTests.Consumer
                 .Setup(x => x.EnqueueAsync(consumeResult, It.IsAny<CancellationToken>()))
                 .Returns((ConsumeResult<byte[], byte[]> _, CancellationToken ct) =>
                 {
+                    ready.Set();
+
                     if (!hasThrown)
                     {
                         hasThrown = true;
                         throw exception;
                     }
+
                     return Task.Delay(Timeout.Infinite, ct);
                 });
             
@@ -146,7 +163,7 @@ namespace KafkaFlow.UnitTests.Consumer
 
             // Act
             this.target.Start();
-            await Task.Delay(100);
+            ready.WaitOne();
             await this.target.StopAsync();
 
             // Assert
