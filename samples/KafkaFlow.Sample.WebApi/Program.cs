@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-
-namespace KafkaFlow.Admin.WebApi.Sample
+namespace KafkaFlow.Sample.WebApi
 {
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Hosting;
+
     public static class Program
     {
         public static void Main(string[] args)
