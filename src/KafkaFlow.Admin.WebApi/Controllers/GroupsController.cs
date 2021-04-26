@@ -8,6 +8,9 @@ namespace KafkaFlow.Admin.WebApi.Controllers
     using KafkaFlow.Consumers;
     using Microsoft.AspNetCore.Mvc;
 
+    /// <summary>
+    /// Groups controller
+    /// </summary>
     [Route("kafka-flow/groups")]
     [ApiController]
     public class GroupsController : ControllerBase
@@ -15,6 +18,11 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         private readonly IConsumerAccessor consumers;
         private readonly IAdminProducer adminProducer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupsController"/> class.
+        /// </summary>
+        /// <param name="consumers">The accessor class that provides access to the consumers</param>
+        /// <param name="adminProducer">The producer to publish admin messages</param>
         public GroupsController(
             IConsumerAccessor consumers,
             IAdminProducer adminProducer)
@@ -23,6 +31,10 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             this.adminProducer = adminProducer;
         }
 
+        /// <summary>
+        /// Get all the consumer groups
+        /// </summary>
+        /// <returns>A list of consumer groups</returns>
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<GroupResponse>), 200)]
         public IActionResult Get()
@@ -38,6 +50,11 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                         }));
         }
 
+        /// <summary>
+        /// Pause all consumers from a specific group
+        /// </summary>
+        /// <param name="groupId">Identifier of the group</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
         [Route("{groupId}/pause")]
         [ProducesResponseType(202)]
@@ -52,6 +69,11 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             return this.Accepted();
         }
 
+        /// <summary>
+        /// Resume all consumers from a specific group
+        /// </summary>
+        /// <param name="groupId">Identifier of the group</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
         [Route("{groupId}/resume")]
         [ProducesResponseType(202)]
