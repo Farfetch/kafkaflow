@@ -1,11 +1,13 @@
 ﻿namespace KafkaFlow.Compressor.Gzip
 {
+    using System;
     using System.IO;
     using System.IO.Compression;
 
     /// <summary>
     /// A GZIP message compressor
     /// </summary>
+    [Obsolete("Compressors should only be used in backward compatibility scenarios, in the vast majority of cases native compression (producer.WithCompression()) should be used instead")]
     public class GzipMessageCompressor : IMessageCompressor
     {
         /// <inheritdoc />
