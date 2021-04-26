@@ -55,7 +55,8 @@ namespace KafkaFlow.Consumers
                                 null);
                         }
                     }
-                }, token);
+                },
+                CancellationToken.None);
         }
 
         public Task StopAsync()
