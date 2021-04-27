@@ -108,7 +108,7 @@ namespace KafkaFlow.Configuration
         IConsumerConfigurationBuilder WithAutoStoreOffsets();
 
         /// <summary>
-        /// The client should call the <see cref="IMessageContextConsumer.StoreOffset()"/>
+        /// The client should call the <see cref="IConsumerContext.StoreOffset()"/>
         /// </summary>
         /// <returns></returns>
         IConsumerConfigurationBuilder WithManualStoreOffsets();

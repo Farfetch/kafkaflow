@@ -43,7 +43,7 @@ namespace KafkaFlow.UnitTests.Serializers
             // Assert
             this.nextCalled.Should().BeFalse();
             this.typeResolverMock.VerifyAll();
-            this.contextMock.Verify(x => x.TransformMessage(It.IsAny<object>()), Times.Never);
+            this.contextMock.Verify(x => x.TransformMessage(It.IsAny<object>(), It.IsAny<object>()), Times.Never);
             this.serializerMock.Verify(x => x.Deserialize(It.IsAny<byte[]>(), It.IsAny<Type>()), Times.Never);
         }
 
@@ -55,7 +55,7 @@ namespace KafkaFlow.UnitTests.Serializers
 
             this.contextMock
                 .SetupGet(x => x.Message)
-                .Returns((byte[]) null);
+                .Returns(new Message(null, null));
 
             this.typeResolverMock
                 .Setup(x => x.OnConsume(this.contextMock.Object))
@@ -78,7 +78,7 @@ namespace KafkaFlow.UnitTests.Serializers
 
             this.contextMock
                 .SetupGet(x => x.Message)
-                .Returns(new TestMessage());
+                .Returns(new Message(null, new TestMessage()));
 
             this.typeResolverMock
                 .Setup(x => x.OnConsume(this.contextMock.Object))
@@ -90,37 +90,53 @@ namespace KafkaFlow.UnitTests.Serializers
             // Assert
             act.Should().Throw<InvalidOperationException>();
             this.nextCalled.Should().BeFalse();
-            this.contextMock.Verify(x => x.TransformMessage(It.IsAny<object>()), Times.Never);
+            this.contextMock.Verify(x => x.TransformMessage(It.IsAny<object>(), It.IsAny<object>()), Times.Never);
             this.serializerMock.Verify(x => x.Deserialize(It.IsAny<byte[]>(), It.IsAny<Type>()), Times.Never);
             this.typeResolverMock.VerifyAll();
         }
 
         [TestMethod]
-        public async Task Invoke_ValidMessage_CallNext()
+        public async Task Invoke_ValidMessage_Deserialize()
         {
             // Arrange
             var messageType = typeof(TestMessage);
-            var rawMessage = new byte[1];
+            var rawKey = new byte[1];
+            var rawValue = new byte[1];
+            var rawMessage = new Message(rawKey, rawValue);
             var deserializedMessage = new TestMessage();
+
+            var transformedContextMock = new Mock<IMessageContext>();
+            IMessageContext resultContext = null;
 
             this.contextMock
                 .SetupGet(x => x.Message)
                 .Returns(rawMessage);
+
+            this.contextMock
+                .Setup(x => x.TransformMessage(rawKey, deserializedMessage))
+                .Returns(transformedContextMock.Object);
 
             this.typeResolverMock
                 .Setup(x => x.OnConsume(this.contextMock.Object))
                 .Returns(messageType);
 
             this.serializerMock
-                .Setup(x => x.Deserialize(rawMessage, messageType))
+                .Setup(x => x.Deserialize(rawValue, messageType))
                 .Returns(deserializedMessage);
 
             // Act
-            await this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
+            await this.target.Invoke(
+                this.contextMock.Object,
+                ctx =>
+                {
+                    resultContext = ctx;
+                    return Task.CompletedTask;
+                });
 
             // Assert
-            this.nextCalled.Should().BeTrue();
-            this.contextMock.Verify(x => x.TransformMessage(deserializedMessage));
+            resultContext.Should().NotBeNull();
+            resultContext.Should().Be(transformedContextMock.Object);
+            this.contextMock.VerifyAll();
             this.serializerMock.VerifyAll();
             this.typeResolverMock.VerifyAll();
         }

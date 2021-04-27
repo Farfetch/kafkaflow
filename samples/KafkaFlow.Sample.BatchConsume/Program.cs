@@ -101,7 +101,7 @@
 
             var text = string.Join(
                 '\n',
-                batch.Select(ctx => ((SampleBatchMessage) ctx.Message).Text));
+                batch.Select(ctx => ((SampleBatchMessage) ctx.Message.Value).Text));
 
             Console.WriteLine(text);
 

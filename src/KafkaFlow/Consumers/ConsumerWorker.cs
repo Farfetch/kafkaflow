@@ -58,15 +58,16 @@ namespace KafkaFlow.Consumers
                                 .ReadAsync(this.stopCancellationTokenSource.Token)
                                 .ConfigureAwait(false);
 
-                            var context = new ConsumerMessageContext(
-                                new MessageContextConsumer(
+                            var context = new MessageContext(
+                                new Message(message.Message.Key, message.Message.Value),
+                                new MessageHeaders(message.Message.Headers),
+                                new ConsumerContext(
                                     this.consumer,
                                     this.offsetManager,
                                     message,
-                                    this.stopCancellationTokenSource.Token),
-                                message,
-                                this.Id,
-                                this.consumer.Configuration.GroupId);
+                                    this.stopCancellationTokenSource.Token,
+                                    this.Id),
+                                null);
 
                             try
                             {
@@ -82,14 +83,14 @@ namespace KafkaFlow.Consumers
                                     new
                                     {
                                         context.Message,
-                                        context.Topic,
-                                        context.PartitionKey,
-                                        ConsumerName = context.Consumer.Name,
+                                        context.ConsumerContext.Topic,
+                                        MessageKey = context.Message.Key,
+                                        context.ConsumerContext.ConsumerName,
                                     });
                             }
                             finally
                             {
-                                if (this.consumer.Configuration.AutoStoreOffsets && context.Consumer.ShouldStoreOffset)
+                                if (this.consumer.Configuration.AutoStoreOffsets && context.ConsumerContext.ShouldStoreOffset)
                                 {
                                     this.offsetManager.StoreOffset(message.TopicPartitionOffset);
                                 }

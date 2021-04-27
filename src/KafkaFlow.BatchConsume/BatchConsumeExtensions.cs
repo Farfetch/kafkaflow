@@ -38,7 +38,7 @@ namespace KafkaFlow.BatchConsume
         {
             if (context is BatchConsumeMessageContext ctx)
             {
-                return (IReadOnlyCollection<IMessageContext>) ctx.Message;
+                return (IReadOnlyCollection<IMessageContext>) ctx.Message.Value;
             }
 
             throw new InvalidOperationException($"This method can only be used on {nameof(BatchConsumeMessageContext)}");

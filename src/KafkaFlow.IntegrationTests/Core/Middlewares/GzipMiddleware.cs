@@ -7,7 +7,7 @@ namespace KafkaFlow.IntegrationTests.Core.Middlewares
     {
         public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
-            MessageStorage.Add((byte[]) context.Message);
+            MessageStorage.Add((byte[]) context.Message.Value);
             await next(context);
         }
     }
