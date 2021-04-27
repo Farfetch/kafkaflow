@@ -29,7 +29,7 @@ namespace KafkaFlow.UnitTests.Compressors
             // Arrange
             this.contextMock
                 .SetupGet(x => x.Message)
-                .Returns(new object());
+                .Returns(new Message(new object(), new object()));
 
             // Act
             Func<Task> act = () => this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
@@ -37,7 +37,7 @@ namespace KafkaFlow.UnitTests.Compressors
             // Assert
             act.Should().Throw<InvalidOperationException>();
             this.nextCalled.Should().BeFalse();
-            this.contextMock.Verify(x => x.TransformMessage(It.IsAny<object>()), Times.Never);
+            this.contextMock.Verify(x => x.TransformMessage(It.IsAny<object>(), It.IsAny<object>()), Times.Never);
             this.compressorMock.Verify(x => x.Decompress(It.IsAny<byte[]>()), Times.Never);
         }
 
@@ -45,23 +45,37 @@ namespace KafkaFlow.UnitTests.Compressors
         public async Task Invoke_ValidMessage_CallNext()
         {
             // Arrange
-            var rawMessage = new byte[1];
-            var decompressed = new byte[1];
+            var compressedMessage = new Message(null, new byte[1]);
+            var uncompressedValue = new byte[1];
+
+            var transformedContextMock = new Mock<IMessageContext>();
+            IMessageContext resultContext = null;
 
             this.contextMock
                 .SetupGet(x => x.Message)
-                .Returns(rawMessage);
+                .Returns(compressedMessage);
 
             this.compressorMock
-                .Setup(x => x.Decompress(rawMessage))
-                .Returns(decompressed);
+                .Setup(x => x.Decompress((byte[]) compressedMessage.Value))
+                .Returns(uncompressedValue);
+
+            this.contextMock
+                .Setup(x => x.TransformMessage(compressedMessage.Key, uncompressedValue))
+                .Returns(transformedContextMock.Object);
 
             // Act
-            await this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
+            await this.target.Invoke(
+                this.contextMock.Object,
+                ctx =>
+                {
+                    resultContext = ctx;
+                    return Task.CompletedTask;
+                });
 
             // Assert
-            this.nextCalled.Should().BeTrue();
-            this.contextMock.Verify(x => x.TransformMessage(decompressed));
+            resultContext.Should().NotBeNull();
+            resultContext.Should().Be(transformedContextMock.Object);
+            this.contextMock.VerifyAll();
             this.compressorMock.VerifyAll();
         }
 

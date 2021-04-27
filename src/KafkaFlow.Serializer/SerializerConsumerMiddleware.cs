@@ -40,20 +40,20 @@
                 return Task.CompletedTask;
             }
 
-            if (context.Message is null)
+            if (context.Message.Value is null)
             {
                 return next(context);
             }
 
-            if (!(context.Message is byte[] rawData))
+            if (context.Message.Value is not byte[] rawData)
             {
                 throw new InvalidOperationException(
                     $"{nameof(context.Message)} must be a byte array to be deserialized and it is '{context.Message.GetType().FullName}'");
             }
 
-            context.TransformMessage(this.serializer.Deserialize(rawData, messageType));
+            var data = this.serializer.Deserialize(rawData, messageType);
 
-            return next(context);
+            return next(context.TransformMessage(context.Message.Key, data));
         }
     }
 }

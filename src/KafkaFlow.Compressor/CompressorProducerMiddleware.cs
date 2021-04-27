@@ -6,7 +6,7 @@
     /// <summary>
     /// Middleware to compress the messages when producing
     /// </summary>
-    internal class CompressorProducerMiddleware : IMessageMiddleware
+    public class CompressorProducerMiddleware : IMessageMiddleware
     {
         private readonly IMessageCompressor compressor;
 
@@ -22,16 +22,15 @@
         /// <inheritdoc />
         public Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
-            if (!(context.Message is byte[] rawData))
+            if (context.Message.Value is not byte[] rawData)
             {
                 throw new InvalidOperationException(
                     $"{nameof(context.Message)} must be a byte array to be compressed and it is '{context.Message.GetType().FullName}'");
             }
 
             var data = this.compressor.Compress(rawData);
-            context.TransformMessage(data);
 
-            return next(context);
+            return next(context.TransformMessage(context.Message.Value, data));
         }
     }
 }

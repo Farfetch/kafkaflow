@@ -1,41 +1,27 @@
 namespace KafkaFlow.BatchConsume
 {
+    using System;
     using System.Collections.Generic;
 
     internal class BatchConsumeMessageContext : IMessageContext
     {
         public BatchConsumeMessageContext(
-            int workerId,
-            string groupId,
-            IMessageContextConsumer consumer,
+            IConsumerContext consumer,
             IReadOnlyCollection<IMessageContext> batchMessage)
         {
-            this.WorkerId = workerId;
-            this.GroupId = groupId;
-            this.Consumer = consumer;
-            this.Message = batchMessage;
+            this.ConsumerContext = consumer;
+            this.Message = new Message(null, batchMessage);
         }
 
-        public int WorkerId { get; }
-
-        public byte[] PartitionKey => null;
-
-        public object Message { get; private set; }
+        public Message Message { get; }
 
         public IMessageHeaders Headers { get; } = new MessageHeaders();
 
-        public string Topic => null;
+        public IConsumerContext ConsumerContext { get; }
 
-        public int? Partition => null;
+        public IProducerContext ProducerContext => null;
 
-        public long? Offset => null;
-
-        public string GroupId { get; }
-
-        public IMessageContextConsumer Consumer { get; }
-
-        public void TransformMessage(object message) => this.Message = message;
-
-        public IMessageContext Clone() => (IMessageContext) this.MemberwiseClone();
+        public IMessageContext TransformMessage(object key, object value) =>
+            throw new NotSupportedException($"{nameof(BatchConsumeMessageContext)} does not allow change the message");
     }
 }

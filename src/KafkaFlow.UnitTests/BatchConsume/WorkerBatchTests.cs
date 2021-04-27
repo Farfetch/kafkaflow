@@ -40,11 +40,11 @@ namespace KafkaFlow.UnitTests.BatchConsume
         public async Task AddAsync_LessThanBatchSize_CallNextOnTimeout()
         {
             // Arrange
-            var consumerContext = new Mock<IMessageContextConsumer>();
+            var consumerContext = new Mock<IConsumerContext>();
             var context = new Mock<IMessageContext>();
 
             context
-                .Setup(x => x.Consumer)
+                .Setup(x => x.ConsumerContext)
                 .Returns(consumerContext.Object);
 
             // Act
@@ -61,11 +61,11 @@ namespace KafkaFlow.UnitTests.BatchConsume
         public async Task AddAsync_ExactlyBatchSize_CallNextInstantly()
         {
             // Arrange
-            var consumerContext = new Mock<IMessageContextConsumer>();
+            var consumerContext = new Mock<IConsumerContext>();
             var contextMock = new Mock<IMessageContext>();
 
             contextMock
-                .Setup(x => x.Consumer)
+                .Setup(x => x.ConsumerContext)
                 .Returns(consumerContext.Object);
 
             // Act
@@ -84,11 +84,11 @@ namespace KafkaFlow.UnitTests.BatchConsume
         public async Task AddAsync_MoreThanBatchSize_CallNextInstantlyThenCallWhenTimeout()
         {
             // Arrange
-            var consumerContext = new Mock<IMessageContextConsumer>();
+            var consumerContext = new Mock<IConsumerContext>();
             var contextMock = new Mock<IMessageContext>();
 
             contextMock
-                .Setup(x => x.Consumer)
+                .Setup(x => x.ConsumerContext)
                 .Returns(consumerContext.Object);
 
             // Act
@@ -111,11 +111,11 @@ namespace KafkaFlow.UnitTests.BatchConsume
         public async Task AddAsync_NextThrowException_LogError()
         {
             // Arrange
-            var consumerContext = new Mock<IMessageContextConsumer>();
+            var consumerContext = new Mock<IConsumerContext>();
             var contextMock = new Mock<IMessageContext>();
 
             contextMock
-                .Setup(x => x.Consumer)
+                .Setup(x => x.ConsumerContext)
                 .Returns(consumerContext.Object);
 
             var ex = new Exception();

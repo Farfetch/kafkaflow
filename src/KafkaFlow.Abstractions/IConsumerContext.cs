@@ -6,17 +6,42 @@ namespace KafkaFlow
     /// <summary>
     /// Represents the message consumer
     /// </summary>
-    public interface IMessageContextConsumer
+    public interface IConsumerContext
     {
         /// <summary>
         /// Gets the consumer unique name defined in configuration
         /// </summary>
-        string Name { get; }
+        string ConsumerName { get; }
 
         /// <summary>
         /// Gets a CancellationToken that is cancelled when the worker is requested to stop
         /// </summary>
         CancellationToken WorkerStopped { get; }
+
+        /// <summary>
+        /// Gets the worker id that is processing the message
+        /// </summary>
+        int WorkerId { get; }
+
+        /// <summary>
+        /// Gets the topic associated with the message
+        /// </summary>
+        string Topic { get; }
+
+        /// <summary>
+        /// Gets the partition associated with the message
+        /// </summary>
+        int Partition { get; }
+
+        /// <summary>
+        /// Gets the partition offset associated with the message
+        /// </summary>
+        long Offset { get; }
+
+        /// <summary>
+        /// Gets the consumer group id from kafka consumer that received the message
+        /// </summary>
+        string GroupId { get; }
 
         /// <summary>
         /// Gets message timestamp. By default is the UTC timestamp when the message was produced
