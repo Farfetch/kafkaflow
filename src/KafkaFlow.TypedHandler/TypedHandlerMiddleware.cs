@@ -23,15 +23,15 @@ namespace KafkaFlow.TypedHandler
                 await Task.WhenAll(
                         this.configuration
                             .HandlerMapping
-                            .GetHandlersTypes(context.Message.GetType())
+                            .GetHandlersTypes(context.Message.Value.GetType())
                             .Select(
                                 handler =>
                                     HandlerExecutor
-                                        .GetExecutor(context.Message.GetType())
+                                        .GetExecutor(context.Message.Value.GetType())
                                         .Execute(
                                             scope.Resolver.Resolve(handler),
                                             context,
-                                            context.Message)))
+                                            context.Message.Value)))
                     .ConfigureAwait(false);
             }
 
