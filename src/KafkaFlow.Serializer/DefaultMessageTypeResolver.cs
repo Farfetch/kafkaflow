@@ -27,14 +27,16 @@ namespace KafkaFlow
         /// <param name="context">The message context</param>
         public void OnProduce(IMessageContext context)
         {
-            if (context.Message is null)
+            if (context.Message.Value is null)
             {
                 return;
             }
 
+            var messageType = context.Message.Value.GetType();
+
             context.Headers.SetString(
                 MessageType,
-                $"{context.Message.GetType().FullName}, {context.Message.GetType().Assembly.GetName().Name}");
+                $"{messageType.FullName}, {messageType.Assembly.GetName().Name}");
         }
     }
 }

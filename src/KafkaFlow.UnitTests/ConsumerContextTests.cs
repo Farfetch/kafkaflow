@@ -8,7 +8,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    internal class MessageContextConsumerTests
+    internal class ConsumerContextTests
     {
         [TestMethod]
         public void MessageTimestamp_ConsumeResultHasMessageTimestamp_ReturnsMessageTimestampFromResult()
@@ -30,7 +30,12 @@
                 },
             };
 
-            var target = new MessageContextConsumer(null, null, consumerResult, CancellationToken.None);
+            var target = new ConsumerContext(
+                null,
+                null,
+                consumerResult,
+                CancellationToken.None,
+                0);
 
             // Act
             var messageTimestamp = target.MessageTimestamp;

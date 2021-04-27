@@ -37,30 +37,30 @@ namespace KafkaFlow.UnitTests.BatchConsume
             var contextWorker1Mock = new Mock<IMessageContext>();
             var contextWorker2Mock = new Mock<IMessageContext>();
 
-            var consumerContextWorker1Mock = new Mock<IMessageContextConsumer>();
-            var consumerContextWorker2Mock = new Mock<IMessageContextConsumer>();
+            var consumerContextWorker1Mock = new Mock<IConsumerContext>();
+            var consumerContextWorker2Mock = new Mock<IConsumerContext>();
 
             var worker1Batch = new Mock<IWorkerBatch>();
             var worker2Batch = new Mock<IWorkerBatch>();
 
             var nextMock = new Mock<MiddlewareDelegate>();
 
-            contextWorker1Mock
+            consumerContextWorker1Mock
                 .SetupGet(x => x.WorkerId)
                 .Returns(1);
 
             contextWorker1Mock
-                .SetupGet(x => x.Consumer)
+                .SetupGet(x => x.ConsumerContext)
                 .Returns(consumerContextWorker1Mock.Object);
 
             consumerContextWorker1Mock.SetupSet(x => x.ShouldStoreOffset = false);
 
-            contextWorker2Mock
+            consumerContextWorker2Mock
                 .SetupGet(x => x.WorkerId)
                 .Returns(2);
 
             contextWorker2Mock
-                .SetupGet(x => x.Consumer)
+                .SetupGet(x => x.ConsumerContext)
                 .Returns(consumerContextWorker2Mock.Object);
 
             consumerContextWorker2Mock.SetupSet(x => x.ShouldStoreOffset = false);
