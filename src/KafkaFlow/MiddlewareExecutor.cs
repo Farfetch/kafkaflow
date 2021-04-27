@@ -36,7 +36,7 @@ namespace KafkaFlow
                     context,
                     nextContext => this.ExecuteDefinition(
                         index + 1,
-                        nextContext.Clone(),
+                        nextContext,
                         nextOperation));
         }
     }

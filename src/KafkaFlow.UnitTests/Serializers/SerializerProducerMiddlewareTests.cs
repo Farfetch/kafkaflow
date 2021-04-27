@@ -12,8 +12,6 @@ namespace KafkaFlow.UnitTests.Serializers
         private Mock<IMessageSerializer> serializerMock;
         private Mock<IMessageTypeResolver> typeResolverMock;
 
-        private bool nextCalled;
-
         private SerializerProducerMiddleware target;
 
         [TestInitialize]
@@ -29,11 +27,15 @@ namespace KafkaFlow.UnitTests.Serializers
         }
 
         [TestMethod]
-        public async Task Invoke_ValidMessage_CallNext()
+        public async Task Invoke_ValidMessage_Serialize()
         {
             // Arrange
             var rawMessage = new byte[1];
-            var deserializedMessage = new TestMessage();
+            var key = new object();
+            var deserializedMessage = new Message(key, new TestMessage());
+            IMessageContext resultContext = null;
+
+            var transformedContextMock = new Mock<IMessageContext>();
 
             this.contextMock
                 .SetupGet(x => x.Message)
@@ -42,25 +44,28 @@ namespace KafkaFlow.UnitTests.Serializers
             this.typeResolverMock.Setup(x => x.OnProduce(this.contextMock.Object));
 
             this.serializerMock
-                .Setup(x => x.Serialize(deserializedMessage))
+                .Setup(x => x.Serialize(deserializedMessage.Value))
                 .Returns(rawMessage);
 
-            this.contextMock.Setup(x => x.TransformMessage(rawMessage));
+            this.contextMock
+                .Setup(x => x.TransformMessage(key, rawMessage))
+                .Returns(transformedContextMock.Object);
 
             // Act
-            await this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
+            await this.target.Invoke(
+                this.contextMock.Object,
+                ctx =>
+                {
+                    resultContext = ctx;
+                    return Task.CompletedTask;
+                });
 
             // Assert
-            this.nextCalled.Should().BeTrue();
+            resultContext.Should().NotBeNull();
+            resultContext.Should().Be(transformedContextMock.Object);
             this.contextMock.VerifyAll();
             this.serializerMock.VerifyAll();
             this.typeResolverMock.VerifyAll();
-        }
-
-        private Task SetNextCalled()
-        {
-            this.nextCalled = true;
-            return Task.CompletedTask;
         }
 
         private class TestMessage

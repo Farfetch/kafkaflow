@@ -28,10 +28,10 @@
         public Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
             var workerBatch = this.batches.GetOrAdd(
-                context.WorkerId,
+                context.ConsumerContext.WorkerId,
                 _ => this.workerBatchFactory.Create(this.batchSize, this.batchTimeout, this.logHandler));
 
-            context.Consumer.ShouldStoreOffset = false;
+            context.ConsumerContext.ShouldStoreOffset = false;
 
             return workerBatch.AddAsync(context, next);
         }
