@@ -62,7 +62,7 @@ namespace KafkaFlow.BatchConsume
             return Task
                 .Delay(this.batchTimeout, this.cancelScheduleTokenSource.Token)
                 .ContinueWith(
-                    async task =>
+                    async _ =>
                     {
                         await this.semaphore.WaitAsync().ConfigureAwait(false);
 
@@ -85,9 +85,7 @@ namespace KafkaFlow.BatchConsume
             try
             {
                 var batchContext = new BatchConsumeMessageContext(
-                    context.WorkerId,
-                    context.GroupId,
-                    context.Consumer,
+                    context.ConsumerContext,
                     this.batch.ToList());
 
                 await next(batchContext).ConfigureAwait(false);
@@ -99,16 +97,16 @@ namespace KafkaFlow.BatchConsume
                     ex,
                     new
                     {
-                        context.Topic,
-                        context.GroupId,
-                        context.WorkerId,
+                        context.ConsumerContext.Topic,
+                        context.ConsumerContext.GroupId,
+                        context.ConsumerContext.WorkerId,
                     });
             }
             finally
             {
                 foreach (var messageContext in this.batch)
                 {
-                    messageContext.Consumer.StoreOffset();
+                    messageContext.ConsumerContext.StoreOffset();
                 }
 
                 this.dispatchTask = null;

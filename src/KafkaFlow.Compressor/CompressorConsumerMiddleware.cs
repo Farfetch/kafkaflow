@@ -22,16 +22,15 @@
         /// <inheritdoc />
         public Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
-            if (!(context.Message is byte[] rawData))
+            if (!(context.Message.Value is byte[] rawData))
             {
                 throw new InvalidOperationException(
                     $"{nameof(context.Message)} must be a byte array to be decompressed and it is '{context.Message.GetType().FullName}'");
             }
 
             var data = this.compressor.Decompress(rawData);
-            context.TransformMessage(data);
 
-            return next(context);
+            return next(context.TransformMessage(context.Message.Key, data));
         }
     }
 }

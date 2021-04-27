@@ -47,15 +47,15 @@ namespace KafkaFlow.Producers
 
             await this.middlewareExecutor
                 .Execute(
-                    new ProducerMessageContext(
-                        message,
-                        messageKey,
+                    new MessageContext(
+                        new Message(messageKey, message),
                         headers,
-                        topic),
+                        null,
+                        new ProducerContext(topic)),
                     async context =>
                     {
                         report = await this
-                            .InternalProduceAsync((ProducerMessageContext) context)
+                            .InternalProduceAsync(context)
                             .ConfigureAwait(false);
                     })
                 .ConfigureAwait(false);
@@ -91,17 +91,17 @@ namespace KafkaFlow.Producers
             var messageKey = partitionKey is null ? null : Encoding.UTF8.GetBytes(partitionKey);
 
             this.middlewareExecutor.Execute(
-                new ProducerMessageContext(
-                    message,
-                    messageKey,
+                new MessageContext(
+                    new Message(messageKey, message),
                     headers,
-                    topic),
+                    null,
+                    new ProducerContext(topic)),
                 context =>
                 {
                     var completionSource = new TaskCompletionSource<byte>();
 
                     this.InternalProduce(
-                        (ProducerMessageContext) context,
+                        context,
                         report =>
                         {
                             if (report.Error.IsError)
@@ -146,27 +146,37 @@ namespace KafkaFlow.Producers
             this.producer?.Dispose();
         }
 
-        private static Message<byte[], byte[]> CreateMessage(IMessageContext context)
+        private static void FillContextWithResultMetadata(IMessageContext context, DeliveryResult<byte[], byte[]> result)
         {
-            return new()
-            {
-                Key = context.PartitionKey,
-                Value = GetMessageContent(context),
-                Headers = ((MessageHeaders) context.Headers).GetKafkaHeaders(),
-                Timestamp = Timestamp.Default,
-            };
+            var concreteProducerContext = (ProducerContext) context.ProducerContext;
+
+            concreteProducerContext.Offset = result.Offset;
+            concreteProducerContext.Partition = result.Partition;
         }
 
-        private static byte[] GetMessageContent(IMessageContext context)
+        private static Message<byte[], byte[]> CreateMessage(IMessageContext context)
         {
-            if (!(context.Message is byte[] value))
+            if (!(context.Message.Value is byte[] value))
             {
                 throw new InvalidOperationException(
-                    $"{nameof(context.Message)} must be a byte array to be produced, it is a {context.Message.GetType().FullName}." +
+                    $"The message value must be a byte array to be produced, it is a {context.Message.Value.GetType().FullName}." +
                     "You should serialize or encode your message object using a middleware");
             }
 
-            return value;
+            if (!(context.Message.Key is byte[] key))
+            {
+                throw new InvalidOperationException(
+                    $"The message key must be a byte array to be produced, it is a {context.Message.Key.GetType().FullName}." +
+                    "You should serialize or encode your message object using a middleware");
+            }
+
+            return new()
+            {
+                Key = key,
+                Value = value,
+                Headers = ((MessageHeaders) context.Headers).GetKafkaHeaders(),
+                Timestamp = Timestamp.Default,
+            };
         }
 
         private IProducer<byte[], byte[]> EnsureProducer()
@@ -228,7 +238,7 @@ namespace KafkaFlow.Producers
                     new { Error = error });
         }
 
-        private async Task<DeliveryResult<byte[], byte[]>> InternalProduceAsync(ProducerMessageContext context)
+        private async Task<DeliveryResult<byte[], byte[]>> InternalProduceAsync(IMessageContext context)
         {
             DeliveryResult<byte[], byte[]> result = null;
 
@@ -237,7 +247,7 @@ namespace KafkaFlow.Producers
                 result = await this
                     .EnsureProducer()
                     .ProduceAsync(
-                        context.Topic,
+                        context.ProducerContext.Topic,
                         CreateMessage(context))
                     .ConfigureAwait(false);
             }
@@ -251,20 +261,19 @@ namespace KafkaFlow.Producers
                 throw;
             }
 
-            context.Offset = result.Offset;
-            context.Partition = result.Partition;
+            FillContextWithResultMetadata(context, result);
 
             return result;
         }
 
         private void InternalProduce(
-            ProducerMessageContext context,
+            IMessageContext context,
             Action<DeliveryReport<byte[], byte[]>> deliveryHandler)
         {
             this
                 .EnsureProducer()
                 .Produce(
-                    context.Topic,
+                    context.ProducerContext.Topic,
                     CreateMessage(context),
                     report =>
                     {
@@ -273,8 +282,7 @@ namespace KafkaFlow.Producers
                             this.InvalidateProducer(report.Error, report);
                         }
 
-                        context.Offset = report.Offset;
-                        context.Partition = report.Partition;
+                        FillContextWithResultMetadata(context, report);
 
                         deliveryHandler(report);
                     });

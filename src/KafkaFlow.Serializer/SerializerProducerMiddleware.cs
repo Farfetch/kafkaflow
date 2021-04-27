@@ -33,11 +33,9 @@
         {
             this.typeResolver.OnProduce(context);
 
-            var data = this.serializer.Serialize(context.Message);
+            var data = this.serializer.Serialize(context.Message.Value);
 
-            context.TransformMessage(data);
-
-            return next(context);
+            return next(context.TransformMessage(context.Message.Key, data));
         }
     }
 }
