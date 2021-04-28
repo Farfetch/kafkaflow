@@ -8,7 +8,7 @@ namespace KafkaFlow.UnitTests
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    internal class PartitionOffsetsTests
+    public class PartitionOffsetsTests
     {
         [TestMethod]
         public void AddOffset_InitializeTheValue_DoNothing()

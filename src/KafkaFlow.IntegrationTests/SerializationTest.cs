@@ -14,7 +14,7 @@ namespace KafkaFlow.IntegrationTests
     using MessageTypes;
 
     [TestClass]
-    internal class SerializationTest
+    public class SerializationTest
     {
         private readonly Fixture fixture = new();
 

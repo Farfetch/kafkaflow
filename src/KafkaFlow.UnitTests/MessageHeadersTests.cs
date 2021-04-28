@@ -6,7 +6,7 @@ namespace KafkaFlow.UnitTests
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    internal class MessageHeadersTests
+    public class MessageHeadersTests
     {
         private const string Key = "abc";
         private const string StrValue = "123";
