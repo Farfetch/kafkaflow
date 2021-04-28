@@ -6,7 +6,7 @@ namespace KafkaFlow.UnitTests.Serializers
     using Moq;
 
     [TestClass]
-    internal class SerializerProducerMiddlewareTests
+    public class SerializerProducerMiddlewareTests
     {
         private Mock<IMessageContext> contextMock;
         private Mock<IMessageSerializer> serializerMock;

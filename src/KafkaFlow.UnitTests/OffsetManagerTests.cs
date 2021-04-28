@@ -7,7 +7,7 @@ namespace KafkaFlow.UnitTests
     using Moq;
 
     [TestClass]
-    internal class OffsetManagerTests
+    public class OffsetManagerTests
     {
         private Mock<IOffsetCommitter> committerMock;
         private TopicPartition topicPartition;

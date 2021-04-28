@@ -9,7 +9,7 @@ namespace KafkaFlow.UnitTests.Consumer
     using Moq;
 
     [TestClass]
-    internal class WorkerPoolFeederTests
+    public class WorkerPoolFeederTests
     {
         private WorkerPoolFeeder target;
 

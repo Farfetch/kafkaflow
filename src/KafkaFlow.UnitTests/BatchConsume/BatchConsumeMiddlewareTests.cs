@@ -7,7 +7,7 @@ namespace KafkaFlow.UnitTests.BatchConsume
     using Moq;
 
     [TestClass]
-    internal class BatchConsumeMiddlewareTests
+    public class BatchConsumeMiddlewareTests
     {
         private const int BatchSize = 10;
         private readonly TimeSpan batchTimeout = TimeSpan.FromSeconds(3);

@@ -12,7 +12,7 @@ namespace KafkaFlow.UnitTests.Consumer
     using Moq;
 
     [TestClass]
-    internal class ConsumerManagerTests
+    public class ConsumerManagerTests
     {
         private readonly Fixture fixture = new();
 
