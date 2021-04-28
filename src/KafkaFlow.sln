@@ -67,11 +67,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Sample.BatchConsu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Extensions.Hosting", "KafkaFlow.Extensions.Hosting\KafkaFlow.Extensions.Hosting.csproj", "{7913342E-80FD-4094-B892-18DAA2E6948F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.SchemaRegistry", "KafkaFlow.SchemaRegistry\KafkaFlow.SchemaRegistry.csproj", "{98C9826C-76F6-4C21-8A32-D55C2647905B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.SchemaRegistry", "KafkaFlow.SchemaRegistry\KafkaFlow.SchemaRegistry.csproj", "{98C9826C-76F6-4C21-8A32-D55C2647905B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Serializer.SchemaRegistry.ConfluentJson", "KafkaFlow.Serializer.SchemaRegistry.ConfluentJson\KafkaFlow.Serializer.SchemaRegistry.ConfluentJson.csproj", "{582D0B0C-F331-45A0-B4D8-CE9DC24F5389}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Serializer.SchemaRegistry.ConfluentJson", "KafkaFlow.Serializer.SchemaRegistry.ConfluentJson\KafkaFlow.Serializer.SchemaRegistry.ConfluentJson.csproj", "{582D0B0C-F331-45A0-B4D8-CE9DC24F5389}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf", "KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf.csproj", "{F212D09B-9AD6-428F-9008-38BF1F470B3A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf", "KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf.csproj", "{F212D09B-9AD6-428F-9008-38BF1F470B3A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Admin.Dashboard", "KafkaFlow.Admin.Dashboard\KafkaFlow.Admin.Dashboard.csproj", "{4072F646-9393-4BF3-A479-0550AC1BB6C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample.Dashboard", "..\samples\KafkaFlow.Sample.Dashboard\KafkaFlow.Sample.Dashboard.csproj", "{F32DC7DA-36EA-4199-91F5-81960FD9C650}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -183,6 +187,14 @@ Global
 		{F212D09B-9AD6-428F-9008-38BF1F470B3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F212D09B-9AD6-428F-9008-38BF1F470B3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F212D09B-9AD6-428F-9008-38BF1F470B3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4072F646-9393-4BF3-A479-0550AC1BB6C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4072F646-9393-4BF3-A479-0550AC1BB6C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4072F646-9393-4BF3-A479-0550AC1BB6C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4072F646-9393-4BF3-A479-0550AC1BB6C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F32DC7DA-36EA-4199-91F5-81960FD9C650}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F32DC7DA-36EA-4199-91F5-81960FD9C650}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F32DC7DA-36EA-4199-91F5-81960FD9C650}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F32DC7DA-36EA-4199-91F5-81960FD9C650}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -207,6 +219,7 @@ Global
 		{6E9F7CDC-E935-4A51-9358-2E6DBB901A34} = {EF626895-FDAE-4B28-9110-BA85671CBBF2}
 		{46B6F104-D46E-4DC2-ADC2-18E76F5BBCD9} = {58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}
 		{827620D3-2258-410E-A79E-E782ED42284C} = {58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}
+		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 		{2E63A019-F8AD-4EC3-A80A-F560DEC7C5B4} = {ADAAA63C-E17C-4F1B-A062-3CCA071D75C2}
 		{5884FD90-F649-4E43-8638-FCC4C0B0C5CA} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 		{C891D0DB-BE19-4D20-9E2F-61D413210F8D} = {ED24B548-6F37-4283-A35B-F6015BFB7A34}
@@ -215,7 +228,8 @@ Global
 		{98C9826C-76F6-4C21-8A32-D55C2647905B} = {ADAAA63C-E17C-4F1B-A062-3CCA071D75C2}
 		{582D0B0C-F331-45A0-B4D8-CE9DC24F5389} = {ADAAA63C-E17C-4F1B-A062-3CCA071D75C2}
 		{F212D09B-9AD6-428F-9008-38BF1F470B3A} = {ADAAA63C-E17C-4F1B-A062-3CCA071D75C2}
-		{15C12D0C-FE8A-41F9-BBCF-5A963F05D5C7} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
+		{4072F646-9393-4BF3-A479-0550AC1BB6C4} = {58483813-0D7C-423E-8E7D-8FBF3E6CDB6D}
+		{F32DC7DA-36EA-4199-91F5-81960FD9C650} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AE955B5-16B0-41CF-9F12-66D15B3DD1AB}
