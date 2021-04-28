@@ -5,7 +5,7 @@ namespace KafkaFlow.UnitTests.TypedHandler
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    internal class HandlerTypeMappingTests
+    public class HandlerTypeMappingTests
     {
         private HandlerTypeMapping target;
 

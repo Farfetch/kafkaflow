@@ -12,7 +12,7 @@ namespace KafkaFlow.IntegrationTests
     using KafkaFlow.Producers;
 
     [TestClass]
-    internal class CompressionTest
+    public class CompressionTest
     {
         private readonly Fixture fixture = new();
 
