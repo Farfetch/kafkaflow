@@ -8,11 +8,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Confluent.SchemaRegistry" Version="1.6.3"/>
+        <PackageReference Include="Confluent.SchemaRegistry" Version="1.6.3" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj"/>
+        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>
