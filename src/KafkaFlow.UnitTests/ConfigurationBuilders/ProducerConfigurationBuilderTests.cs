@@ -9,7 +9,7 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
     using Moq;
 
     [TestClass]
-    internal class ProducerConfigurationBuilderTests
+    public class ProducerConfigurationBuilderTests
     {
         private readonly Fixture fixture = new();
 

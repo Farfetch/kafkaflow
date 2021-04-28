@@ -8,7 +8,7 @@ namespace KafkaFlow.UnitTests.BatchConsume
     using Moq;
 
     [TestClass]
-    internal class WorkerBatchTests
+    public class WorkerBatchTests
     {
         private const int BatchSize = 3;
 
