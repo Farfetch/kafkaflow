@@ -1,0 +1,24 @@
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Consumer workers running</h4>
+    <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+</div>
+<div class="modal-body">
+    <div class="form-group">
+        <label>Update the number of workers in consumers <b>'{{consumerName}}'</b> from group id <b>'{{groupId}}'</b> </label>
+        <label for="oldWorkersCount">Current Value</label>
+        <div class="input-group mb-2">
+        <input id="oldWorkersCount" class="form-control" [(ngModel)]="oldWorkersCount" type="number" readonly>
+        </div>
+        <label for="workersCount">New Value</label>
+        <div class="input-group">
+        <input id="workersCount" class="form-control" [(ngModel)]="workersCount" type="number">
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-outline-dark" (click)="activeModal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-success" (click)="save()">OK</button>
+</div>
