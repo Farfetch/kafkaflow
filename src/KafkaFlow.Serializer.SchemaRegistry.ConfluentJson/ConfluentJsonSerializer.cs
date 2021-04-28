@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Confluent.Kafka;
     using Confluent.SchemaRegistry;
     using Confluent.SchemaRegistry.Serdes;
     using NJsonSchema.Generation;
@@ -59,33 +58,29 @@
         /// <inheritdoc/>
         public byte[] Serialize(object message)
         {
-            dynamic serializer = Activator.CreateInstance(
-                typeof(JsonSerializer<>).MakeGenericType(message.GetType()),
-                this.schemaRegistryClient,
-                this.serializerConfig,
-                this.schemaGeneratorSettings);
-
-            return serializer
-                .SerializeAsync(message as dynamic, SerializationContext.Empty)
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
+            return ConfluentSerializerWrapper
+                .GetOrCreateSerializer(
+                    message.GetType(),
+                    () => Activator.CreateInstance(
+                        typeof(JsonSerializer<>).MakeGenericType(message.GetType()),
+                        this.schemaRegistryClient,
+                        this.serializerConfig,
+                        this.schemaGeneratorSettings))
+                .Serialize(message);
         }
 
         /// <inheritdoc/>
         public object Deserialize(byte[] message, Type type)
         {
-            dynamic deserializer = Activator
-                .CreateInstance(
-                    typeof(JsonDeserializer<>).MakeGenericType(type),
-                    Enumerable.Empty<KeyValuePair<string, string>>(),
-                    null);
-
-            return deserializer
-                .DeserializeAsync(message, message == null, SerializationContext.Empty)
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
+            return ConfluentDeserializerWrapper
+                .GetOrCreateDeserializer(
+                    type,
+                    () => Activator
+                        .CreateInstance(
+                            typeof(JsonDeserializer<>).MakeGenericType(type),
+                            Enumerable.Empty<KeyValuePair<string, string>>(),
+                            null))
+                .Deserialize(message);
         }
     }
 }
