@@ -11,7 +11,7 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
     using AutoOffsetReset = KafkaFlow.AutoOffsetReset;
 
     [TestClass]
-    internal class ConsumerConfigurationBuilderTests
+    public class ConsumerConfigurationBuilderTests
     {
         private readonly Fixture fixture = new();
 

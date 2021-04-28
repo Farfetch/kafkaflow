@@ -8,7 +8,7 @@ namespace KafkaFlow.UnitTests.Compressors
     using Moq;
 
     [TestClass]
-    internal class CompressorProducerMiddlewareTests
+    public class CompressorProducerMiddlewareTests
     {
         private Mock<IMessageContext> contextMock;
         private Mock<IMessageCompressor> compressorMock;
