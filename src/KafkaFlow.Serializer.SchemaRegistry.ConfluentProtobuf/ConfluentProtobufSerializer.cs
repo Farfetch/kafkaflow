@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Confluent.Kafka;
     using Confluent.SchemaRegistry;
     using Confluent.SchemaRegistry.Serdes;
 
@@ -42,31 +41,27 @@
         /// <inheritdoc/>
         public byte[] Serialize(object message)
         {
-            dynamic serializer = Activator.CreateInstance(
-                typeof(ProtobufSerializer<>).MakeGenericType(message.GetType()),
-                this.schemaRegistryClient,
-                this.serializerConfig);
-
-            return serializer
-                .SerializeAsync(message as dynamic, SerializationContext.Empty)
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
+            return ConfluentSerializerWrapper
+                .GetOrCreateSerializer(
+                    message.GetType(),
+                    () => Activator.CreateInstance(
+                        typeof(ProtobufSerializer<>).MakeGenericType(message.GetType()),
+                        this.schemaRegistryClient,
+                        this.serializerConfig))
+                .Serialize(message);
         }
 
         /// <inheritdoc/>
         public object Deserialize(byte[] message, Type type)
         {
-            dynamic deserializer = Activator
-                .CreateInstance(
-                    typeof(ProtobufDeserializer<>).MakeGenericType(type),
-                    Enumerable.Empty<KeyValuePair<string, string>>());
-
-            return deserializer
-                .DeserializeAsync(message, message == null, SerializationContext.Empty)
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
+            return ConfluentDeserializerWrapper
+                .GetOrCreateDeserializer(
+                    type,
+                    () => Activator
+                        .CreateInstance(
+                            typeof(ProtobufDeserializer<>).MakeGenericType(type),
+                            Enumerable.Empty<KeyValuePair<string, string>>()))
+                .Deserialize(message);
         }
     }
 }
