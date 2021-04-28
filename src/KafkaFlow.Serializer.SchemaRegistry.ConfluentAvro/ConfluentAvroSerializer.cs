@@ -1,9 +1,6 @@
 ﻿namespace KafkaFlow.Serializer.SchemaRegistry
 {
     using System;
-    using Avro.Specific;
-    using Confluent.Kafka;
-    using Confluent.Kafka.SyncOverAsync;
     using Confluent.SchemaRegistry;
     using Confluent.SchemaRegistry.Serdes;
 
@@ -33,9 +30,10 @@
             IDependencyResolver resolver,
             AvroSerializerConfig serializerConfig)
         {
-            this.schemaRegistryClient = resolver.Resolve<ISchemaRegistryClient>() ??
-                                        throw new InvalidOperationException(
-                                            $"No schema registry configuration was found. Set it using {nameof(ClusterConfigurationBuilderExtensions.WithSchemaRegistry)} on cluster configuration");
+            this.schemaRegistryClient =
+                resolver.Resolve<ISchemaRegistryClient>() ??
+                throw new InvalidOperationException(
+                    $"No schema registry configuration was found. Set it using {nameof(ClusterConfigurationBuilderExtensions.WithSchemaRegistry)} on cluster configuration");
 
             this.serializerConfig = serializerConfig;
         }
@@ -43,32 +41,28 @@
         /// <inheritdoc/>
         public byte[] Serialize(object message)
         {
-            if (!(message is ISpecificRecord record))
-            {
-                throw new InvalidCastException(
-                    $"The message type {message.GetType().FullName} must implement {nameof(ISpecificRecord)} interface.");
-            }
-
-            return new AvroSerializer<ISpecificRecord>(
-                    this.schemaRegistryClient,
-                    this.serializerConfig)
-                .AsSyncOverAsync()
-                .Serialize(record, SerializationContext.Empty);
+            return ConfluentSerializerWrapper
+                .GetOrCreateSerializer(
+                    message.GetType(),
+                    () => Activator.CreateInstance(
+                        typeof(AvroSerializer<>).MakeGenericType(message.GetType()),
+                        this.schemaRegistryClient,
+                        this.serializerConfig))
+                .Serialize(message);
         }
 
         /// <inheritdoc/>
         public object Deserialize(byte[] data, Type type)
         {
-            dynamic deserializer = Activator
-                .CreateInstance(
-                    typeof(AvroDeserializer<>).MakeGenericType(type),
-                    this.schemaRegistryClient,
-                    new AvroDeserializerConfig());
-
-            return deserializer
-                .DeserializeAsync(data, data == null, SerializationContext.Empty)
-                .GetAwaiter()
-                .GetResult();
+            return ConfluentDeserializerWrapper
+                .GetOrCreateDeserializer(
+                    type,
+                    () => Activator
+                        .CreateInstance(
+                            typeof(AvroDeserializer<>).MakeGenericType(type),
+                            this.schemaRegistryClient,
+                            new AvroDeserializerConfig()))
+                .Deserialize(data);
         }
     }
 }
