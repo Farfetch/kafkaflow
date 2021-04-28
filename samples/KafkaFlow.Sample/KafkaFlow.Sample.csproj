@@ -7,6 +7,14 @@
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <NoWarn>1701;1702;CS1591;SA1600</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <NoWarn>1701;1702;CS1591;SA1600</NoWarn>
+    </PropertyGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\..\src\KafkaFlow.Admin\KafkaFlow.Admin.csproj" />
       <ProjectReference Include="..\..\src\KafkaFlow.Compressor.Gzip\KafkaFlow.Compressor.Gzip.csproj" />
