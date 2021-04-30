@@ -2,7 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
     using Confluent.SchemaRegistry;
     using Confluent.SchemaRegistry.Serdes;
     using NJsonSchema.Generation;
@@ -10,7 +12,7 @@
     /// <summary>
     /// A json message serializer integrated with the confluent schema registry
     /// </summary>
-    public class ConfluentJsonSerializer : IMessageSerializer
+    public class ConfluentJsonSerializer : ISerializer
     {
         private readonly ISchemaRegistryClient schemaRegistryClient;
         private readonly JsonSerializerConfig serializerConfig;
@@ -56,7 +58,7 @@
         }
 
         /// <inheritdoc/>
-        public byte[] Serialize(object message)
+        public Task SerializeAsync(object message, Stream output, ISerializerContext context)
         {
             return ConfluentSerializerWrapper
                 .GetOrCreateSerializer(
@@ -66,11 +68,11 @@
                         this.schemaRegistryClient,
                         this.serializerConfig,
                         this.schemaGeneratorSettings))
-                .Serialize(message);
+                .SerializeAsync(message, output);
         }
 
         /// <inheritdoc/>
-        public object Deserialize(byte[] message, Type type)
+        public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
         {
             return ConfluentDeserializerWrapper
                 .GetOrCreateDeserializer(
@@ -80,7 +82,7 @@
                             typeof(JsonDeserializer<>).MakeGenericType(type),
                             Enumerable.Empty<KeyValuePair<string, string>>(),
                             null))
-                .Deserialize(message);
+                .DeserializeAsync(input);
         }
     }
 }
