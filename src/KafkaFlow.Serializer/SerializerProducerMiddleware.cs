@@ -1,22 +1,25 @@
 ﻿namespace KafkaFlow
 {
     using System.Threading.Tasks;
+    using Microsoft.IO;
 
     /// <summary>
     /// Middleware to serialize messages when producing
     /// </summary>
     public class SerializerProducerMiddleware : IMessageMiddleware
     {
-        private readonly IMessageSerializer serializer;
+        private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
+
+        private readonly ISerializer serializer;
         private readonly IMessageTypeResolver typeResolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SerializerProducerMiddleware"/> class.
         /// </summary>
-        /// <param name="serializer">Instance of <see cref="IMessageSerializer"/></param>
+        /// <param name="serializer">Instance of <see cref="ISerializer"/></param>
         /// <param name="typeResolver">Instance of <see cref="IMessageTypeResolver"/></param>
         public SerializerProducerMiddleware(
-            IMessageSerializer serializer,
+            ISerializer serializer,
             IMessageTypeResolver typeResolver)
         {
             this.serializer = serializer;
@@ -29,13 +32,25 @@
         /// <param name="context">The <see cref="IMessageContext"/> containing the message and metadata</param>
         /// <param name="next">A delegate to call next middleware</param>
         /// <returns></returns>
-        public Task Invoke(IMessageContext context, MiddlewareDelegate next)
+        public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
             this.typeResolver.OnProduce(context);
 
-            var data = this.serializer.Serialize(context.Message.Value);
+            byte[] messageValue;
 
-            return next(context.TransformMessage(context.Message.Key, data));
+            using (var buffer = MemoryStreamManager.GetStream())
+            {
+                await this.serializer
+                    .SerializeAsync(
+                        context.Message.Value,
+                        buffer,
+                        SerializerContext.Empty)
+                    .ConfigureAwait(false);
+
+                messageValue = buffer.ToArray();
+            }
+
+            await next(context.TransformMessage(context.Message.Key, messageValue)).ConfigureAwait(false);
         }
     }
 }

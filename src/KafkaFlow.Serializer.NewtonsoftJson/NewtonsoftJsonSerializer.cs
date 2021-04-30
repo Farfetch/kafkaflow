@@ -1,13 +1,15 @@
 ﻿namespace KafkaFlow.Serializer
 {
     using System;
+    using System.IO;
     using System.Text;
+    using System.Threading.Tasks;
     using Newtonsoft.Json;
 
     /// <summary>
     /// A message serializer using NewtonsoftJson library
     /// </summary>
-    public class NewtonsoftJsonSerializer : IMessageSerializer
+    public class NewtonsoftJsonSerializer : ISerializer
     {
         private readonly JsonSerializerSettings settings;
 
@@ -28,24 +30,24 @@
         {
         }
 
-        /// <summary>Serializes the message</summary>
-        /// <param name="message">The message to be serialized</param>
-        /// <returns>A UTF8 JSON string</returns>
-        public byte[] Serialize(object message)
+        /// <inheritdoc/>
+        public Task SerializeAsync(object message, Stream output, ISerializerContext context)
         {
-            var serialized = JsonConvert.SerializeObject(message, this.settings);
-            return Encoding.UTF8.GetBytes(serialized);
+            using var sw = new StreamWriter(output, Encoding.UTF8);
+            var serializer = JsonSerializer.CreateDefault(this.settings);
+
+            serializer.Serialize(sw, message);
+
+            return Task.CompletedTask;
         }
 
-        /// <summary>Deserialize the message</summary>
-        /// <param name="data">The message to be deserialized (cannot be null)</param>
-        /// <param name="type">The destination type</param>
-        /// <returns>An instance of the passed type</returns>
-        public object Deserialize(byte[] data, Type type)
+        /// <inheritdoc/>
+        public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
         {
-            var json = Encoding.UTF8.GetString(data);
+            using var sr = new StreamReader(input, Encoding.UTF8);
+            var serializer = JsonSerializer.CreateDefault(this.settings);
 
-            return JsonConvert.DeserializeObject(json, type, this.settings);
+            return Task.FromResult(serializer.Deserialize(sr, type));
         }
     }
 }

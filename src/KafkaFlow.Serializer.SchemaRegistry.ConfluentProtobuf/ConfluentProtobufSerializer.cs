@@ -2,14 +2,16 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
     using Confluent.SchemaRegistry;
     using Confluent.SchemaRegistry.Serdes;
 
     /// <summary>
     /// A protobuf message serializer integrated with the confluent schema registry
     /// </summary>
-    public class ConfluentProtobufSerializer : IMessageSerializer
+    public class ConfluentProtobufSerializer : ISerializer
     {
         private readonly ISchemaRegistryClient schemaRegistryClient;
         private readonly ProtobufSerializerConfig serializerConfig;
@@ -39,7 +41,7 @@
         }
 
         /// <inheritdoc/>
-        public byte[] Serialize(object message)
+        public Task SerializeAsync(object message, Stream output, ISerializerContext context)
         {
             return ConfluentSerializerWrapper
                 .GetOrCreateSerializer(
@@ -48,11 +50,11 @@
                         typeof(ProtobufSerializer<>).MakeGenericType(message.GetType()),
                         this.schemaRegistryClient,
                         this.serializerConfig))
-                .Serialize(message);
+                .SerializeAsync(message, output);
         }
 
         /// <inheritdoc/>
-        public object Deserialize(byte[] message, Type type)
+        public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
         {
             return ConfluentDeserializerWrapper
                 .GetOrCreateDeserializer(
@@ -61,7 +63,7 @@
                         .CreateInstance(
                             typeof(ProtobufDeserializer<>).MakeGenericType(type),
                             Enumerable.Empty<KeyValuePair<string, string>>()))
-                .Deserialize(message);
+                .DeserializeAsync(input);
         }
     }
 }
