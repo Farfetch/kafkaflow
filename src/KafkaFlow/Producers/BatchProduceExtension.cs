@@ -35,8 +35,8 @@ namespace KafkaFlow.Producers
             {
                 producer.Produce(
                     item.Topic,
-                    item.PartitionKey,
-                    item.Message,
+                    item.MessageKey,
+                    item.MessageValue,
                     item.Headers,
                     report =>
                     {
