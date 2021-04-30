@@ -2,6 +2,8 @@ namespace KafkaFlow
 {
     using System;
     using System.Collections.Concurrent;
+    using System.IO;
+    using System.Threading.Tasks;
     using Confluent.Kafka;
 
     /// <summary>
@@ -32,8 +34,9 @@ namespace KafkaFlow
         /// Serialize a message using the passed serializer
         /// </summary>
         /// <param name="message">The message to serialize</param>
+        /// <param name="output">Where the serialization result will be stored</param>
         /// <returns></returns>
-        public abstract byte[] Serialize(object message);
+        public abstract Task SerializeAsync(object message, Stream output);
 
         private class InnerConfluentSerializerWrapper<T> : ConfluentSerializerWrapper
         {
@@ -44,12 +47,15 @@ namespace KafkaFlow
                 this.serializer = (IAsyncSerializer<T>) serializerFactory();
             }
 
-            public override byte[] Serialize(object message)
+            public override async Task SerializeAsync(object message, Stream output)
             {
-                return this.serializer
-                    .SerializeAsync((T) message, SerializationContext.Empty)
-                    .GetAwaiter()
-                    .GetResult();
+                var data = await this.serializer
+                    .SerializeAsync((T) message, Confluent.Kafka.SerializationContext.Empty)
+                    .ConfigureAwait(false);
+
+                await output
+                    .WriteAsync(data, 0, data.Length)
+                    .ConfigureAwait(false);
             }
         }
     }

@@ -1,12 +1,14 @@
 ﻿namespace KafkaFlow.Serializer
 {
     using System;
+    using System.IO;
     using System.Text.Json;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// A message serializer using System.Text.Json library
     /// </summary>
-    public class JsonCoreSerializer : IMessageSerializer
+    public class JsonCoreSerializer : ISerializer
     {
         private readonly JsonSerializerOptions options;
 
@@ -27,21 +29,22 @@
         {
         }
 
-        /// <summary>Serializes the message</summary>
-        /// <param name="message">The message to be serialized</param>
-        /// <returns>A UTF8 JSON string</returns>
-        public byte[] Serialize(object message)
+        /// <inheritdoc/>
+        public Task SerializeAsync(object message, Stream output, ISerializerContext context)
         {
-            return JsonSerializer.SerializeToUtf8Bytes(message, this.options);
+            using var writer = new Utf8JsonWriter(output);
+
+            JsonSerializer.Serialize(writer, message, this.options);
+
+            return Task.CompletedTask;
         }
 
-        /// <summary>Deserialize the message</summary>
-        /// <param name="data">The message to be deserialized (cannot be null)</param>
-        /// <param name="type">The destination type</param>
-        /// <returns>An instance of the passed type</returns>
-        public object Deserialize(byte[] data, Type type)
+        /// <inheritdoc/>
+        public async Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
         {
-            return JsonSerializer.Deserialize(data, type, this.options);
+            return await JsonSerializer
+                .DeserializeAsync(input, type, this.options)
+                .ConfigureAwait(false);
         }
     }
 }
