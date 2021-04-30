@@ -127,7 +127,7 @@
 
                         if (DateTime.TryParse(timeInput, out var time))
                         {
-                            adminProducer.ProduceAsync(
+                            await adminProducer.ProduceAsync(
                                 new RewindConsumerOffsetToDateTime
                                 {
                                     ConsumerName = consumerName,
