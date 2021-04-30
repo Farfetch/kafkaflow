@@ -17,19 +17,19 @@ namespace KafkaFlow.Producers
 
         public Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
             string topic,
-            string partitionKey,
+            object messageKey,
             object message,
             IMessageHeaders headers = null)
         {
             return this.producer.ProduceAsync(
                 topic,
-                partitionKey,
+                messageKey,
                 message,
                 headers);
         }
 
         public Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
-            string partitionKey,
+            object partitionKey,
             object message,
             IMessageHeaders headers = null)
         {
@@ -41,7 +41,7 @@ namespace KafkaFlow.Producers
 
         public void Produce(
             string topic,
-            string partitionKey,
+            object partitionKey,
             object message,
             IMessageHeaders headers = null,
             Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null)
@@ -55,7 +55,7 @@ namespace KafkaFlow.Producers
         }
 
         public void Produce(
-            string partitionKey,
+            object partitionKey,
             object message,
             IMessageHeaders headers = null,
             Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null)
