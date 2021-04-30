@@ -2,31 +2,26 @@
 {
     using System;
     using System.IO;
+    using System.Threading.Tasks;
     using ProtoBuf;
 
     /// <summary>
     /// A message serializer using protobuf-net library
     /// </summary>
-    public class ProtobufNetSerializer : IMessageSerializer
+    public class ProtobufNetSerializer : ISerializer
     {
-        /// <summary>Serializes the message</summary>
-        /// <param name="message">The message to be serialized</param>
-        /// <returns>The serialized message</returns>
-        public byte[] Serialize(object message)
+        /// <inheritdoc/>
+        public Task SerializeAsync(object message, Stream output, ISerializerContext context)
         {
-            using var stream = new MemoryStream();
-            Serializer.Serialize(stream, message);
-            return stream.ToArray();
+            Serializer.Serialize(output, message);
+
+            return Task.CompletedTask;
         }
 
-        /// <summary>Deserialize the message </summary>
-        /// <param name="data">The message to be deserialized</param>
-        /// <param name="type">The destination type</param>
-        /// <returns>The deserialized message</returns>
-        public object Deserialize(byte[] data, Type type)
+        /// <inheritdoc/>
+        public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
         {
-            using var stream = new MemoryStream(data);
-            return Serializer.Deserialize(type, stream);
+            return Task.FromResult(Serializer.Deserialize(type, input));
         }
     }
 }

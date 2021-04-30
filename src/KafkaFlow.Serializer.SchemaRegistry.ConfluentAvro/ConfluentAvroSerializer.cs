@@ -1,13 +1,15 @@
 ﻿namespace KafkaFlow.Serializer.SchemaRegistry
 {
     using System;
+    using System.IO;
+    using System.Threading.Tasks;
     using Confluent.SchemaRegistry;
     using Confluent.SchemaRegistry.Serdes;
 
     /// <summary>
     /// A message serializer using Apache.Avro library
     /// </summary>
-    public class ConfluentAvroSerializer : IMessageSerializer
+    public class ConfluentAvroSerializer : ISerializer
     {
         private readonly ISchemaRegistryClient schemaRegistryClient;
         private readonly AvroSerializerConfig serializerConfig;
@@ -39,7 +41,7 @@
         }
 
         /// <inheritdoc/>
-        public byte[] Serialize(object message)
+        public Task SerializeAsync(object message, Stream output, ISerializerContext context)
         {
             return ConfluentSerializerWrapper
                 .GetOrCreateSerializer(
@@ -48,11 +50,11 @@
                         typeof(AvroSerializer<>).MakeGenericType(message.GetType()),
                         this.schemaRegistryClient,
                         this.serializerConfig))
-                .Serialize(message);
+                .SerializeAsync(message, output);
         }
 
         /// <inheritdoc/>
-        public object Deserialize(byte[] data, Type type)
+        public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
         {
             return ConfluentDeserializerWrapper
                 .GetOrCreateDeserializer(
@@ -62,7 +64,7 @@
                             typeof(AvroDeserializer<>).MakeGenericType(type),
                             this.schemaRegistryClient,
                             new AvroDeserializerConfig()))
-                .Deserialize(data);
+                .DeserializeAsync(input);
         }
     }
 }
