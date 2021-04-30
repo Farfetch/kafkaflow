@@ -1,6 +1,10 @@
 namespace KafkaFlow.UnitTests.Serializers
 {
+    using System;
+    using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
+    using AutoFixture;
     using FluentAssertions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
@@ -8,8 +12,10 @@ namespace KafkaFlow.UnitTests.Serializers
     [TestClass]
     public class SerializerProducerMiddlewareTests
     {
+        private readonly Fixture fixture = new();
+
         private Mock<IMessageContext> contextMock;
-        private Mock<IMessageSerializer> serializerMock;
+        private Mock<ISerializer> serializerMock;
         private Mock<IMessageTypeResolver> typeResolverMock;
 
         private SerializerProducerMiddleware target;
@@ -18,7 +24,7 @@ namespace KafkaFlow.UnitTests.Serializers
         public void Setup()
         {
             this.contextMock = new Mock<IMessageContext>();
-            this.serializerMock = new Mock<IMessageSerializer>();
+            this.serializerMock = new Mock<ISerializer>();
             this.typeResolverMock = new Mock<IMessageTypeResolver>();
 
             this.target = new SerializerProducerMiddleware(
@@ -30,7 +36,7 @@ namespace KafkaFlow.UnitTests.Serializers
         public async Task Invoke_ValidMessage_Serialize()
         {
             // Arrange
-            var rawMessage = new byte[1];
+            var rawMessage = this.fixture.Create<byte[]>();
             var key = new object();
             var deserializedMessage = new Message(key, new TestMessage());
             IMessageContext resultContext = null;
@@ -44,11 +50,15 @@ namespace KafkaFlow.UnitTests.Serializers
             this.typeResolverMock.Setup(x => x.OnProduce(this.contextMock.Object));
 
             this.serializerMock
-                .Setup(x => x.Serialize(deserializedMessage.Value))
-                .Returns(rawMessage);
+                .Setup(
+                    x => x.SerializeAsync(
+                        deserializedMessage.Value,
+                        It.IsAny<Stream>(),
+                        It.IsAny<ISerializerContext>()))
+                .Callback((object _, Stream stream, ISerializerContext _) => stream.WriteAsync(rawMessage));
 
             this.contextMock
-                .Setup(x => x.TransformMessage(key, rawMessage))
+                .Setup(x => x.TransformMessage(key, It.Is<byte[]>(value => value.SequenceEqual(rawMessage))))
                 .Returns(transformedContextMock.Object);
 
             // Act
