@@ -11,18 +11,18 @@ namespace KafkaFlow.Producers
         /// Initializes a new instance of the <see cref="BatchProduceItem"/> class.
         /// </summary>
         /// <param name="topic">The destination topic</param>
-        /// <param name="partitionKey">The message partition key</param>
-        /// <param name="message">The message content</param>
+        /// <param name="messageKey">The message partition key</param>
+        /// <param name="messageValue">The message content</param>
         /// <param name="headers">The message headers</param>
         public BatchProduceItem(
             string topic,
-            string partitionKey,
-            object message,
+            object messageKey,
+            object messageValue,
             IMessageHeaders headers)
         {
             this.Topic = topic;
-            this.PartitionKey = partitionKey;
-            this.Message = message;
+            this.MessageKey = messageKey;
+            this.MessageValue = messageValue;
             this.Headers = headers;
         }
 
@@ -34,12 +34,12 @@ namespace KafkaFlow.Producers
         /// <summary>
         /// Gets the message partition key
         /// </summary>
-        public string PartitionKey { get; }
+        public object MessageKey { get; }
 
         /// <summary>
         /// Gets the message object
         /// </summary>
-        public object Message { get; }
+        public object MessageValue { get; }
 
         /// <summary>
         /// Gets the message headers

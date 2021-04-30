@@ -37,18 +37,16 @@ namespace KafkaFlow.Producers
 
         public async Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
             string topic,
-            string partitionKey,
-            object message,
+            object messageKey,
+            object messageValue,
             IMessageHeaders headers = null)
         {
-            var messageKey = partitionKey is null ? null : Encoding.UTF8.GetBytes(partitionKey);
-
             DeliveryResult<byte[], byte[]> report = null;
 
             await this.middlewareExecutor
                 .Execute(
                     new MessageContext(
-                        new Message(messageKey, message),
+                        new Message(messageKey, messageValue),
                         headers,
                         null,
                         new ProducerContext(topic)),
@@ -64,8 +62,8 @@ namespace KafkaFlow.Producers
         }
 
         public Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
-            string partitionKey,
-            object message,
+            object messageKey,
+            object messageValue,
             IMessageHeaders headers = null)
         {
             if (string.IsNullOrWhiteSpace(this.configuration.DefaultTopic))
@@ -76,23 +74,21 @@ namespace KafkaFlow.Producers
 
             return this.ProduceAsync(
                 this.configuration.DefaultTopic,
-                partitionKey,
-                message,
+                messageKey,
+                messageValue,
                 headers);
         }
 
         public void Produce(
             string topic,
-            string partitionKey,
-            object message,
+            object messageKey,
+            object messageValue,
             IMessageHeaders headers = null,
             Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null)
         {
-            var messageKey = partitionKey is null ? null : Encoding.UTF8.GetBytes(partitionKey);
-
             this.middlewareExecutor.Execute(
                 new MessageContext(
-                    new Message(messageKey, message),
+                    new Message(messageKey, messageValue),
                     headers,
                     null,
                     new ProducerContext(topic)),
@@ -121,8 +117,8 @@ namespace KafkaFlow.Producers
         }
 
         public void Produce(
-            string partitionKey,
-            object message,
+            object messageKey,
+            object messageValue,
             IMessageHeaders headers = null,
             Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null)
         {
@@ -134,8 +130,8 @@ namespace KafkaFlow.Producers
 
             this.Produce(
                 this.configuration.DefaultTopic,
-                partitionKey,
-                message,
+                messageKey,
+                messageValue,
                 headers,
                 deliveryHandler);
         }
@@ -156,19 +152,21 @@ namespace KafkaFlow.Producers
 
         private static Message<byte[], byte[]> CreateMessage(IMessageContext context)
         {
-            if (!(context.Message.Value is byte[] value))
+            if (context.Message.Value is not byte[] value)
             {
                 throw new InvalidOperationException(
                     $"The message value must be a byte array to be produced, it is a {context.Message.Value.GetType().FullName}." +
                     "You should serialize or encode your message object using a middleware");
             }
 
-            if (!(context.Message.Key is byte[] key))
+            var key = context.Message.Key switch
             {
-                throw new InvalidOperationException(
-                    $"The message key must be a byte array to be produced, it is a {context.Message.Key.GetType().FullName}." +
-                    "You should serialize or encode your message object using a middleware");
-            }
+                string stringKey => Encoding.UTF8.GetBytes(stringKey),
+                byte[] bytesKey => bytesKey,
+                _ => throw new InvalidOperationException(
+                    $"The message key must be a byte array or a string to be produced, it is a {context.Message.Key.GetType().FullName}." +
+                    "You should serialize or encode your message object using a middleware")
+            };
 
             return new()
             {
