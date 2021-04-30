@@ -2,13 +2,18 @@ namespace KafkaFlow
 {
     using System;
     using System.Collections.Concurrent;
+    using System.IO;
+    using System.Threading.Tasks;
     using Confluent.Kafka;
+    using Microsoft.IO;
 
     /// <summary>
     /// A wrapper to call the typed Confluent deserializers
     /// </summary>
     public abstract class ConfluentDeserializerWrapper
     {
+        private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
+
         private static readonly ConcurrentDictionary<Type, ConfluentDeserializerWrapper> Deserializers = new();
 
         /// <summary>
@@ -31,9 +36,9 @@ namespace KafkaFlow
         /// <summary>
         /// Deserialize a message using the passed deserializer
         /// </summary>
-        /// <param name="message">The message to deserialize</param>
+        /// <param name="input">The message stream to deserialize</param>
         /// <returns></returns>
-        public abstract object Deserialize(byte[] message);
+        public abstract Task<object> DeserializeAsync(Stream input);
 
         private class InnerConfluentDeserializerWrapper<T> : ConfluentDeserializerWrapper
         {
@@ -44,12 +49,18 @@ namespace KafkaFlow
                 this.deserializer = (IAsyncDeserializer<T>) deserializerFactory();
             }
 
-            public override object Deserialize(byte[] message)
+            public override async Task<object> DeserializeAsync(Stream input)
             {
-                return this.deserializer
-                    .DeserializeAsync(message, message == null, SerializationContext.Empty)
-                    .GetAwaiter()
-                    .GetResult();
+                using var buffer = MemoryStreamManager.GetStream();
+
+                await input.CopyToAsync(buffer).ConfigureAwait(false);
+
+                return await this.deserializer
+                    .DeserializeAsync(
+                        new ReadOnlyMemory<byte>(buffer.GetBuffer(), 0, (int) buffer.Length),
+                        false,
+                        Confluent.Kafka.SerializationContext.Empty)
+                    .ConfigureAwait(false);
             }
         }
     }
