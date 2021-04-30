@@ -1,11 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>netcoreapp2.1</TargetFramework>
-        <OutputType>Library</OutputType>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <IsPackable>true</IsPackable>
-        <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
     </PropertyGroup>
 
     <ItemGroup>

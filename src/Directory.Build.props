@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -11,6 +11,7 @@
     <PackageProjectUrl>https://github.com/Farfetch/Kafka-flow</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Farfetch/Kafka-flow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
     <license>https://github.com/Farfetch/kafka-flow/blob/master/LICENSE</license>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>

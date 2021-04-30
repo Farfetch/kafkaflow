@@ -2,10 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <PackageId>KafkaFlow.Serializer.Json</PackageId>
     <Description>JSON implementation for KafkaFlow serializer middleware using System.Text.Json</Description>
-    <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
   </PropertyGroup>
 
   <ItemGroup>

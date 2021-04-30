@@ -2,10 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageId>KafkaFlow.BatchConsume</PackageId>
         <Description>A KafkaFlow middleware to consume messages in batches</Description>
-        <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
-        <LangVersion>8</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
