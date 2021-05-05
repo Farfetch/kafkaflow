@@ -14,7 +14,7 @@ namespace KafkaFlow
                 .Select(factory => factory(resolver))
                 .ToList();
 
-            var consumer = new Consumer(configuration, logHandler);
+            var consumer = new Consumer(configuration, resolver, logHandler);
 
             var consumerWorkerPool = new ConsumerWorkerPool(
                 consumer,

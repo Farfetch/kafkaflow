@@ -9,6 +9,7 @@ namespace KafkaFlow.Consumers
 
     internal class Consumer : IConsumer
     {
+        private readonly IDependencyResolver dependencyResolver;
         private readonly ILogHandler logHandler;
 
         private IConsumer<byte[], byte[]> consumer;
@@ -20,8 +21,10 @@ namespace KafkaFlow.Consumers
 
         public Consumer(
             IConsumerConfiguration configuration,
+            IDependencyResolver dependencyResolver,
             ILogHandler logHandler)
         {
+            this.dependencyResolver = dependencyResolver;
             this.logHandler = logHandler;
             this.Configuration = configuration;
 
@@ -42,16 +45,18 @@ namespace KafkaFlow.Consumers
 
             var consumerBuilder = new ConsumerBuilder<byte[], byte[]>(kafkaConfig);
 
-            this.consumer = consumerBuilder
-                .SetPartitionsAssignedHandler(
-                    (consumer, partitions) => this.partitionsAssignedHandlers.ForEach(x => x(consumer, partitions)))
-                .SetPartitionsRevokedHandler(
-                    (consumer, partitions) => this.partitionsRevokedHandlers.ForEach(x => x(consumer, partitions)))
-                .SetErrorHandler(
-                    (consumer, error) => this.errorsHandlers.ForEach(x => x(consumer, error)))
-                .SetStatisticsHandler(
-                    (consumer, statistics) => this.statisticsHandlers.ForEach(x => x(consumer, statistics)))
-                .Build();
+            this.consumer = this.Configuration.CustomFactory(
+                consumerBuilder
+                    .SetPartitionsAssignedHandler(
+                        (consumer, partitions) => this.partitionsAssignedHandlers.ForEach(x => x(consumer, partitions)))
+                    .SetPartitionsRevokedHandler(
+                        (consumer, partitions) => this.partitionsRevokedHandlers.ForEach(x => x(consumer, partitions)))
+                    .SetErrorHandler(
+                        (consumer, error) => this.errorsHandlers.ForEach(x => x(consumer, error)))
+                    .SetStatisticsHandler(
+                        (consumer, statistics) => this.statisticsHandlers.ForEach(x => x(consumer, statistics)))
+                    .Build(),
+                this.dependencyResolver);
 
             this.consumer.Subscribe(this.Configuration.Topics);
 
