@@ -29,10 +29,7 @@ namespace KafkaFlow.Configuration
         /// </summary>
         string ConsumerName { get; }
 
-        /// <summary>
-        /// Gets or sets the current number of workers
-        /// </summary>
-        int WorkerCount { get; set; }
+        int WorkersCount { get; set; }
 
         /// <summary>
         /// Gets the consumer group

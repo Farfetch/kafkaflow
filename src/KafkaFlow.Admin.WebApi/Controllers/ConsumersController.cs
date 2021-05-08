@@ -250,12 +250,12 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         [ProducesResponseType(202)]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> ChangeWorkerCount(
+        public async Task<IActionResult> ChangeWorkersCount(
             [FromRoute] string groupId,
             [FromRoute] string consumerName,
-            [FromBody] ChangeWorkerCountRequest request)
+            [FromBody] ChangeWorkersCountRequest request)
         {
-            if (request is null || request.WorkerCount <= 0)
+            if (request is null || request.WorkersCount <= 0)
             {
                 return this.BadRequest();
             }
@@ -269,10 +269,10 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             }
 
             await this.adminProducer.ProduceAsync(
-                new ChangeConsumerWorkerCount
+                new ChangeConsumerWorkersCount
                 {
                     ConsumerName = consumerName,
-                    WorkerCount = request.WorkerCount,
+                    WorkersCount = request.WorkersCount,
                 });
 
             return this.Accepted();
