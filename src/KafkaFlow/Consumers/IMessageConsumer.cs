@@ -21,6 +21,11 @@ namespace KafkaFlow.Consumers
         string GroupId { get; }
 
         /// <summary>
+        /// Gets the current number of workers allocated of the consumer
+        /// </summary>
+        int WorkersCount { get; }
+
+        /// <summary>
         /// Gets the current topic subscription
         /// </summary>
         IReadOnlyList<string> Subscription { get; }
@@ -50,11 +55,6 @@ namespace KafkaFlow.Consumers
         string ClientInstanceName { get; }
 
         /// <summary>
-        /// Gets the current number of workers allocated of the consumer
-        /// </summary>
-        int WorkerCount { get; }
-
-        /// <summary>
         /// Gets the current consumer flow status
         /// </summary>
         ConsumerFlowStatus FlowStatus { get; }
@@ -73,9 +73,9 @@ namespace KafkaFlow.Consumers
         /// <summary>
         /// Restart the current consumer with the new worker count
         /// </summary>
-        /// <param name="workerCount">The new worker count</param>
+        /// <param name="workersCount">The new workers count</param>
         /// <returns></returns>
-        Task ChangeWorkerCountAndRestartAsync(int workerCount);
+        Task ChangeWorkersCountAndRestartAsync(int workersCount);
 
         /// <summary>
         /// Restart KafkaFlow consumer and recreate the internal Confluent Consumer
@@ -206,7 +206,7 @@ namespace KafkaFlow.Consumers
         ///     <see cref="P:Confluent.Kafka.TopicPartitionOffsetException.Results" />
         ///     property of the exception.
         /// </exception>
-        List<TopicPartitionOffset> OffsetsForTimes(
+        List<TopicPartitionOffset> GetOffsets(
             IEnumerable<TopicPartitionTimestamp> timestampsToSearch,
             TimeSpan timeout);
     }

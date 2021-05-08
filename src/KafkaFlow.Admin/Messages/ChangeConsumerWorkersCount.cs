@@ -6,7 +6,7 @@ namespace KafkaFlow.Admin.Messages
     /// A message to change the worker count
     /// </summary>
     [DataContract]
-    public class ChangeConsumerWorkerCount : IAdminMessage
+    public class ChangeConsumerWorkersCount : IAdminMessage
     {
         /// <summary>
         /// Gets or sets the consumer name that will be affected
@@ -18,6 +18,6 @@ namespace KafkaFlow.Admin.Messages
         /// Gets or sets the number of workers
         /// </summary>
         [DataMember(Order = 2)]
-        public int WorkerCount { get; set; }
+        public int WorkersCount { get; set; }
     }
 }
