@@ -31,17 +31,23 @@ namespace KafkaFlow.Consumers
 
         public string ClientInstanceName => this.consumerManager.Consumer.ClientInstanceName;
 
-        public int WorkerCount => this.consumerManager.Consumer.Configuration.WorkerCount;
+        public int WorkersCount => this.consumerManager.Consumer.Configuration.WorkersCount;
 
         public ConsumerFlowStatus FlowStatus => this.consumerManager.Consumer.FlowManager.Status;
 
         public IReadOnlyList<TopicPartition> PausedPartitions => this.consumerManager.Consumer.FlowManager.PausedPartitions;
 
-        public void Pause(IReadOnlyCollection<TopicPartition> topicPartitions) =>
+        public void Pause(IReadOnlyCollection<TopicPartition> topicPartitions)
+        {
             this.consumerManager.Consumer.FlowManager.Pause(topicPartitions);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was paused", null);
+        }
 
-        public void Resume(IReadOnlyCollection<TopicPartition> topicPartitions) =>
+        public void Resume(IReadOnlyCollection<TopicPartition> topicPartitions)
+        {
             this.consumerManager.Consumer.FlowManager.Resume(topicPartitions);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was resumed", null);
+        }
 
         public Offset GetPosition(TopicPartition topicPartition) =>
             this.consumerManager.Consumer.GetPosition(topicPartition);
@@ -52,7 +58,7 @@ namespace KafkaFlow.Consumers
         public WatermarkOffsets QueryWatermarkOffsets(TopicPartition topicPartition, TimeSpan timeout) =>
             this.consumerManager.Consumer.QueryWatermarkOffsets(topicPartition, timeout);
 
-        public List<TopicPartitionOffset> OffsetsForTimes(
+        public List<TopicPartitionOffset> GetOffsets(
             IEnumerable<TopicPartitionTimestamp> topicPartitions,
             TimeSpan timeout) =>
             this.consumerManager.Consumer.OffsetsForTimes(topicPartitions, timeout);
@@ -73,7 +79,7 @@ namespace KafkaFlow.Consumers
 
                 await this.InternalRestart().ConfigureAwait(false);
 
-                this.logHandler.Info("Kafka offsets overridden", GetOffsetsLogData(offsets));
+                this.logHandler.Info($"Offsets of Kafka consumer '{this.ConsumerName}' were overridden ", GetOffsetsLogData(offsets));
             }
             catch (Exception e)
             {
@@ -85,21 +91,21 @@ namespace KafkaFlow.Consumers
             }
         }
 
-        public async Task ChangeWorkerCountAndRestartAsync(int workerCount)
+        public async Task ChangeWorkersCountAndRestartAsync(int workersCount)
         {
-            this.consumerManager.Consumer.Configuration.WorkerCount = workerCount;
+            this.consumerManager.Consumer.Configuration.WorkersCount = workersCount;
 
             await this.InternalRestart().ConfigureAwait(false);
 
             this.logHandler.Info(
-                "KafkaFlow consumer workers changed",
-                new { workerCount });
+                $"Total of workers in Kafkaflow consumer '{this.ConsumerName}' were updated",
+                new { workersCount });
         }
 
         public async Task RestartAsync()
         {
             await this.InternalRestart().ConfigureAwait(false);
-            this.logHandler.Info("KafkaFlow consumer manually restarted", null);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was manually restarted", null);
         }
 
         private static object GetOffsetsLogData(IEnumerable<TopicPartitionOffset> offsets) => offsets

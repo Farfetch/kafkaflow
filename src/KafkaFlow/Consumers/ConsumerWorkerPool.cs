@@ -43,7 +43,7 @@ namespace KafkaFlow.Consumers
 
             await Task.WhenAll(
                     Enumerable
-                        .Range(0, this.consumer.Configuration.WorkerCount)
+                        .Range(0, this.consumer.Configuration.WorkersCount)
                         .Select(
                             workerId =>
                             {

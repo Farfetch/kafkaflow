@@ -55,7 +55,7 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             // Assert
             configuration.Topics.Should().BeEquivalentTo(topic1);
             configuration.BufferSize.Should().Be(bufferSize);
-            configuration.WorkerCount.Should().Be(workers);
+            configuration.WorkersCount.Should().Be(workers);
             configuration.GroupId.Should().Be(groupId);
             configuration.GetKafkaConfig().AutoOffsetReset.Should().BeNull();
             configuration.GetKafkaConfig().EnableAutoOffsetStore.Should().Be(false);
@@ -109,7 +109,7 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             configuration.Topics.Should().BeEquivalentTo(topic1, topic2);
             configuration.ConsumerName.Should().Be(name);
             configuration.BufferSize.Should().Be(bufferSize);
-            configuration.WorkerCount.Should().Be(workers);
+            configuration.WorkersCount.Should().Be(workers);
             configuration.GroupId.Should().Be(groupId);
             configuration.GetKafkaConfig().AutoOffsetReset.Should().Be(offsetReset);
             configuration.AutoStoreOffsets.Should().Be(false);

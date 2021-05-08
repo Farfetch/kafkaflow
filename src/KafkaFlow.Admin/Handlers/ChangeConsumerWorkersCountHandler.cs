@@ -5,18 +5,18 @@ namespace KafkaFlow.Admin.Handlers
     using KafkaFlow.Consumers;
     using KafkaFlow.TypedHandler;
 
-    internal class ChangeConsumerWorkersCountHandler : IMessageHandler<ChangeConsumerWorkerCount>
+    internal class ChangeConsumerWorkersCountHandler : IMessageHandler<ChangeConsumerWorkersCount>
     {
         private readonly IConsumerAccessor consumerAccessor;
 
         public ChangeConsumerWorkersCountHandler(IConsumerAccessor consumerAccessor) => this.consumerAccessor = consumerAccessor;
 
-        public Task Handle(IMessageContext context, ChangeConsumerWorkerCount message)
+        public Task Handle(IMessageContext context, ChangeConsumerWorkersCount message)
         {
             var consumer = this.consumerAccessor[message.ConsumerName];
 
             return
-                consumer?.ChangeWorkerCountAndRestartAsync(message.WorkerCount) ??
+                consumer?.ChangeWorkersCountAndRestartAsync(message.WorkersCount) ??
                 Task.CompletedTask;
         }
     }

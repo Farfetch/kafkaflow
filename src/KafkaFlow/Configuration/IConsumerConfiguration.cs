@@ -14,7 +14,7 @@ namespace KafkaFlow.Configuration
 
         string ConsumerName { get; }
 
-        int WorkerCount { get; set; }
+        int WorkersCount { get; set; }
 
         string GroupId { get; }
 
