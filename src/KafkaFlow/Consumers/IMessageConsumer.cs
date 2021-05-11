@@ -50,6 +50,16 @@ namespace KafkaFlow.Consumers
         string ClientInstanceName { get; }
 
         /// <summary>
+        /// Gets the current number of workers allocated of the consumer
+        /// </summary>
+        int WorkerCount { get; }
+
+        /// <summary>
+        /// Gets the current consumer flow status
+        /// </summary>
+        ConsumerFlowStatus FlowStatus { get; }
+
+        /// <summary>
         /// Overrides the offsets of the given partitions and restart the consumer
         /// </summary>
         /// <param name="offsets">The offset values</param>

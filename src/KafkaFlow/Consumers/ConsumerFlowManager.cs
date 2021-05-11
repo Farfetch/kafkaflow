@@ -24,6 +24,21 @@ namespace KafkaFlow.Consumers
             this.logHandler = logHandler;
         }
 
+        public ConsumerFlowStatus Status
+        {
+            get
+            {
+                if (this.pausedPartitions.Count == 0)
+                {
+                    return ConsumerFlowStatus.Running;
+                }
+
+                return this.pausedPartitions.Count == this.consumer.Assignment.Count ?
+                    ConsumerFlowStatus.Paused :
+                    ConsumerFlowStatus.PartiallyRunning;
+            }
+        }
+
         public void Pause(IReadOnlyCollection<TopicPartition> topicPartitions)
         {
             lock (this.pausedPartitions)
@@ -38,7 +53,7 @@ namespace KafkaFlow.Consumers
                 this.consumer.Pause(topicPartitions);
                 this.pausedPartitions.AddRange(topicPartitions);
 
-                if (this.HasRunningPartitions())
+                if (this.Status != ConsumerFlowStatus.Paused)
                 {
                     return;
                 }
@@ -90,7 +105,7 @@ namespace KafkaFlow.Consumers
                     this.pausedPartitions.Remove(topicPartition);
                 }
 
-                if (!this.HasRunningPartitions())
+                if (this.Status == ConsumerFlowStatus.Paused)
                 {
                     return;
                 }
@@ -111,13 +126,6 @@ namespace KafkaFlow.Consumers
 
             this.heartbeatTask?.GetAwaiter().GetResult();
             this.heartbeatTask?.Dispose();
-        }
-
-        private bool HasRunningPartitions()
-        {
-            return
-                this.consumer.Assignment.Count != this.pausedPartitions.Count ||
-                this.consumer.Assignment.Except(this.pausedPartitions).Any();
         }
     }
 }

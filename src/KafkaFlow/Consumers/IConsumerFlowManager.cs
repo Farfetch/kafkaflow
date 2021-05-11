@@ -6,6 +6,8 @@ namespace KafkaFlow.Consumers
 
     internal interface IConsumerFlowManager : IDisposable
     {
+        ConsumerFlowStatus Status { get; }
+
         void Pause(IReadOnlyCollection<TopicPartition> topicPartitions);
 
         void Resume(IReadOnlyCollection<TopicPartition> topicPartitions);
