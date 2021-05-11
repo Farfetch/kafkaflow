@@ -24,6 +24,8 @@ namespace KafkaFlow.Consumers
             this.logHandler = logHandler;
         }
 
+        public IReadOnlyList<TopicPartition> PausedPartitions => this.pausedPartitions.AsReadOnly();
+
         public ConsumerFlowStatus Status
         {
             get

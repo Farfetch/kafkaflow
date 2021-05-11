@@ -8,6 +8,8 @@ namespace KafkaFlow.Consumers
     {
         ConsumerFlowStatus Status { get; }
 
+        IReadOnlyList<TopicPartition> PausedPartitions { get; }
+
         void Pause(IReadOnlyCollection<TopicPartition> topicPartitions);
 
         void Resume(IReadOnlyCollection<TopicPartition> topicPartitions);
