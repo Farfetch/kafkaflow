@@ -33,6 +33,10 @@ namespace KafkaFlow.Consumers
 
         public int WorkerCount => this.consumerManager.Consumer.Configuration.WorkerCount;
 
+        public ConsumerFlowStatus FlowStatus => this.consumerManager.Consumer.FlowManager.Status;
+
+        public IReadOnlyList<TopicPartition> PausedPartitions => this.consumerManager.Consumer.FlowManager.PausedPartitions;
+
         public void Pause(IReadOnlyCollection<TopicPartition> topicPartitions) =>
             this.consumerManager.Consumer.FlowManager.Pause(topicPartitions);
 
