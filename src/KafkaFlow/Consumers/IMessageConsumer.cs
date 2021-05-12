@@ -65,6 +65,11 @@ namespace KafkaFlow.Consumers
         IReadOnlyList<TopicPartition> PausedPartitions { get; }
 
         /// <summary>
+        /// Gets the consumer's running partitions
+        /// </summary>
+        IReadOnlyList<TopicPartition> RunningPartitions { get; }
+
+        /// <summary>
         /// Overrides the offsets of the given partitions and restart the consumer
         /// </summary>
         /// <param name="offsets">The offset values</param>
