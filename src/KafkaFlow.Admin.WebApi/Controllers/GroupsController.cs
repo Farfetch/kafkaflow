@@ -3,6 +3,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using Adapters;
     using KafkaFlow.Admin.Messages;
     using KafkaFlow.Admin.WebApi.Contracts;
     using KafkaFlow.Consumers;
@@ -46,7 +47,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                         x => new GroupResponse
                         {
                             GroupId = x.First().GroupId,
-                            Consumers = x.Select(y => y),
+                            Consumers = x.Select(y => y.Adapt()),
                         }));
         }
 

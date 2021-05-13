@@ -3,6 +3,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using Adapters;
     using KafkaFlow.Admin.Messages;
     using KafkaFlow.Admin.WebApi.Contracts;
     using KafkaFlow.Consumers;
@@ -35,10 +36,14 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="groupId">Identifier of the group</param>
         /// <returns>A list of consumers</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<IMessageConsumer>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<ConsumerResponse>), 200)]
         public IActionResult Get([FromRoute] string groupId)
         {
-            return this.Ok(this.consumers.All.Where(x => x.GroupId == groupId));
+            return this.Ok(
+                this.consumers
+                    .All
+                    .Where(x => x.GroupId == groupId)
+                    .Select(x=> x.Adapt()));
         }
 
         /// <summary>
@@ -49,7 +54,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <returns>A list of consumers</returns>
         [HttpGet]
         [Route("{consumerName}")]
-        [ProducesResponseType(typeof(IMessageConsumer), 200)]
+        [ProducesResponseType(typeof(ConsumerResponse), 200)]
         [ProducesResponseType(404)]
         public IActionResult Get(
             [FromRoute] string groupId,
@@ -63,7 +68,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            return this.Ok(consumer);
+            return this.Ok(consumer.Adapt());
         }
 
         /// <summary>

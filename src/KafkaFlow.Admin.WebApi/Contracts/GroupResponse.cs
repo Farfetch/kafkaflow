@@ -16,6 +16,6 @@ namespace KafkaFlow.Admin.WebApi.Contracts
         /// <summary>
         /// Gets or sets the consumers collection
         /// </summary>
-        public IEnumerable<IMessageConsumer> Consumers { get; set; }
+        public IEnumerable<ConsumerResponse> Consumers { get; set; }
     }
 }
