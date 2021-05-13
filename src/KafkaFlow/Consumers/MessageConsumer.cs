@@ -27,22 +27,20 @@ namespace KafkaFlow.Consumers
 
         public IReadOnlyList<TopicPartition> Assignment => this.consumerManager.Consumer.Assignment;
 
+        public ConsumerFlowStatus? FlowStatus => this.consumerManager.Consumer.FlowManager?.Status;
+
         public string MemberId => this.consumerManager.Consumer.MemberId;
 
         public string ClientInstanceName => this.consumerManager.Consumer.ClientInstanceName;
 
         public int WorkersCount => this.consumerManager.Consumer.Configuration.WorkersCount;
 
-        public ConsumerFlowStatus FlowStatus =>
-            this.consumerManager.Consumer.FlowManager?.Status ??
-            ConsumerFlowStatus.NotRunning;
-
-        public IReadOnlyList<TopicPartition> PausedPartitions => this.consumerManager.Consumer.FlowManager?.PausedPartitions;
+        public IReadOnlyList<TopicPartition> PausedPartitions => this.consumerManager.Consumer.FlowManager?.PausedPartitions ?? new List<TopicPartition>();
 
         public IReadOnlyList<TopicPartition> RunningPartitions =>
             this.PausedPartitions == null ?
                 this.consumerManager.Consumer.Assignment :
-                this.consumerManager.Consumer.Assignment?.Except(this.PausedPartitions).ToList();
+                this.consumerManager.Consumer.Assignment?.Except(this.PausedPartitions).ToList() ?? new List<TopicPartition>();
 
         public void Pause(IReadOnlyCollection<TopicPartition> topicPartitions)
         {
