@@ -57,7 +57,7 @@ namespace KafkaFlow.Consumers
         /// <summary>
         /// Gets the current consumer flow status
         /// </summary>
-        ConsumerFlowStatus FlowStatus { get; }
+        ConsumerFlowStatus? FlowStatus { get; }
 
         /// <summary>
         /// Gets the consumer's paused partitions

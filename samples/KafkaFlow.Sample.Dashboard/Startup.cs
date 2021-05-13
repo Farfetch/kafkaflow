@@ -60,7 +60,7 @@ namespace KafkaFlow.Sample.Dashboard
                 bus.StartAsync(lifetime.ApplicationStopped);
             });
             
-            lifetime.ApplicationStopping.Register(() => bus.StopAsync());
+            lifetime.ApplicationStopping.Register(() => bus.StopAsync().GetAwaiter().GetResult());
         }
     }
 }
