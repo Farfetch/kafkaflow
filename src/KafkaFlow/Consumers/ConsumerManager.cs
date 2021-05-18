@@ -70,6 +70,8 @@
                 "Partitions assigned",
                 this.GetConsumerLogInfo(partitions));
 
+            this.Consumer.FlowManager.UpdatePausedPartitions(partitions);
+
             this.WorkerPool
                 .StartAsync(partitions)
                 .GetAwaiter()

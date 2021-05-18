@@ -21,22 +21,14 @@ namespace KafkaFlow.Sample.Dashboard
                         cluster => cluster
                             .WithBrokers(new[] { "localhost:9092" })
                             .EnableAdminMessages("kafka-flow.admin", "kafka-flow.admin.group.id")
+                            .EnableTelemetry("kafka-flow.telemetry", "kafka-flow.telemetry.group.id")
                             .AddConsumer(
                                 consumer => consumer
-                                    .Topics("topic-dashboard", "topic-dashboard-new")
+                                    .Topics("topic-dashboard")
                                     .WithGroupId("groupid-dashboard")
                                     .WithName("consumer-dashboard")
                                     .WithBufferSize(100)
                                     .WithWorkersCount(20)
-                                    .WithAutoOffsetReset(AutoOffsetReset.Latest)
-                            )
-                            .AddConsumer(
-                                consumer => consumer
-                                    .Topic("topic-dashboard-other")
-                                    .WithGroupId("groupid-dashboard-other")
-                                    .WithName("consumer-dashboard-other")
-                                    .WithBufferSize(10)
-                                    .WithWorkersCount(10)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                             ))
             );
