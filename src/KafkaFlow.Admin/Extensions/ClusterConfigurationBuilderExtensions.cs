@@ -6,9 +6,9 @@
     using KafkaFlow.Admin;
     using KafkaFlow.Admin.Handlers;
     using KafkaFlow.Admin.Messages;
-    using KafkaFlow.Admin.Producers;
     using KafkaFlow.Configuration;
     using KafkaFlow.Consumers;
+    using KafkaFlow.Producers;
     using KafkaFlow.Serializer;
     using KafkaFlow.TypedHandler;
     using Microsoft.Extensions.Caching.Memory;
@@ -30,9 +30,10 @@
             string adminTopic,
             string adminConsumerGroup)
         {
-            cluster.DependencyConfigurator.AddSingleton<IMemoryCache, MemoryCache>();
-
             cluster.DependencyConfigurator.AddSingleton<IAdminProducer, AdminProducer>();
+
+            cluster.DependencyConfigurator.AddSingleton<IMemoryCache, MemoryCache>();
+            cluster.DependencyConfigurator.AddSingleton<ITelemetryCache, TelemetryCache>();
 
             return cluster
                 .AddProducer<AdminProducer>(
@@ -71,60 +72,72 @@
         /// Creates the telemetry producer and consumer to send and receive metric messages
         /// </summary>
         /// <param name="cluster">The cluster configuration builder</param>
-        /// <param name="metricTopic">The topic to be used by the metric commands</param>
-        /// <param name="metricConsumerGroup">The consumer group prefix</param>
+        /// <param name="topicName">The topic to be used by the metric commands</param>
+        /// <param name="consumerGroup">The consumer group prefix</param>
         /// <returns></returns>
         public static IClusterConfigurationBuilder EnableTelemetry(
             this IClusterConfigurationBuilder cluster,
-            string metricTopic,
-            string metricConsumerGroup)
+            string topicName,
+            string consumerGroup)
         {
             cluster.DependencyConfigurator.AddSingleton<IMemoryCache, MemoryCache>();
+            cluster.DependencyConfigurator.AddSingleton<ITelemetryCache, TelemetryCache>();
 
-            cluster.DependencyConfigurator.AddSingleton<ITelemetryProducer, TelemetryProducer>();
+            var groupId =
+                $"{consumerGroup}-{Environment.MachineName}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}";
+
+            var producerName = $"telemetry-{Environment.MachineName}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}";
 
             return cluster
-                .AddProducer<TelemetryProducer>(
+                .AddProducer(
+                    producerName,
                     producer => producer
-                        .DefaultTopic(metricTopic)
+                        .DefaultTopic(topicName)
                         .AddMiddlewares(
                             middlewares => middlewares
                                 .AddSerializer<ProtobufNetSerializer>()))
                 .AddConsumer(
                     consumer => consumer
-                        .Topic(metricTopic)
-                        .WithGroupId(
-                            $"{metricConsumerGroup}-{Environment.MachineName}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}")
+                        .Topic(topicName)
+                        .WithGroupId(groupId)
                         .WithWorkersCount(1)
                         .AsReadonly()
                         .WithBufferSize(10)
                         .WithAutoOffsetReset(AutoOffsetReset.Latest)
                         .WithPartitionsAssignedHandler((resolver, partitions) =>
                         {
-                            TimerManager.Instance.Set(
+                            TelemetryScheduler.Set(
+                                groupId,
                                 async _ =>
                                 {
-                                    foreach (var c in resolver.Resolve<IConsumerAccessor>().All.Where(c => !c.IsReadonly))
-                                    {
-                                        foreach (var assignment in c.Assignment )
-                                        {
-                                            await resolver.Resolve<ITelemetryProducer>().ProduceAsync(
-                                                new ConsumerMetric()
-                                                {
-                                                    ConsumerName = c.ConsumerName,
-                                                    Topic = assignment.Topic,
-                                                    GroupId = c.GroupId,
-                                                    HostName = $"{Environment.MachineName}-{c.MemberId}",
-                                                    PausedPartitions = c.PausedPartitions
-                                                        .Where(p=> p.Topic == assignment.Topic)
-                                                        .Select(p => p.Partition.Value),
-                                                    RunningPartitions = c.RunningPartitions
-                                                        .Where(p=> p.Topic == assignment.Topic)
-                                                        .Select(p => p.Partition.Value),
-                                                    SentAt = DateTime.Now,
-                                                });
-                                        }
-                                    }
+                                    await resolver
+                                        .Resolve<IProducerAccessor>()
+                                        .GetProducer(producerName)
+                                        .BatchProduceAsync(
+                                            resolver
+                                                .Resolve<IConsumerAccessor>()
+                                                .All
+                                                .Where(c => !c.IsReadonly) // TODO GET ONLY CONSUMERS FROM THIS CLUSTER
+                                                .SelectMany(c => c.Assignment.Select(a =>
+                                                    new BatchProduceItem(
+                                                        topicName,
+                                                        Guid.NewGuid().ToString(),
+                                                        new ConsumerMetric()
+                                                        {
+                                                            ConsumerName = c.ConsumerName,
+                                                            Topic = a.Topic,
+                                                            GroupId = c.GroupId,
+                                                            HostName = $"{Environment.MachineName}-{c.MemberId}",
+                                                            PausedPartitions = c.PausedPartitions
+                                                                .Where(p => p.Topic == a.Topic)
+                                                                .Select(p => p.Partition.Value),
+                                                            RunningPartitions = c.RunningPartitions
+                                                                .Where(p => p.Topic == a.Topic)
+                                                                .Select(p => p.Partition.Value),
+                                                            SentAt = DateTime.Now,
+                                                        },
+                                                        null)))
+                                                .ToList());
                                 },
                                 TimeSpan.Zero,
                                 TimeSpan.FromSeconds(1));
@@ -135,15 +148,16 @@
                                 .AddTypedHandlers(
                                     handlers => handlers
                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                        .AddHandlersFromAssemblyOf<ConsumerMetricHandler>())));
+                                        .AddHandlersFromAssemblyOf<ConsumerMetricHandler>())))
+                .OnStop(_ => TelemetryScheduler.Unset(groupId));
         }
 
         /// <inheritdoc cref="EnableTelemetry(KafkaFlow.Configuration.IClusterConfigurationBuilder,string,string)"/>
         public static IClusterConfigurationBuilder EnableTelemetry(
             this IClusterConfigurationBuilder cluster,
-            string adminTopic)
+            string topicName)
         {
-            return cluster.EnableTelemetry(adminTopic, $"Telemetry-{Assembly.GetEntryAssembly().GetName().Name}");
+            return cluster.EnableTelemetry(topicName, $"Telemetry-{Assembly.GetEntryAssembly().GetName().Name}");
         }
     }
 }

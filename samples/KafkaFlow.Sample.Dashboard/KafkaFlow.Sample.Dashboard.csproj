@@ -28,8 +28,9 @@
   <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
     <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
     <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="npm run build -- --prod" />
-    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="if not exist $(PublishDir)$(SpaRoot) mkdir $(PublishDir)$(SpaRoot)"/>
-    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="move dist\dashboard $(PublishDir)$(SpaRoot)dist"/>    
+    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="if not exist $(PublishDir)$(SpaRoot)dist mkdir $(PublishDir)$(SpaRoot)dist"/>
+    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="del $(PublishDir)$(SpaRoot)dist\*.* /s /q"/>
+    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="move dist\dashboard\* $(PublishDir)$(SpaRoot)dist"/>    
   </Target>
 
 </Project>
