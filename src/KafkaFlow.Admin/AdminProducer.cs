@@ -3,7 +3,6 @@ namespace KafkaFlow.Admin
     using System;
     using System.Threading.Tasks;
     using KafkaFlow.Admin.Messages;
-    using KafkaFlow.Producers;
 
     internal class AdminProducer : IAdminProducer
     {

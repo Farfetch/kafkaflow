@@ -9,6 +9,9 @@ import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
 import { ConsumerComponent } from './consumer/consumer.component';
 import { HttpErrorInterceptor } from './http-error.interceptor';
+import { GroupByPipe } from './group-by.pipe';
+import { SortPipe } from './sort.pipe';
+import { CallbackPipe } from './callback.pipe';
 
 import { ConsumerService } from './consumer.service';
 import { HttpClientModule, HTTP_INTERCEPTORS  } from '@angular/common/http';
@@ -31,6 +34,9 @@ const appRoutes: Routes = [
 @NgModule({
   declarations: [
     AppComponent,
+    GroupByPipe,
+    SortPipe,
+    CallbackPipe,
     HomeComponent,
     ConsumerComponent,
     RewindModalComponent,

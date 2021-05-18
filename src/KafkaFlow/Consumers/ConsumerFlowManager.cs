@@ -121,6 +121,14 @@ namespace KafkaFlow.Consumers
             }
         }
 
+        public void UpdatePausedPartitions(IEnumerable<TopicPartition> partitionsRunning)
+        {
+            foreach (var p in partitionsRunning)
+            {
+                this.pausedPartitions.Remove(p);
+            }
+        }
+
         public void Dispose()
         {
             this.heartbeatTokenSource?.Cancel();

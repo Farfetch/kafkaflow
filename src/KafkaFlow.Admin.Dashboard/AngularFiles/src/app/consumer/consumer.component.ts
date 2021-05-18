@@ -1,7 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ConsumerService } from '../consumer.service'
 import { Subject } from 'rxjs';
-import { delay } from 'rxjs/internal/operators';
 import { debounceTime } from 'rxjs/operators';
 import { NgbModal, NgbAlert } from '@ng-bootstrap/ng-bootstrap';
 import { RewindModalComponent } from '../shared/rewind-modal/rewind-modal.component';
@@ -23,6 +22,10 @@ export class ConsumerComponent implements OnInit {
   successMessage = '';
 
   constructor(private modalService: NgbModal, private consumerService: ConsumerService) { }
+
+  removeReadonly(group: any) {
+    return !(group.consumers.length == 1 && group.consumers[0].isReadonly==1);
+  }
 
   openWorkersCountModal(groupId: any, consumerName: any, workersCount: number) {
     const modalRef = this.modalService.open(WorkersCountModalComponent);
