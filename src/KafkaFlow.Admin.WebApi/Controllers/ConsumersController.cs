@@ -3,8 +3,8 @@ namespace KafkaFlow.Admin.WebApi.Controllers
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Adapters;
     using KafkaFlow.Admin.Messages;
+    using KafkaFlow.Admin.WebApi.Adapters;
     using KafkaFlow.Admin.WebApi.Contracts;
     using KafkaFlow.Consumers;
     using Microsoft.AspNetCore.Mvc;
@@ -18,16 +18,19 @@ namespace KafkaFlow.Admin.WebApi.Controllers
     {
         private readonly IConsumerAccessor consumers;
         private readonly IAdminProducer adminProducer;
+        private readonly ITelemetryCache cache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsumersController"/> class.
         /// </summary>
         /// <param name="consumers">The accessor class that provides access to the consumers</param>
         /// <param name="adminProducer">The producer to publish admin messages</param>
-        public ConsumersController(IConsumerAccessor consumers, IAdminProducer adminProducer)
+        /// <param name="cache">The cache interface to get metric data</param>
+        public ConsumersController(IConsumerAccessor consumers, IAdminProducer adminProducer, ITelemetryCache cache)
         {
             this.consumers = consumers;
             this.adminProducer = adminProducer;
+            this.cache = cache;
         }
 
         /// <summary>
@@ -43,7 +46,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 this.consumers
                     .All
                     .Where(x => x.GroupId == groupId)
-                    .Select(x=> x.Adapt()));
+                    .Select(x=> x.Adapt(this.cache)));
         }
 
         /// <summary>
@@ -68,7 +71,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            return this.Ok(consumer.Adapt());
+            return this.Ok(consumer.Adapt(this.cache));
         }
 
         /// <summary>

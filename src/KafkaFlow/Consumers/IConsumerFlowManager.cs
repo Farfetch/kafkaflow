@@ -13,5 +13,7 @@ namespace KafkaFlow.Consumers
         void Pause(IReadOnlyCollection<TopicPartition> topicPartitions);
 
         void Resume(IReadOnlyCollection<TopicPartition> topicPartitions);
+
+        void UpdatePausedPartitions(IEnumerable<TopicPartition> partitionsRunning);
     }
 }
