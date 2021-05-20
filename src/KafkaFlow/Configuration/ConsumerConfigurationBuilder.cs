@@ -7,7 +7,7 @@ namespace KafkaFlow.Configuration
     using Confluent.Kafka;
     using KafkaFlow.Consumers.DistributionStrategies;
 
-    internal sealed class ConsumerConfigurationBuilder : IConsumerConfigurationBuilder
+    internal class ConsumerConfigurationBuilder : IConsumerConfigurationBuilder
     {
         private readonly List<string> topics = new();
         private readonly List<Action<string>> statisticsHandlers = new();
@@ -18,6 +18,7 @@ namespace KafkaFlow.Configuration
         private ConsumerConfig consumerConfig;
 
         private string name;
+        private bool isReadonly;
         private string groupId;
         private AutoOffsetReset? autoOffsetReset;
         private int? maxPollIntervalMs;
@@ -62,6 +63,12 @@ namespace KafkaFlow.Configuration
         public IConsumerConfigurationBuilder WithName(string name)
         {
             this.name = name;
+            return this;
+        }
+
+        public IConsumerConfigurationBuilder AsReadonly()
+        {
+            this.isReadonly = true;
             return this;
         }
 
@@ -194,6 +201,7 @@ namespace KafkaFlow.Configuration
                 this.consumerConfig,
                 this.topics,
                 this.name,
+                this.isReadonly,
                 this.workersCount,
                 this.bufferSize,
                 this.distributionStrategyFactory,

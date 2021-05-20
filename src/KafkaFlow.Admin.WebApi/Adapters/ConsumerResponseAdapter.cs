@@ -22,6 +22,7 @@ namespace KafkaFlow.Admin.WebApi.Adapters
                 MemberId = consumer.MemberId,
                 WorkersCount = consumer.WorkersCount,
                 ClientInstanceName = consumer.ClientInstanceName,
+                IsReadonly = consumer.IsReadonly,
             };
 
             consumerResponse.PartitionAssignments =
