@@ -16,6 +16,11 @@ namespace KafkaFlow.Consumers
         string ConsumerName { get; }
 
         /// <summary>
+        /// Gets the readonly flag defined in the configuration
+        /// </summary>
+        bool IsReadonly { get; }
+
+        /// <summary>
         /// Gets the group id define in the configuration
         /// </summary>
         string GroupId { get; }

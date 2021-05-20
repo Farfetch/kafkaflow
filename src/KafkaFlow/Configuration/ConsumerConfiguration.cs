@@ -13,6 +13,7 @@ namespace KafkaFlow.Configuration
             ConsumerConfig consumerConfig,
             IEnumerable<string> topics,
             string consumerName,
+            bool isReadonly,
             int workersCount,
             int bufferSize,
             Factory<IDistributionStrategy> distributionStrategyFactory,
@@ -38,6 +39,7 @@ namespace KafkaFlow.Configuration
             this.AutoCommitInterval = autoCommitInterval;
             this.Topics = topics ?? throw new ArgumentNullException(nameof(topics));
             this.ConsumerName = consumerName ?? Guid.NewGuid().ToString();
+            this.IsReadonly = isReadonly;
             this.WorkersCount = workersCount;
             this.StatisticsHandlers = statisticsHandlers;
             this.PartitionsAssignedHandlers = partitionsAssignedHandlers;
@@ -59,6 +61,8 @@ namespace KafkaFlow.Configuration
         public IEnumerable<string> Topics { get; }
 
         public string ConsumerName { get; }
+
+        public bool IsReadonly { get; }
 
         public int WorkersCount
         {

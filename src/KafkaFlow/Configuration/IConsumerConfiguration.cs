@@ -29,6 +29,14 @@ namespace KafkaFlow.Configuration
         /// </summary>
         string ConsumerName { get; }
 
+        /// <summary>
+        /// Gets the consumer readonly flag
+        /// </summary>
+        bool IsReadonly { get; }
+
+        /// <summary>
+        /// Gets or sets the number of workers
+        /// </summary>
         int WorkersCount { get; set; }
 
         /// <summary>
