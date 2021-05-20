@@ -22,7 +22,7 @@ namespace KafkaFlow.UnitTests.Consumer
         private Mock<IConsumerWorkerPool> workerPoolMock;
         private Mock<IWorkerPoolFeeder> feederMock;
         private Mock<ILogHandler> logHandlerMock;
-        private readonly Mock<IDependencyResolver> dependencyResolver = new Mock<IDependencyResolver>();
+        private Mock<IDependencyResolver> dependencyResolver = new Mock<IDependencyResolver>();
 
         private Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> onPartitionAssignedHandler;
         private Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> onPartitionRevokedHandler;
@@ -34,6 +34,7 @@ namespace KafkaFlow.UnitTests.Consumer
             this.workerPoolMock = new Mock<IConsumerWorkerPool>(MockBehavior.Strict);
             this.feederMock = new Mock<IWorkerPoolFeeder>(MockBehavior.Strict);
             this.logHandlerMock = new Mock<ILogHandler>(MockBehavior.Strict);
+            this.dependencyResolver = new Mock<IDependencyResolver>();
 
             this.consumerMock
                 .Setup(x => x.OnPartitionsAssigned(It.IsAny<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>>>()))
