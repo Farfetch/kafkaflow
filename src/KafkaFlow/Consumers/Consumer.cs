@@ -12,7 +12,7 @@ namespace KafkaFlow.Consumers
         private readonly IDependencyResolver dependencyResolver;
         private readonly ILogHandler logHandler;
 
-        private readonly List<Action<IConsumer<byte[], byte[]>, List<TopicPartition>>> partitionsAssignedHandlers = new();
+        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>>> partitionsAssignedHandlers = new();
         private readonly List<Action<IConsumer<byte[], byte[]>, List<TopicPartitionOffset>>> partitionsRevokedHandlers = new();
         private readonly List<Action<IConsumer<byte[], byte[]>, Error>> errorsHandlers = new();
         private readonly List<Action<IConsumer<byte[], byte[]>, string>> statisticsHandlers = new();
@@ -32,6 +32,11 @@ namespace KafkaFlow.Consumers
             {
                 this.OnStatistics((_, statistics) => handler(statistics));
             }
+
+            foreach (var handler in this.Configuration.PartitionsAssignedHandlers)
+            {
+                this.OnPartitionsAssigned((resolver, _, topicPartitions) => handler(this.dependencyResolver, topicPartitions));
+            }
         }
 
         public IConsumerConfiguration Configuration { get; }
@@ -46,7 +51,7 @@ namespace KafkaFlow.Consumers
 
         public string ClientInstanceName => this.consumer?.Name;
 
-        public void OnPartitionsAssigned(Action<IConsumer<byte[], byte[]>, List<TopicPartition>> handler) =>
+        public void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler) =>
             this.partitionsAssignedHandlers.Add(handler);
 
         public void OnPartitionsRevoked(Action<IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler) =>
@@ -122,7 +127,7 @@ namespace KafkaFlow.Consumers
             this.consumer = this.Configuration.CustomFactory(
                 consumerBuilder
                     .SetPartitionsAssignedHandler(
-                        (consumer, partitions) => this.partitionsAssignedHandlers.ForEach(x => x(consumer, partitions)))
+                        (consumer, partitions) => this.partitionsAssignedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions)))
                     .SetPartitionsRevokedHandler(
                         (consumer, partitions) => this.partitionsRevokedHandlers.ForEach(x => x(consumer, partitions)))
                     .SetErrorHandler(

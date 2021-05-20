@@ -11,35 +11,40 @@ namespace KafkaFlow.Admin.WebApi.Contracts
        /// <summary>
        /// Gets or sets the consumer´s name
        /// </summary>
-       public string ConsumerName { get; set;}
+       public string ConsumerName { get; set; }
+
+       /// <summary>
+       /// Gets or sets a value indicating whether the consumer is readonly or not
+       /// </summary>
+       public bool IsReadonly { get; set; }
 
        /// <summary>
        /// Gets or sets the group id
        /// </summary>
-       public string GroupId { get; set;}
+       public string GroupId { get; set; }
 
        /// <summary>
        /// Gets or sets the current number of workers allocated by the consumer
        /// </summary>
-       public int WorkersCount { get; set;}
+       public int WorkersCount { get; set; }
 
        /// <summary>
-       /// Gets the current topics subscription
+       /// Gets or sets the current topics subscription
        /// </summary>
        public IEnumerable<string> Subscription { get; set; }
 
        /// <summary>
-       /// Gets all the consumer partition assignments (data received from metrics events)
+       /// Gets or sets all the consumer partition assignments (data received from metrics events)
        /// </summary>
        public IEnumerable<PartitionAssignment> PartitionAssignments { get; set; }
 
        /// <summary>
-       /// Gets the (dynamic) group member id of this consumer (as set by the broker).
+       /// Gets or sets the (dynamic) group member id of this consumer (as set by the broker).
        /// </summary>
        public string MemberId { get; set; }
 
        /// <summary>
-       ///     Gets the name of this client instance.
+       ///     Gets or sets the name of this client instance.
        ///     Contains (but is not equal to) the client.id configuration parameter.
        /// </summary>
        /// <remarks>
@@ -51,7 +56,7 @@ namespace KafkaFlow.Admin.WebApi.Contracts
        public string ClientInstanceName { get; set; }
 
        /// <summary>
-       /// Gets the current consumer flow status
+       /// Gets or sets the current consumer flow status
        /// </summary>
        public ConsumerFlowStatus FlowStatus { get; set; }
     }

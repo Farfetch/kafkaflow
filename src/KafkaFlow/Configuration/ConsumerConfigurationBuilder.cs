@@ -7,15 +7,17 @@ namespace KafkaFlow.Configuration
     using Confluent.Kafka;
     using KafkaFlow.Consumers.DistributionStrategies;
 
-    internal sealed class ConsumerConfigurationBuilder : IConsumerConfigurationBuilder
+    internal class ConsumerConfigurationBuilder : IConsumerConfigurationBuilder
     {
         private readonly List<string> topics = new();
         private readonly List<Action<string>> statisticsHandlers = new();
+        private readonly List<Action<IDependencyResolver, List<TopicPartition>>> partitionAssignedHandlers = new();
         private readonly ConsumerMiddlewareConfigurationBuilder middlewareConfigurationBuilder;
 
         private ConsumerConfig consumerConfig;
 
         private string name;
+        private bool isReadonly;
         private string groupId;
         private AutoOffsetReset? autoOffsetReset;
         private int? maxPollIntervalMs;
@@ -60,6 +62,12 @@ namespace KafkaFlow.Configuration
         public IConsumerConfigurationBuilder WithName(string name)
         {
             this.name = name;
+            return this;
+        }
+
+        public IConsumerConfigurationBuilder AsReadonly()
+        {
+            this.isReadonly = true;
             return this;
         }
 
@@ -142,6 +150,12 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
+        public IConsumerConfigurationBuilder WithPartitionsAssignedHandler(Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler)
+        {
+            this.partitionAssignedHandlers.Add(partitionsAssignedHandler);
+            return this;
+        }
+
         public IConsumerConfigurationBuilder WithStatisticsHandler(Action<string> statisticsHandler)
         {
             this.statisticsHandlers.Add(statisticsHandler);
@@ -180,6 +194,7 @@ namespace KafkaFlow.Configuration
                 this.consumerConfig,
                 this.topics,
                 this.name,
+                this.isReadonly,
                 this.workersCount,
                 this.bufferSize,
                 this.distributionStrategyFactory,
@@ -187,6 +202,7 @@ namespace KafkaFlow.Configuration
                 this.autoStoreOffsets,
                 this.autoCommitInterval,
                 this.statisticsHandlers,
+                this.partitionAssignedHandlers,
                 this.customFactory);
         }
     }

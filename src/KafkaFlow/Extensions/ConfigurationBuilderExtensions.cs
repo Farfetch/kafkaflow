@@ -1,5 +1,7 @@
 namespace KafkaFlow
 {
+    using System;
+    using System.Collections.Generic;
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
 
@@ -50,6 +52,20 @@ namespace KafkaFlow
         public static IConsumerConfigurationBuilder WithConsumerConfig(this IConsumerConfigurationBuilder builder, ConsumerConfig config)
         {
             return ((ConsumerConfigurationBuilder) builder).WithConsumerConfig(config);
+        }
+
+        /// <summary>
+        /// Adds a handler for the kafka consumer partitions assigned event
+        /// </summary>
+        /// <param name="builder">The configuration builder</param>
+        /// <param name="partitionsAssignedHandler">A handler for the partitions assigned event</param>
+        /// <returns></returns>
+        public static IConsumerConfigurationBuilder WithPartitionsAssignedHandler(
+            this IConsumerConfigurationBuilder builder,
+            Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler)
+        {
+            ((ConsumerConfigurationBuilder)builder).WithPartitionsAssignedHandler(partitionsAssignedHandler);
+            return builder;
         }
 
         /// <summary>

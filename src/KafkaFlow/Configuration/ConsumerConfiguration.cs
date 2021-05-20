@@ -13,6 +13,7 @@ namespace KafkaFlow.Configuration
             ConsumerConfig consumerConfig,
             IEnumerable<string> topics,
             string consumerName,
+            bool isReadonly,
             int workersCount,
             int bufferSize,
             Factory<IDistributionStrategy> distributionStrategyFactory,
@@ -20,6 +21,7 @@ namespace KafkaFlow.Configuration
             bool autoStoreOffsets,
             TimeSpan autoCommitInterval,
             IReadOnlyList<Action<string>> statisticsHandlers,
+            IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> partitionsAssignedHandlers,
             ConsumerCustomFactory customFactory)
         {
             this.consumerConfig = consumerConfig ?? throw new ArgumentNullException(nameof(consumerConfig));
@@ -36,8 +38,10 @@ namespace KafkaFlow.Configuration
             this.AutoCommitInterval = autoCommitInterval;
             this.Topics = topics ?? throw new ArgumentNullException(nameof(topics));
             this.ConsumerName = consumerName ?? Guid.NewGuid().ToString();
+            this.IsReadonly = isReadonly;
             this.WorkersCount = workersCount;
             this.StatisticsHandlers = statisticsHandlers;
+            this.PartitionsAssignedHandlers = partitionsAssignedHandlers;
             this.CustomFactory = customFactory;
 
             this.BufferSize = bufferSize > 0 ?
@@ -55,6 +59,8 @@ namespace KafkaFlow.Configuration
         public IEnumerable<string> Topics { get; }
 
         public string ConsumerName { get; }
+
+        public bool IsReadonly { get; }
 
         public int WorkersCount
         {
@@ -77,6 +83,8 @@ namespace KafkaFlow.Configuration
         public TimeSpan AutoCommitInterval { get; }
 
         public IReadOnlyList<Action<string>> StatisticsHandlers { get; }
+
+        public IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> PartitionsAssignedHandlers { get; }
 
         public ConsumerCustomFactory CustomFactory { get; }
 

@@ -22,8 +22,9 @@ namespace KafkaFlow.UnitTests.Consumer
         private Mock<IConsumerWorkerPool> workerPoolMock;
         private Mock<IWorkerPoolFeeder> feederMock;
         private Mock<ILogHandler> logHandlerMock;
+        private Mock<IDependencyResolver> dependencyResolverMock;
 
-        private Action<IConsumer<byte[], byte[]>, List<TopicPartition>> onPartitionAssignedHandler;
+        private Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> onPartitionAssignedHandler;
         private Action<IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> onPartitionRevokedHandler;
 
         [TestInitialize]
@@ -33,10 +34,11 @@ namespace KafkaFlow.UnitTests.Consumer
             this.workerPoolMock = new Mock<IConsumerWorkerPool>(MockBehavior.Strict);
             this.feederMock = new Mock<IWorkerPoolFeeder>(MockBehavior.Strict);
             this.logHandlerMock = new Mock<ILogHandler>(MockBehavior.Strict);
+            this.dependencyResolverMock = new Mock<IDependencyResolver>();
 
             this.consumerMock
-                .Setup(x => x.OnPartitionsAssigned(It.IsAny<Action<IConsumer<byte[], byte[]>, List<TopicPartition>>>()))
-                .Callback((Action<IConsumer<byte[], byte[]>, List<TopicPartition>> value) => this.onPartitionAssignedHandler = value);
+                .Setup(x => x.OnPartitionsAssigned(It.IsAny<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>>>()))
+                .Callback((Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> value) => this.onPartitionAssignedHandler = value);
 
             this.consumerMock
                 .Setup(x => x.OnPartitionsRevoked(It.IsAny<Action<IConsumer<byte[], byte[]>, List<TopicPartitionOffset>>>()))
@@ -117,7 +119,7 @@ namespace KafkaFlow.UnitTests.Consumer
                 .Setup(x => x.Info(It.IsAny<string>(), It.IsAny<object>()));
 
             // Act
-            this.onPartitionAssignedHandler(consumer, partitions);
+            this.onPartitionAssignedHandler(this.dependencyResolverMock.Object, consumer, partitions);
 
             // Assert
             this.workerPoolMock.VerifyAll();

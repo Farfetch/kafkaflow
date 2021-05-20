@@ -14,6 +14,8 @@ namespace KafkaFlow.Configuration
 
         string ConsumerName { get; }
 
+        bool IsReadonly { get; }
+
         int WorkersCount { get; set; }
 
         string GroupId { get; }
@@ -25,6 +27,9 @@ namespace KafkaFlow.Configuration
         TimeSpan AutoCommitInterval { get; }
 
         IReadOnlyList<Action<string>> StatisticsHandlers { get; }
+
+
+        IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> PartitionsAssignedHandlers { get; }
 
         ConsumerCustomFactory CustomFactory { get; }
 
