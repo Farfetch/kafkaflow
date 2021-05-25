@@ -9,9 +9,9 @@ namespace KafkaFlow.Consumers
 
     internal interface IConsumer : IDisposable
     {
-        void OnPartitionsAssigned(Action<IConsumer<byte[], byte[]>, List<TopicPartition>> handler);
+        void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler);
 
-        void OnPartitionsRevoked(Action<IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler);
+        void OnPartitionsRevoked(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler);
 
         void OnError(Action<IConsumer<byte[], byte[]>, Error> handler);
 

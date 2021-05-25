@@ -1,5 +1,7 @@
 namespace KafkaFlow
 {
+    using System;
+    using System.Collections.Generic;
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
 
@@ -50,6 +52,34 @@ namespace KafkaFlow
         public static IConsumerConfigurationBuilder WithConsumerConfig(this IConsumerConfigurationBuilder builder, ConsumerConfig config)
         {
             return ((ConsumerConfigurationBuilder) builder).WithConsumerConfig(config);
+        }
+
+        /// <summary>
+        /// Adds a handler for the Kafka consumer partitions assigned
+        /// </summary>
+        /// <param name="builder">The configuration builder</param>
+        /// <param name="partitionsAssignedHandler">A handler for the consumer partitions assigned</param>
+        /// <returns></returns>
+        public static IConsumerConfigurationBuilder WithPartitionsAssignedHandler(
+            this IConsumerConfigurationBuilder builder,
+            Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler)
+        {
+            ((ConsumerConfigurationBuilder)builder).WithPartitionsAssignedHandler(partitionsAssignedHandler);
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds a handler for the Kafka consumer partitions revoked
+        /// </summary>
+        /// <param name="builder">The configuration builder</param>
+        /// <param name="partitionsRevokedHandler">A handler for the consumer partitions revoked</param>
+        /// <returns></returns>
+        public static IConsumerConfigurationBuilder WithPartitionsRevokedHandler(
+            this IConsumerConfigurationBuilder builder,
+            Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler)
+        {
+            ((ConsumerConfigurationBuilder)builder).WithPartitionsRevokedHandler(partitionsRevokedHandler);
+            return builder;
         }
 
         /// <summary>

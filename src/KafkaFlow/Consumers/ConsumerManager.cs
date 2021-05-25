@@ -23,8 +23,8 @@
             this.WorkerPool = consumerWorkerPool;
             this.Feeder = feeder;
 
-            this.Consumer.OnPartitionsAssigned((_, partitions) => this.OnPartitionAssigned(partitions));
-            this.Consumer.OnPartitionsRevoked((_, partitions) => this.OnPartitionRevoked(partitions));
+            this.Consumer.OnPartitionsAssigned((resolver, _, partitions) => this.OnPartitionAssigned(partitions));
+            this.Consumer.OnPartitionsRevoked((resolver, _, partitions) => this.OnPartitionRevoked(partitions));
         }
 
         public IWorkerPoolFeeder Feeder { get; }
