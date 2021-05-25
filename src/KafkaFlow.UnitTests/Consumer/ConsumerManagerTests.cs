@@ -22,9 +22,10 @@ namespace KafkaFlow.UnitTests.Consumer
         private Mock<IConsumerWorkerPool> workerPoolMock;
         private Mock<IWorkerPoolFeeder> feederMock;
         private Mock<ILogHandler> logHandlerMock;
+        private readonly Mock<IDependencyResolver> dependencyResolver = new Mock<IDependencyResolver>();
 
-        private Action<IConsumer<byte[], byte[]>, List<TopicPartition>> onPartitionAssignedHandler;
-        private Action<IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> onPartitionRevokedHandler;
+        private Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> onPartitionAssignedHandler;
+        private Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> onPartitionRevokedHandler;
 
         [TestInitialize]
         public void Setup()
@@ -35,12 +36,12 @@ namespace KafkaFlow.UnitTests.Consumer
             this.logHandlerMock = new Mock<ILogHandler>(MockBehavior.Strict);
 
             this.consumerMock
-                .Setup(x => x.OnPartitionsAssigned(It.IsAny<Action<IConsumer<byte[], byte[]>, List<TopicPartition>>>()))
-                .Callback((Action<IConsumer<byte[], byte[]>, List<TopicPartition>> value) => this.onPartitionAssignedHandler = value);
+                .Setup(x => x.OnPartitionsAssigned(It.IsAny<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>>>()))
+                .Callback((Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> value) => this.onPartitionAssignedHandler = value);
 
             this.consumerMock
-                .Setup(x => x.OnPartitionsRevoked(It.IsAny<Action<IConsumer<byte[], byte[]>, List<TopicPartitionOffset>>>()))
-                .Callback((Action<IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> value) => this.onPartitionRevokedHandler = value);
+                .Setup(x => x.OnPartitionsRevoked(It.IsAny<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>>>()))
+                .Callback((Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> value) => this.onPartitionRevokedHandler = value);
 
             this.target = new ConsumerManager(
                 this.consumerMock.Object,
@@ -117,7 +118,7 @@ namespace KafkaFlow.UnitTests.Consumer
                 .Setup(x => x.Info(It.IsAny<string>(), It.IsAny<object>()));
 
             // Act
-            this.onPartitionAssignedHandler(consumer, partitions);
+            this.onPartitionAssignedHandler(this.dependencyResolver.Object, consumer, partitions);
 
             // Assert
             this.workerPoolMock.VerifyAll();
@@ -143,7 +144,7 @@ namespace KafkaFlow.UnitTests.Consumer
                 .Setup(x => x.Warning(It.IsAny<string>(), It.IsAny<object>()));
 
             // Act
-            this.onPartitionRevokedHandler(consumer, partitions);
+            this.onPartitionRevokedHandler(this.dependencyResolver.Object, consumer, partitions);
 
             // Assert
             this.workerPoolMock.VerifyAll();

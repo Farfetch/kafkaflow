@@ -1,6 +1,7 @@
 namespace KafkaFlow.UnitTests.ConfigurationBuilders
 {
     using System;
+    using System.Collections.Generic;
     using AutoFixture;
     using Confluent.Kafka;
     using FluentAssertions;
@@ -63,6 +64,8 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             configuration.AutoStoreOffsets.Should().Be(true);
             configuration.AutoCommitInterval.Should().Be(TimeSpan.FromSeconds(5));
             configuration.StatisticsHandlers.Should().BeEmpty();
+            configuration.PartitionsAssignedHandlers.Should().BeEmpty();
+            configuration.PartitionsRevokedHandlers.Should().BeEmpty();
             configuration.MiddlewareConfiguration.Factories.Should().BeEmpty();
         }
 
@@ -82,6 +85,8 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             const int maxPollIntervalMs = 500000;
             ConsumerCustomFactory customFactory = (producer, resolver) => producer;
             Action<string> statisticsHandler = s => { };
+            Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler = (a, p) => { };
+            Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler = (a, p) => { };
             const int statisticsIntervalMs = 100;
             var consumerConfig = new ConsumerConfig();
 
@@ -100,6 +105,8 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
                 .WithCustomFactory(customFactory)
                 .WithStatisticsIntervalMs(statisticsIntervalMs)
                 .WithStatisticsHandler(statisticsHandler)
+                .WithPartitionsAssignedHandler(partitionsAssignedHandler)
+                .WithPartitionsRevokedHandler(partitionsRevokedHandler)
                 .AddMiddlewares(m => m.Add<IMessageMiddleware>());
 
             // Act
@@ -119,6 +126,8 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             configuration.GetKafkaConfig().MaxPollIntervalMs.Should().Be(maxPollIntervalMs);
             configuration.GetKafkaConfig().StatisticsIntervalMs.Should().Be(statisticsIntervalMs);
             configuration.StatisticsHandlers.Should().HaveElementAt(0, statisticsHandler);
+            configuration.PartitionsAssignedHandlers.Should().HaveElementAt(0, partitionsAssignedHandler);
+            configuration.PartitionsRevokedHandlers.Should().HaveElementAt(0, partitionsRevokedHandler);
             configuration.GetKafkaConfig().Should().BeSameAs(consumerConfig);
             configuration.MiddlewareConfiguration.Factories.Should().HaveCount(1);
         }

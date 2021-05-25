@@ -26,6 +26,10 @@ namespace KafkaFlow.Configuration
 
         IReadOnlyList<Action<string>> StatisticsHandlers { get; }
 
+        IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> PartitionsAssignedHandlers { get; }
+
+        IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
+
         ConsumerCustomFactory CustomFactory { get; }
 
         ConsumerConfig GetKafkaConfig();

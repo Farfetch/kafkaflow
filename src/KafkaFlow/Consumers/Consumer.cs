@@ -14,8 +14,8 @@ namespace KafkaFlow.Consumers
 
         private IConsumer<byte[], byte[]> consumer;
 
-        private readonly List<Action<IConsumer<byte[], byte[]>, List<TopicPartition>>> partitionsAssignedHandlers = new();
-        private readonly List<Action<IConsumer<byte[], byte[]>, List<TopicPartitionOffset>>> partitionsRevokedHandlers = new();
+        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>>> partitionsAssignedHandlers = new();
+        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>>> partitionsRevokedHandlers = new();
         private readonly List<Action<IConsumer<byte[], byte[]>, Error>> errorsHandlers = new();
         private readonly List<Action<IConsumer<byte[], byte[]>, string>> statisticsHandlers = new();
 
@@ -31,6 +31,16 @@ namespace KafkaFlow.Consumers
             foreach (var handler in this.Configuration.StatisticsHandlers)
             {
                 this.OnStatistics((_, statistics) => handler(statistics));
+            }
+
+            foreach (var handler in this.Configuration.PartitionsAssignedHandlers)
+            {
+                this.OnPartitionsAssigned((resolver, _, topicPartitions) => handler(this.dependencyResolver, topicPartitions));
+            }
+
+            foreach (var handler in this.Configuration.PartitionsRevokedHandlers)
+            {
+                this.OnPartitionsRevoked((resolver, _, topicPartitions) => handler(this.dependencyResolver, topicPartitions));
             }
         }
 
@@ -48,9 +58,9 @@ namespace KafkaFlow.Consumers
             this.consumer = this.Configuration.CustomFactory(
                 consumerBuilder
                     .SetPartitionsAssignedHandler(
-                        (consumer, partitions) => this.partitionsAssignedHandlers.ForEach(x => x(consumer, partitions)))
+                        (consumer, partitions) => this.partitionsAssignedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions)))
                     .SetPartitionsRevokedHandler(
-                        (consumer, partitions) => this.partitionsRevokedHandlers.ForEach(x => x(consumer, partitions)))
+                        (consumer, partitions) => this.partitionsRevokedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions)))
                     .SetErrorHandler(
                         (consumer, error) => this.errorsHandlers.ForEach(x => x(consumer, error)))
                     .SetStatisticsHandler(
@@ -65,10 +75,10 @@ namespace KafkaFlow.Consumers
                 this.logHandler);
         }
 
-        public void OnPartitionsAssigned(Action<IConsumer<byte[], byte[]>, List<TopicPartition>> handler) =>
+        public void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler) =>
             this.partitionsAssignedHandlers.Add(handler);
 
-        public void OnPartitionsRevoked(Action<IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler) =>
+        public void OnPartitionsRevoked(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler) =>
             this.partitionsRevokedHandlers.Add(handler);
 
         public void OnError(Action<IConsumer<byte[], byte[]>, Error> handler) =>
