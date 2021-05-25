@@ -58,6 +58,8 @@ namespace KafkaFlow
 
         public Task StopAsync()
         {
+            this.configuration.Clusters.ToList().ForEach(c => c.OnStopHandler(this.dependencyResolver));
+
             return Task.WhenAll(this.consumerManagers.Select(x => x.StopAsync()));
         }
     }

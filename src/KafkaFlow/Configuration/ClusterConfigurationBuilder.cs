@@ -9,6 +9,7 @@ namespace KafkaFlow.Configuration
     {
         private readonly List<ProducerConfigurationBuilder> producers = new();
         private readonly List<ConsumerConfigurationBuilder> consumers = new();
+        private Action<IDependencyResolver> onStopHandler = _ => { };
 
         private IEnumerable<string> brokers;
         private Func<SecurityInformation> securityInformationHandler;
@@ -25,7 +26,8 @@ namespace KafkaFlow.Configuration
             var configuration = new ClusterConfiguration(
                 kafkaConfiguration,
                 this.brokers.ToList(),
-                this.securityInformationHandler);
+                this.securityInformationHandler,
+                this.onStopHandler);
 
             configuration.AddProducers(this.producers.Select(x => x.Build(configuration)));
             configuration.AddConsumers(this.consumers.Select(x => x.Build(configuration)));
@@ -80,6 +82,12 @@ namespace KafkaFlow.Configuration
 
             this.consumers.Add(builder);
 
+            return this;
+        }
+
+        public IClusterConfigurationBuilder OnStop(Action<IDependencyResolver> handler)
+        {
+            this.onStopHandler = handler;
             return this;
         }
     }
