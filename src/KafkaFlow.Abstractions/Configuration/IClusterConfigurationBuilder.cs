@@ -49,5 +49,12 @@ namespace KafkaFlow.Configuration
         /// <param name="consumer">A handler to configure the consumer</param>
         /// <returns></returns>
         IClusterConfigurationBuilder AddConsumer(Action<IConsumerConfigurationBuilder> consumer);
+
+        /// <summary>
+        /// Adds a handler to KafkaFlow  cluster stop event
+        /// </summary>
+        /// <param name="handler">A handler to KafkaFlow  cluster stop event</param>
+        /// <returns></returns>
+        IClusterConfigurationBuilder OnStop(Action<IDependencyResolver> handler);
     }
 }
