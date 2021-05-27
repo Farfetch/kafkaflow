@@ -58,7 +58,7 @@ namespace KafkaFlow.UnitTests.Serializers
                 .Callback((object _, Stream stream, ISerializerContext _) => stream.WriteAsync(rawMessage));
 
             this.contextMock
-                .Setup(x => x.TransformMessage(key, It.Is<byte[]>(value => value.SequenceEqual(rawMessage))))
+                .Setup(x => x.SetMessage(key, It.Is<byte[]>(value => value.SequenceEqual(rawMessage))))
                 .Returns(transformedContextMock.Object);
 
             // Act

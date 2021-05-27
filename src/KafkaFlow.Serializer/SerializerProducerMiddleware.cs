@@ -50,7 +50,7 @@
                 messageValue = buffer.ToArray();
             }
 
-            await next(context.TransformMessage(context.Message.Key, messageValue)).ConfigureAwait(false);
+            await next(context.SetMessage(context.Message.Key, messageValue)).ConfigureAwait(false);
         }
     }
 }

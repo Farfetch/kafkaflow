@@ -22,7 +22,7 @@ namespace KafkaFlow
 
         public IMessageHeaders Headers { get; }
 
-        public IMessageContext TransformMessage(object key, object value) => new MessageContext(
+        public IMessageContext SetMessage(object key, object value) => new MessageContext(
             new Message(key, value),
             this.Headers,
             this.ConsumerContext,

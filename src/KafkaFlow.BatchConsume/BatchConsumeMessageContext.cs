@@ -21,7 +21,7 @@ namespace KafkaFlow.BatchConsume
 
         public IProducerContext ProducerContext => null;
 
-        public IMessageContext TransformMessage(object key, object value) =>
+        public IMessageContext SetMessage(object key, object value) =>
             throw new NotSupportedException($"{nameof(BatchConsumeMessageContext)} does not allow change the message");
     }
 }
