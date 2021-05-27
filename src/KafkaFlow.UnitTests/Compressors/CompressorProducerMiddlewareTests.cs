@@ -47,7 +47,7 @@ namespace KafkaFlow.UnitTests.Compressors
             // Assert
             await act.Should().ThrowAsync<InvalidOperationException>();
             resultContext.Should().BeNull();
-            this.contextMock.Verify(x => x.TransformMessage(It.IsAny<object>(), It.IsAny<object>()), Times.Never);
+            this.contextMock.Verify(x => x.SetMessage(It.IsAny<object>(), It.IsAny<object>()), Times.Never);
             this.compressorMock.Verify(x => x.Compress(It.IsAny<byte[]>()), Times.Never);
         }
 
@@ -71,7 +71,7 @@ namespace KafkaFlow.UnitTests.Compressors
                 .Returns(compressedValue);
 
             this.contextMock
-                .Setup(x => x.TransformMessage(uncompressedMessage.Key, compressedValue))
+                .Setup(x => x.SetMessage(uncompressedMessage.Key, compressedValue))
                 .Returns(transformedContextMock.Object);
 
             // Act

@@ -30,7 +30,7 @@
 
             var data = this.compressor.Decompress(rawData);
 
-            return next(context.TransformMessage(context.Message.Key, data));
+            return next(context.SetMessage(context.Message.Key, data));
         }
     }
 }
