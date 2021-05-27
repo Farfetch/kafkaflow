@@ -62,7 +62,7 @@
                     SerializerContext.Empty)
                 .ConfigureAwait(false);
 
-            await next(context.TransformMessage(context.Message.Key, data)).ConfigureAwait(false);
+            await next(context.SetMessage(context.Message.Key, data)).ConfigureAwait(false);
         }
     }
 }

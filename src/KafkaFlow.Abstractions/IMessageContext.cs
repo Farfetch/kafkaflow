@@ -31,6 +31,6 @@ namespace KafkaFlow
         /// <param name="key">The new message key</param>
         /// <param name="value">The new message value</param>
         /// <returns>A new message context containing the new values</returns>
-        IMessageContext TransformMessage(object key, object value); // TODO: maybe a better name?
+        IMessageContext SetMessage(object key, object value);
     }
 }
