@@ -2,7 +2,7 @@ namespace KafkaFlow.Configuration
 {
     using System.Collections.Generic;
 
-    internal class MiddlewareConfiguration
+    public class MiddlewareConfiguration
     {
         public IReadOnlyList<Factory<IMessageMiddleware>> Factories { get; }
 
