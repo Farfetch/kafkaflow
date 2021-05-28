@@ -7,7 +7,7 @@ namespace KafkaFlow.Consumers
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
 
-    internal interface IConsumer : IDisposable
+    public interface IConsumer : IDisposable
     {
         void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler);
 

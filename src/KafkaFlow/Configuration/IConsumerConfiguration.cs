@@ -4,7 +4,7 @@ namespace KafkaFlow.Configuration
     using System.Collections.Generic;
     using Confluent.Kafka;
 
-    internal interface IConsumerConfiguration
+    public interface IConsumerConfiguration
     {
         Factory<IDistributionStrategy> DistributionStrategyFactory { get; }
 

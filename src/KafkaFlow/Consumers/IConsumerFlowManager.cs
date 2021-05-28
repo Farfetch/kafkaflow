@@ -4,7 +4,7 @@ namespace KafkaFlow.Consumers
     using System.Collections.Generic;
     using Confluent.Kafka;
 
-    internal interface IConsumerFlowManager : IDisposable
+    public interface IConsumerFlowManager : IDisposable
     {
         void Pause(IReadOnlyCollection<TopicPartition> topicPartitions);
 
