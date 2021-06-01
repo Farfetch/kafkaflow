@@ -33,7 +33,7 @@
             cluster.DependencyConfigurator.AddSingleton<IAdminProducer, AdminProducer>();
 
             cluster.DependencyConfigurator.AddSingleton<IMemoryCache, MemoryCache>();
-            cluster.DependencyConfigurator.AddSingleton<ITelemetryCache, TelemetryCache>();
+            cluster.DependencyConfigurator.AddSingleton<ITelemetryCache, InMemoryTelemetryCache>();
 
             return cluster
                 .AddProducer<AdminProducer>(
@@ -81,7 +81,7 @@
             string consumerGroup)
         {
             cluster.DependencyConfigurator.AddSingleton<IMemoryCache, MemoryCache>();
-            cluster.DependencyConfigurator.AddSingleton<ITelemetryCache, TelemetryCache>();
+            cluster.DependencyConfigurator.AddSingleton<ITelemetryCache, InMemoryTelemetryCache>();
 
             var groupId =
                 $"{consumerGroup}-{Environment.MachineName}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}";

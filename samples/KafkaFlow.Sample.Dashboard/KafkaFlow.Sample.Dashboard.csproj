@@ -16,7 +16,6 @@
   </ItemGroup>  
 
   <Target Name="DebugNpmInstall" BeforeTargets="Build">
-    <!-- Ensure Node.js is installed -->
     <Exec Command="node --version" ContinueOnError="true">
       <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
     </Exec>
@@ -26,11 +25,15 @@
   </Target>
 
   <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
-    <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
     <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="npm run build -- --prod" />
-    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="if not exist $(PublishDir)$(SpaRoot)dist mkdir $(PublishDir)$(SpaRoot)dist"/>
-    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="del $(PublishDir)$(SpaRoot)dist\*.* /s /q"/>
-    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="move dist\dashboard\* $(PublishDir)$(SpaRoot)dist"/>    
+    
+    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="if not exist $(PublishDir)$(SpaRoot)dist mkdir $(PublishDir)$(SpaRoot)dist" Condition=" '$(OS)' == 'Windows_NT' "/>
+    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="del $(PublishDir)$(SpaRoot)dist\*.* /s /q" Condition=" '$(OS)' == 'Windows_NT' "/>
+    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="move dist\dashboard\* $(PublishDir)$(SpaRoot)dist" Condition=" '$(OS)' == 'Windows_NT' "/>
+    
+    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="mkdir $(PublishDir)$(SpaRoot)dist -p" Condition=" '$(OS)' == 'Unix' "/>
+    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="rm $(PublishDir)$(SpaRoot)dist/* -rf" Condition=" '$(OS)' == 'Unix' "/>
+    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="mv dist/dashboard/* $(PublishDir)$(SpaRoot)dist" Condition=" '$(OS)' == 'Unix' "/>
   </Target>
 
 </Project>

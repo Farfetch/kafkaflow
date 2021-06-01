@@ -7,15 +7,15 @@ namespace KafkaFlow.Admin
     /// <summary>
     /// Provide cache operations related to telemetry data
     /// </summary>
-    public class TelemetryCache : ITelemetryCache
+    public class InMemoryTelemetryCache : ITelemetryCache
     {
         private readonly IMemoryCache cache;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TelemetryCache"/> class.
+        /// Initializes a new instance of the <see cref="InMemoryTelemetryCache"/> class.
         /// </summary>
-        /// <param name="cache">The memory cache interface to get metric data</param>
-        public TelemetryCache(IMemoryCache cache) => this.cache = cache;
+        /// <param name="cache">The memory cache class to manage telemetry data</param>
+        public InMemoryTelemetryCache(IMemoryCache cache) => this.cache = cache;
 
         /// <inheritdoc />
         public List<ConsumerMetric> Get(string groupId, string consumerName)
