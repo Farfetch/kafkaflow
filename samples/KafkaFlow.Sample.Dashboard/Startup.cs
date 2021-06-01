@@ -51,8 +51,6 @@ namespace KafkaFlow.Sample.Dashboard
                 bus = app.ApplicationServices.CreateKafkaBus();
                 bus.StartAsync(lifetime.ApplicationStopped);
             });
-            
-            lifetime.ApplicationStopping.Register(() => bus.StopAsync().GetAwaiter().GetResult());
         }
     }
 }

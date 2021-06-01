@@ -9,7 +9,7 @@ namespace KafkaFlow.Admin.WebApi.Adapters
 
     internal static class ConsumerResponseAdapter
     {
-        internal static ConsumerResponse Adapt(this IMessageConsumer consumer, ITelemetryCache cache)
+        internal static ConsumerResponse Adapt(this IMessageConsumer consumer, ITelemetryStorage storage)
         {
             var consumerResponse = new ConsumerResponse()
             {
@@ -20,10 +20,10 @@ namespace KafkaFlow.Admin.WebApi.Adapters
                 MemberId = consumer.MemberId,
                 WorkersCount = consumer.WorkersCount,
                 ClientInstanceName = consumer.ClientInstanceName,
-                IsReadonly = consumer.IsReadonly,
+                ManagementDisabled = consumer.ManagementDisabled,
             };
 
-            var cachedMetrics = cache.Get(consumer.GroupId, consumer.ConsumerName);
+            var cachedMetrics = storage.Get(consumer.GroupId, consumer.ConsumerName);
 
             consumerResponse.PartitionAssignments = cachedMetrics.Any() ?
                 cachedMetrics.Select(m => m.Adapt()) :
@@ -40,7 +40,8 @@ namespace KafkaFlow.Admin.WebApi.Adapters
                 {
                     Topic = c.Key,
                     HostName = Environment.MachineName,
-                    PausedPartitions = c.Select(x => x.Partition.Value).ToList(),
+                    PausedPartitions = c.Select(x => x.Partition.Value),
+                    LastUpdate = DateTime.Now,
                 })
                 .Union(consumer.RunningPartitions
                     .GroupBy(c => c.Topic)
@@ -48,7 +49,8 @@ namespace KafkaFlow.Admin.WebApi.Adapters
                     {
                         Topic = c.Key,
                         HostName = Environment.MachineName,
-                        RunningPartitions = c.Select(x => x.Partition.Value).ToList(),
+                        RunningPartitions = c.Select(x => x.Partition.Value),
+                        LastUpdate = DateTime.Now,
                     }));
         }
 
@@ -56,7 +58,7 @@ namespace KafkaFlow.Admin.WebApi.Adapters
             new()
             {
                 Topic = consumer.Topic,
-                HostName = consumer.HostName,
+                HostName = consumer.InstanceName,
                 PausedPartitions = consumer.PausedPartitions,
                 RunningPartitions = consumer.RunningPartitions,
                 LastUpdate = consumer.SentAt,

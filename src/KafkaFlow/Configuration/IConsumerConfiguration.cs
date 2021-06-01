@@ -30,9 +30,14 @@ namespace KafkaFlow.Configuration
         string ConsumerName { get; }
 
         /// <summary>
-        /// Gets the consumer readonly flag
+        /// Gets the cluster name
         /// </summary>
-        bool IsReadonly { get; }
+        string ClusterName { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the consumer is able to be manageable or not
+        /// </summary>
+        bool ManagementDisabled { get; }
 
         /// <summary>
         /// Gets or sets the number of workers

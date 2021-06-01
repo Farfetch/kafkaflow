@@ -10,8 +10,6 @@
     {
         private readonly ILogHandler logHandler;
 
-        private CancellationTokenSource stopCancellationTokenSource;
-
         public ConsumerManager(
             IConsumer consumer,
             IConsumerWorkerPool consumerWorkerPool,
@@ -35,8 +33,6 @@
 
         public Task StartAsync()
         {
-            this.stopCancellationTokenSource = new CancellationTokenSource();
-
             this.Feeder.Start();
 
             return Task.CompletedTask;
@@ -44,11 +40,6 @@
 
         public async Task StopAsync()
         {
-            if (this.stopCancellationTokenSource != null && this.stopCancellationTokenSource.Token.CanBeCanceled)
-            {
-                this.stopCancellationTokenSource.Cancel();
-            }
-
             await this.Feeder.StopAsync().ConfigureAwait(false);
             await this.WorkerPool.StopAsync().ConfigureAwait(false);
 
@@ -69,8 +60,6 @@
             this.logHandler.Info(
                 "Partitions assigned",
                 this.GetConsumerLogInfo(partitions));
-
-            this.Consumer.FlowManager.UpdatePausedPartitions(partitions);
 
             this.WorkerPool
                 .StartAsync(partitions)

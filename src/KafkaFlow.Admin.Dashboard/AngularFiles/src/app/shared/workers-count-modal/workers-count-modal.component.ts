@@ -6,10 +6,10 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   templateUrl: './workers-count-modal.component.html'
 })
 export class WorkersCountModalComponent implements OnInit {
-  @Input() public workersCount: any;
-  @Input() public groupId: any;
-  @Input() public consumerName: any;
-  public oldWorkersCount: any;
+  @Input() public workersCount: number;
+  @Input() public groupId: string;
+  @Input() public consumerName: string;
+  public oldWorkersCount: number;
 
   constructor(public activeModal: NgbActiveModal) {}
 

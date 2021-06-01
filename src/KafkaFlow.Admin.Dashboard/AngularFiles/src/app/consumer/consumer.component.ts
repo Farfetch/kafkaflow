@@ -24,10 +24,10 @@ export class ConsumerComponent implements OnInit {
   constructor(private modalService: NgbModal, private consumerService: ConsumerService) { }
 
   removeReadonly(group: any) {
-    return !(group.consumers.length == 1 && group.consumers[0].isReadonly==1);
+    return !(group.consumers.length == 1 && group.consumers[0].managementDisabled==1);
   }
 
-  openWorkersCountModal(groupId: any, consumerName: any, workersCount: number) {
+  openWorkersCountModal(groupId: string, consumerName: string, workersCount: number) {
     const modalRef = this.modalService.open(WorkersCountModalComponent);
     modalRef.componentInstance.groupId = groupId;
     modalRef.componentInstance.consumerName = consumerName;
@@ -39,7 +39,7 @@ export class ConsumerComponent implements OnInit {
     });
   }
 
-  openResetModal(groupId: any, consumerName: any) {
+  openResetModal(groupId: string, consumerName: string) {
     const modalRef = this.modalService.open(ResetModalComponent);
     modalRef.componentInstance.groupId = groupId;
     modalRef.componentInstance.consumerName = consumerName;
@@ -50,7 +50,7 @@ export class ConsumerComponent implements OnInit {
     });
   }
 
-  openPauseModal(groupId: any, consumerName: any) {
+  openPauseModal(groupId: string, consumerName: string) {
     const modalRef = this.modalService.open(PauseModalComponent);
     modalRef.componentInstance.groupId = groupId;
     modalRef.componentInstance.consumerName = consumerName;
@@ -61,7 +61,7 @@ export class ConsumerComponent implements OnInit {
     });
   }
 
-  openRestartModal(groupId: any, consumerName: any) {
+  openRestartModal(groupId: string, consumerName: string) {
     const modalRef = this.modalService.open(RestartModalComponent);
     modalRef.componentInstance.groupId = groupId;
     modalRef.componentInstance.consumerName = consumerName;
@@ -72,7 +72,7 @@ export class ConsumerComponent implements OnInit {
     });
   }
 
-  openResumeModal(groupId: any, consumerName: any) {
+  openResumeModal(groupId: string, consumerName: string) {
     const modalRef = this.modalService.open(ResumeModalComponent);
     modalRef.componentInstance.groupId = groupId;
     modalRef.componentInstance.consumerName = consumerName;
@@ -83,7 +83,7 @@ export class ConsumerComponent implements OnInit {
     });
   }
 
-  openRewindModal(groupId: any, consumerName: any) {
+  openRewindModal(groupId: string, consumerName: string) {
     const modalRef = this.modalService.open(RewindModalComponent);
     modalRef.componentInstance.consumerName = consumerName;
     modalRef.componentInstance.groupId = groupId;

@@ -31,7 +31,7 @@ export class HomeComponent implements OnInit {
     return groups;
   }
 
-  isActive(date: any) {
+  isActive(date: string) {
     return Math.abs((new Date().getTime() - new Date(date).getTime())/1000) < 5;
   }
 

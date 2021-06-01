@@ -9,9 +9,10 @@ namespace KafkaFlow.Configuration
     {
         private readonly List<ProducerConfigurationBuilder> producers = new();
         private readonly List<ConsumerConfigurationBuilder> consumers = new();
-        private Action<IDependencyResolver> onStopHandler = _ => { };
-
+        private Action<IDependencyResolver> onStartedHandler = _ => { };
+        private Action<IDependencyResolver> onStoppingHandler = _ => { };
         private IEnumerable<string> brokers;
+        private string name;
         private Func<SecurityInformation> securityInformationHandler;
 
         public ClusterConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
@@ -25,9 +26,11 @@ namespace KafkaFlow.Configuration
         {
             var configuration = new ClusterConfiguration(
                 kafkaConfiguration,
+                this.name,
                 this.brokers.ToList(),
                 this.securityInformationHandler,
-                this.onStopHandler);
+                this.onStartedHandler,
+                this.onStoppingHandler);
 
             configuration.AddProducers(this.producers.Select(x => x.Build(configuration)));
             configuration.AddConsumers(this.consumers.Select(x => x.Build(configuration)));
@@ -38,6 +41,12 @@ namespace KafkaFlow.Configuration
         public IClusterConfigurationBuilder WithBrokers(IEnumerable<string> brokers)
         {
             this.brokers = brokers;
+            return this;
+        }
+
+        public IClusterConfigurationBuilder WithName(string name)
+        {
+            this.name = name;
             return this;
         }
 
@@ -85,9 +94,15 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public IClusterConfigurationBuilder OnStop(Action<IDependencyResolver> handler)
+        public IClusterConfigurationBuilder OnStopping(Action<IDependencyResolver> handler)
         {
-            this.onStopHandler = handler;
+            this.onStoppingHandler = handler;
+            return this;
+        }
+
+        public IClusterConfigurationBuilder OnStarted(Action<IDependencyResolver> handler)
+        {
+            this.onStartedHandler = handler;
             return this;
         }
     }

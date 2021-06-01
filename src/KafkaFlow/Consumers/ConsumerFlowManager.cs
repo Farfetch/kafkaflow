@@ -24,7 +24,7 @@ namespace KafkaFlow.Consumers
             this.logHandler = logHandler;
         }
 
-        public IReadOnlyList<TopicPartition> PausedPartitions => this.pausedPartitions.AsReadOnly();
+        public IEnumerable<TopicPartition> PausedPartitions => this.pausedPartitions.AsReadOnly();
 
         public ConsumerFlowStatus Status
         {
@@ -121,12 +121,9 @@ namespace KafkaFlow.Consumers
             }
         }
 
-        public void UpdatePausedPartitions(IEnumerable<TopicPartition> partitionsRunning)
+        public void CleanPausedPartitions()
         {
-            foreach (var p in partitionsRunning)
-            {
-                this.pausedPartitions.Remove(p);
-            }
+            this.pausedPartitions.Clear();
         }
 
         public void Dispose()

@@ -32,7 +32,7 @@ namespace KafkaFlow.Admin.Messages
         /// Gets or sets the consumer host name
         /// </summary>
         [DataMember(Order = 4)]
-        public string HostName { get; set; }
+        public string InstanceName { get; set; }
 
         /// <summary>
         /// Gets or sets the list of running partitions

@@ -14,9 +14,9 @@ namespace KafkaFlow.Admin.WebApi.Contracts
        public string ConsumerName { get; set; }
 
        /// <summary>
-       /// Gets or sets a value indicating whether the consumer is readonly or not
+       /// Gets or sets a value indicating whether the consumer is able to be manageable or not
        /// </summary>
-       public bool IsReadonly { get; set; }
+       public bool ManagementDisabled { get; set; }
 
        /// <summary>
        /// Gets or sets the group id

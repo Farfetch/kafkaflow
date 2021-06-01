@@ -17,42 +17,42 @@ export class ConsumerService {
     return this.http.get(this.accessPointUrl + 'groups', {headers: this.headers});
   }
 
-  public updateWorkersCount(groupId: any, consumerName: any, workersCount: number) {
+  public updateWorkersCount(groupId: string, consumerName: string, workersCount: number) {
     return this.http.post<any>(
         this.accessPointUrl +`groups/${groupId}/consumers/${consumerName}/change-worker-count`,
         { workersCount: workersCount },
         {headers: this.headers});
   }
 
-  public resetOffset(groupId: any, consumerName: any) {
+  public resetOffset(groupId: string, consumerName: string) {
     return this.http.post<any>(
         this.accessPointUrl +`groups/${groupId}/consumers/${consumerName}/reset-offsets`,
         { confirm: true },
         {headers: this.headers});
   }
 
-  public pause(groupId: any, consumerName: any) {
+  public pause(groupId: string, consumerName: string) {
     return this.http.post<any>(
         this.accessPointUrl +`groups/${groupId}/consumers/${consumerName}/pause`,
         null,
         {headers: this.headers});
   }
 
-  public restart(groupId: any, consumerName: any) {
+  public restart(groupId: string, consumerName: string) {
     return this.http.post<any>(
         this.accessPointUrl +`groups/${groupId}/consumers/${consumerName}/restart`,
         null,
         {headers: this.headers});
   }
 
-  public resume(groupId: any, consumerName: any) {
+  public resume(groupId: string, consumerName: string) {
     return this.http.post<any>(
         this.accessPointUrl +`groups/${groupId}/consumers/${consumerName}/resume`,
         null,
         {headers: this.headers});
   }
 
-  public rewindOffset(groupId: any, consumerName: any, date: Date) {
+  public rewindOffset(groupId: string, consumerName: string, date: Date) {
     return this.http.post<any>(
         this.accessPointUrl +`groups/${groupId}/consumers/${consumerName}/rewind-offsets-to-date`,
         { date: new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString() },

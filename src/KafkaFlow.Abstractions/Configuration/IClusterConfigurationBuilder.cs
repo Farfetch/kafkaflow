@@ -21,6 +21,13 @@ namespace KafkaFlow.Configuration
         IClusterConfigurationBuilder WithBrokers(IEnumerable<string> brokers);
 
         /// <summary>
+        /// Sets a unique name for the cluster
+        /// </summary>
+        /// <param name="name">A unique name</param>
+        /// <returns></returns>
+        IClusterConfigurationBuilder WithName(string name);
+
+        /// <summary>
         /// Configures cluster security
         /// </summary>
         /// <param name="handler">A handler to sets the values</param>
@@ -51,10 +58,17 @@ namespace KafkaFlow.Configuration
         IClusterConfigurationBuilder AddConsumer(Action<IConsumerConfigurationBuilder> consumer);
 
         /// <summary>
-        /// Adds a handler to KafkaFlow  cluster stop event
+        /// Adds a handler to be executed when KafkaFlow cluster is stopping
         /// </summary>
-        /// <param name="handler">A handler to KafkaFlow  cluster stop event</param>
+        /// <param name="handler">A handler to KafkaFlow cluster stopping event</param>
         /// <returns></returns>
-        IClusterConfigurationBuilder OnStop(Action<IDependencyResolver> handler);
+        IClusterConfigurationBuilder OnStopping(Action<IDependencyResolver> handler);
+
+        /// <summary>
+        /// Adds a handler to be executed after KafkaFlow cluster started
+        /// </summary>
+        /// <param name="handler">A handler to KafkaFlow  cluster start event</param>
+        /// <returns></returns>
+        IClusterConfigurationBuilder OnStarted(Action<IDependencyResolver> handler);
     }
 }
