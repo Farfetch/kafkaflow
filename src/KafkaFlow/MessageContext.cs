@@ -27,5 +27,7 @@ namespace KafkaFlow
             this.Headers,
             this.ConsumerContext,
             this.ProducerContext);
+
+        public IMessageContext TransformMessage(object message) => throw new System.NotImplementedException();
     }
 }
