@@ -12,8 +12,6 @@ namespace KafkaFlow.Consumers
         private readonly IDependencyResolver dependencyResolver;
         private readonly ILogHandler logHandler;
 
-        private IConsumer<byte[], byte[]> consumer;
-
         private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>>>
             partitionsAssignedHandlers = new();
 
@@ -22,6 +20,8 @@ namespace KafkaFlow.Consumers
 
         private readonly List<Action<IConsumer<byte[], byte[]>, Error>> errorsHandlers = new();
         private readonly List<Action<IConsumer<byte[], byte[]>, string>> statisticsHandlers = new();
+
+        private IConsumer<byte[], byte[]> consumer;
 
         public Consumer(
             IConsumerConfiguration configuration,
