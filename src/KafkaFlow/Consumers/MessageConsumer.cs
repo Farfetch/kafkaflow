@@ -21,7 +21,9 @@ namespace KafkaFlow.Consumers
 
         public string ConsumerName => this.consumerManager.Consumer.Configuration.ConsumerName;
 
-        public bool IsReadonly => this.consumerManager.Consumer.Configuration.IsReadonly;
+        public string ClusterName => this.consumerManager.Consumer.Configuration.ClusterName;
+
+        public bool ManagementDisabled => this.consumerManager.Consumer.Configuration.ManagementDisabled;
 
         public string GroupId => this.consumerManager.Consumer.Configuration.GroupId;
 
@@ -37,9 +39,9 @@ namespace KafkaFlow.Consumers
 
         public int WorkersCount => this.consumerManager.Consumer.Configuration.WorkersCount;
 
-        public IReadOnlyList<TopicPartition> PausedPartitions => this.consumerManager.Consumer.FlowManager?.PausedPartitions ?? new List<TopicPartition>();
+        public IEnumerable<TopicPartition> PausedPartitions => this.consumerManager.Consumer.FlowManager?.PausedPartitions ?? Enumerable.Empty<TopicPartition>();
 
-        public IReadOnlyList<TopicPartition> RunningPartitions => this.Assignment.Except(this.PausedPartitions).ToList();
+        public IEnumerable<TopicPartition> RunningPartitions => this.Assignment.Except(this.PausedPartitions);
 
         public void Pause(IReadOnlyCollection<TopicPartition> topicPartitions)
         {

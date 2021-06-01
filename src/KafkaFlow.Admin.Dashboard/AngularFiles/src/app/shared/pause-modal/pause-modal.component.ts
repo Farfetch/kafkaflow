@@ -6,8 +6,8 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   templateUrl: './pause-modal.component.html'
 })
 export class PauseModalComponent implements OnInit {
-  @Input() public groupId: any;
-  @Input() public consumerName: any;
+  @Input() public groupId: string;
+  @Input() public consumerName: string;
 
   constructor(public activeModal: NgbActiveModal) { }
 

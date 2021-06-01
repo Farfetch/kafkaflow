@@ -16,9 +16,14 @@ namespace KafkaFlow.Consumers
         string ConsumerName { get; }
 
         /// <summary>
-        /// Gets the readonly flag defined in the configuration
+        /// Gets the unique cluster´s name defined in the configuration
         /// </summary>
-        bool IsReadonly { get; }
+        string ClusterName { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the consumer is able to be manageable or not
+        /// </summary>
+        bool ManagementDisabled { get; }
 
         /// <summary>
         /// Gets the group id define in the configuration
@@ -67,12 +72,12 @@ namespace KafkaFlow.Consumers
         /// <summary>
         /// Gets the consumer's paused partitions
         /// </summary>
-        IReadOnlyList<TopicPartition> PausedPartitions { get; }
+        IEnumerable<TopicPartition> PausedPartitions { get; }
 
         /// <summary>
         /// Gets the consumer's running partitions
         /// </summary>
-        IReadOnlyList<TopicPartition> RunningPartitions { get; }
+        IEnumerable<TopicPartition> RunningPartitions { get; }
 
         /// <summary>
         /// Overrides the offsets of the given partitions and restart the consumer

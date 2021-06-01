@@ -6,13 +6,13 @@ namespace KafkaFlow.Admin.Handlers
 
     internal class ConsumerMetricHandler : IMessageHandler<ConsumerMetric>
     {
-        private readonly ITelemetryCache cache;
+        private readonly ITelemetryStorage storage;
 
-        public ConsumerMetricHandler(ITelemetryCache cache) => this.cache = cache;
+        public ConsumerMetricHandler(ITelemetryStorage storage) => this.storage = storage;
 
         public Task Handle(IMessageContext context, ConsumerMetric message)
         {
-            this.cache.Put(message.GroupId, message.ConsumerName, message);
+            this.storage.Put(message.GroupId, message.ConsumerName, message);
             return Task.CompletedTask;
         }
     }

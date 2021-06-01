@@ -7,36 +7,47 @@ namespace KafkaFlow.Configuration
     internal class ClusterConfiguration
     {
         private readonly Func<SecurityInformation> securityInformationHandler;
-        private Action<IDependencyResolver> onStopHandler = _ => { };
+        private readonly Action<IDependencyResolver> onStartedHandler;
+        private readonly Action<IDependencyResolver> onStoppingHandler;
         private readonly List<IProducerConfiguration> producers = new();
         private readonly List<IConsumerConfiguration> consumers = new();
 
         public ClusterConfiguration(
             KafkaConfiguration kafka,
+            string name,
             IEnumerable<string> brokers,
             Func<SecurityInformation> securityInformationHandler,
-            Action<IDependencyResolver> onStopHandler)
+            Action<IDependencyResolver> onStartedHandler,
+            Action<IDependencyResolver> onStoppingHandler)
         {
             this.securityInformationHandler = securityInformationHandler;
+            this.Name = name ?? Guid.NewGuid().ToString();
             this.Kafka = kafka;
             this.Brokers = brokers.ToList();
-            this.onStopHandler = onStopHandler;
+            this.onStoppingHandler = onStoppingHandler;
+            this.onStartedHandler = onStartedHandler;
         }
 
         public KafkaConfiguration Kafka { get; }
 
         public IReadOnlyCollection<string> Brokers { get; }
 
+        public string Name { get; }
+
         public IReadOnlyCollection<IProducerConfiguration> Producers => this.producers.AsReadOnly();
 
         public IReadOnlyCollection<IConsumerConfiguration> Consumers => this.consumers.AsReadOnly();
 
-        public void AddConsumers(IEnumerable<IConsumerConfiguration> configurations) => this.consumers.AddRange(configurations);
+        public Action<IDependencyResolver> OnStartedHandler => this.onStartedHandler;
 
-        public void AddProducers(IEnumerable<IProducerConfiguration> configurations) => this.producers.AddRange(configurations);
+        public Action<IDependencyResolver> OnStoppingHandler => this.onStoppingHandler;
+
+        public void AddConsumers(IEnumerable<IConsumerConfiguration> configurations) =>
+            this.consumers.AddRange(configurations);
+
+        public void AddProducers(IEnumerable<IProducerConfiguration> configurations) =>
+            this.producers.AddRange(configurations);
 
         public SecurityInformation GetSecurityInformation() => this.securityInformationHandler?.Invoke();
-
-        public Action<IDependencyResolver> OnStopHandler => this.onStopHandler;
     }
 }

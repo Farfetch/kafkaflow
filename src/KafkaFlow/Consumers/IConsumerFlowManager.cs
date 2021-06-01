@@ -17,7 +17,7 @@ namespace KafkaFlow.Consumers
         /// <summary>
         /// Gets a list of the consumer paused partitions
         /// </summary>
-        IReadOnlyList<TopicPartition> PausedPartitions { get; }
+        IEnumerable<TopicPartition> PausedPartitions { get; }
 
         /// <summary>
         /// Pauses a set of partitions
@@ -31,6 +31,9 @@ namespace KafkaFlow.Consumers
         /// <param name="topicPartitions">A list of partitions</param>
         void Resume(IReadOnlyCollection<TopicPartition> topicPartitions);
 
-        void UpdatePausedPartitions(IEnumerable<TopicPartition> partitionsRunning);
+        /// <summary>
+        /// Removes all partitions from the list of paused partitions
+        /// </summary>
+        void CleanPausedPartitions();
     }
 }

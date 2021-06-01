@@ -4,12 +4,12 @@ namespace KafkaFlow.Admin
     using KafkaFlow.Admin.Messages;
 
     /// <summary>
-    /// Used to implement a cache provider to manage telemetry data
+    /// Used to implement a telemetry data storage provider
     /// </summary>
-    public interface ITelemetryCache
+    public interface ITelemetryStorage
     {
         /// <summary>
-        /// Gets the cached metric indexed with the parameters provided
+        /// Gets the stored metric indexed with the parameters provided
         /// </summary>
         /// <param name="groupId">The group id</param>
         /// <param name="consumerName">The consumer name</param>
@@ -17,7 +17,7 @@ namespace KafkaFlow.Admin
         List<ConsumerMetric> Get(string groupId, string consumerName);
 
         /// <summary>
-        /// Puts in the cache the metric provided
+        /// Store the metric provided
         /// </summary>
         /// <param name="groupId">The group id</param>
         /// <param name="consumerName">The consumer name</param>
