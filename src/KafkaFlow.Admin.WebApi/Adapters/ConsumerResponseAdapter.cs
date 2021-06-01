@@ -41,6 +41,7 @@ namespace KafkaFlow.Admin.WebApi.Adapters
                     Topic = c.Key,
                     HostName = Environment.MachineName,
                     PausedPartitions = c.Select(x => x.Partition.Value).ToList(),
+                    LastUpdate = DateTime.Now,
                 })
                 .Union(consumer.RunningPartitions
                     .GroupBy(c => c.Topic)
@@ -49,6 +50,7 @@ namespace KafkaFlow.Admin.WebApi.Adapters
                         Topic = c.Key,
                         HostName = Environment.MachineName,
                         RunningPartitions = c.Select(x => x.Partition.Value).ToList(),
+                        LastUpdate = DateTime.Now,
                     }));
         }
 

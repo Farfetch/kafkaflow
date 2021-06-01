@@ -41,6 +41,8 @@ namespace KafkaFlow.Consumers
                     this.logHandler),
                 partitions);
 
+            this.consumer.FlowManager.UpdatePausedPartitions(partitions);
+
             await Task.WhenAll(
                     Enumerable
                         .Range(0, this.consumer.Configuration.WorkersCount)

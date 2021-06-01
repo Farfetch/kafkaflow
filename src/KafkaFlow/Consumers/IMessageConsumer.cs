@@ -16,7 +16,7 @@ namespace KafkaFlow.Consumers
         string ConsumerName { get; }
 
         /// <summary>
-        /// Gets the readonly flag defined in the configuration
+        /// Gets a value indicating whether the consumer is readonly or not
         /// </summary>
         bool IsReadonly { get; }
 

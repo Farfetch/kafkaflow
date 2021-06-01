@@ -7,7 +7,7 @@ namespace KafkaFlow.Configuration
     internal class ClusterConfiguration
     {
         private readonly Func<SecurityInformation> securityInformationHandler;
-        private Action<IDependencyResolver> onStopHandler = _ => { };
+        private readonly Action<IDependencyResolver> onStopHandler = _ => { };
         private readonly List<IProducerConfiguration> producers = new();
         private readonly List<IConsumerConfiguration> consumers = new();
 
@@ -31,12 +31,12 @@ namespace KafkaFlow.Configuration
 
         public IReadOnlyCollection<IConsumerConfiguration> Consumers => this.consumers.AsReadOnly();
 
+        public Action<IDependencyResolver> OnStopHandler => this.onStopHandler;
+
         public void AddConsumers(IEnumerable<IConsumerConfiguration> configurations) => this.consumers.AddRange(configurations);
 
         public void AddProducers(IEnumerable<IProducerConfiguration> configurations) => this.producers.AddRange(configurations);
 
         public SecurityInformation GetSecurityInformation() => this.securityInformationHandler?.Invoke();
-
-        public Action<IDependencyResolver> OnStopHandler => this.onStopHandler;
     }
 }
