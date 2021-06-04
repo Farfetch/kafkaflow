@@ -33,7 +33,7 @@
         /// <inheritdoc/>
         public Task SerializeAsync(object message, Stream output, ISerializerContext context)
         {
-            using var sw = new StreamWriter(output, Encoding.UTF8);
+            using var sw = new StreamWriter(output, Encoding.UTF8, -1, true);
             var serializer = JsonSerializer.CreateDefault(this.settings);
 
             serializer.Serialize(sw, message);
@@ -44,7 +44,13 @@
         /// <inheritdoc/>
         public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
         {
-            using var sr = new StreamReader(input, Encoding.UTF8);
+            using var sr = new StreamReader(
+                input,
+                Encoding.UTF8,
+                true,
+                -1,
+                true);
+
             var serializer = JsonSerializer.CreateDefault(this.settings);
 
             return Task.FromResult(serializer.Deserialize(sr, type));
