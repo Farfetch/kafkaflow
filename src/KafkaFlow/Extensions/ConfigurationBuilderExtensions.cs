@@ -2,6 +2,7 @@ namespace KafkaFlow
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
 
@@ -62,7 +63,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IConsumerConfigurationBuilder WithPartitionsAssignedHandler(
             this IConsumerConfigurationBuilder builder,
-            Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler)
+            Func<IDependencyResolver, List<TopicPartition>, Task> partitionsAssignedHandler)
         {
             ((ConsumerConfigurationBuilder)builder).WithPartitionsAssignedHandler(partitionsAssignedHandler);
             return builder;
@@ -76,7 +77,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IConsumerConfigurationBuilder WithPartitionsRevokedHandler(
             this IConsumerConfigurationBuilder builder,
-            Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler)
+            Func<IDependencyResolver, List<TopicPartitionOffset>, Task> partitionsRevokedHandler)
         {
             ((ConsumerConfigurationBuilder)builder).WithPartitionsRevokedHandler(partitionsRevokedHandler);
             return builder;

@@ -15,6 +15,7 @@ namespace KafkaFlow.UnitTests.Consumer
     public class ConsumerManagerTests
     {
         private readonly Fixture fixture = new();
+        private readonly Mock<IDependencyResolver> dependencyResolver = new Mock<IDependencyResolver>();
 
         private ConsumerManager target;
 
@@ -22,10 +23,8 @@ namespace KafkaFlow.UnitTests.Consumer
         private Mock<IConsumerWorkerPool> workerPoolMock;
         private Mock<IWorkerPoolFeeder> feederMock;
         private Mock<ILogHandler> logHandlerMock;
-        private readonly Mock<IDependencyResolver> dependencyResolver = new Mock<IDependencyResolver>();
-
-        private Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> onPartitionAssignedHandler;
-        private Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> onPartitionRevokedHandler;
+        private Func<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>, Task> onPartitionAssignedHandler;
+        private Func<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>, Task> onPartitionRevokedHandler;
 
         [TestInitialize]
         public void Setup()
@@ -36,12 +35,12 @@ namespace KafkaFlow.UnitTests.Consumer
             this.logHandlerMock = new Mock<ILogHandler>(MockBehavior.Strict);
 
             this.consumerMock
-                .Setup(x => x.OnPartitionsAssigned(It.IsAny<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>>>()))
-                .Callback((Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> value) => this.onPartitionAssignedHandler = value);
+                .Setup(x => x.OnPartitionsAssigned(It.IsAny<Func<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>, Task>>()))
+                .Callback((Func<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>, Task> value) => this.onPartitionAssignedHandler = value);
 
             this.consumerMock
-                .Setup(x => x.OnPartitionsRevoked(It.IsAny<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>>>()))
-                .Callback((Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> value) => this.onPartitionRevokedHandler = value);
+                .Setup(x => x.OnPartitionsRevoked(It.IsAny<Func<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>, Task>>()))
+                .Callback((Func<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>, Task> value) => this.onPartitionRevokedHandler = value);
 
             this.target = new ConsumerManager(
                 this.consumerMock.Object,

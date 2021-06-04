@@ -2,6 +2,7 @@ namespace KafkaFlow.Configuration
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using Confluent.Kafka;
 
     /// <summary>
@@ -62,12 +63,12 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Gets the handlers that will be called when the partitions are assigned
         /// </summary>
-        IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> PartitionsAssignedHandlers { get; }
+        IReadOnlyList<Func<IDependencyResolver, List<TopicPartition>, Task>> PartitionsAssignedHandlers { get; }
 
         /// <summary>
         /// Gets the handlers that will be called when the partitions are revoked
         /// </summary>
-        IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
+        IReadOnlyList<Func<IDependencyResolver, List<TopicPartitionOffset>, Task>> PartitionsRevokedHandlers { get; }
 
         /// <summary>
         /// Gets the custom factory used to create a new <see cref="KafkaFlow.Consumers.IConsumer"/>

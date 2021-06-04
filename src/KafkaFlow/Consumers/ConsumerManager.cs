@@ -55,25 +55,22 @@
             this.Consumer.Dispose();
         }
 
-        private void OnPartitionRevoked(IEnumerable<TopicPartitionOffset> topicPartitions)
+        private Task OnPartitionRevoked(IEnumerable<TopicPartitionOffset> topicPartitions)
         {
             this.logHandler.Warning(
                 "Partitions revoked",
                 this.GetConsumerLogInfo(topicPartitions.Select(x => x.TopicPartition)));
 
-            this.WorkerPool.StopAsync().GetAwaiter().GetResult();
+            return this.WorkerPool.StopAsync();
         }
 
-        private void OnPartitionAssigned(IReadOnlyCollection<TopicPartition> partitions)
+        private Task OnPartitionAssigned(IReadOnlyCollection<TopicPartition> partitions)
         {
             this.logHandler.Info(
                 "Partitions assigned",
                 this.GetConsumerLogInfo(partitions));
 
-            this.WorkerPool
-                .StartAsync(partitions)
-                .GetAwaiter()
-                .GetResult();
+            return this.WorkerPool.StartAsync(partitions);
         }
 
         private object GetConsumerLogInfo(IEnumerable<TopicPartition> partitions) => new

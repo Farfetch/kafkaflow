@@ -2,6 +2,7 @@ namespace KafkaFlow.Consumers
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
@@ -12,10 +13,10 @@ namespace KafkaFlow.Consumers
         private readonly IDependencyResolver dependencyResolver;
         private readonly ILogHandler logHandler;
 
-        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>>>
+        private readonly List<Func<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>, Task>>
             partitionsAssignedHandlers = new();
 
-        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>>>
+        private readonly List<Func<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>, Task>>
             partitionsRevokedHandlers = new();
 
         private readonly List<Action<IConsumer<byte[], byte[]>, Error>> errorsHandlers = new();
@@ -60,10 +61,10 @@ namespace KafkaFlow.Consumers
 
         public string ClientInstanceName => this.consumer?.Name;
 
-        public void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler) =>
+        public void OnPartitionsAssigned(Func<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>, Task> handler) =>
             this.partitionsAssignedHandlers.Add(handler);
 
-        public void OnPartitionsRevoked(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler) =>
+        public void OnPartitionsRevoked(Func<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>, Task> handler) =>
             this.partitionsRevokedHandlers.Add(handler);
 
         public void OnError(Action<IConsumer<byte[], byte[]>, Error> handler) =>
@@ -137,10 +138,10 @@ namespace KafkaFlow.Consumers
                 consumerBuilder
                     .SetPartitionsAssignedHandler(
                         (consumer, partitions) =>
-                            this.partitionsAssignedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions)))
+                            Task.WhenAll(this.partitionsAssignedHandlers.Select(x => x(this.dependencyResolver, consumer, partitions))).GetAwaiter().GetResult())
                     .SetPartitionsRevokedHandler(
                         (consumer, partitions) =>
-                            this.partitionsRevokedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions)))
+                            Task.WhenAll(this.partitionsRevokedHandlers.Select(x => x(this.dependencyResolver, consumer, partitions))).GetAwaiter().GetResult())
                     .SetErrorHandler(
                         (consumer, error) =>
                             this.errorsHandlers.ForEach(x => x(consumer, error)))
@@ -162,7 +163,7 @@ namespace KafkaFlow.Consumers
             this.FlowManager = null;
 
             this.consumer?.Close();
-            this.consumer = null;
+            //this.consumer = null;
         }
     }
 }

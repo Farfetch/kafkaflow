@@ -2,6 +2,7 @@ namespace KafkaFlow.Configuration
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using Confluent.Kafka;
 
     internal class ConsumerConfiguration : IConsumerConfiguration
@@ -20,8 +21,8 @@ namespace KafkaFlow.Configuration
             bool autoStoreOffsets,
             TimeSpan autoCommitInterval,
             IReadOnlyList<Action<string>> statisticsHandlers,
-            IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> partitionsAssignedHandlers,
-            IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionsRevokedHandlers,
+            IReadOnlyList<Func<IDependencyResolver, List<TopicPartition>, Task>> partitionsAssignedHandlers,
+            IReadOnlyList<Func<IDependencyResolver, List<TopicPartitionOffset>, Task>> partitionsRevokedHandlers,
             ConsumerCustomFactory customFactory)
         {
             this.consumerConfig = consumerConfig ?? throw new ArgumentNullException(nameof(consumerConfig));
@@ -82,9 +83,9 @@ namespace KafkaFlow.Configuration
 
         public IReadOnlyList<Action<string>> StatisticsHandlers { get; }
 
-        public IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> PartitionsAssignedHandlers { get; }
+        public IReadOnlyList<Func<IDependencyResolver, List<TopicPartition>, Task>> PartitionsAssignedHandlers { get; }
 
-        public IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
+        public IReadOnlyList<Func<IDependencyResolver, List<TopicPartitionOffset>, Task>> PartitionsRevokedHandlers { get; }
 
         public ConsumerCustomFactory CustomFactory { get; }
 

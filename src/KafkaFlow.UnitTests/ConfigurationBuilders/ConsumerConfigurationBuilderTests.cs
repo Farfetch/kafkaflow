@@ -2,6 +2,7 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using AutoFixture;
     using Confluent.Kafka;
     using FluentAssertions;
@@ -85,8 +86,8 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             const int maxPollIntervalMs = 500000;
             ConsumerCustomFactory customFactory = (producer, _) => producer;
             Action<string> statisticsHandler = _ => { };
-            Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler = (_, _) => { };
-            Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler = (_, _) => { };
+            Func<IDependencyResolver, List<TopicPartition>, Task> partitionsAssignedHandler = (_, _) => Task.CompletedTask;
+            Func<IDependencyResolver, List<TopicPartitionOffset>, Task> partitionsRevokedHandler = (_, _) => Task.CompletedTask;
             const int statisticsIntervalMs = 100;
             var consumerConfig = new ConsumerConfig();
 

@@ -50,6 +50,11 @@
                                     .WithBufferSize(100)
                                     .WithWorkersCount(20)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                    .WithPartitionsRevokedHandler(async (resolver, list) =>
+                                    {
+                                        await Task.Delay(1000);
+                                        Console.WriteLine($"Done some async operation with the lost partitions ({string.Join(',', list)})");
+                                    })
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSerializer<ProtobufNetSerializer>()
@@ -154,6 +159,7 @@
 
                     case "exit":
                         await bus.StopAsync();
+                        Console.WriteLine("Kafka bus stopped");
                         return;
                 }
             }

@@ -4,6 +4,7 @@ namespace KafkaFlow.Configuration
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
+    using System.Threading.Tasks;
     using Confluent.Kafka;
     using KafkaFlow.Consumers.DistributionStrategies;
 
@@ -11,8 +12,8 @@ namespace KafkaFlow.Configuration
     {
         private readonly List<string> topics = new();
         private readonly List<Action<string>> statisticsHandlers = new();
-        private readonly List<Action<IDependencyResolver, List<TopicPartition>>> partitionAssignedHandlers = new();
-        private readonly List<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionRevokedHandlers = new();
+        private readonly List<Func<IDependencyResolver, List<TopicPartition>, Task>> partitionAssignedHandlers = new();
+        private readonly List<Func<IDependencyResolver, List<TopicPartitionOffset>, Task>> partitionRevokedHandlers = new();
         private readonly ConsumerMiddlewareConfigurationBuilder middlewareConfigurationBuilder;
 
         private ConsumerConfig consumerConfig;
@@ -144,13 +145,13 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public IConsumerConfigurationBuilder WithPartitionsAssignedHandler(Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler)
+        public IConsumerConfigurationBuilder WithPartitionsAssignedHandler(Func<IDependencyResolver, List<TopicPartition>, Task> partitionsAssignedHandler)
         {
             this.partitionAssignedHandlers.Add(partitionsAssignedHandler);
             return this;
         }
 
-        public IConsumerConfigurationBuilder WithPartitionsRevokedHandler(Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler)
+        public IConsumerConfigurationBuilder WithPartitionsRevokedHandler(Func<IDependencyResolver, List<TopicPartitionOffset>, Task> partitionsRevokedHandler)
         {
             this.partitionRevokedHandlers.Add(partitionsRevokedHandler);
             return this;
