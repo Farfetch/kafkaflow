@@ -5,6 +5,7 @@
         <OutputType>Library</OutputType>
         <PackageId>KafkaFlow.Admin.WebApi</PackageId>
         <Description>Allows KafkaFlow to use the Admin Web API</Description>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
