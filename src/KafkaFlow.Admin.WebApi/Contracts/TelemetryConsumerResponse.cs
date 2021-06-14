@@ -4,9 +4,9 @@ namespace KafkaFlow.Admin.WebApi.Contracts
     using KafkaFlow.Consumers;
 
     /// <summary>
-    /// The response of the consumers
+    /// The response of the telemetry consumers
     /// </summary>
-    public class ConsumerResponse
+    public class TelemetryConsumerResponse
     {
        /// <summary>
        /// Gets or sets the consumer´s name
@@ -29,31 +29,9 @@ namespace KafkaFlow.Admin.WebApi.Contracts
        public int WorkersCount { get; set; }
 
        /// <summary>
-       /// Gets or sets the current topics subscription
-       /// </summary>
-       public IEnumerable<string> Subscription { get; set; }
-
-       /// <summary>
        /// Gets or sets all the consumer partition assignments (data received from metrics events)
        /// </summary>
        public IEnumerable<PartitionAssignment> PartitionAssignments { get; set; }
-
-       /// <summary>
-       /// Gets or sets the (dynamic) group member id of this consumer (as set by the broker).
-       /// </summary>
-       public string MemberId { get; set; }
-
-       /// <summary>
-       ///     Gets or sets the name of this client instance.
-       ///     Contains (but is not equal to) the client.id configuration parameter.
-       /// </summary>
-       /// <remarks>
-       ///     This name will be unique across all client
-       ///     instances in a given application which allows
-       ///     log messages to be associated with the
-       ///     corresponding instance.
-       /// </remarks>
-       public string ClientInstanceName { get; set; }
 
        /// <summary>
        /// Gets or sets the current consumer flow status

@@ -9,6 +9,6 @@ export class CallbackPipe implements PipeTransform {
     if (!items || !callback) {
       return items;
     }
-    return items.filter(item => callback(item));
+    return items.filter((item: any) => callback(item));
   }
 }
