@@ -16,7 +16,7 @@ namespace KafkaFlow.Admin.WebApi.Contracts
         /// <summary>
         /// Gets or sets the host name
         /// </summary>
-        public string HostName { get; set; }
+        public string InstanceName { get; set; }
 
         /// <summary>
         /// Gets or sets the list of running partitions

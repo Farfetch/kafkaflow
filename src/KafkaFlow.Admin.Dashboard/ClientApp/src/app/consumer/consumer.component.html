@@ -1,7 +1,7 @@
 <ngb-alert #successAlert *ngIf="successMessage" type="success" (closed)="successMessage=''">
   <div class="text-center"><b>Success! </b> <span class="text-center">{{successMessage}}</span></div>
 </ngb-alert>
-<div class="container" *ngFor="let group of groups | callback: removeReadonly">
+<div class="container" *ngFor="let group of enrichGroups(groups) | callback: removeReadonly">
   <div class="card my-3">
     <div class="card-body">
       <h3>Group Id: {{ group.groupId }}</h3>
@@ -27,7 +27,7 @@
           <table class="table table-striped table-hover mt-1">
             <thead>
             <tr>
-              <th>Hostname - consumer instance</th>
+              <th>Consumer instance</th>
               <th>Partitions</th>
               <!--<th>Lag</th>-->
               <th>Status</th>
@@ -36,10 +36,10 @@
             </tr>
             </thead>
             <tbody>
-            <ng-template let-partitionAssignment ngFor [ngForOf]="partitionAssignments.value | sort:'hostName'">
+            <ng-template let-partitionAssignment ngFor [ngForOf]="partitionAssignments.value | sort:'instanceName'">
               <ng-template [ngIf]="partitionAssignment.pausedPartitions?.length > 0">
                 <tr>
-                  <td class="text-left">{{partitionAssignment.hostName}}</td>
+                  <td class="text-left">{{partitionAssignment.instanceName}}</td>
                   <td class="text-left">{{partitionAssignment.pausedPartitions}}</td>
                   <!--<td class="text-left">0</td>-->
                   <td class="text-left">
@@ -57,7 +57,7 @@
               </ng-template>
               <ng-template [ngIf]="partitionAssignment.runningPartitions?.length > 0">
                 <tr>
-                  <td class="text-left">{{partitionAssignment.hostName}}</td>
+                  <td class="text-left">{{partitionAssignment.instanceName}}</td>
                   <td class="text-left">{{partitionAssignment.runningPartitions}}</td>
                   <!--<td class="text-left">0</td>-->
                   <td class="text-left">

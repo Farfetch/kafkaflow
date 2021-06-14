@@ -25,40 +25,18 @@ namespace KafkaFlow.Admin
             var consumers = this.dependencyResolver
                 .Resolve<IConsumerAccessor>()
                 .All
-                .Where(c => !c.ManagementDisabled &&
-                            c.ClusterName.Equals(this.dependencyResolver
-                                .Resolve<IConsumerAccessor>()[key]
-                                .ClusterName));
+                .Where(
+                    c => !c.ManagementDisabled &&
+                         c.ClusterName.Equals(
+                             this.dependencyResolver
+                                 .Resolve<IConsumerAccessor>()[key]
+                                 .ClusterName))
+                .ToList();
 
             var producer = this.dependencyResolver.Resolve<IProducerAccessor>().GetProducer(key);
 
             this.timers[key] = new Timer(
-                _ =>
-                {
-                    producer.BatchProduceAsync(
-                            consumers.SelectMany(c => c.Assignment.Select(a =>
-                                    new BatchProduceItem(
-                                        topicName,
-                                        Guid.NewGuid(),
-                                        new ConsumerMetric()
-                                        {
-                                            ConsumerName = c.ConsumerName,
-                                            Topic = a.Topic,
-                                            GroupId = c.GroupId,
-                                            InstanceName = $"{Environment.MachineName}-{c.MemberId}",
-                                            PausedPartitions = c.PausedPartitions
-                                                .Where(p => p.Topic == a.Topic)
-                                                .Select(p => p.Partition.Value),
-                                            RunningPartitions = c.RunningPartitions
-                                                .Where(p => p.Topic == a.Topic)
-                                                .Select(p => p.Partition.Value),
-                                            SentAt = DateTime.Now,
-                                        },
-                                        null)))
-                                .ToList())
-                        .GetAwaiter()
-                        .GetResult();
-                },
+                _ => ProduceTelemetry(topicName, consumers, producer),
                 null,
                 TimeSpan.Zero,
                 TimeSpan.FromSeconds(1));
@@ -70,6 +48,34 @@ namespace KafkaFlow.Admin
             {
                 timer.Dispose();
                 this.timers.Remove(key);
+            }
+        }
+
+        private static void ProduceTelemetry(
+            string topicName,
+            IReadOnlyCollection<IMessageConsumer> consumers,
+            IMessageProducer producer)
+        {
+            var items = consumers.SelectMany(
+                c => c.Assignment.Select(
+                    a => new ConsumerMetric()
+                    {
+                        ConsumerName = c.ConsumerName,
+                        Topic = a.Topic,
+                        GroupId = c.GroupId,
+                        InstanceName = $"{Environment.MachineName}-{c.MemberId}",
+                        PausedPartitions = c.PausedPartitions
+                            .Where(p => p.Topic == a.Topic)
+                            .Select(p => p.Partition.Value),
+                        RunningPartitions = c.RunningPartitions
+                            .Where(p => p.Topic == a.Topic)
+                            .Select(p => p.Partition.Value),
+                        SentAt = DateTime.Now,
+                    }));
+
+            foreach (var item in items)
+            {
+                producer.Produce(topicName, Guid.NewGuid().ToByteArray(), item);
             }
         }
     }

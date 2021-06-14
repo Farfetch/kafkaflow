@@ -31,7 +31,6 @@ namespace KafkaFlow.Sample.Dashboard
             );
 
             services
-                .AddKafkaFlowDashboard()
                 .AddControllers();
         }
 

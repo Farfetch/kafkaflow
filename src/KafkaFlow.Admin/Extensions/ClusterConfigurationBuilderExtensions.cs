@@ -1,14 +1,10 @@
 ﻿namespace KafkaFlow
 {
     using System;
-    using System.Linq;
     using System.Reflection;
     using KafkaFlow.Admin;
     using KafkaFlow.Admin.Handlers;
-    using KafkaFlow.Admin.Messages;
     using KafkaFlow.Configuration;
-    using KafkaFlow.Consumers;
-    using KafkaFlow.Producers;
     using KafkaFlow.Serializer;
     using KafkaFlow.TypedHandler;
     using Microsoft.Extensions.Caching.Memory;
@@ -30,10 +26,8 @@
             string adminTopic,
             string adminConsumerGroup)
         {
-            cluster.DependencyConfigurator.AddSingleton<IAdminProducer, AdminProducer>();
-
-            cluster.DependencyConfigurator.AddSingleton<IMemoryCache, MemoryCache>();
-            cluster.DependencyConfigurator.AddSingleton<ITelemetryStorage, MemoryCacheTelemetryStorage>();
+            cluster.DependencyConfigurator
+                .AddSingleton<IAdminProducer, AdminProducer>();
 
             return cluster
                 .AddProducer<AdminProducer>(
@@ -80,8 +74,10 @@
             string topicName,
             string consumerGroup)
         {
-            cluster.DependencyConfigurator.AddSingleton<IMemoryCache, MemoryCache>();
-            cluster.DependencyConfigurator.AddSingleton<ITelemetryStorage, MemoryCacheTelemetryStorage>();
+            cluster.DependencyConfigurator
+                .AddSingleton<IMemoryCache, MemoryCache>()
+                .AddSingleton<ITelemetryStorage, MemoryCacheTelemetryStorage>()
+                .AddSingleton<ITelemetryScheduler, TelemetryScheduler>();
 
             var groupId = $"{consumerGroup}-{Environment.MachineName}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}";
             var name = $"telemetry-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}";
