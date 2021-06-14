@@ -2,8 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <IsPackable>false</IsPackable>    
-    <SpaRoot>AngularFiles\</SpaRoot>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,27 +12,6 @@
     <ProjectReference Include="..\..\src\KafkaFlow.LogHandler.Console\KafkaFlow.LogHandler.Console.csproj" />
     <ProjectReference Include="..\..\src\KafkaFlow.Microsoft.DependencyInjection\KafkaFlow.Microsoft.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\src\KafkaFlow\KafkaFlow.csproj" />
-  </ItemGroup>  
-
-  <Target Name="DebugNpmInstall" BeforeTargets="Build">
-    <Exec Command="node --version" ContinueOnError="true">
-      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
-    </Exec>
-    <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
-    <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
-    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="npm install" />
-  </Target>
-
-  <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
-    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="npm run build -- --prod" />
-    
-    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="if not exist $(PublishDir)$(SpaRoot)dist mkdir $(PublishDir)$(SpaRoot)dist" Condition=" '$(OS)' == 'Windows_NT' "/>
-    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="del $(PublishDir)$(SpaRoot)dist\*.* /s /q" Condition=" '$(OS)' == 'Windows_NT' "/>
-    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="move dist\dashboard\* $(PublishDir)$(SpaRoot)dist" Condition=" '$(OS)' == 'Windows_NT' "/>
-    
-    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="mkdir $(PublishDir)$(SpaRoot)dist -p" Condition=" '$(OS)' == 'Unix' "/>
-    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="rm $(PublishDir)$(SpaRoot)dist/* -rf" Condition=" '$(OS)' == 'Unix' "/>
-    <Exec WorkingDirectory="$(OutDir)$(SpaRoot)" Command="mv dist/dashboard/* $(PublishDir)$(SpaRoot)dist" Condition=" '$(OS)' == 'Unix' "/>
-  </Target>
+  </ItemGroup>
 
 </Project>

@@ -5,12 +5,9 @@ namespace KafkaFlow.Sample.Dashboard
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
-    
+
     public class Startup
     {
-
-        public IKafkaBus bus { get; set; }
-        
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -44,13 +41,11 @@ namespace KafkaFlow.Sample.Dashboard
             app
                 .UseRouting()
                 .UseEndpoints(endpoints => { endpoints.MapControllers(); })
-                .UseKafkaFlowDashboard(env);
+                .UseKafkaFlowDashboard();
 
-            lifetime.ApplicationStarted.Register(() =>
-            {
-                bus = app.ApplicationServices.CreateKafkaBus();
-                bus.StartAsync(lifetime.ApplicationStopped);
-            });
+            var kafkaBus = app.ApplicationServices.CreateKafkaBus();
+
+            lifetime.ApplicationStarted.Register(() => kafkaBus.StartAsync(lifetime.ApplicationStopped));
         }
     }
 }

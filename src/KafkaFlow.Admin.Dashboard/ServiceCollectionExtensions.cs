@@ -1,6 +1,5 @@
 namespace KafkaFlow.Admin.Dashboard
 {
-    using System.Text.Json.Serialization;
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
@@ -15,21 +14,8 @@ namespace KafkaFlow.Admin.Dashboard
         /// <returns></returns>
         public static IServiceCollection AddKafkaFlowDashboard(this IServiceCollection services)
         {
-            // In production, the Angular files will be served from this directory
-            services.AddSpaStaticFiles(configuration =>
-            {
-                configuration.RootPath = "AngularFiles/dist";
-            });
-
-            services
-                .AddControllers()
-                .AddJsonOptions(options =>
-                {
-                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                    options.JsonSerializerOptions.IgnoreNullValues = true;
-                });
-
-            return services;
+            return services
+                .AddSingleton<ServeClientFilesMiddleware>();
         }
     }
 }
