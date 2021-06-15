@@ -4,11 +4,10 @@
   "scripts": {
     "ng": "ng",
     "start": "echo Starting... && ng serve",
-    "build": "ng build",
-    "build-prod": "ng build --configuration=production --base-href /kafka-flow/",
+    "build": "ng build --base-href /kafka-flow/",
+    "build:prod": "ng build --configuration=production --base-href /kafka-flow/",
     "test": "ng test",
-    "lint": "ng lint",
-    "e2e": "ng e2e"
+    "lint": "ng lint"
   },
   "private": true,
   "dependencies": {
