@@ -1,7 +1,6 @@
 namespace KafkaFlow.Admin.WebApi.Contracts
 {
     using System.Collections.Generic;
-    using KafkaFlow.Consumers;
 
     /// <summary>
     /// The response of the consumers
@@ -32,11 +31,6 @@ namespace KafkaFlow.Admin.WebApi.Contracts
        /// Gets or sets the current topics subscription
        /// </summary>
        public IEnumerable<string> Subscription { get; set; }
-
-       /// <summary>
-       /// Gets or sets all the consumer partition assignments (data received from metrics events)
-       /// </summary>
-       public IEnumerable<PartitionAssignment> PartitionAssignments { get; set; }
 
        /// <summary>
        /// Gets or sets the (dynamic) group member id of this consumer (as set by the broker).

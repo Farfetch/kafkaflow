@@ -31,7 +31,7 @@ namespace KafkaFlow.Consumers
 
         public IReadOnlyList<TopicPartition> Assignment => this.consumerManager.Consumer.Assignment ?? new List<TopicPartition>();
 
-        public ConsumerFlowStatus? FlowStatus => this.consumerManager.Consumer.FlowManager?.Status;
+        public ConsumerStatus? FlowStatus => this.consumerManager.Consumer.FlowManager?.Status;
 
         public string MemberId => this.consumerManager.Consumer.MemberId;
 

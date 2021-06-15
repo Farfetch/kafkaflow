@@ -11,17 +11,13 @@ namespace KafkaFlow.Admin
         /// <summary>
         /// Gets the stored metric indexed with the parameters provided
         /// </summary>
-        /// <param name="groupId">The group id</param>
-        /// <param name="consumerName">The consumer name</param>
         /// <returns>The list of consumer metrics stored in the cache</returns>
-        List<ConsumerMetric> Get(string groupId, string consumerName);
+        IReadOnlyCollection<ConsumerMetric> Get();
 
         /// <summary>
         /// Store the metric provided
         /// </summary>
-        /// <param name="groupId">The group id</param>
-        /// <param name="consumerName">The consumer name</param>
         /// <param name="metric">The consumer metric</param>
-        void Put(string groupId, string consumerName, ConsumerMetric metric);
+        void Put(ConsumerMetric metric);
     }
 }

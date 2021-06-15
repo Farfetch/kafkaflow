@@ -26,18 +26,18 @@ namespace KafkaFlow.Consumers
 
         public IEnumerable<TopicPartition> PausedPartitions => this.pausedPartitions.AsReadOnly();
 
-        public ConsumerFlowStatus Status
+        public ConsumerStatus Status
         {
             get
             {
                 if (this.pausedPartitions.Count == 0)
                 {
-                    return ConsumerFlowStatus.Running;
+                    return ConsumerStatus.Running;
                 }
 
                 return this.pausedPartitions.Count == this.consumer.Assignment.Count ?
-                    ConsumerFlowStatus.Paused :
-                    ConsumerFlowStatus.PartiallyRunning;
+                    ConsumerStatus.Paused :
+                    ConsumerStatus.PartiallyRunning;
             }
         }
 
@@ -55,7 +55,7 @@ namespace KafkaFlow.Consumers
                 this.consumer.Pause(topicPartitions);
                 this.pausedPartitions.AddRange(topicPartitions);
 
-                if (this.Status != ConsumerFlowStatus.Paused)
+                if (this.Status != ConsumerStatus.Paused)
                 {
                     return;
                 }
@@ -107,7 +107,7 @@ namespace KafkaFlow.Consumers
                     this.pausedPartitions.Remove(topicPartition);
                 }
 
-                if (this.Status == ConsumerFlowStatus.Paused)
+                if (this.Status == ConsumerStatus.Paused)
                 {
                     return;
                 }
