@@ -7,7 +7,6 @@
     using KafkaFlow.Configuration;
     using KafkaFlow.Serializer;
     using KafkaFlow.TypedHandler;
-    using Microsoft.Extensions.Caching.Memory;
 
     /// <summary>
     /// No needed
@@ -75,8 +74,13 @@
             string consumerGroup)
         {
             cluster.DependencyConfigurator
-                .AddSingleton<ITelemetryStorage, MemoryTelemetryStorage>()
-                .AddSingleton<ITelemetryScheduler, TelemetryScheduler>();
+                .AddSingleton<ITelemetryScheduler, TelemetryScheduler>()
+                .AddSingleton<ITelemetryStorage>(
+                    resolver =>
+                        new MemoryTelemetryStorage(
+                            TimeSpan.FromMinutes(10),
+                            TimeSpan.FromHours(6),
+                            resolver.Resolve<IDateTimeProvider>()));
 
             var groupId = $"{consumerGroup}-{Environment.MachineName}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}";
             var telemetryId = $"telemetry-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}";

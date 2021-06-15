@@ -12,7 +12,7 @@ namespace KafkaFlow.Admin
         /// Gets the stored metric indexed with the parameters provided
         /// </summary>
         /// <returns>The list of consumer metrics stored in the cache</returns>
-        IReadOnlyCollection<ConsumerMetric> Get();
+        IEnumerable<ConsumerMetric> Get();
 
         /// <summary>
         /// Store the metric provided
