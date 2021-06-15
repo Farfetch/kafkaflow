@@ -34,6 +34,7 @@ namespace KafkaFlow.Configuration
 
             this.dependencyConfigurator
                 .AddTransient(typeof(ILogHandler), this.logHandlerType)
+                .AddSingleton<IDateTimeProvider, DateTimeProvider>()
                 .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
                 .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory());
 
