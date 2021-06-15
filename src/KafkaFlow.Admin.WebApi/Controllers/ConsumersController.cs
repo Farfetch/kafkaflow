@@ -18,19 +18,16 @@ namespace KafkaFlow.Admin.WebApi.Controllers
     {
         private readonly IConsumerAccessor consumers;
         private readonly IAdminProducer adminProducer;
-        private readonly ITelemetryStorage storage;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsumersController"/> class.
         /// </summary>
         /// <param name="consumers">The accessor class that provides access to the consumers</param>
         /// <param name="adminProducer">The producer to publish admin messages</param>
-        /// <param name="storage">The cache interface to get metric data</param>
-        public ConsumersController(IConsumerAccessor consumers, IAdminProducer adminProducer, ITelemetryStorage storage)
+        public ConsumersController(IConsumerAccessor consumers, IAdminProducer adminProducer)
         {
             this.consumers = consumers;
             this.adminProducer = adminProducer;
-            this.storage = storage;
         }
 
         /// <summary>
@@ -46,7 +43,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 this.consumers
                     .All
                     .Where(x => x.GroupId == groupId)
-                    .Select(x=> x.Adapt(this.storage)));
+                    .Select(x => x.Adapt()));
         }
 
         /// <summary>
@@ -71,7 +68,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            return this.Ok(consumer.Adapt(this.storage));
+            return this.Ok(consumer.Adapt());
         }
 
         /// <summary>

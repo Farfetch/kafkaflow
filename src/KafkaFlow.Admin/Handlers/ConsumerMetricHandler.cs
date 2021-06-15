@@ -12,7 +12,7 @@ namespace KafkaFlow.Admin.Handlers
 
         public Task Handle(IMessageContext context, ConsumerMetric message)
         {
-            this.storage.Put(message.GroupId, message.ConsumerName, message);
+            this.storage.Put(message);
             return Task.CompletedTask;
         }
     }

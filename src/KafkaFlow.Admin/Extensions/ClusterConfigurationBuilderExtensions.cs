@@ -75,16 +75,15 @@
             string consumerGroup)
         {
             cluster.DependencyConfigurator
-                .AddSingleton<IMemoryCache, MemoryCache>()
-                .AddSingleton<ITelemetryStorage, MemoryCacheTelemetryStorage>()
+                .AddSingleton<ITelemetryStorage, MemoryTelemetryStorage>()
                 .AddSingleton<ITelemetryScheduler, TelemetryScheduler>();
 
             var groupId = $"{consumerGroup}-{Environment.MachineName}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}";
-            var name = $"telemetry-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}";
+            var telemetryId = $"telemetry-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}";
 
             return cluster
                 .AddProducer(
-                    name,
+                    telemetryId,
                     producer => producer
                         .DefaultTopic(topicName)
                         .AddMiddlewares(
@@ -93,7 +92,7 @@
                 .AddConsumer(
                     consumer => consumer
                         .Topic(topicName)
-                        .WithName(name)
+                        .WithName(telemetryId)
                         .WithGroupId(groupId)
                         .WithWorkersCount(1)
                         .DisableManagement()
@@ -106,8 +105,8 @@
                                     handlers => handlers
                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
                                         .AddHandlersFromAssemblyOf<ConsumerMetricHandler>())))
-                .OnStarted(resolver => resolver.Resolve<ITelemetryScheduler>().Start(name, topicName))
-                .OnStopping(resolver => resolver.Resolve<ITelemetryScheduler>().Stop(name));
+                .OnStarted(resolver => resolver.Resolve<ITelemetryScheduler>().Start(telemetryId, topicName))
+                .OnStopping(resolver => resolver.Resolve<ITelemetryScheduler>().Stop(telemetryId));
         }
 
         /// <inheritdoc cref="EnableTelemetry(KafkaFlow.Configuration.IClusterConfigurationBuilder,string,string)"/>

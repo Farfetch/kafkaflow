@@ -18,9 +18,9 @@ namespace KafkaFlow.Admin
             this.dependencyResolver = dependencyResolver;
         }
 
-        public void Start(string key, string topicName)
+        public void Start(string telemetryId, string topicName)
         {
-            this.Stop(key);
+            this.Stop(telemetryId);
 
             var consumers = this.dependencyResolver
                 .Resolve<IConsumerAccessor>()
@@ -29,25 +29,25 @@ namespace KafkaFlow.Admin
                     c => !c.ManagementDisabled &&
                          c.ClusterName.Equals(
                              this.dependencyResolver
-                                 .Resolve<IConsumerAccessor>()[key]
+                                 .Resolve<IConsumerAccessor>()[telemetryId]
                                  .ClusterName))
                 .ToList();
 
-            var producer = this.dependencyResolver.Resolve<IProducerAccessor>().GetProducer(key);
+            var producer = this.dependencyResolver.Resolve<IProducerAccessor>().GetProducer(telemetryId);
 
-            this.timers[key] = new Timer(
+            this.timers[telemetryId] = new Timer(
                 _ => ProduceTelemetry(topicName, consumers, producer),
                 null,
                 TimeSpan.Zero,
                 TimeSpan.FromSeconds(1));
         }
 
-        public void Stop(string key)
+        public void Stop(string telemetryId)
         {
-            if (this.timers.TryGetValue(key, out var timer))
+            if (this.timers.TryGetValue(telemetryId, out var timer))
             {
                 timer.Dispose();
-                this.timers.Remove(key);
+                this.timers.Remove(telemetryId);
             }
         }
 

@@ -1,9 +1,9 @@
 namespace KafkaFlow.Consumers
 {
     /// <summary>
-    /// An enum with all consumer flow status
+    /// An enum with all consumer status
     /// </summary>
-    public enum ConsumerFlowStatus
+    public enum ConsumerStatus
     {
         /// <summary>
         /// When the consumer is not running

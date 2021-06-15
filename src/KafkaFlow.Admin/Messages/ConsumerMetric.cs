@@ -3,6 +3,7 @@ namespace KafkaFlow.Admin.Messages
     using System;
     using System.Collections.Generic;
     using System.Runtime.Serialization;
+    using KafkaFlow.Consumers;
 
     /// <summary>
     /// A message that contains data related to consumers partition assigment
@@ -51,5 +52,17 @@ namespace KafkaFlow.Admin.Messages
         /// </summary>
         [DataMember(Order = 7)]
         public DateTime SentAt { get; set; }
+
+        /// <summary>
+        /// Gets or sets the consumer workers count
+        /// </summary>
+        [DataMember(Order = 8)]
+        public int WorkersCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the consumer status
+        /// </summary>
+        [DataMember(Order = 9)]
+        public ConsumerStatus Status { get; set; }
     }
 }
