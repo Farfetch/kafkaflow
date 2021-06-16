@@ -12,7 +12,6 @@ import { HttpErrorInterceptor } from './http-error.interceptor';
 import { GroupByPipe } from './group-by.pipe';
 import { SortPipe } from './sort.pipe';
 
-import { ConsumerService } from './consumer.service';
 import { HttpClientModule, HTTP_INTERCEPTORS  } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { RewindModalComponent } from './consumer/shared/rewind-modal/rewind-modal.component';
@@ -21,6 +20,9 @@ import { ResetModalComponent } from './consumer/shared/reset-modal/reset-modal.c
 import { PauseModalComponent } from './consumer/shared/pause-modal/pause-modal.component';
 import { RestartModalComponent } from './consumer/shared/restart-modal/restart-modal.component';
 import { ResumeModalComponent } from './consumer/shared/resume-modal/resume-modal.component';
+import {ApiModule} from './api/api.module';
+import {ConsumersService} from './api/services/consumers.service';
+import {TelemetryService} from './api/services/telemetry.service';
 
 const maskConfig: Partial<IConfig> = {
   validation: false,
@@ -50,12 +52,19 @@ const appRoutes: Routes = [
     RouterModule.forRoot(appRoutes),
     HttpClientModule,
     FormsModule,
+    ApiModule.forRoot({ rootUrl: '' }),
     NgbModule,
     NgxMaskModule.forRoot(maskConfig)
   ],
   exports: [RouterModule],
   providers: [
-    ConsumerService,
+    ConsumersService,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: HttpErrorInterceptor,
+      multi: true
+    },
+    TelemetryService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpErrorInterceptor,

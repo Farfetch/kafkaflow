@@ -6,12 +6,12 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class GroupByPipe implements PipeTransform {
   transform(collection: any[], property: string): any[] {
     // prevents the application from breaking if the array of objects doesn't exist yet
-    if(!collection) {
+    if (!collection) {
       return null as any;
     }
 
-    const groupedCollection = collection.reduce((previous, current)=> {
-      if(!previous[current[property]]) {
+    const groupedCollection = collection.reduce((previous, current) => {
+      if (! previous[current[property]]) {
         previous[current[property]] = [current];
       } else {
         previous[current[property]].push(current);

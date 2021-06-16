@@ -34,7 +34,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// Get all the consumer groups
         /// </summary>
         /// <returns>A list of consumer groups</returns>
-        [HttpGet]
+        [HttpGet(Name="GetAllGroups")]
         [ProducesResponseType(typeof(GroupsResponse), 200)]
         public IActionResult Get()
         {
@@ -58,7 +58,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="groupId">Identifier of the group</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{groupId}/pause")]
+        [Route("{groupId}/pause", Name="PauseGroup")]
         [ProducesResponseType(202)]
         public async Task<IActionResult> Pause([FromRoute] string groupId)
         {
@@ -77,7 +77,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="groupId">Identifier of the group</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{groupId}/resume")]
+        [Route("{groupId}/resume", Name="ResumeGroup")]
         [ProducesResponseType(202)]
         public async Task<IActionResult> Resume([FromRoute] string groupId)
         {

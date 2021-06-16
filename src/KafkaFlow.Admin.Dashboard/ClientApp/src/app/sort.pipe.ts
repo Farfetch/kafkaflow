@@ -1,12 +1,12 @@
-import { Pipe, PipeTransform } from "@angular/core";
+import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: "sort"
+  name: 'sort'
 })
 export class SortPipe  implements PipeTransform {
-  transform(array: any, field: string, order: string = "asc"): any[] {
+  transform(array: any, field: string, order: string = 'asc'): any[] {
     order = order.toLowerCase();
-    if(order!= "asc" && order!= "desc") {
+    if (order !== 'asc' && order !== 'desc') {
       return array;
     }
     if (!Array.isArray(array)) {
@@ -14,9 +14,9 @@ export class SortPipe  implements PipeTransform {
     }
     array.sort((a: any, b: any) => {
       if (a[field] < b[field]) {
-        return (order == "asc")? -1 : 1;
+        return (order === 'asc') ? -1 : 1;
       } else if (a[field] > b[field]) {
-        return (order == "asc")? 1 : -1;
+        return (order === 'asc') ? 1 : -1;
       } else {
         return 0;
       }

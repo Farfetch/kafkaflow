@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -17,7 +17,7 @@ export class WorkersCountModalComponent implements OnInit {
     this.oldWorkersCount = this.workersCount;
   }
 
-  save() {
+  save = () => {
     this.activeModal.close(this.workersCount);
   }
 }

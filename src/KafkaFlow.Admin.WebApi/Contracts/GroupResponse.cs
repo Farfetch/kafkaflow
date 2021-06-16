@@ -1,7 +1,9 @@
 namespace KafkaFlow.Admin.WebApi.Contracts
 {
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using KafkaFlow.Consumers;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// The response of the consumer group
@@ -11,6 +13,8 @@ namespace KafkaFlow.Admin.WebApi.Contracts
         /// <summary>
         /// Gets or sets the consumer group id
         /// </summary>
+        [Required]
+        [JsonProperty(Required = Required.DisallowNull)]
         public string GroupId { get; set; }
 
         /// <summary>
