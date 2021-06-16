@@ -60,6 +60,26 @@ namespace KafkaFlow.Consumers
 
         public string ClientInstanceName => this.consumer?.Name;
 
+        public ConsumerStatus Status
+        {
+            get
+            {
+                if (this.FlowManager is null || this.Assignment.Count == 0)
+                {
+                    return ConsumerStatus.Stopped;
+                }
+
+                if (this.FlowManager.PausedPartitions.Count == 0)
+                {
+                    return ConsumerStatus.Running;
+                }
+
+                return this.FlowManager.PausedPartitions.Count == this.consumer.Assignment.Count ?
+                    ConsumerStatus.Paused :
+                    ConsumerStatus.PartiallyRunning;
+            }
+        }
+
         public void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler) =>
             this.partitionsAssignedHandlers.Add(handler);
 
@@ -152,6 +172,7 @@ namespace KafkaFlow.Consumers
             this.consumer.Subscribe(this.Configuration.Topics);
 
             this.FlowManager = new ConsumerFlowManager(
+                this,
                 this.consumer,
                 this.logHandler);
         }

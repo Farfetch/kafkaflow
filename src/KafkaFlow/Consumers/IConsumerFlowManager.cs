@@ -10,14 +10,9 @@ namespace KafkaFlow.Consumers
     public interface IConsumerFlowManager : IDisposable
     {
         /// <summary>
-        /// Gets the current consumer status
-        /// </summary>
-        ConsumerStatus Status { get; }
-
-        /// <summary>
         /// Gets a list of the consumer paused partitions
         /// </summary>
-        IEnumerable<TopicPartition> PausedPartitions { get; }
+        IReadOnlyList<TopicPartition> PausedPartitions { get; }
 
         /// <summary>
         /// Pauses a set of partitions
