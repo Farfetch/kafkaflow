@@ -6,9 +6,9 @@ namespace KafkaFlow.Consumers
     public enum ConsumerStatus
     {
         /// <summary>
-        /// When the consumer is not running
+        /// When the consumer is stopped
         /// </summary>
-        NotRunning,
+        Stopped,
 
         /// <summary>
         /// When all consumer partitions are running

@@ -35,6 +35,11 @@ namespace KafkaFlow.Consumers
         string ClientInstanceName { get; }
 
         /// <summary>
+        /// Gets the current consumer status
+        /// </summary>
+        ConsumerStatus Status { get; }
+
+        /// <summary>
         /// Register a handler to be executed when the partitions are assigned
         /// </summary>
         /// <param name="handler">The handler that will be executed</param>

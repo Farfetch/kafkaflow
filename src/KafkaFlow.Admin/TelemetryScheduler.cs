@@ -71,7 +71,7 @@ namespace KafkaFlow.Admin
                             .Where(p => p.Topic == a.Topic)
                             .Select(p => p.Partition.Value),
                         WorkersCount = c.WorkersCount,
-                        Status = c.FlowStatus.GetValueOrDefault(),
+                        Status = c.Status,
                         SentAt = DateTime.Now,
                     }));
 

@@ -8,6 +8,8 @@ namespace KafkaFlow.Consumers
 
     internal class MessageConsumer : IMessageConsumer
     {
+        private static readonly IReadOnlyList<TopicPartition> EmptyTopicPartition = new List<TopicPartition>().AsReadOnly();
+
         private readonly IConsumerManager consumerManager;
         private readonly ILogHandler logHandler;
 
@@ -29,9 +31,9 @@ namespace KafkaFlow.Consumers
 
         public IReadOnlyList<string> Subscription => this.consumerManager.Consumer.Subscription;
 
-        public IReadOnlyList<TopicPartition> Assignment => this.consumerManager.Consumer.Assignment ?? new List<TopicPartition>();
+        public IReadOnlyList<TopicPartition> Assignment => this.consumerManager.Consumer.Assignment ?? EmptyTopicPartition;
 
-        public ConsumerStatus? FlowStatus => this.consumerManager.Consumer.FlowManager?.Status;
+        public ConsumerStatus Status => this.consumerManager.Consumer.Status;
 
         public string MemberId => this.consumerManager.Consumer.MemberId;
 
@@ -39,7 +41,9 @@ namespace KafkaFlow.Consumers
 
         public int WorkersCount => this.consumerManager.Consumer.Configuration.WorkersCount;
 
-        public IEnumerable<TopicPartition> PausedPartitions => this.consumerManager.Consumer.FlowManager?.PausedPartitions ?? Enumerable.Empty<TopicPartition>();
+        public IReadOnlyList<TopicPartition> PausedPartitions =>
+            this.consumerManager.Consumer.FlowManager?.PausedPartitions ??
+            EmptyTopicPartition;
 
         public IEnumerable<TopicPartition> RunningPartitions => this.Assignment.Except(this.PausedPartitions);
 
