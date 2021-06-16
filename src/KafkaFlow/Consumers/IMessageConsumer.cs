@@ -65,14 +65,14 @@ namespace KafkaFlow.Consumers
         string ClientInstanceName { get; }
 
         /// <summary>
-        /// Gets the current consumer flow status
+        /// Gets the current consumer status
         /// </summary>
-        ConsumerStatus? FlowStatus { get; }
+        ConsumerStatus Status { get; }
 
         /// <summary>
         /// Gets the consumer's paused partitions
         /// </summary>
-        IEnumerable<TopicPartition> PausedPartitions { get; }
+        IReadOnlyList<TopicPartition> PausedPartitions { get; }
 
         /// <summary>
         /// Gets the consumer's running partitions

@@ -14,7 +14,7 @@ namespace KafkaFlow.Admin.WebApi.Adapters
                 Subscription = consumer.Subscription,
                 ConsumerName = consumer.ConsumerName,
                 GroupId = consumer.GroupId,
-                Status = consumer.FlowStatus?.ToString() ?? ConsumerStatus.NotRunning.ToString(),
+                Status = consumer.Status.ToString(),
                 MemberId = consumer.MemberId,
                 WorkersCount = consumer.WorkersCount,
                 ClientInstanceName = consumer.ClientInstanceName,
