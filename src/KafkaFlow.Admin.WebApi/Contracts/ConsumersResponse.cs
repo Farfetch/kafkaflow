@@ -1,18 +1,12 @@
 namespace KafkaFlow.Admin.WebApi.Contracts
 {
     using System.Collections.Generic;
-    using KafkaFlow.Consumers;
 
     /// <summary>
-    /// The response of the consumer group
+    /// The response of the consumers
     /// </summary>
-    public class GroupResponse
+    public class ConsumersResponse
     {
-        /// <summary>
-        /// Gets or sets the consumer group id
-        /// </summary>
-        public string GroupId { get; set; }
-
         /// <summary>
         /// Gets or sets the consumers collection
         /// </summary>

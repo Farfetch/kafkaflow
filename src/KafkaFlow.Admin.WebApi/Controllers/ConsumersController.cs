@@ -36,18 +36,21 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="groupId">Identifier of the group</param>
         /// <returns>A list of consumers</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<ConsumerResponse>), 200)]
+        [ProducesResponseType(typeof(ConsumersResponse), 200)]
         public IActionResult Get([FromRoute] string groupId)
         {
             return this.Ok(
-                this.consumers
-                    .All
-                    .Where(x => x.GroupId == groupId)
-                    .Select(x => x.Adapt()));
+                new ConsumersResponse
+                {
+                    Consumers = this.consumers
+                        .All
+                        .Where(x => x.GroupId == groupId)
+                        .Select(x => x.Adapt()),
+                });
         }
 
         /// <summary>
-        /// Get the consumers based on the provided filters
+        /// Get the consumer based on the provided filters
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
@@ -72,7 +75,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         }
 
         /// <summary>
-        /// Pause the consumers based on the provided filters
+        /// Pause the consumer based on the provided filters
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
@@ -103,7 +106,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         }
 
         /// <summary>
-        /// Resume the consumers based on the provided filters
+        /// Resume the consumer based on the provided filters
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
@@ -134,7 +137,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         }
 
         /// <summary>
-        /// Restart the consumers based on the provided filters
+        /// Restart the consumer based on the provided filters
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
@@ -165,7 +168,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         }
 
         /// <summary>
-        /// Reset the consumers partitions offset
+        /// Reset the consumer partitions offset
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
@@ -204,7 +207,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         }
 
         /// <summary>
-        /// Rewind the consumers partitions offset to a point in time
+        /// Rewind the consumer partitions offset to a point in time
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
@@ -244,7 +247,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         }
 
         /// <summary>
-        /// Change the number of workers running in the consumers
+        /// Change the number of workers running in the consumer
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>

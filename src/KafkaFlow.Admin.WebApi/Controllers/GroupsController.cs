@@ -35,18 +35,21 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// </summary>
         /// <returns>A list of consumer groups</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<GroupResponse>), 200)]
+        [ProducesResponseType(typeof(GroupsResponse), 200)]
         public IActionResult Get()
         {
             return this.Ok(
-                this.consumers.All
-                    .GroupBy(x => x.GroupId)
-                    .Select(
-                        x => new GroupResponse
-                        {
-                            GroupId = x.First().GroupId,
-                            Consumers = x.Select(y => y.Adapt()),
-                        }));
+                new GroupsResponse
+                {
+                    Groups = this.consumers.All
+                        .GroupBy(x => x.GroupId)
+                        .Select(
+                            x => new GroupResponse
+                            {
+                                GroupId = x.First().GroupId,
+                                Consumers = x.Select(y => y.Adapt()),
+                            }),
+                });
         }
 
         /// <summary>

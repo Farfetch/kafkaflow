@@ -4,14 +4,14 @@ namespace KafkaFlow.Admin.WebApi.Contracts
     using System.Collections.Generic;
 
     /// <summary>
-    /// The response of the telemetry consumer groups
+    /// The response of telemetry data
     /// </summary>
     public class TelemetryResponse
     {
         public IEnumerable<ConsumerGroup> Groups { get; set; }
 
         /// <summary>
-        /// The response of the telemetry consumer group response
+        /// The response of the consumer group
         /// </summary>
         public class ConsumerGroup
         {
@@ -27,7 +27,7 @@ namespace KafkaFlow.Admin.WebApi.Contracts
         }
 
         /// <summary>
-        /// The response of the telemetry consumer response
+        /// The response of the consumer
         /// </summary>
         public class Consumer
         {
@@ -42,13 +42,13 @@ namespace KafkaFlow.Admin.WebApi.Contracts
             public int WorkersCount { get; set; }
 
             /// <summary>
-            /// Gets or sets all the consumer partition assignments (data received from metrics events)
+            /// Gets or sets all the consumer partition assignments
             /// </summary>
             public IEnumerable<TopicPartitionAssignment> Assignments { get; set; }
         }
 
         /// <summary>
-        /// The response of the telemetry partition consumer response
+        /// The response of the topic partition consumer assignment
         /// </summary>
         public class TopicPartitionAssignment
         {
