@@ -14,7 +14,7 @@ namespace KafkaFlow.Admin
         private readonly TimeSpan expiryTime;
         private readonly object cleanSyncRoot = new();
 
-        private readonly ConcurrentDictionary<(string, string, string), ConsumerMetric> metrics = new();
+        private readonly ConcurrentDictionary<(string, string, string), ConsumerTelemetryMetric> metrics = new();
 
         private DateTime lastCleanDate;
 
@@ -26,17 +26,17 @@ namespace KafkaFlow.Admin
             this.lastCleanDate = dateTimeProvider.MinValue;
         }
 
-        public IEnumerable<ConsumerMetric> Get() => this.metrics.Values;
+        public IEnumerable<ConsumerTelemetryMetric> Get() => this.metrics.Values;
 
-        public void Put(ConsumerMetric metric)
+        public void Put(ConsumerTelemetryMetric telemetryMetric)
         {
             this.TryCleanItems();
-            this.metrics[BuildKey(metric)] = metric;
+            this.metrics[BuildKey(telemetryMetric)] = telemetryMetric;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static (string, string, string) BuildKey(ConsumerMetric metric) =>
-            (metric.InstanceName, metric.GroupId, metric.ConsumerName);
+        private static (string, string, string) BuildKey(ConsumerTelemetryMetric telemetryMetric) =>
+            (telemetryMetric.InstanceName, telemetryMetric.GroupId, telemetryMetric.ConsumerName);
 
         private void TryCleanItems()
         {

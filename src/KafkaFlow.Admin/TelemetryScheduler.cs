@@ -53,12 +53,12 @@ namespace KafkaFlow.Admin
 
         private static void ProduceTelemetry(
             string topicName,
-            IReadOnlyCollection<IMessageConsumer> consumers,
+            IList<IMessageConsumer> consumers,
             IMessageProducer producer)
         {
             var items = consumers.SelectMany(
                 c => c.Assignment.Select(
-                    a => new ConsumerMetric()
+                    a => new ConsumerTelemetryMetric()
                     {
                         ConsumerName = c.ConsumerName,
                         Topic = a.Topic,
@@ -70,6 +70,8 @@ namespace KafkaFlow.Admin
                         RunningPartitions = c.RunningPartitions
                             .Where(p => p.Topic == a.Topic)
                             .Select(p => p.Partition.Value),
+                        WorkersCount = c.WorkersCount,
+                        Status = c.FlowStatus.GetValueOrDefault(),
                         SentAt = DateTime.Now,
                     }));
 

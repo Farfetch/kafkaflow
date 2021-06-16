@@ -9,7 +9,7 @@ namespace KafkaFlow.Admin.Messages
     /// A message that contains data related to consumers partition assigment
     /// </summary>
     [DataContract]
-    public class ConsumerMetric
+    public class ConsumerTelemetryMetric
     {
         /// <summary>
         /// Gets or sets the consumer group id

@@ -108,7 +108,7 @@
                                 .AddTypedHandlers(
                                     handlers => handlers
                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                        .AddHandlersFromAssemblyOf<ConsumerMetricHandler>())))
+                                        .AddHandlersFromAssemblyOf<ConsumerTelemetryMetricHandler>())))
                 .OnStarted(resolver => resolver.Resolve<ITelemetryScheduler>().Start(telemetryId, topicName))
                 .OnStopping(resolver => resolver.Resolve<ITelemetryScheduler>().Stop(telemetryId));
         }

@@ -24,7 +24,6 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// </summary>
         /// <param name="consumers">The accessor class that provides access to the consumers</param>
         /// <param name="adminProducer">The producer to publish admin messages</param>
-        /// <param name="storage">The cache interface to get metric data</param>
         public GroupsController(IConsumerAccessor consumers, IAdminProducer adminProducer)
         {
             this.consumers = consumers;

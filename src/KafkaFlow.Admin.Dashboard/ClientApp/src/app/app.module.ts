@@ -2,7 +2,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { NgxMaskModule, IConfig } from 'ngx-mask'
+import { NgxMaskModule, IConfig } from 'ngx-mask';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -11,17 +11,16 @@ import { ConsumerComponent } from './consumer/consumer.component';
 import { HttpErrorInterceptor } from './http-error.interceptor';
 import { GroupByPipe } from './group-by.pipe';
 import { SortPipe } from './sort.pipe';
-import { CallbackPipe } from './callback.pipe';
 
 import { ConsumerService } from './consumer.service';
 import { HttpClientModule, HTTP_INTERCEPTORS  } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { RewindModalComponent } from './shared/rewind-modal/rewind-modal.component';
-import { WorkersCountModalComponent } from './shared/workers-count-modal/workers-count-modal.component';
-import { ResetModalComponent } from './shared/reset-modal/reset-modal.component';
-import { PauseModalComponent } from './shared/pause-modal/pause-modal.component';
-import { RestartModalComponent } from './shared/restart-modal/restart-modal.component';
-import { ResumeModalComponent } from './shared/resume-modal/resume-modal.component';
+import { RewindModalComponent } from './consumer/shared/rewind-modal/rewind-modal.component';
+import { WorkersCountModalComponent } from './consumer/shared/workers-count-modal/workers-count-modal.component';
+import { ResetModalComponent } from './consumer/shared/reset-modal/reset-modal.component';
+import { PauseModalComponent } from './consumer/shared/pause-modal/pause-modal.component';
+import { RestartModalComponent } from './consumer/shared/restart-modal/restart-modal.component';
+import { ResumeModalComponent } from './consumer/shared/resume-modal/resume-modal.component';
 
 const maskConfig: Partial<IConfig> = {
   validation: false,
@@ -36,7 +35,6 @@ const appRoutes: Routes = [
     AppComponent,
     GroupByPipe,
     SortPipe,
-    CallbackPipe,
     HomeComponent,
     ConsumerComponent,
     RewindModalComponent,
