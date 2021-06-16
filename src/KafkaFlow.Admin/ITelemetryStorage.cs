@@ -9,15 +9,15 @@ namespace KafkaFlow.Admin
     public interface ITelemetryStorage
     {
         /// <summary>
-        /// Gets the stored metric indexed with the parameters provided
+        /// Gets all the consumer telemetry metrics
         /// </summary>
-        /// <returns>The list of consumer metrics stored in the cache</returns>
-        IEnumerable<ConsumerMetric> Get();
+        /// <returns>The list of consumer metrics</returns>
+        IEnumerable<ConsumerTelemetryMetric> Get();
 
         /// <summary>
         /// Store the metric provided
         /// </summary>
-        /// <param name="metric">The consumer metric</param>
-        void Put(ConsumerMetric metric);
+        /// <param name="telemetryMetric">The consumer telemetry metric</param>
+        void Put(ConsumerTelemetryMetric telemetryMetric);
     }
 }

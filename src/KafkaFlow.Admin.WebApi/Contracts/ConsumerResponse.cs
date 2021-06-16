@@ -50,8 +50,8 @@ namespace KafkaFlow.Admin.WebApi.Contracts
        public string ClientInstanceName { get; set; }
 
        /// <summary>
-       /// Gets or sets the current consumer flow status
+       /// Gets or sets the current consumer status
        /// </summary>
-       public string FlowStatus { get; set; }
+       public string Status { get; set; }
     }
 }

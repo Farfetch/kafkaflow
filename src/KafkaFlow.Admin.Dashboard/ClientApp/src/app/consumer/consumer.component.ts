@@ -3,52 +3,47 @@ import { ConsumerService } from '../consumer.service'
 import {interval, Subject} from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { NgbModal, NgbAlert } from '@ng-bootstrap/ng-bootstrap';
-import { RewindModalComponent } from '../shared/rewind-modal/rewind-modal.component';
-import { WorkersCountModalComponent } from '../shared/workers-count-modal/workers-count-modal.component';
-import { ResetModalComponent } from '../shared/reset-modal/reset-modal.component';
-import { PauseModalComponent } from '../shared/pause-modal/pause-modal.component';
-import { ResumeModalComponent } from '../shared/resume-modal/resume-modal.component';
-import { RestartModalComponent } from '../shared/restart-modal/restart-modal.component';
+import { RewindModalComponent } from './shared/rewind-modal/rewind-modal.component';
+import { WorkersCountModalComponent } from './shared/workers-count-modal/workers-count-modal.component';
+import { ResetModalComponent } from './shared/reset-modal/reset-modal.component';
+import { PauseModalComponent } from './shared/pause-modal/pause-modal.component';
+import { ResumeModalComponent } from './shared/resume-modal/resume-modal.component';
+import { RestartModalComponent } from './shared/restart-modal/restart-modal.component';
 
 @Component({
   selector: 'app-consumer',
   templateUrl: './consumer.component.html'
 })
 export class ConsumerComponent implements OnInit {
-  public groups: Array<any> = [];
+  public telemetryResponse: any = [];
   @ViewChild('successAlert', { static: false }) successAlert: NgbAlert | undefined;
   private successSubject = new Subject<string>();
   private delayMs = 1000;
   successMessage = '';
 
   constructor(private modalService: NgbModal, private consumerService: ConsumerService) {
-    interval(1000).subscribe(_ => consumerService.get().subscribe((data: any) => this.groups = this.enrichGroups(data)));
+    interval(1000).subscribe(_ => consumerService.get().subscribe((data: any) => this.telemetryResponse = this.enrichConsumers(data)));
   }
 
-  enrichGroups(groups: any) {
+  enrichConsumers(telemetryResponse: any) {
     var self = this;
-    groups.forEach(function (g: any) {
+    telemetryResponse.groups.forEach(function (g: any) {
       g.consumers.forEach(function (c: any) {
         c.status =
-          c.partitionAssignments.some((pa: any) => pa.runningPartitions?.length > 0 && self.isActive(pa.lastUpdate))  ?
+          c.assignments.some((pa: any) => pa.runningPartitions?.length > 0 && self.isActive(pa.lastUpdate))  ?
             "Running" :
-            c.partitionAssignments.some((pa: any) => pa.pausedPartitions?.length > 0 && self.isActive(pa.lastUpdate)) ?
+            c.assignments.some((pa: any) => pa.pausedPartitions?.length > 0 && self.isActive(pa.lastUpdate)) ?
               "Paused" :
               "Not Running";
-        c.partitionAssignments.forEach( (pa: any) => pa.isLost = !self.isActive(pa.lastUpdate)
+        c.assignments.forEach( (pa: any) => pa.isLost = !self.isActive(pa.lastUpdate)
         )
       })
     });
-
-    return groups;
+    return telemetryResponse;
   }
 
   isActive(date: string) {
     return Math.abs((new Date().getTime() - new Date(date).getTime())/1000) < 5;
-  }
-
-  removeReadonly(group: any) {
-    return !(group.consumers[0].managementDisabled==1);
   }
 
   openWorkersCountModal(groupId: string, consumerName: string, workersCount: number) {

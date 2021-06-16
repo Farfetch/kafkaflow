@@ -51,7 +51,7 @@ namespace KafkaFlow.UnitTests
                 .Returns(now);
 
             // Act
-            this.target.Put(new ConsumerMetric { SentAt = now });
+            this.target.Put(new ConsumerTelemetryMetric { SentAt = now });
 
             // Assert
             this.target.Get().Should().HaveCount(1);
@@ -67,7 +67,7 @@ namespace KafkaFlow.UnitTests
                 .SetupGet(x => x.Now)
                 .Returns(now);
 
-            var metric1 = new ConsumerMetric
+            var metric1 = new ConsumerTelemetryMetric
             {
                 InstanceName = Guid.NewGuid().ToString(),
                 GroupId = Guid.NewGuid().ToString(),
@@ -75,7 +75,7 @@ namespace KafkaFlow.UnitTests
                 SentAt = now,
             };
 
-            var metric2 = new ConsumerMetric
+            var metric2 = new ConsumerTelemetryMetric
             {
                 InstanceName = metric1.InstanceName,
                 GroupId = metric1.GroupId,
@@ -102,7 +102,7 @@ namespace KafkaFlow.UnitTests
                 .SetupGet(x => x.Now)
                 .Returns(now);
 
-            var metric1 = new ConsumerMetric
+            var metric1 = new ConsumerTelemetryMetric
             {
                 InstanceName = Guid.NewGuid().ToString(),
                 GroupId = Guid.NewGuid().ToString(),
@@ -110,7 +110,7 @@ namespace KafkaFlow.UnitTests
                 SentAt = now,
             };
 
-            var metric2 = new ConsumerMetric
+            var metric2 = new ConsumerTelemetryMetric
             {
                 InstanceName = Guid.NewGuid().ToString(),
                 GroupId = Guid.NewGuid().ToString(),
@@ -136,7 +136,7 @@ namespace KafkaFlow.UnitTests
                 .SetupGet(x => x.Now)
                 .Returns(now);
 
-            var metric1 = new ConsumerMetric
+            var metric1 = new ConsumerTelemetryMetric
             {
                 InstanceName = Guid.NewGuid().ToString(),
                 GroupId = Guid.NewGuid().ToString(),
@@ -146,7 +146,7 @@ namespace KafkaFlow.UnitTests
 
             this.target.Put(metric1);
 
-            var metric2 = new ConsumerMetric
+            var metric2 = new ConsumerTelemetryMetric
             {
                 InstanceName = Guid.NewGuid().ToString(),
                 GroupId = Guid.NewGuid().ToString(),

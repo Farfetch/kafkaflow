@@ -7,7 +7,7 @@ namespace KafkaFlow.Admin.WebApi.Adapters
 
     internal static class TelemetryResponseAdapter
     {
-        internal static TelemetryResponse Adapt(this IEnumerable<ConsumerMetric> metrics)
+        internal static TelemetryResponse Adapt(this IEnumerable<ConsumerTelemetryMetric> metrics)
         {
             return new TelemetryResponse
             {
@@ -24,7 +24,7 @@ namespace KafkaFlow.Admin.WebApi.Adapters
                                     metric => new TelemetryResponse.Consumer
                                     {
                                         Name = metric.First().ConsumerName,
-                                        WorkersCount = metric.First().WorkersCount,
+                                        WorkersCount = metric.OrderByDescending(x=> x.SentAt).First().WorkersCount,
                                         Assignments = metric.Select(
                                             x => new TelemetryResponse.TopicPartitionAssignment
                                             {
