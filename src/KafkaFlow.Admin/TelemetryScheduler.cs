@@ -63,7 +63,7 @@ namespace KafkaFlow.Admin
                         ConsumerName = c.ConsumerName,
                         Topic = a.Topic,
                         GroupId = c.GroupId,
-                        InstanceName = $"{Environment.MachineName}-{c.MemberId}",
+                        InstanceName = Environment.MachineName,
                         PausedPartitions = c.PausedPartitions
                             .Where(p => p.Topic == a.Topic)
                             .Select(p => p.Partition.Value),
