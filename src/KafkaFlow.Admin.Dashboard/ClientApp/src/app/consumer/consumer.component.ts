@@ -37,7 +37,7 @@ export class ConsumerComponent implements OnInit {
     this.consumersService = consumersService;
 
     interval(this.delayMs).subscribe(async _ => {
-      this.telemetryResponse = await telemetryService.getTelemetry();
+      this.telemetryResponse = await telemetryService.getTelemetry().toPromise();
       this.updateConsumersStatus(this.telemetryResponse);
     });
   }
