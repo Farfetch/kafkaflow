@@ -1,14 +1,14 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { TelemetryService} from '../api/services/telemetry.service';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {TelemetryService} from '../api/services/telemetry.service';
 import {interval, Subject} from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
-import { NgbModal, NgbAlert } from '@ng-bootstrap/ng-bootstrap';
-import { RewindModalComponent } from './shared/rewind-modal/rewind-modal.component';
-import { WorkersCountModalComponent } from './shared/workers-count-modal/workers-count-modal.component';
-import { ResetModalComponent } from './shared/reset-modal/reset-modal.component';
-import { PauseModalComponent } from './shared/pause-modal/pause-modal.component';
-import { ResumeModalComponent } from './shared/resume-modal/resume-modal.component';
-import { RestartModalComponent } from './shared/restart-modal/restart-modal.component';
+import {debounceTime} from 'rxjs/operators';
+import {NgbModal, NgbAlert} from '@ng-bootstrap/ng-bootstrap';
+import {RewindModalComponent} from './shared/rewind-modal/rewind-modal.component';
+import {WorkersCountModalComponent} from './shared/workers-count-modal/workers-count-modal.component';
+import {ResetModalComponent} from './shared/reset-modal/reset-modal.component';
+import {PauseModalComponent} from './shared/pause-modal/pause-modal.component';
+import {ResumeModalComponent} from './shared/resume-modal/resume-modal.component';
+import {RestartModalComponent} from './shared/restart-modal/restart-modal.component';
 import {TelemetryResponse} from '../api/models/telemetry-response';
 import {ConsumersService} from '../api/services/consumers.service';
 import {ChangeWorkersCountRequest} from '../api/models/change-workers-count-request';
@@ -22,7 +22,7 @@ import {ConsumerGroup} from '../api/models/consumer-group';
 })
 export class ConsumerComponent implements OnInit {
   public telemetryResponse: TelemetryResponse;
-  @ViewChild('successAlert', { static: false }) successAlert: NgbAlert | undefined;
+  @ViewChild('successAlert', {static: false}) successAlert: NgbAlert | undefined;
   private successSubject = new Subject<string>();
   private delayMs = 1000;
   successMessage = '';
@@ -33,26 +33,31 @@ export class ConsumerComponent implements OnInit {
     private modalService: NgbModal,
     private telemetryService: TelemetryService,
     consumersService: ConsumersService) {
+
     this.consumersService = consumersService;
-    interval(this.delayMs).subscribe(_ =>
-      telemetryService.getTelemetry().subscribe((data: any) =>
-        this.telemetryResponse = this.enrichConsumers(data)));
+
+    interval(this.delayMs).subscribe(async _ => {
+      this.telemetryResponse = await telemetryService.getTelemetry();
+      this.updateConsumersStatus(this.telemetryResponse);
+    });
   }
 
-  enrichConsumers(telemetryResponse: TelemetryResponse): TelemetryResponse {
+  updateConsumersStatus(telemetryResponse: TelemetryResponse): TelemetryResponse {
     const self = this;
+
     telemetryResponse.groups?.forEach((g: ConsumerGroup) => {
       g.consumers?.forEach((c: any) => {
         c.status =
-          c.assignments.some((pa: any) => pa.runningPartitions?.length > 0 && self.isActive(pa.lastUpdate))  ?
+          c.assignments.some((pa: any) => pa.runningPartitions?.length > 0 && self.isActive(pa.lastUpdate)) ?
             'Running' :
             c.assignments.some((pa: any) => pa.pausedPartitions?.length > 0 && self.isActive(pa.lastUpdate)) ?
               'Paused' :
               'Not Running';
-        c.assignments.forEach( (pa: any) => pa.isLost = !self.isActive(pa.lastUpdate)
+        c.assignments.forEach((pa: any) => pa.isLost = !self.isActive(pa.lastUpdate)
         );
       });
     });
+
     return telemetryResponse;
   }
 
@@ -67,7 +72,7 @@ export class ConsumerComponent implements OnInit {
       const body: ChangeWorkersCountRequest = {workersCount: result};
       this.consumersService
         .changeWorkersCount({groupId, consumerName, body})
-        .subscribe({ next: _ => this.successSubject.next('The number of workers was updated successfully') });
+        .subscribe({next: _ => this.successSubject.next('The number of workers was updated successfully')});
     });
   }
 
@@ -130,6 +135,6 @@ export class ConsumerComponent implements OnInit {
 
   ngOnInit(): void {
     this.successSubject.subscribe(message => this.successMessage = message);
-    this.successSubject.pipe(debounceTime(5000)).subscribe(() => { this.successAlert?.close(); });
+    this.successSubject.pipe(debounceTime(5000)).subscribe(() => this.successAlert?.close());
   }
 }
