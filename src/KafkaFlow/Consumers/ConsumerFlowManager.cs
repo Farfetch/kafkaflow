@@ -109,11 +109,6 @@ namespace KafkaFlow.Consumers
             }
         }
 
-        public void CleanPausedPartitions()
-        {
-            this.pausedPartitions.Clear();
-        }
-
         public void Dispose()
         {
             this.heartbeatTokenSource?.Cancel();

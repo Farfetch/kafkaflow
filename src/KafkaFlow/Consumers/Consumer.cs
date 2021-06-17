@@ -157,31 +157,31 @@ namespace KafkaFlow.Consumers
                 consumerBuilder
                     .SetPartitionsAssignedHandler(
                         (consumer, partitions) =>
-                            this.partitionsAssignedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions)))
+                        {
+                            this.FlowManager = new ConsumerFlowManager(
+                                this,
+                                this.consumer,
+                                this.logHandler);
+
+                            this.partitionsAssignedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions));
+                        })
                     .SetPartitionsRevokedHandler(
                         (consumer, partitions) =>
-                            this.partitionsRevokedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions)))
-                    .SetErrorHandler(
-                        (consumer, error) =>
-                            this.errorsHandlers.ForEach(x => x(consumer, error)))
-                    .SetStatisticsHandler(
-                        (consumer, statistics) =>
-                            this.statisticsHandlers.ForEach(x => x(consumer, statistics)))
+                        {
+                            this.FlowManager.Dispose();
+                            this.FlowManager = null;
+
+                            this.partitionsRevokedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions));
+                        })
+                    .SetErrorHandler((consumer, error) => this.errorsHandlers.ForEach(x => x(consumer, error)))
+                    .SetStatisticsHandler((consumer, statistics) => this.statisticsHandlers.ForEach(x => x(consumer, statistics)))
                     .Build();
 
             this.consumer.Subscribe(this.Configuration.Topics);
-
-            this.FlowManager = new ConsumerFlowManager(
-                this,
-                this.consumer,
-                this.logHandler);
         }
 
         private void InvalidateConsumer()
         {
-            this.FlowManager?.Dispose();
-            this.FlowManager = null;
-
             this.consumer?.Close();
             this.consumer = null;
         }

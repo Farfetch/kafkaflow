@@ -25,10 +25,5 @@ namespace KafkaFlow.Consumers
         /// </summary>
         /// <param name="topicPartitions">A list of partitions</param>
         void Resume(IReadOnlyCollection<TopicPartition> topicPartitions);
-
-        /// <summary>
-        /// Removes all partitions from the list of paused partitions
-        /// </summary>
-        void CleanPausedPartitions();
     }
 }
