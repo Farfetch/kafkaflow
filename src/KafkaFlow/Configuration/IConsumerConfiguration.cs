@@ -30,9 +30,9 @@ namespace KafkaFlow.Configuration
         string ConsumerName { get; }
 
         /// <summary>
-        /// Gets the cluster name
+        /// Gets the cluster configuration
         /// </summary>
-        string ClusterName { get; }
+        ClusterConfiguration ClusterConfiguration { get; }
 
         /// <summary>
         /// Gets a value indicating whether the consumer is able to be manageable or not

@@ -4,14 +4,24 @@ namespace KafkaFlow.Configuration
     using System.Collections.Generic;
     using System.Linq;
 
-    internal class ClusterConfiguration
+    /// <summary>
+    /// Represents the cluster configuration values
+    /// </summary>
+    public class ClusterConfiguration
     {
         private readonly Func<SecurityInformation> securityInformationHandler;
-        private readonly Action<IDependencyResolver> onStartedHandler;
-        private readonly Action<IDependencyResolver> onStoppingHandler;
         private readonly List<IProducerConfiguration> producers = new();
         private readonly List<IConsumerConfiguration> consumers = new();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClusterConfiguration"/> class.
+        /// </summary>
+        /// <param name="kafka">The kafka configuration</param>
+        /// <param name="name">The cluster name</param>
+        /// <param name="brokers">The list of brokers</param>
+        /// <param name="securityInformationHandler">The security information handler</param>
+        /// <param name="onStartedHandler">The handler to be executed when the cluster started</param>
+        /// <param name="onStoppingHandler">The handler to be executed when the cluster is stopping</param>
         public ClusterConfiguration(
             KafkaConfiguration kafka,
             string name,
@@ -24,30 +34,63 @@ namespace KafkaFlow.Configuration
             this.Name = name ?? Guid.NewGuid().ToString();
             this.Kafka = kafka;
             this.Brokers = brokers.ToList();
-            this.onStoppingHandler = onStoppingHandler;
-            this.onStartedHandler = onStartedHandler;
+            this.OnStoppingHandler = onStoppingHandler;
+            this.OnStartedHandler = onStartedHandler;
         }
 
+        /// <summary>
+        /// Gets the kafka configuration
+        /// </summary>
         public KafkaConfiguration Kafka { get; }
 
+        /// <summary>
+        /// Gets the list of brokers
+        /// </summary>
         public IReadOnlyCollection<string> Brokers { get; }
 
+        /// <summary>
+        /// Gets the cluster name
+        /// </summary>
         public string Name { get; }
 
+        /// <summary>
+        /// Gets the list of producers
+        /// </summary>
         public IReadOnlyCollection<IProducerConfiguration> Producers => this.producers.AsReadOnly();
 
+        /// <summary>
+        /// Gets the list of consumers
+        /// </summary>
         public IReadOnlyCollection<IConsumerConfiguration> Consumers => this.consumers.AsReadOnly();
 
-        public Action<IDependencyResolver> OnStartedHandler => this.onStartedHandler;
+        /// <summary>
+        /// Gets the handler to be executed when the cluster started
+        /// </summary>
+        public Action<IDependencyResolver> OnStartedHandler { get; }
 
-        public Action<IDependencyResolver> OnStoppingHandler => this.onStoppingHandler;
+        /// <summary>
+        /// Gets the handler to be executed when the cluster is stopping
+        /// </summary>
+        public Action<IDependencyResolver> OnStoppingHandler { get; }
 
+        /// <summary>
+        /// Adds a list of consumer configurations
+        /// </summary>
+        /// <param name="configurations">A list of consumer configurations</param>
         public void AddConsumers(IEnumerable<IConsumerConfiguration> configurations) =>
             this.consumers.AddRange(configurations);
 
+        /// <summary>
+        /// Adds a list of producer configurations
+        /// </summary>
+        /// <param name="configurations">A list of producer configurations</param>
         public void AddProducers(IEnumerable<IProducerConfiguration> configurations) =>
             this.producers.AddRange(configurations);
 
+        /// <summary>
+        /// Gets the kafka security information
+        /// </summary>
+        /// <returns></returns>
         public SecurityInformation GetSecurityInformation() => this.securityInformationHandler?.Invoke();
     }
 }

@@ -1,7 +1,7 @@
 <ngb-alert #successAlert *ngIf="successMessage" type="success" (closed)="successMessage=''">
   <div class="text-center"><b>Success! </b> <span class="text-center">{{successMessage}}</span></div>
 </ngb-alert>
-<div class="container" *ngFor="let group of telemetryResponse.groups  ">
+<div class="container" *ngFor="let group of telemetryResponse?.groups  ">
   <div class="card my-3">
     <div class="card-body">
       <h3>Group Id: {{ group.groupId }}</h3>

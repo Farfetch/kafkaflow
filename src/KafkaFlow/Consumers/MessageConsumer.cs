@@ -23,7 +23,7 @@ namespace KafkaFlow.Consumers
 
         public string ConsumerName => this.consumerManager.Consumer.Configuration.ConsumerName;
 
-        public string ClusterName => this.consumerManager.Consumer.Configuration.ClusterName;
+        public string ClusterName => this.consumerManager.Consumer.Configuration.ClusterConfiguration.Name;
 
         public bool ManagementDisabled => this.consumerManager.Consumer.Configuration.ManagementDisabled;
 

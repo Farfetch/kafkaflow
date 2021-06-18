@@ -7,7 +7,7 @@ namespace KafkaFlow.Consumers
     /// <summary>
     /// The consumer flow manager
     /// </summary>
-    public interface IConsumerFlowManager : IDisposable
+    public interface IConsumerFlowManager
     {
         /// <summary>
         /// Gets a list of the consumer paused partitions
