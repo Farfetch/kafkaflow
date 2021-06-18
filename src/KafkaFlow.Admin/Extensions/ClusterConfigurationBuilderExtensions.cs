@@ -50,7 +50,19 @@
                                 .AddTypedHandlers(
                                     handlers => handlers
                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                        .AddHandlersFromAssemblyOf<ResetConsumerOffsetHandler>())));
+                                        .AddHandlers(new[]
+                                        {
+                                            typeof(ChangeConsumerWorkersCountHandler),
+                                            typeof(PauseConsumerByNameHandler),
+                                            typeof(PauseConsumersByGroupHandler),
+                                            typeof(PauseConsumersByGroupTopicHandler),
+                                            typeof(ResetConsumerOffsetHandler),
+                                            typeof(RestartConsumerByNameHandler),
+                                            typeof(ResumeConsumerByNameHandler),
+                                            typeof(ResumeConsumersByGroupHandler),
+                                            typeof(ResumeConsumersByGroupTopicHandler),
+                                            typeof(RewindConsumerOffsetToDateTimeHandler),
+                                        }))));
         }
 
         /// <inheritdoc cref="EnableAdminMessages(KafkaFlow.Configuration.IClusterConfigurationBuilder,string,string)"/>
@@ -108,7 +120,7 @@
                                 .AddTypedHandlers(
                                     handlers => handlers
                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                        .AddHandlersFromAssemblyOf<ConsumerTelemetryMetricHandler>())))
+                                        .AddHandler<ConsumerTelemetryMetricHandler>())))
                 .OnStarted(resolver => resolver.Resolve<ITelemetryScheduler>().Start(telemetryId, topicName))
                 .OnStopping(resolver => resolver.Resolve<ITelemetryScheduler>().Stop(telemetryId));
         }

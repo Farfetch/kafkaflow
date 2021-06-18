@@ -52,7 +52,7 @@ namespace KafkaFlow.Consumers
 
         public IReadOnlyList<string> Subscription => this.consumer?.Subscription.AsReadOnly();
 
-        public IReadOnlyList<TopicPartition> Assignment => this.consumer?.Assignment.AsReadOnly();
+        public IReadOnlyList<TopicPartition> Assignment { get; private set; }
 
         public IConsumerFlowManager FlowManager { get; private set; }
 
@@ -163,6 +163,8 @@ namespace KafkaFlow.Consumers
                                 this.consumer,
                                 this.logHandler);
 
+                            this.Assignment = partitions;
+
                             this.partitionsAssignedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions));
                         })
                     .SetPartitionsRevokedHandler(
@@ -170,6 +172,8 @@ namespace KafkaFlow.Consumers
                         {
                             this.FlowManager.Dispose();
                             this.FlowManager = null;
+
+                            this.Assignment = new List<TopicPartition>();
 
                             this.partitionsRevokedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions));
                         })
