@@ -20,6 +20,7 @@ namespace KafkaFlow.Consumers
 
         private readonly List<Action<IConsumer<byte[], byte[]>, Error>> errorsHandlers = new();
         private readonly List<Action<IConsumer<byte[], byte[]>, string>> statisticsHandlers = new();
+        private readonly ConsumerFlowManager flowManager;
 
         private IConsumer<byte[], byte[]> consumer;
 
@@ -31,6 +32,9 @@ namespace KafkaFlow.Consumers
             this.dependencyResolver = dependencyResolver;
             this.logHandler = logHandler;
             this.Configuration = configuration;
+            this.flowManager = new ConsumerFlowManager(
+                this,
+                this.logHandler);
 
             foreach (var handler in this.Configuration.StatisticsHandlers)
             {
@@ -52,9 +56,9 @@ namespace KafkaFlow.Consumers
 
         public IReadOnlyList<string> Subscription => this.consumer?.Subscription.AsReadOnly();
 
-        public IReadOnlyList<TopicPartition> Assignment => this.consumer?.Assignment.AsReadOnly();
+        public IReadOnlyList<TopicPartition> Assignment { get; private set; } = new List<TopicPartition>();
 
-        public IConsumerFlowManager FlowManager { get; private set; }
+        public IConsumerFlowManager FlowManager => this.flowManager;
 
         public string MemberId => this.consumer?.MemberId;
 
@@ -64,7 +68,7 @@ namespace KafkaFlow.Consumers
         {
             get
             {
-                if (this.FlowManager is null || this.Assignment.Count == 0)
+                if (this.FlowManager is null)
                 {
                     return ConsumerStatus.Stopped;
                 }
@@ -74,7 +78,7 @@ namespace KafkaFlow.Consumers
                     return ConsumerStatus.Running;
                 }
 
-                return this.FlowManager.PausedPartitions.Count == this.consumer.Assignment.Count ?
+                return this.FlowManager.PausedPartitions.Count == this.Assignment.Count ?
                     ConsumerStatus.Paused :
                     ConsumerStatus.PartiallyRunning;
             }
@@ -115,7 +119,7 @@ namespace KafkaFlow.Consumers
                 try
                 {
                     this.EnsureConsumer();
-
+                    await this.flowManager.SemaphoreWait();
                     return this.consumer.Consume(cancellationToken);
                 }
                 catch (OperationCanceledException)
@@ -136,6 +140,10 @@ namespace KafkaFlow.Consumers
                 catch (Exception ex)
                 {
                     this.logHandler.Error("Kafka Consumer Error", ex, null);
+                }
+                finally
+                {
+                    this.flowManager.SemaphoreRelease();
                 }
             }
         }
@@ -158,20 +166,20 @@ namespace KafkaFlow.Consumers
                     .SetPartitionsAssignedHandler(
                         (consumer, partitions) =>
                         {
-                            this.FlowManager = new ConsumerFlowManager(
-                                this,
-                                this.consumer,
-                                this.logHandler);
+                            this.Assignment = partitions;
+                            this.flowManager.Start(consumer);
 
-                            this.partitionsAssignedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions));
+                            this.partitionsAssignedHandlers.ForEach(x =>
+                                x(this.dependencyResolver, consumer, partitions));
                         })
                     .SetPartitionsRevokedHandler(
                         (consumer, partitions) =>
                         {
-                            this.FlowManager.Dispose();
-                            this.FlowManager = null;
+                            this.Assignment = new List<TopicPartition>();
+                            this.flowManager.Stop();
 
-                            this.partitionsRevokedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions));
+                            this.partitionsRevokedHandlers.ForEach(
+                                x => x(this.dependencyResolver, consumer, partitions));
                         })
                     .SetErrorHandler((consumer, error) => this.errorsHandlers.ForEach(x => x(consumer, error)))
                     .SetStatisticsHandler((consumer, statistics) => this.statisticsHandlers.ForEach(x => x(consumer, statistics)))
