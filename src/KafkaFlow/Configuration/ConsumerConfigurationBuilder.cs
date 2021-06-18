@@ -201,7 +201,7 @@ namespace KafkaFlow.Configuration
                 this.consumerConfig,
                 this.topics,
                 this.name,
-                clusterConfiguration.Name,
+                clusterConfiguration,
                 this.disableManagement,
                 this.workersCount,
                 this.bufferSize,

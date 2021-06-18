@@ -13,7 +13,7 @@ namespace KafkaFlow.Configuration
             ConsumerConfig consumerConfig,
             IEnumerable<string> topics,
             string consumerName,
-            string clusterName,
+            ClusterConfiguration clusterConfiguration,
             bool managementDisabled,
             int workersCount,
             int bufferSize,
@@ -40,7 +40,7 @@ namespace KafkaFlow.Configuration
             this.AutoCommitInterval = autoCommitInterval;
             this.Topics = topics ?? throw new ArgumentNullException(nameof(topics));
             this.ConsumerName = consumerName ?? Guid.NewGuid().ToString();
-            this.ClusterName = clusterName;
+            this.ClusterConfiguration = clusterConfiguration;
             this.ManagementDisabled = managementDisabled;
             this.WorkersCount = workersCount;
             this.StatisticsHandlers = statisticsHandlers;
@@ -64,7 +64,7 @@ namespace KafkaFlow.Configuration
 
         public string ConsumerName { get; }
 
-        public string ClusterName { get; }
+        public ClusterConfiguration ClusterConfiguration { get; }
 
         public bool ManagementDisabled { get; }
 

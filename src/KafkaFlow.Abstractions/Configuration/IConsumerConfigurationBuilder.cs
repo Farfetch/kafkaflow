@@ -42,7 +42,7 @@ namespace KafkaFlow.Configuration
         IConsumerConfigurationBuilder WithName(string name);
 
         /// <summary>
-        /// Sets the consumer as readonly, that means this consumer can not be managed and it will not send telemetry data 
+        /// Sets the consumer as readonly, that means this consumer can not be managed and it will not send telemetry data
         /// </summary>
         /// <returns></returns>
         IConsumerConfigurationBuilder DisableManagement();

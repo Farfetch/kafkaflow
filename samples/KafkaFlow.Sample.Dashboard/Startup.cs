@@ -18,7 +18,7 @@ namespace KafkaFlow.Sample.Dashboard
                         cluster => cluster
                             .WithBrokers(new[] { "localhost:9092" })
                             .EnableAdminMessages("kafka-flow.admin", "kafka-flow.admin.group.id")
-                            .EnableTelemetry("kafka-flow.telemetry", "kafka-flow.telemetry.group.id")
+                            .EnableTelemetry("kafka-flow.admin", "kafka-flow.telemetry.group.id")
                             .AddConsumer(
                                 consumer => consumer
                                     .Topics("topic-dashboard")
