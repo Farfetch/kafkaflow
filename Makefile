@@ -20,11 +20,12 @@ build:
 unit_tests:
 	@echo command | date
 	@echo Running unit tests
-	dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj
+	dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj --framework netcoreapp2.1 --logger "console;verbosity=detailed"
+	dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj --framework netcoreapp3.1 --logger "console;verbosity=detailed"
 
 integration_tests:
 	@echo command | date
 	make init_broker
 	@echo Running integration tests
-	dotnet test src/KafkaFlow.IntegrationTests/KafkaFlow.IntegrationTests.csproj -c Release
+	dotnet test src/KafkaFlow.IntegrationTests/KafkaFlow.IntegrationTests.csproj -c Release --framework netcoreapp3.1 --logger "console;verbosity=detailed"
 	make shutdown_broker
