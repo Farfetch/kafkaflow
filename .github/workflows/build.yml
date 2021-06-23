@@ -29,10 +29,15 @@ jobs:
         firstParent: false
         failOnWarnings: true
 
-    - name: Setup .NET Core
+    - name: Setup .NET Core 2.1
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.403
+        dotnet-version: '2.1.x'
+
+    - name: Setup .NET Core 3.1
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
 
     - name: Setup Node 14.x
       uses: actions/setup-node@v1
@@ -50,10 +55,12 @@ jobs:
       run: dotnet build ./src/KafkaFlow.sln -c Release
 
     - name: UnitTest
-      run: dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj -c Release
+      run: |
+        dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj -c Release --framework netcoreapp2.1 --logger "console;verbosity=detailed"
+        dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj -c Release --framework netcoreapp3.1 --logger "console;verbosity=detailed"
 
     - name: IntegrationTest
       run: |
         make init_broker
-        dotnet test src/KafkaFlow.IntegrationTests/KafkaFlow.IntegrationTests.csproj -c Release
+        dotnet test src/KafkaFlow.IntegrationTests/KafkaFlow.IntegrationTests.csproj -c Release --logger "console;verbosity=detailed"
         make shutdown_broker

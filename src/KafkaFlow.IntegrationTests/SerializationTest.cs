@@ -10,7 +10,6 @@ namespace KafkaFlow.IntegrationTests
     using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Messages;
     using KafkaFlow.IntegrationTests.Core.Producers;
-    using KafkaFlow.Producers;
     using MessageTypes;
 
     [TestClass]
