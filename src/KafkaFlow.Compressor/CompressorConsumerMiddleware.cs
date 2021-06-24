@@ -25,7 +25,7 @@
             if (!(context.Message.Value is byte[] rawData))
             {
                 throw new InvalidOperationException(
-                    $"{nameof(context.Message)} must be a byte array to be decompressed and it is '{context.Message.GetType().FullName}'");
+                    $"{nameof(context.Message.Value)} must be a byte array to be decompressed and it is '{context.Message.Value.GetType().FullName}'");
             }
 
             var data = this.compressor.Decompress(rawData);

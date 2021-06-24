@@ -25,12 +25,12 @@
             if (context.Message.Value is not byte[] rawData)
             {
                 throw new InvalidOperationException(
-                    $"{nameof(context.Message)} must be a byte array to be compressed and it is '{context.Message.GetType().FullName}'");
+                    $"{nameof(context.Message.Value)} must be a byte array to be compressed and it is '{context.Message.Value.GetType().FullName}'");
             }
 
             var data = this.compressor.Compress(rawData);
 
-            return next(context.SetMessage(context.Message.Value, data));
+            return next(context.SetMessage(context.Message.Key, data));
         }
     }
 }
