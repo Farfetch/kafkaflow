@@ -26,14 +26,15 @@ namespace KafkaFlow.Admin.WebApi.Adapters
                                         Name = metric.First().ConsumerName,
                                         WorkersCount = metric.OrderByDescending(x=> x.SentAt).First().WorkersCount,
                                         Assignments = metric.Select(
-                                            x => new TelemetryResponse.TopicPartitionAssignment
+                                            m => new TelemetryResponse.TopicPartitionAssignment
                                             {
-                                                InstanceName = x.InstanceName,
-                                                TopicName = x.Topic,
-                                                Status = x.Status.ToString(),
-                                                LastUpdate = x.SentAt,
-                                                PausedPartitions = x.PausedPartitions,
-                                                RunningPartitions = x.RunningPartitions,
+                                                InstanceName = m.InstanceName,
+                                                TopicName = m.Topic,
+                                                Status = m.Status.ToString(),
+                                                LastUpdate = m.SentAt,
+                                                PausedPartitions = m.PausedPartitions,
+                                                RunningPartitions = m.RunningPartitions,
+                                                Lag = m.Lag,
                                             }),
                                     }),
                         }),

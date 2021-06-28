@@ -96,6 +96,11 @@ namespace KafkaFlow.Admin.WebApi.Contracts
             /// Gets or sets the datetime at when the partition assigned was updated
             /// </summary>
             public DateTime LastUpdate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the consumer lag
+            /// </summary>
+            public long Lag { get; set; }
         }
     }
 }

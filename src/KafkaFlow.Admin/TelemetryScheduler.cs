@@ -4,6 +4,7 @@ namespace KafkaFlow.Admin
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
+    using Confluent.Kafka;
     using KafkaFlow.Admin.Messages;
     using KafkaFlow.Consumers;
     using KafkaFlow.Producers;
@@ -56,29 +57,45 @@ namespace KafkaFlow.Admin
             IList<IMessageConsumer> consumers,
             IMessageProducer producer)
         {
-            var items = consumers.SelectMany(
-                c => c.Assignment.Select(
-                    a => new ConsumerTelemetryMetric()
+            var items = consumers
+                .Where(c => c.Subscription?.Any() == true)
+                .SelectMany(c =>
+                    c.Subscription?.Select(topic => new ConsumerTelemetryMetric
                     {
                         ConsumerName = c.ConsumerName,
-                        Topic = a.Topic,
+                        Topic = topic,
                         GroupId = c.GroupId,
                         InstanceName = Environment.MachineName,
                         PausedPartitions = c.PausedPartitions
-                            .Where(p => p.Topic == a.Topic)
+                            .Where(p => p.Topic == topic)
                             .Select(p => p.Partition.Value),
                         RunningPartitions = c.RunningPartitions
-                            .Where(p => p.Topic == a.Topic)
+                            .Where(p => p.Topic == topic)
                             .Select(p => p.Partition.Value),
                         WorkersCount = c.WorkersCount,
                         Status = c.Status,
-                        SentAt = DateTime.Now,
+                        Lag = c.Assignment
+                            .Where(a => a.Topic == topic)
+                            .Sum(tp => LatestOffset(c, tp) - LastCommittedOffset(c, tp)),
+                        SentAt = DateTime.Now.ToUniversalTime(),
                     }));
 
             foreach (var item in items)
             {
                 producer.Produce(topicName, Guid.NewGuid().ToByteArray(), item);
             }
+        }
+
+        private static long LastCommittedOffset(IMessageConsumer c, TopicPartition tp)
+        {
+            var offset = c.GetPosition(tp);
+
+            return offset == Offset.Unset ? 0 : offset.Value;
+        }
+
+        private static long LatestOffset(IMessageConsumer c, TopicPartition tp)
+        {
+            return c.GetWatermarkOffsets(tp).High.Value;
         }
     }
 }

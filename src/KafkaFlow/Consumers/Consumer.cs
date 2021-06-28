@@ -54,7 +54,7 @@ namespace KafkaFlow.Consumers
 
         public IConsumerConfiguration Configuration { get; }
 
-        public IReadOnlyList<string> Subscription => this.consumer?.Subscription.AsReadOnly();
+        public IReadOnlyList<string> Subscription { get; private set; } = new List<string>();
 
         public IReadOnlyList<TopicPartition> Assignment { get; private set; } = new List<TopicPartition>();
 
@@ -119,7 +119,7 @@ namespace KafkaFlow.Consumers
                 try
                 {
                     this.EnsureConsumer();
-                    await this.flowManager.BlockHeartbeat();
+                    await this.flowManager.BlockHeartbeat(cancellationToken);
                     return this.consumer.Consume(cancellationToken);
                 }
                 catch (OperationCanceledException)
@@ -164,25 +164,27 @@ namespace KafkaFlow.Consumers
             this.consumer =
                 consumerBuilder
                     .SetPartitionsAssignedHandler(
-                        (consumer, partitions) =>
+                        (c, partitions) =>
                         {
                             this.Assignment = partitions;
-                            this.flowManager.Start(consumer);
+                            this.Subscription = c.Subscription;
+                            this.flowManager.Start(c);
 
                             this.partitionsAssignedHandlers.ForEach(x =>
-                                x(this.dependencyResolver, consumer, partitions));
+                                x(this.dependencyResolver, c, partitions));
                         })
                     .SetPartitionsRevokedHandler(
-                        (consumer, partitions) =>
+                        (c, partitions) =>
                         {
                             this.Assignment = new List<TopicPartition>();
+                            this.Subscription = new List<string>();
                             this.flowManager.Stop();
 
                             this.partitionsRevokedHandlers.ForEach(
-                                x => x(this.dependencyResolver, consumer, partitions));
+                                x => x(this.dependencyResolver, c, partitions));
                         })
-                    .SetErrorHandler((consumer, error) => this.errorsHandlers.ForEach(x => x(consumer, error)))
-                    .SetStatisticsHandler((consumer, statistics) => this.statisticsHandlers.ForEach(x => x(consumer, statistics)))
+                    .SetErrorHandler((c, error) => this.errorsHandlers.ForEach(x => x(c, error)))
+                    .SetStatisticsHandler((c, statistics) => this.statisticsHandlers.ForEach(x => x(c, statistics)))
                     .Build();
 
             this.consumer.Subscribe(this.Configuration.Topics);

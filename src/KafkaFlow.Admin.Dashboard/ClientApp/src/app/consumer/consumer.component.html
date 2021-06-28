@@ -12,7 +12,7 @@
                   'text-warning': $any(consumer).status == 'Paused',
                   'text-danger': $any(consumer).status == 'Not Running'
                   }">{{$any(consumer).status}}</span></h4>
-        <!-- <h4>Lag: 55</h4> -->
+        <h4>Lag: {{$any(consumer).lag}}</h4>
         <h4>Workers: {{consumer.workersCount}}</h4>
         <div class="mt-3 mb-3">
           <button class="btn btn-outline-success" type="button" (click)="openResumeModal(group.groupId, consumer.name)" *ngIf="$any(consumer).status == 'Paused'">Resume</button>
@@ -29,7 +29,7 @@
             <tr>
               <th>Consumer instance</th>
               <th>Partitions</th>
-              <!--<th>Lag</th>-->
+              <th>Lag</th>
               <th>Status</th>
               <th>LastUpdate</th>
               <!--<th>Actions</th>-->
@@ -41,10 +41,10 @@
                 <tr>
                   <td class="text-left">{{partitionAssignment.instanceName}}</td>
                   <td class="text-left">{{partitionAssignment.pausedPartitions}}</td>
-                  <!--<td class="text-left">0</td>-->
+                  <td class="text-left">{{partitionAssignment.lag}}</td>
                   <td class="text-left">
                     <div *ngIf="partitionAssignment.isLost;then consumer_lost else consumer_on"></div>
-                    <ng-template #consumer_lost><span>-</span></ng-template>
+                    <ng-template #consumer_lost><span>Offline</span></ng-template>
                     <ng-template #consumer_on><span class="font-weight-bold text-warning">Paused</span></ng-template>
                   </td>
                   <td class="text-left"><span [ngClass]="partitionAssignment.isLost ? 'text-secondary' : 'text-success'">{{partitionAssignment.lastUpdate | date: "medium"}}</span></td>
@@ -59,13 +59,13 @@
                 <tr>
                   <td class="text-left">{{partitionAssignment.instanceName}}</td>
                   <td class="text-left">{{partitionAssignment.runningPartitions}}</td>
-                  <!--<td class="text-left">0</td>-->
+                  <td class="text-left">{{partitionAssignment.lag}}</td>
                   <td class="text-left">
                     <div *ngIf="partitionAssignment.isLost;then consumer_lost else consumer_on"></div>
-                    <ng-template #consumer_lost><span>-</span></ng-template>
+                    <ng-template #consumer_lost><span>Offline</span></ng-template>
                     <ng-template #consumer_on><span class="font-weight-bold text-success">Running</span></ng-template>
                   </td>
-                  <td class="text-left"><span [ngClass]="partitionAssignment.isLost ? 'text-secondary' : 'text-success'">{{partitionAssignment.lastUpdate | date: "medium"}}</span></td>
+                  <td class="text-left"><span [ngClass]="partitionAssignment.isLost ? 'text-secondary' : 'text-success'">{{partitionAssignment.lastUpdate+'Z' | date: "medium"}}</span></td>
                   <!--<td class="text-left">
                     <button class="btn btn-sm btn-warning" type="button" *ngIf="!partitionAssignment.isLost" disabled>Pause</button>
                     <button class="btn btn-sm btn-info ml-1" type="button" *ngIf="!partitionAssignment.isLost" disabled>Rewind</button>
