@@ -2,6 +2,7 @@ namespace KafkaFlow.Consumers
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
@@ -20,6 +21,7 @@ namespace KafkaFlow.Consumers
 
         private readonly List<Action<IConsumer<byte[], byte[]>, Error>> errorsHandlers = new();
         private readonly List<Action<IConsumer<byte[], byte[]>, string>> statisticsHandlers = new();
+        private readonly Dictionary<TopicPartition, long> committedOffsets = new();
         private readonly ConsumerFlowManager flowManager;
 
         private IConsumer<byte[], byte[]> consumer;
@@ -54,7 +56,7 @@ namespace KafkaFlow.Consumers
 
         public IConsumerConfiguration Configuration { get; }
 
-        public IReadOnlyList<string> Subscription => this.consumer?.Subscription.AsReadOnly();
+        public IReadOnlyList<string> Subscription { get; private set; } = new List<string>();
 
         public IReadOnlyList<TopicPartition> Assignment { get; private set; } = new List<TopicPartition>();
 
@@ -110,7 +112,31 @@ namespace KafkaFlow.Consumers
             TimeSpan timeout) =>
             this.consumer.OffsetsForTimes(topicPartitions, timeout);
 
-        public void Commit(IEnumerable<TopicPartitionOffset> offsetsValues) => this.consumer.Commit(offsetsValues);
+        public IEnumerable<TopicPartitionLag> GetTopicPartitionsLag()
+        {
+            return this.Assignment.Select(tp =>
+            {
+                var offsetEnd = this.GetWatermarkOffsets(tp).High.Value;
+                if (!this.committedOffsets.TryGetValue(tp, out var offset))
+                {
+                    var lastCommittedOffset = this.GetPosition(tp);
+                    offset = lastCommittedOffset == Offset.Unset ? 0 : lastCommittedOffset.Value;
+                    this.committedOffsets[tp] = offset;
+                }
+
+                return new TopicPartitionLag(tp.Topic, tp.Partition.Value, offsetEnd - offset);
+            });
+        }
+
+        public void Commit(IEnumerable<TopicPartitionOffset> offsetsValues)
+        {
+            this.consumer.Commit(offsetsValues);
+
+            foreach (var offset in offsetsValues)
+            {
+                this.committedOffsets[offset.TopicPartition] = offset.Offset.Value;
+            }
+        }
 
         public async ValueTask<ConsumeResult<byte[], byte[]>> ConsumeAsync(CancellationToken cancellationToken)
         {
@@ -119,7 +145,7 @@ namespace KafkaFlow.Consumers
                 try
                 {
                     this.EnsureConsumer();
-                    await this.flowManager.BlockHeartbeat();
+                    await this.flowManager.BlockHeartbeat(cancellationToken);
                     return this.consumer.Consume(cancellationToken);
                 }
                 catch (OperationCanceledException)
@@ -167,6 +193,7 @@ namespace KafkaFlow.Consumers
                         (consumer, partitions) =>
                         {
                             this.Assignment = partitions;
+                            this.Subscription = consumer.Subscription;
                             this.flowManager.Start(consumer);
 
                             this.partitionsAssignedHandlers.ForEach(x =>
@@ -176,13 +203,16 @@ namespace KafkaFlow.Consumers
                         (consumer, partitions) =>
                         {
                             this.Assignment = new List<TopicPartition>();
+                            this.Subscription = new List<string>();
+                            this.committedOffsets.Clear();
                             this.flowManager.Stop();
 
                             this.partitionsRevokedHandlers.ForEach(
                                 x => x(this.dependencyResolver, consumer, partitions));
                         })
                     .SetErrorHandler((consumer, error) => this.errorsHandlers.ForEach(x => x(consumer, error)))
-                    .SetStatisticsHandler((consumer, statistics) => this.statisticsHandlers.ForEach(x => x(consumer, statistics)))
+                    .SetStatisticsHandler((consumer, statistics) =>
+                        this.statisticsHandlers.ForEach(x => x(consumer, statistics)))
                     .Build();
 
             this.consumer.Subscribe(this.Configuration.Topics);

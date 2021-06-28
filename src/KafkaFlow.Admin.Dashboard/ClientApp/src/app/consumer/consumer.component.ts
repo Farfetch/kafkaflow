@@ -15,6 +15,7 @@ import {ChangeWorkersCountRequest} from '../api/models/change-workers-count-requ
 import {ResetOffsetsRequest} from '../api/models/reset-offsets-request';
 import {RewindOffsetsToDateRequest} from '../api/models/rewind-offsets-to-date-request';
 import {ConsumerGroup} from '../api/models/consumer-group';
+import {TopicPartitionAssignment} from '../api/models/topic-partition-assignment';
 
 @Component({
   selector: 'app-consumer',
@@ -24,7 +25,7 @@ export class ConsumerComponent implements OnInit {
   public telemetryResponse: TelemetryResponse;
   @ViewChild('successAlert', {static: false}) successAlert: NgbAlert | undefined;
   private successSubject = new Subject<string>();
-  private delayMs = 1000;
+  private delayMs = 5000;
   successMessage = '';
 
   private consumersService: ConsumersService;
@@ -53,6 +54,7 @@ export class ConsumerComponent implements OnInit {
             c.assignments.some((pa: any) => pa.pausedPartitions?.length > 0 && self.isActive(pa.lastUpdate)) ?
               'Paused' :
               'Not Running';
+        c.lag =  c.assignments.map((item: TopicPartitionAssignment) => item.lag).reduce((prev: number, next: number) => prev + next);
         c.assignments.forEach((pa: any) => pa.isLost = !self.isActive(pa.lastUpdate)
         );
       });
@@ -61,7 +63,7 @@ export class ConsumerComponent implements OnInit {
     return telemetryResponse;
   }
 
-  isActive = (date: string) => Math.abs((new Date().getTime() - new Date(date).getTime()) / 1000) < 5;
+  isActive = (date: string) => Math.abs((new Date().getTime() - new Date(date + 'Z').getTime()) / 1000) < 30;
 
   openWorkersCountModal = (groupId: string, consumerName: string, workersCount?: number) => {
     const modalRef = this.modalService.open(WorkersCountModalComponent);

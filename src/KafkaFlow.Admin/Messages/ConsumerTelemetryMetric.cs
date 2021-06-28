@@ -64,5 +64,11 @@ namespace KafkaFlow.Admin.Messages
         /// </summary>
         [DataMember(Order = 9)]
         public ConsumerStatus Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the consumer lag
+        /// </summary>
+        [DataMember(Order = 10)]
+        public long Lag { get; set; }
     }
 }
