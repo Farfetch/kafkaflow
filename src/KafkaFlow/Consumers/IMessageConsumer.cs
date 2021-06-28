@@ -80,6 +80,12 @@ namespace KafkaFlow.Consumers
         IEnumerable<TopicPartition> RunningPartitions { get; }
 
         /// <summary>
+        /// Gets the lag of each topic/partitions assigned
+        /// </summary>
+        /// <returns>The list of topic, partition and lag</returns>
+        IEnumerable<(string topic, int partition, long lag)> GetTopicPartitionsLag();
+
+        /// <summary>
         /// Overrides the offsets of the given partitions and restart the consumer
         /// </summary>
         /// <param name="offsets">The offset values</param>

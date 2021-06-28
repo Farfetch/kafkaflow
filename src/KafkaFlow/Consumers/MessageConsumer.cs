@@ -73,6 +73,9 @@ namespace KafkaFlow.Consumers
             TimeSpan timeout) =>
             this.consumerManager.Consumer.OffsetsForTimes(topicPartitions, timeout);
 
+        public IEnumerable<(string topic, int partition, long lag)> GetTopicPartitionsLag() =>
+            this.consumerManager.Consumer.GetTopicPartitionsLag();
+
         public async Task OverrideOffsetsAndRestartAsync(IReadOnlyCollection<TopicPartitionOffset> offsets)
         {
             if (offsets is null)

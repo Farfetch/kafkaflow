@@ -40,6 +40,12 @@ namespace KafkaFlow.Consumers
         ConsumerStatus Status { get; }
 
         /// <summary>
+        /// Gets the lag of each topic/partitions assigned
+        /// </summary>
+        /// <returns>The list of topic, partition and lag</returns>
+        IEnumerable<(string topic, int partition, long lag)> GetTopicPartitionsLag();
+
+        /// <summary>
         /// Register a handler to be executed when the partitions are assigned
         /// </summary>
         /// <param name="handler">The handler that will be executed</param>

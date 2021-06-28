@@ -56,24 +56,29 @@ namespace KafkaFlow.Admin
             IList<IMessageConsumer> consumers,
             IMessageProducer producer)
         {
-            var items = consumers.SelectMany(
-                c => c.Assignment.Select(
-                    a => new ConsumerTelemetryMetric()
+            var items = consumers
+                .Where(c => c.Subscription?.Any() == true)
+                .SelectMany(c =>
+                {
+                    var consumerLag = c.GetTopicPartitionsLag();
+                    return c.Subscription?.Select(topic => new ConsumerTelemetryMetric
                     {
                         ConsumerName = c.ConsumerName,
-                        Topic = a.Topic,
+                        Topic = topic,
                         GroupId = c.GroupId,
                         InstanceName = Environment.MachineName,
                         PausedPartitions = c.PausedPartitions
-                            .Where(p => p.Topic == a.Topic)
+                            .Where(p => p.Topic == topic)
                             .Select(p => p.Partition.Value),
                         RunningPartitions = c.RunningPartitions
-                            .Where(p => p.Topic == a.Topic)
+                            .Where(p => p.Topic == topic)
                             .Select(p => p.Partition.Value),
                         WorkersCount = c.WorkersCount,
                         Status = c.Status,
-                        SentAt = DateTime.Now,
-                    }));
+                        Lag = consumerLag.Where(l => l.topic == topic).Sum(l => l.lag),
+                        SentAt = DateTime.Now.ToUniversalTime(),
+                    });
+                });
 
             foreach (var item in items)
             {

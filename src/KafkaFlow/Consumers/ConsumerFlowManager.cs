@@ -51,14 +51,17 @@ namespace KafkaFlow.Consumers
             }
         }
 
-        public Task BlockHeartbeat()
+        public Task BlockHeartbeat(CancellationToken cancellationToken)
         {
-            return this.consumerSemaphore.WaitAsync();
+            return this.consumerSemaphore.WaitAsync(cancellationToken);
         }
 
         public void ReleaseHeartbeat()
         {
-            this.consumerSemaphore.Release();
+            if (this.consumerSemaphore.CurrentCount != 1)
+            {
+                this.consumerSemaphore.Release();
+            }
         }
 
         public void Resume(IReadOnlyCollection<TopicPartition> topicPartitions)
@@ -131,7 +134,7 @@ namespace KafkaFlow.Consumers
                         }
                         finally
                         {
-                            this.consumerSemaphore.Release();
+                            this.ReleaseHeartbeat();
                         }
                     }
                 });
