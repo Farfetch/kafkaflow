@@ -28,5 +28,9 @@
   <ItemGroup>
     <Compile Remove="ClientApp\node_modules\**" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="ClientApp\node_modules\**" />
+  </ItemGroup>
 
 </Project>
