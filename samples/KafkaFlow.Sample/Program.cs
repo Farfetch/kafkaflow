@@ -3,9 +3,9 @@
     using System;
     using System.Linq;
     using System.Threading.Tasks;
+    using KafkaFlow.Admin;
     using Confluent.Kafka;
     using global::Microsoft.Extensions.DependencyInjection;
-    using KafkaFlow.Admin;
     using KafkaFlow.Admin.Messages;
     using KafkaFlow.Consumers;
     using KafkaFlow.Producers;
@@ -143,10 +143,10 @@
                         if (int.TryParse(workersInput, out var workers))
                         {
                             await adminProducer.ProduceAsync(
-                                new ChangeConsumerWorkerCount
+                                new ChangeConsumerWorkersCount
                                 {
                                     ConsumerName = consumerName,
-                                    WorkerCount = workers
+                                    WorkersCount = workers
                                 });
                         }
 

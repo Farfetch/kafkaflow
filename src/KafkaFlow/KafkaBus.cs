@@ -40,24 +40,34 @@ namespace KafkaFlow
 
             stopTokenSource.Token.Register(() => this.StopAsync().GetAwaiter().GetResult());
 
-            foreach (var consumerConfiguration in this.configuration.Clusters.SelectMany(cl => cl.Consumers))
+            foreach (var cluster in this.configuration.Clusters)
             {
-                var dependencyScope = this.dependencyResolver.CreateScope();
+                foreach (var consumerConfiguration in cluster.Consumers)
+                {
+                    var dependencyScope = this.dependencyResolver.CreateScope();
 
-                var consumerManager = this.consumerManagerFactory.Create(consumerConfiguration, dependencyScope.Resolver);
+                    var consumerManager = this.consumerManagerFactory.Create(consumerConfiguration, dependencyScope.Resolver);
 
-                this.consumerManagers.Add(consumerManager);
-                this.Consumers.Add(
-                    new MessageConsumer(
-                        consumerManager,
-                        dependencyScope.Resolver.Resolve<ILogHandler>()));
+                    this.consumerManagers.Add(consumerManager);
+                    this.Consumers.Add(
+                        new MessageConsumer(
+                            consumerManager,
+                            dependencyScope.Resolver.Resolve<ILogHandler>()));
 
-                await consumerManager.StartAsync().ConfigureAwait(false);
+                    await consumerManager.StartAsync().ConfigureAwait(false);
+                }
+
+                cluster.OnStartedHandler(this.dependencyResolver);
             }
         }
 
         public Task StopAsync()
         {
+            foreach (var cluster in this.configuration.Clusters)
+            {
+                cluster.OnStoppingHandler(this.dependencyResolver);
+            }
+
             return Task.WhenAll(this.consumerManagers.Select(x => x.StopAsync()));
         }
     }

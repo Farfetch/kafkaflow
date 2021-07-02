@@ -9,15 +9,17 @@ namespace KafkaFlow.Consumers
 
     internal class ConsumerFlowManager : IConsumerFlowManager
     {
-        private readonly IConsumer<byte[], byte[]> consumer;
+        private readonly IConsumer consumer;
         private readonly ILogHandler logHandler;
         private readonly List<TopicPartition> pausedPartitions = new();
+        private readonly SemaphoreSlim consumerSemaphore = new(1, 1);
 
+        private IConsumer<byte[], byte[]> clientConsumer;
         private CancellationTokenSource heartbeatTokenSource;
         private Task heartbeatTask;
 
         public ConsumerFlowManager(
-            IConsumer<byte[], byte[]> consumer,
+            IConsumer consumer,
             ILogHandler logHandler)
         {
             this.consumer = consumer;
@@ -25,21 +27,6 @@ namespace KafkaFlow.Consumers
         }
 
         public IReadOnlyList<TopicPartition> PausedPartitions => this.pausedPartitions.AsReadOnly();
-
-        public ConsumerFlowStatus Status
-        {
-            get
-            {
-                if (this.pausedPartitions.Count == 0)
-                {
-                    return ConsumerFlowStatus.Running;
-                }
-
-                return this.pausedPartitions.Count == this.consumer.Assignment.Count ?
-                    ConsumerFlowStatus.Paused :
-                    ConsumerFlowStatus.PartiallyRunning;
-            }
-        }
 
         public void Pause(IReadOnlyCollection<TopicPartition> topicPartitions)
         {
@@ -52,44 +39,28 @@ namespace KafkaFlow.Consumers
                     return;
                 }
 
-                this.consumer.Pause(topicPartitions);
+                this.clientConsumer.Pause(topicPartitions);
                 this.pausedPartitions.AddRange(topicPartitions);
 
-                if (this.Status != ConsumerFlowStatus.Paused)
+                if (this.consumer.Status != ConsumerStatus.Paused)
                 {
                     return;
                 }
 
-                this.heartbeatTokenSource = new CancellationTokenSource();
+                this.StartHeartbeat();
+            }
+        }
 
-                this.heartbeatTask = Task.Run(
-                    () =>
-                    {
-                        const int consumeTimeoutCall = 1000;
+        public Task BlockHeartbeat(CancellationToken cancellationToken)
+        {
+            return this.consumerSemaphore.WaitAsync(cancellationToken);
+        }
 
-                        try
-                        {
-                            while (!this.heartbeatTokenSource.IsCancellationRequested)
-                            {
-                                var result = this.consumer.Consume(consumeTimeoutCall);
-
-                                if (result != null)
-                                {
-                                    this.logHandler.Warning(
-                                        "Paused consumer heartbeat process wrongly read a message, please report this issue",
-                                        null);
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            this.logHandler.Error(
-                                "Error executing paused consumer background heartbeat",
-                                ex,
-                                null);
-                        }
-                    },
-                    this.heartbeatTokenSource.Token);
+        public void ReleaseHeartbeat()
+        {
+            if (this.consumerSemaphore.CurrentCount != 1)
+            {
+                this.consumerSemaphore.Release();
             }
         }
 
@@ -107,25 +78,71 @@ namespace KafkaFlow.Consumers
                     this.pausedPartitions.Remove(topicPartition);
                 }
 
-                if (this.Status == ConsumerFlowStatus.Paused)
+                if (this.consumer.Status == ConsumerStatus.Paused)
                 {
                     return;
                 }
 
-                this.heartbeatTokenSource?.Cancel();
+                this.StopHeartbeat();
 
-                this.heartbeatTask.GetAwaiter().GetResult();
-                this.heartbeatTask.Dispose();
-
-                this.consumer.Resume(topicPartitions);
+                this.clientConsumer.Resume(topicPartitions);
             }
         }
 
-        public void Dispose()
+        public void Start(IConsumer<byte[], byte[]> clientConsumer)
+        {
+            this.clientConsumer = clientConsumer;
+        }
+
+        public void Stop()
+        {
+            this.pausedPartitions.Clear();
+            this.StopHeartbeat();
+        }
+
+        private void StartHeartbeat()
+        {
+            this.heartbeatTokenSource = new CancellationTokenSource();
+
+            this.heartbeatTask = Task.Run(
+                () =>
+                {
+                    if (this.consumerSemaphore.Wait(0))
+                    {
+                        try
+                        {
+                            const int consumeTimeoutCall = 1000;
+
+                            while (!this.heartbeatTokenSource.IsCancellationRequested)
+                            {
+                                var result = this.clientConsumer.Consume(consumeTimeoutCall);
+
+                                if (result != null)
+                                {
+                                    this.logHandler.Warning(
+                                        "Paused consumer heartbeat process wrongly read a message, please report this issue",
+                                        null);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            this.logHandler.Error(
+                                "Error executing paused consumer background heartbeat",
+                                ex,
+                                null);
+                        }
+                        finally
+                        {
+                            this.ReleaseHeartbeat();
+                        }
+                    }
+                });
+        }
+
+        private void StopHeartbeat()
         {
             this.heartbeatTokenSource?.Cancel();
-            this.heartbeatTokenSource?.Dispose();
-
             this.heartbeatTask?.GetAwaiter().GetResult();
             this.heartbeatTask?.Dispose();
         }

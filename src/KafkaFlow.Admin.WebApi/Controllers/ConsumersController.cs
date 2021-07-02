@@ -4,6 +4,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
     using System.Linq;
     using System.Threading.Tasks;
     using KafkaFlow.Admin.Messages;
+    using KafkaFlow.Admin.WebApi.Adapters;
     using KafkaFlow.Admin.WebApi.Contracts;
     using KafkaFlow.Consumers;
     using Microsoft.AspNetCore.Mvc;
@@ -34,22 +35,29 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <returns>A list of consumers</returns>
-        [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<IMessageConsumer>), 200)]
+        [HttpGet(Name="GetConsumersByGroupId")]
+        [ProducesResponseType(typeof(ConsumersResponse), 200)]
         public IActionResult Get([FromRoute] string groupId)
         {
-            return this.Ok(this.consumers.All.Where(x => x.GroupId == groupId));
+            return this.Ok(
+                new ConsumersResponse
+                {
+                    Consumers = this.consumers
+                        .All
+                        .Where(x => x.GroupId == groupId)
+                        .Select(x => x.Adapt()),
+                });
         }
 
         /// <summary>
-        /// Get the consumers based on the provided filters
+        /// Get the consumer based on the provided filters
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
         /// <returns>A list of consumers</returns>
         [HttpGet]
-        [Route("{consumerName}")]
-        [ProducesResponseType(typeof(IMessageConsumer), 200)]
+        [Route("{consumerName}", Name="GetConsumerByGroupIdName")]
+        [ProducesResponseType(typeof(ConsumerResponse), 200)]
         [ProducesResponseType(404)]
         public IActionResult Get(
             [FromRoute] string groupId,
@@ -63,17 +71,17 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            return this.Ok(consumer);
+            return this.Ok(consumer.Adapt());
         }
 
         /// <summary>
-        /// Pause the consumers based on the provided filters
+        /// Pause the consumer based on the provided filters
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{consumerName}/pause")]
+        [Route("{consumerName}/pause", Name="PauseConsumer")]
         [ProducesResponseType(202)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Pause(
@@ -98,13 +106,13 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         }
 
         /// <summary>
-        /// Resume the consumers based on the provided filters
+        /// Resume the consumer based on the provided filters
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{consumerName}/resume")]
+        [Route("{consumerName}/resume", Name="ResumeConsumer")]
         [ProducesResponseType(202)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Resume(
@@ -129,13 +137,13 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         }
 
         /// <summary>
-        /// Restart the consumers based on the provided filters
+        /// Restart the consumer based on the provided filters
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{consumerName}/restart")]
+        [Route("{consumerName}/restart", Name="RestartConsumer")]
         [ProducesResponseType(202)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Restart(
@@ -160,14 +168,14 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         }
 
         /// <summary>
-        /// Reset the consumers partitions offset
+        /// Reset the consumer partitions offset
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
         /// <param name="request">The request to confirm the operation</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{consumerName}/reset-offsets")]
+        [Route("{consumerName}/reset-offsets", Name="ResetOffsets")]
         [ProducesResponseType(202)]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]
@@ -199,14 +207,14 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         }
 
         /// <summary>
-        /// Rewind the consumers partitions offset to a point in time
+        /// Rewind the consumer partitions offset to a point in time
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
         /// <param name="request">The request to confirm the operation</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{consumerName}/rewind-offsets-to-date")]
+        [Route("{consumerName}/rewind-offsets-to-date", Name="RewindOffsets")]
         [ProducesResponseType(202)]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]
@@ -239,23 +247,23 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         }
 
         /// <summary>
-        /// Change the number of workers running in the consumers
+        /// Change the number of workers running in the consumer
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
         /// <param name="request">The request to confirm the operation</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{consumerName}/change-worker-count")]
+        [Route("{consumerName}/change-worker-count", Name="ChangeWorkersCount")]
         [ProducesResponseType(202)]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> ChangeWorkerCount(
+        public async Task<IActionResult> ChangeWorkersCount(
             [FromRoute] string groupId,
             [FromRoute] string consumerName,
-            [FromBody] ChangeWorkerCountRequest request)
+            [FromBody] ChangeWorkersCountRequest request)
         {
-            if (request is null || request.WorkerCount <= 0)
+            if (request is null || request.WorkersCount <= 0)
             {
                 return this.BadRequest();
             }
@@ -269,10 +277,10 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             }
 
             await this.adminProducer.ProduceAsync(
-                new ChangeConsumerWorkerCount
+                new ChangeConsumerWorkersCount
                 {
                     ConsumerName = consumerName,
-                    WorkerCount = request.WorkerCount,
+                    WorkersCount = request.WorkersCount,
                 });
 
             return this.Accepted();

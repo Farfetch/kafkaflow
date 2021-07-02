@@ -142,6 +142,9 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
+# Node folders
+node_modules/
+
 # StyleCop
 StyleCopReport.xml
 

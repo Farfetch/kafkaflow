@@ -30,9 +30,19 @@ namespace KafkaFlow.Configuration
         string ConsumerName { get; }
 
         /// <summary>
-        /// Gets or sets the current number of workers
+        /// Gets the cluster configuration
         /// </summary>
-        int WorkerCount { get; set; }
+        ClusterConfiguration ClusterConfiguration { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the consumer is able to be manageable or not
+        /// </summary>
+        bool ManagementDisabled { get; }
+
+        /// <summary>
+        /// Gets or sets the number of workers
+        /// </summary>
+        int WorkersCount { get; set; }
 
         /// <summary>
         /// Gets the consumer group

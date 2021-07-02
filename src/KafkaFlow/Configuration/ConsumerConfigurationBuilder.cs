@@ -18,6 +18,7 @@ namespace KafkaFlow.Configuration
         private ConsumerConfig consumerConfig;
 
         private string name;
+        private bool disableManagement;
         private string groupId;
         private AutoOffsetReset? autoOffsetReset;
         private int? maxPollIntervalMs;
@@ -62,6 +63,12 @@ namespace KafkaFlow.Configuration
         public IConsumerConfigurationBuilder WithName(string name)
         {
             this.name = name;
+            return this;
+        }
+
+        public IConsumerConfigurationBuilder DisableManagement()
+        {
+            this.disableManagement = true;
             return this;
         }
 
@@ -194,6 +201,8 @@ namespace KafkaFlow.Configuration
                 this.consumerConfig,
                 this.topics,
                 this.name,
+                clusterConfiguration,
+                this.disableManagement,
                 this.workersCount,
                 this.bufferSize,
                 this.distributionStrategyFactory,

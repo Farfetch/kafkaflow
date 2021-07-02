@@ -4,6 +4,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
     using System.Linq;
     using System.Threading.Tasks;
     using KafkaFlow.Admin.Messages;
+    using KafkaFlow.Admin.WebApi.Adapters;
     using KafkaFlow.Admin.WebApi.Contracts;
     using KafkaFlow.Consumers;
     using Microsoft.AspNetCore.Mvc;
@@ -23,9 +24,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// </summary>
         /// <param name="consumers">The accessor class that provides access to the consumers</param>
         /// <param name="adminProducer">The producer to publish admin messages</param>
-        public GroupsController(
-            IConsumerAccessor consumers,
-            IAdminProducer adminProducer)
+        public GroupsController(IConsumerAccessor consumers, IAdminProducer adminProducer)
         {
             this.consumers = consumers;
             this.adminProducer = adminProducer;
@@ -35,19 +34,22 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// Get all the consumer groups
         /// </summary>
         /// <returns>A list of consumer groups</returns>
-        [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<GroupResponse>), 200)]
+        [HttpGet(Name="GetAllGroups")]
+        [ProducesResponseType(typeof(GroupsResponse), 200)]
         public IActionResult Get()
         {
             return this.Ok(
-                this.consumers.All
-                    .GroupBy(x => x.GroupId)
-                    .Select(
-                        x => new GroupResponse
-                        {
-                            GroupId = x.First().GroupId,
-                            Consumers = x.Select(y => y),
-                        }));
+                new GroupsResponse
+                {
+                    Groups = this.consumers.All
+                        .GroupBy(x => x.GroupId)
+                        .Select(
+                            x => new GroupResponse
+                            {
+                                GroupId = x.First().GroupId,
+                                Consumers = x.Select(y => y.Adapt()),
+                            }),
+                });
         }
 
         /// <summary>
@@ -56,7 +58,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="groupId">Identifier of the group</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{groupId}/pause")]
+        [Route("{groupId}/pause", Name="PauseGroup")]
         [ProducesResponseType(202)]
         public async Task<IActionResult> Pause([FromRoute] string groupId)
         {
@@ -75,7 +77,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="groupId">Identifier of the group</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{groupId}/resume")]
+        [Route("{groupId}/resume", Name="ResumeGroup")]
         [ProducesResponseType(202)]
         public async Task<IActionResult> Resume([FromRoute] string groupId)
         {

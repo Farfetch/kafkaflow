@@ -16,9 +16,24 @@ namespace KafkaFlow.Consumers
         string ConsumerName { get; }
 
         /// <summary>
+        /// Gets the unique cluster´s name defined in the configuration
+        /// </summary>
+        string ClusterName { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the consumer is able to be manageable or not
+        /// </summary>
+        bool ManagementDisabled { get; }
+
+        /// <summary>
         /// Gets the group id define in the configuration
         /// </summary>
         string GroupId { get; }
+
+        /// <summary>
+        /// Gets the current number of workers allocated of the consumer
+        /// </summary>
+        int WorkersCount { get; }
 
         /// <summary>
         /// Gets the current topic subscription
@@ -50,19 +65,25 @@ namespace KafkaFlow.Consumers
         string ClientInstanceName { get; }
 
         /// <summary>
-        /// Gets the current number of workers allocated of the consumer
+        /// Gets the current consumer status
         /// </summary>
-        int WorkerCount { get; }
-
-        /// <summary>
-        /// Gets the current consumer flow status
-        /// </summary>
-        ConsumerFlowStatus FlowStatus { get; }
+        ConsumerStatus Status { get; }
 
         /// <summary>
         /// Gets the consumer's paused partitions
         /// </summary>
         IReadOnlyList<TopicPartition> PausedPartitions { get; }
+
+        /// <summary>
+        /// Gets the consumer's running partitions
+        /// </summary>
+        IEnumerable<TopicPartition> RunningPartitions { get; }
+
+        /// <summary>
+        /// Gets the lag of each topic/partitions assigned
+        /// </summary>
+        /// <returns>The list of topic, partition and lag</returns>
+        IEnumerable<TopicPartitionLag> GetTopicPartitionsLag();
 
         /// <summary>
         /// Overrides the offsets of the given partitions and restart the consumer
@@ -73,9 +94,9 @@ namespace KafkaFlow.Consumers
         /// <summary>
         /// Restart the current consumer with the new worker count
         /// </summary>
-        /// <param name="workerCount">The new worker count</param>
+        /// <param name="workersCount">The new workers count</param>
         /// <returns></returns>
-        Task ChangeWorkerCountAndRestartAsync(int workerCount);
+        Task ChangeWorkersCountAndRestartAsync(int workersCount);
 
         /// <summary>
         /// Restart KafkaFlow consumer and recreate the internal Confluent Consumer
@@ -206,7 +227,7 @@ namespace KafkaFlow.Consumers
         ///     <see cref="P:Confluent.Kafka.TopicPartitionOffsetException.Results" />
         ///     property of the exception.
         /// </exception>
-        List<TopicPartitionOffset> OffsetsForTimes(
+        List<TopicPartitionOffset> GetOffsets(
             IEnumerable<TopicPartitionTimestamp> timestampsToSearch,
             TimeSpan timeout);
     }

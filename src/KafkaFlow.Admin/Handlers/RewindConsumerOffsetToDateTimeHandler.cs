@@ -23,7 +23,7 @@ namespace KafkaFlow.Admin.Handlers
                 return Task.CompletedTask;
             }
 
-            var offsets = consumer.OffsetsForTimes(
+            var offsets = consumer.GetOffsets(
                 consumer.Assignment.Select(
                     partition =>
                         new TopicPartitionTimestamp(partition, new Timestamp(message.DateTime))),
