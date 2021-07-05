@@ -12,14 +12,16 @@ KafkaFlow uses [Confluent Kafka Client](https://github.com/confluentinc/confluen
 -   [Middlewares](https://github.com/Farfetch/kafka-flow/wiki/middlewares) support for producing and consuming messages
 -   Support topics with different message types
 -   Consumers with many topics
--   [Serializer middleware](https://github.com/Farfetch/kafka-flow/wiki/serializer-middleware) with **ApacheAvro** (with Schema Registry), **ProtoBuf** and **Json** support
--   [Compressor middleware](https://github.com/Farfetch/kafka-flow/wiki/Compressor-Middleware) (Gzip or implementing `IMessageCompressor` interface)
+-   [Serializer middleware](https://github.com/Farfetch/kafka-flow/wiki/serializer-middleware) with **ApacheAvro**, **ProtoBuf** and **Json** algorithms
+-   [Schema Registry](https://github.com/Farfetch/kafka-flow/wiki/serializer-middleware#schema-registry-support) support
+-   [Compression](https://github.com/Farfetch/kafka-flow/wiki/Compressor) using native Confluent Kafka client compression or compressor middlewares
 -   Graceful shutdown (wait to finish processing to shutdown)
 -   Store offset when processing ends, avoiding message loss
 -   Supports .NET Core and .NET Framework
 -   Can be used with any dependency injection framework (see [here](https://github.com/Farfetch/kafka-flow/wiki/Dependency-Injection))
 -   Fluent configuration
 -   [Admin Web API](https://github.com/Farfetch/kafka-flow/wiki/admin) that allows pause, resume and restart consumers, change workers count and rewind offsets, **all at runtime**
+-   [Dashboard UI](https://github.com/Farfetch/kafka-flow/wiki/dashboard) that allows to visualize relevant informations about all consumers and manage them
 
 ## Packages
 
