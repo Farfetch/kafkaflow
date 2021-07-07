@@ -183,7 +183,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSingleTypeSerializer<TestMessage1, ProtobufNetSerializer>()
+                                            .AddSingleTypeSerializer<ProtobufNetSerializer>(typeof(TestMessage1))
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
