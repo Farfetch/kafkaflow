@@ -2,9 +2,16 @@ namespace KafkaFlow
 {
     using System;
 
-    internal class SingleMessageTypeResolver<TMessage> : IMessageTypeResolver
+    internal class SingleMessageTypeResolver : IMessageTypeResolver
     {
-        public Type OnConsume(IMessageContext context) => typeof(TMessage);
+        private readonly Type messageType;
+
+        public SingleMessageTypeResolver(Type messageType)
+        {
+            this.messageType = messageType;
+        }
+
+        public Type OnConsume(IMessageContext context) => this.messageType;
 
         public void OnProduce(IMessageContext context)
         {
