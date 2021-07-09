@@ -16,10 +16,17 @@
     <EmbeddedResource Include="ClientApp\dist\*.js" />
     <Content Remove="ClientApp\**" />
     <None Include="ClientApp\**" />
+    <None Remove="ClientApp\node_modules\**" />
+    <EmbeddedResource Remove="ClientApp\node_modules\**" />
+    <Content Remove="ClientApp\node_modules\**" />
   </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.16" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="ClientApp\node_modules\**" />
   </ItemGroup>
 
 </Project>
