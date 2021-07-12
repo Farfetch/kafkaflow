@@ -11,8 +11,9 @@
     /// </summary>
     public class NewtonsoftJsonSerializer : ISerializer
     {
-        private const int DefaulBufferSize = 1024;
+        private const int DefaultBufferSize = 1024;
 
+        private static readonly UTF8Encoding UTF8NoBom = new (false);
         private readonly JsonSerializerSettings settings;
 
         /// <summary>
@@ -35,7 +36,7 @@
         /// <inheritdoc/>
         public Task SerializeAsync(object message, Stream output, ISerializerContext context)
         {
-            using var sw = new StreamWriter(output, Encoding.UTF8, DefaulBufferSize, true);
+            using var sw = new StreamWriter(output, UTF8NoBom, DefaultBufferSize, true);
             var serializer = JsonSerializer.CreateDefault(this.settings);
 
             serializer.Serialize(sw, message);
@@ -48,9 +49,9 @@
         {
             using var sr = new StreamReader(
                 input,
-                Encoding.UTF8,
+                UTF8NoBom,
                 true,
-                DefaulBufferSize,
+                DefaultBufferSize,
                 true);
 
             var serializer = JsonSerializer.CreateDefault(this.settings);
