@@ -20,7 +20,7 @@ namespace KafkaFlow.Client.Protocol.Messages
         public void Read(BaseMemoryStream source)
         {
             this.Tag = source.ReadUVarint();
-            this.Data = source.ReadBytes(source.ReadUVarint());
+            this.Data = source.GetSpan(source.ReadUVarint()).ToArray();
         }
     }
 }

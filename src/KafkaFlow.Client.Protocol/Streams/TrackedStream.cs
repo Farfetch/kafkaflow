@@ -99,9 +99,11 @@ namespace KafkaFlow.Client.Protocol.Streams
             return this.stream.Seek(offset, origin);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override Span<byte> GetSpan(int size)
         {
-            throw new NotImplementedException();
+            this.MovePosition(size);
+            return this.stream.GetSpan(size);
         }
 
         public override byte this[int index] => this.stream[index];

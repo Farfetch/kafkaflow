@@ -39,22 +39,22 @@ namespace KafkaFlow.Client.Protocol.Messages
         {
             // lock (this.records)
             // {
-                var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-                if (this.records.Count == 0)
-                {
-                    this.FirstTimestamp = now;
-                    record.OffsetDelta = 0;
-                    record.TimestampDelta = 0;
-                }
-                else
-                {
-                    record.TimestampDelta = (int) (now - this.FirstTimestamp);
-                    record.OffsetDelta = this.LastOffsetDelta = this.records.Count;
-                }
+            if (this.records.Count == 0)
+            {
+                this.FirstTimestamp = now;
+                record.OffsetDelta = 0;
+                record.TimestampDelta = 0;
+            }
+            else
+            {
+                record.TimestampDelta = (int) (now - this.FirstTimestamp);
+                record.OffsetDelta = this.LastOffsetDelta = this.records.Count;
+            }
 
-                this.MaxTimestamp = now;
-                this.records.AddLast(record);
+            this.MaxTimestamp = now;
+            this.records.AddLast(record);
             // }
         }
 
@@ -90,7 +90,7 @@ namespace KafkaFlow.Client.Protocol.Messages
             destination.WriteInt32(this.BatchLength = totalLength - 8 - 4);
 
             // Write CRC
-            var crc = Crc32CHash.Compute( destination, (int) crcPosition, (int) (endPosition - crcPosition));
+            var crc = Crc32CHash.Compute(destination, (int) crcPosition, (int) (endPosition - crcPosition));
             destination.Position = crcPosition - 4;
             destination.WriteInt32((int) crc);
 
@@ -193,8 +193,8 @@ namespace KafkaFlow.Client.Protocol.Messages
                 this.Attributes = (byte) source.ReadByte();
                 this.TimestampDelta = source.ReadVarint();
                 this.OffsetDelta = source.ReadVarint();
-                this.Key = source.ReadBytes(source.ReadVarint());
-                this.Value = source.ReadBytes(source.ReadVarint());
+                this.Key = source.GetSpan(source.ReadVarint()).ToArray();
+                this.Value = source.GetSpan(source.ReadVarint()).ToArray();
                 this.Headers = source.ReadMessage<Headers>();
             }
         }

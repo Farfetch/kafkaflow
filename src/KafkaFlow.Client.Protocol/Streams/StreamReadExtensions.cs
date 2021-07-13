@@ -17,33 +17,19 @@ namespace KafkaFlow.Client.Protocol.Streams
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short ReadInt16(this BaseMemoryStream source)
         {
-            Span<byte> buffer = stackalloc byte[2];
-            source.Read(buffer);
-            return BinaryPrimitives.ReadInt16BigEndian(buffer);
+            return BinaryPrimitives.ReadInt16BigEndian(source.GetSpan(2));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ReadInt32(this BaseMemoryStream source)
         {
-            Span<byte> buffer = stackalloc byte[4];
-            source.Read(buffer);
-            return BinaryPrimitives.ReadInt32BigEndian(buffer);
+            return BinaryPrimitives.ReadInt32BigEndian(source.GetSpan(4));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long ReadInt64(this BaseMemoryStream source)
         {
-            Span<byte> buffer = stackalloc byte[8];
-            source.Read(buffer);
-            return BinaryPrimitives.ReadInt64BigEndian(buffer);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte[] ReadBytes(this BaseMemoryStream source, int count)
-        {
-            var bytes = new byte[count];
-            source.Read(bytes);
-            return bytes;
+            return BinaryPrimitives.ReadInt64BigEndian(source.GetSpan(8));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -67,9 +53,7 @@ namespace KafkaFlow.Client.Protocol.Streams
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadString(this BaseMemoryStream source, int size)
         {
-            Span<byte> buffer = stackalloc byte[size];
-            source.Read(buffer);
-            return Encoding.UTF8.GetString(buffer);
+            return Encoding.UTF8.GetString(source.GetSpan(size));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -96,7 +80,7 @@ namespace KafkaFlow.Client.Protocol.Streams
             if (size <= 0)
                 return null;
 
-            return source.ReadBytes(size - 1);
+            return source.GetSpan(size - 1).ToArray();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

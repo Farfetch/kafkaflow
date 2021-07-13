@@ -89,7 +89,7 @@ namespace KafkaFlow.Client.Protocol.Messages
             for (var i = 0; i < count; ++i)
             {
                 var key = source.ReadString(source.ReadVarint());
-                var value = source.ReadBytes(source.ReadVarint());
+                var value = source.GetSpan(source.ReadVarint()).ToArray();
 
                 this.Add(key, value);
             }

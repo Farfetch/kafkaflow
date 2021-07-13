@@ -53,8 +53,9 @@ namespace KafkaFlow.Client.Protocol.Streams
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override unsafe Span<byte> GetSpan(int size)
         {
-            this.Position += sizeof(int);
-            return new Span<byte>(this.buffer.ToPointer(), size);
+            var start = (int) this.position;
+            this.Position += size;
+            return new Span<byte>((this.buffer + start).ToPointer(), size);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
