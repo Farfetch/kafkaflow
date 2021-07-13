@@ -51,6 +51,13 @@ namespace KafkaFlow.Client.Protocol.Streams
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override unsafe Span<byte> GetSpan(int size)
+        {
+            this.Position += sizeof(int);
+            return new Span<byte>(this.buffer.ToPointer(), size);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override unsafe void Write(ReadOnlySpan<byte> buffer)
         {
             var writeCount = (int) Math.Min(this.length - this.position, buffer.Length);

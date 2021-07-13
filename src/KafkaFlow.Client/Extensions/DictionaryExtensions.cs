@@ -6,7 +6,7 @@ namespace KafkaFlow.Client.Extensions
 
     internal static class DictionaryExtensions
     {
-        public static TValue SafeGetOrAdd<TKey, TValue>(
+        public static TValue ThreadSafeGetOrAdd<TKey, TValue>(
             this IDictionary<TKey, TValue> dictionary,
             TKey key,
             Func<TKey, TValue> factory)
@@ -25,8 +25,25 @@ namespace KafkaFlow.Client.Extensions
 
                 value = factory(key);
 
-                dictionary.TryAdd(key, value);
+                dictionary.Add(key, value);
             }
+
+            return value;
+        }
+
+        public static TValue GetOrAdd<TKey, TValue>(
+            this IDictionary<TKey, TValue> dictionary,
+            TKey key,
+            Func<TKey, TValue> factory)
+        {
+            if (dictionary.TryGetValue(key, out var value))
+            {
+                return value;
+            }
+
+            value = factory(key);
+
+            dictionary.Add(key, value);
 
             return value;
         }

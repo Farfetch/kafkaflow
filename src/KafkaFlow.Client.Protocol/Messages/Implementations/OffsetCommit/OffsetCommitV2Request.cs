@@ -30,7 +30,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetCommit
             return topic;
         }
 
-        public void Write(Stream destination)
+        public void Write(DynamicMemoryStream destination)
         {
             destination.WriteString(this.GroupId);
             destination.WriteInt32(this.GroupGenerationId);
@@ -52,7 +52,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetCommit
                 return partition;
             }
 
-            public void Write(Stream destination)
+            public void Write(DynamicMemoryStream destination)
             {
                 destination.WriteString(this.Name);
                 destination.WriteArray(this.Partitions);
@@ -67,7 +67,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetCommit
 
             public string Metadata { get; set; }
 
-            public void Write(Stream destination)
+            public void Write(DynamicMemoryStream destination)
             {
                 destination.WriteInt32(this.Id);
                 destination.WriteInt64(this.Offset);

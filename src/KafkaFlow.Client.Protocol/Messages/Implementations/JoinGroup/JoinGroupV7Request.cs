@@ -30,7 +30,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.JoinGroup
 
         public IJoinGroupRequest.IProtocol CreateProtocol() => new Protocol();
 
-        public void Write(Stream destination)
+        public void Write(DynamicMemoryStream destination)
         {
             destination.WriteCompactString(this.GroupId);
             destination.WriteInt32(this.SessionTimeoutMs);
@@ -50,7 +50,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.JoinGroup
 
             public TaggedField[] TaggedFields { get; set; } = Array.Empty<TaggedField>();
 
-            public void Write(Stream destination)
+            public void Write(DynamicMemoryStream destination)
             {
                 destination.WriteCompactString(this.Name);
                 destination.WriteCompactByteArray(this.Metadata);

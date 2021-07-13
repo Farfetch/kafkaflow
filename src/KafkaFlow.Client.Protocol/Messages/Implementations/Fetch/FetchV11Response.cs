@@ -13,7 +13,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Fetch
 
         public Topic[] Topics { get; set; }
 
-        public void Read(Stream source)
+        public void Read(BaseMemoryStream source)
         {
             this.ThrottleTimeMs = source.ReadInt32();
             this.Error = source.ReadErrorCode();
@@ -27,7 +27,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Fetch
 
             public Partition[] Partitions { get; set; }
 
-            public void Read(Stream source)
+            public void Read(BaseMemoryStream source)
             {
                 this.Name = source.ReadString();
                 this.Partitions = source.ReadArray<Partition>();
@@ -40,7 +40,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Fetch
 
             public RecordBatch RecordBatch { get; set; }
 
-            public void Read(Stream source)
+            public void Read(BaseMemoryStream source)
             {
                 this.Header = source.ReadMessage<PartitionHeader>();
                 this.RecordBatch = source.ReadMessage<RecordBatch>();
@@ -63,7 +63,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Fetch
 
             public int PreferredReadReplica { get; set; }
 
-            public void Read(Stream source)
+            public void Read(BaseMemoryStream source)
             {
                 this.Id = source.ReadInt32();
                 this.Error = source.ReadErrorCode();
@@ -81,7 +81,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Fetch
 
             public long FirstOffset { get; set; }
 
-            public void Read(Stream source)
+            public void Read(BaseMemoryStream source)
             {
                 this.ProducerId = source.ReadInt64();
                 this.FirstOffset = source.ReadInt64();

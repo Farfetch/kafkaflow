@@ -22,7 +22,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
 
         public Topic[] Topics { get; }
 
-        public void Write(Stream destination)
+        public void Write(DynamicMemoryStream destination)
         {
             destination.WriteString(this.GroupId);
             destination.WriteArray(this.Topics);
@@ -40,7 +40,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
 
             public int[] Partitions { get; }
 
-            public void Write(Stream destination)
+            public void Write(DynamicMemoryStream destination)
             {
                 destination.WriteString(this.Name);
                 destination.WriteInt32Array(this.Partitions);

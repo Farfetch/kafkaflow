@@ -37,8 +37,8 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public void AddRecord(Record record)
         {
-            lock (this.records)
-            {
+            // lock (this.records)
+            // {
                 var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
                 if (this.records.Count == 0)
@@ -55,10 +55,10 @@ namespace KafkaFlow.Client.Protocol.Messages
 
                 this.MaxTimestamp = now;
                 this.records.AddLast(record);
-            }
+            // }
         }
 
-        public void Write(Stream destination)
+        public void Write(DynamicMemoryStream destination)
         {
             // destination.WriteInt32(crcSliceLength + 8 + 4 + 4 + 1 + 4);
             var lengthStartPosition = destination.Position;
@@ -67,7 +67,7 @@ namespace KafkaFlow.Client.Protocol.Messages
             destination.WriteInt32(0); // BatchLength will be filled in the end
             destination.WriteInt32(this.PartitionLeaderEpoch);
             destination.WriteByte(this.Magic);
-            destination.WriteInt32(0); // CRC will be filled in the wnd
+            destination.WriteInt32(0); // CRC will be filled in the end
 
             var crcPosition = destination.Position;
             destination.WriteInt16(this.Attributes);
@@ -80,24 +80,24 @@ namespace KafkaFlow.Client.Protocol.Messages
             destination.WriteArray(this.records);
             var endPosition = destination.Position;
 
-            //Write total length
+            // Write total length
             var totalLength = (int) (endPosition - lengthStartPosition - 4);
             destination.Position = lengthStartPosition;
             destination.WriteInt32(totalLength);
 
-            //Write batch length
+            // Write batch length
             destination.Position = lengthStartPosition + 4 + 8;
             destination.WriteInt32(this.BatchLength = totalLength - 8 - 4);
 
-            //Write CRC
-            var crc = Crc32CHash.Compute((DynamicMemoryStream) destination, (int) crcPosition, (int) (endPosition - crcPosition));
+            // Write CRC
+            var crc = Crc32CHash.Compute( destination, (int) crcPosition, (int) (endPosition - crcPosition));
             destination.Position = crcPosition - 4;
             destination.WriteInt32((int) crc);
 
             destination.Position = endPosition;
         }
 
-        public void Read(Stream source)
+        public void Read(BaseMemoryStream source)
         {
             var size = source.ReadInt32();
 
@@ -144,7 +144,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
             public Headers? Headers { get; set; }
 
-            public void Write(Stream destination)
+            public void Write(DynamicMemoryStream destination)
             {
                 using var tmp = new DynamicMemoryStream(MemoryManager.Instance, 256);
 
@@ -171,7 +171,7 @@ namespace KafkaFlow.Client.Protocol.Messages
                     tmp.WriteVarint(this.Value.Length);
                     tmp.Write(this.Value);
                 }
-                
+
                 if (this.Headers is null)
                 {
                     tmp.WriteVarint(0);
@@ -187,7 +187,7 @@ namespace KafkaFlow.Client.Protocol.Messages
                 tmp.CopyTo(destination);
             }
 
-            public void Read(Stream source)
+            public void Read(BaseMemoryStream source)
             {
                 this.Length = source.ReadVarint();
                 this.Attributes = (byte) source.ReadByte();

@@ -21,7 +21,7 @@ namespace KafkaFlow.Client.Producers
         private volatile int messageCount;
         private DateTime lastProductionTime = DateTime.MinValue;
 
-        private SortedDictionary<(string, int), LinkedList<ProduceQueueItem>> pendingRequests = new();
+        private Dictionary<(string, int), LinkedList<ProduceQueueItem>> pendingRequests = new();
 
         public ProducerSender(
             IKafkaBroker broker,
@@ -33,19 +33,21 @@ namespace KafkaFlow.Client.Producers
             this.produceTimeoutTask = Task.Run(this.LingerProduceAsync);
         }
 
-        public async ValueTask EnqueueAsync(ProduceQueueItem item)
+        public async Task EnqueueAsync(ProduceQueueItem item)
         {
+            // this.lastProductionTime = DateTime.Now;
+
             await this.produceSemaphore.WaitAsync().ConfigureAwait(false);
 
             try
             {
                 this.request ??= await this.CreateProduceRequestAsync();
 
-                var topic = this.request.Topics.SafeGetOrAdd(
+                var topic = this.request.Topics.GetOrAdd(
                     item.Data.Topic,
                     _ => this.request.CreateTopic(item.Data.Topic));
 
-                var partition = topic.Partitions.SafeGetOrAdd(
+                var partition = topic.Partitions.GetOrAdd(
                     item.PartitionId,
                     _ => topic.CreatePartition(item.PartitionId));
 
@@ -54,13 +56,13 @@ namespace KafkaFlow.Client.Producers
                     {
                         Key = item.Data.Key,
                         Value = item.Data.Value,
-                        Headers = item.Data.Headers
+                        Headers = item.Data.Headers,
                     });
 
                 item.OffsetDelta = partition.RecordBatch.LastOffsetDelta;
 
                 this.pendingRequests
-                    .SafeGetOrAdd(
+                    .GetOrAdd(
                         (item.Data.Topic, item.PartitionId),
                         key => new LinkedList<ProduceQueueItem>())
                     .AddLast(item);
@@ -85,8 +87,8 @@ namespace KafkaFlow.Client.Producers
                     return;
                 }
 
+                Dictionary<(string, int), LinkedList<ProduceQueueItem>> localPendingRequests;
                 Task<IProduceResponse> resultTask;
-                SortedDictionary<(string, int), LinkedList<ProduceQueueItem>> requests;
 
                 await this.produceSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -97,13 +99,13 @@ namespace KafkaFlow.Client.Producers
                         return;
                     }
 
-                    var queued = Interlocked.Exchange(ref this.request, await this.CreateProduceRequestAsync());
+                    var localRequest = Interlocked.Exchange(ref this.request, await this.CreateProduceRequestAsync());
 
-                    resultTask = this.broker.Connection.SendAsync(queued);
-
-                    requests = Interlocked.Exchange(
+                    localPendingRequests = Interlocked.Exchange(
                         ref this.pendingRequests,
-                        new SortedDictionary<(string, int), LinkedList<ProduceQueueItem>>());
+                        new Dictionary<(string, int), LinkedList<ProduceQueueItem>>());
+
+                    resultTask = this.broker.Connection.SendAsync(localRequest);
                 }
                 finally
                 {
@@ -113,7 +115,7 @@ namespace KafkaFlow.Client.Producers
 
                 this.RespondRequests(
                     await resultTask.ConfigureAwait(false),
-                    requests);
+                    localPendingRequests);
             }
             catch (Exception e)
             {
@@ -143,8 +145,6 @@ namespace KafkaFlow.Client.Producers
                     {
                         continue;
                     }
-
-                    // requests.Remove((topic.Name, partition.Id));
 
                     if (partition.Error == ErrorCode.None)
                     {
@@ -196,11 +196,11 @@ namespace KafkaFlow.Client.Producers
                     var diff = DateTime.Now - this.lastProductionTime;
                     if (diff < this.configuration.Linger)
                     {
-                        await Task
-                            .Delay(
-                                this.configuration.Linger - diff,
-                                this.stopLingerProduceTokenSource.Token)
-                            .ConfigureAwait(false);
+                        // await Task.Delay(
+                        //     this.configuration.Linger - diff,
+                        //     this.stopLingerProduceTokenSource.Token);
+
+                        Thread.Sleep(this.configuration.Linger - diff);
 
                         continue;
                     }

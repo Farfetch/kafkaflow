@@ -40,7 +40,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.SyncGroup
 
         public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
 
-        public void Write(Stream destination)
+        public void Write(DynamicMemoryStream destination)
         {
             destination.WriteCompactString(this.GroupId);
             destination.WriteInt32(this.GenerationId);
@@ -66,7 +66,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.SyncGroup
 
             public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
 
-            public void Write(Stream destination)
+            public void Write(DynamicMemoryStream destination)
             {
                 destination.WriteCompactString(this.MemberId);
                 destination.WriteCompactByteArray(this.Metadata);

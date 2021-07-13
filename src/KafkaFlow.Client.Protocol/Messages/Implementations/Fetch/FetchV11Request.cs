@@ -30,7 +30,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Fetch
 
         public string RackId { get; set; } = string.Empty;
 
-        public void Write(Stream destination)
+        public void Write(DynamicMemoryStream destination)
         {
             destination.WriteInt32(this.ReplicaId);
             destination.WriteInt32(this.MaxWaitTime);
@@ -50,7 +50,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Fetch
 
             public Partition[] Partitions { get; set; } = Array.Empty<Partition>();
 
-            public void Write(Stream destination)
+            public void Write(DynamicMemoryStream destination)
             {
                 destination.WriteString(this.Name);
                 destination.WriteArray(this.Partitions);
@@ -69,7 +69,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Fetch
 
             public int PartitionMaxBytes { get; set; }
 
-            public void Write(Stream destination)
+            public void Write(DynamicMemoryStream destination)
             {
                 destination.WriteInt32(this.Id);
                 destination.WriteInt32(this.CurrentLeaderEpoch);
@@ -85,7 +85,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Fetch
 
             public int[] Partitions { get; set; }
 
-            public void Write(Stream destination)
+            public void Write(DynamicMemoryStream destination)
             {
                 destination.WriteString(this.Name);
                 destination.WriteInt32Array(this.Partitions);

@@ -10,14 +10,14 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public byte[] Data { get; private set; } = Array.Empty<byte>();
 
-        public void Write(Stream destination)
+        public void Write(DynamicMemoryStream destination)
         {
             destination.WriteUVarint((ulong) this.Tag);
             destination.WriteUVarint((ulong) this.Data.Length);
             destination.Write(this.Data);
         }
 
-        public void Read(Stream source)
+        public void Read(BaseMemoryStream source)
         {
             this.Tag = source.ReadUVarint();
             this.Data = source.ReadBytes(source.ReadUVarint());

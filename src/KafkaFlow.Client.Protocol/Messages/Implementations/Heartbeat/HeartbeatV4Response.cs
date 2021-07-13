@@ -11,7 +11,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Heartbeat
 
         public TaggedField[] TaggedFields { get; private set; }
 
-        public void Read(Stream source)
+        public void Read(BaseMemoryStream source)
         {
             this.ThrottleTimeMs = source.ReadInt32();
             this.Error = source.ReadErrorCode();

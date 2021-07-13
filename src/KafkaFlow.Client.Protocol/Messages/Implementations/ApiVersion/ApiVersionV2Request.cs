@@ -2,6 +2,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.ApiVersion
 {
     using System;
     using System.IO;
+    using KafkaFlow.Client.Protocol.Streams;
 
     public class ApiVersionV2Request : IApiVersionRequest
     {
@@ -11,7 +12,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.ApiVersion
 
         public Type ResponseType => typeof(ApiVersionV2Response);
 
-        public void Write(Stream destination)
+        public void Write(DynamicMemoryStream destination)
         {
             // Do Nothing
         }

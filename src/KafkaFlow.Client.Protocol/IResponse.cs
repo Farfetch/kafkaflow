@@ -1,9 +1,9 @@
 namespace KafkaFlow.Client.Protocol
 {
-    using System.IO;
+    using KafkaFlow.Client.Protocol.Streams;
 
     public interface IResponse
     {
-        public void Read(Stream source);
+        public void Read(BaseMemoryStream source);
     }
 }

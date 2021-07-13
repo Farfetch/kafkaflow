@@ -2,7 +2,6 @@ namespace KafkaFlow.Client.Protocol.Streams
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
     using System.IO;
     using System.Net.Sockets;
     using System.Runtime.CompilerServices;
@@ -200,6 +199,24 @@ namespace KafkaFlow.Client.Protocol.Streams
         {
             this.EnsureCapacity(value);
             this.length = value;
+        }
+
+        // public unsafe Span<byte> GetSpan(int size)
+        // {
+        //     this.EnsureCapacity(this.Position + size);
+        //
+        //     if (this.relativePosition + size <= this.segmentSize)
+        //     {
+        //         return new Span<byte>(this.segments[this.currentSegment].ToPointer(), size);
+        //     }
+        //     
+        //     
+        //     new Span<byte>(). + new Span<byte>()
+        // }
+
+        public override Span<byte> GetSpan(int size)
+        {
+            throw new NotImplementedException();
         }
 
         protected override void Dispose(bool disposing)

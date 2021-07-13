@@ -44,6 +44,8 @@ namespace KafkaFlow.Client.Protocol.Streams
             }
         }
 
+        public abstract Span<byte> GetSpan(int size);
+
         public abstract byte this[int index] { get; }
 
         public override bool CanRead => true;

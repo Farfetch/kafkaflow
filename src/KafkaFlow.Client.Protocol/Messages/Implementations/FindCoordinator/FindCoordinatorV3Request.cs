@@ -24,7 +24,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.FindCoordinator
 
         public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
 
-        public void Write(Stream destination)
+        public void Write(DynamicMemoryStream destination)
         {
             destination.WriteCompactString(this.Key);
             destination.WriteByte(this.KeyType);

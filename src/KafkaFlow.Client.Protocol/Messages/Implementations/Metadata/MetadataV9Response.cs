@@ -20,7 +20,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Metadata
 
         public TaggedField[] TaggedFields { get; private set; } = Array.Empty<TaggedField>();
 
-        public void Read(Stream source)
+        public void Read(BaseMemoryStream source)
         {
             this.ThrottleTime = source.ReadInt32();
             this.Brokers = source.ReadCompactArray<Broker>();
@@ -45,7 +45,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Metadata
 
             public TaggedField[] TaggedFields { get; private set; } = Array.Empty<TaggedField>();
 
-            public void Read(Stream source)
+            public void Read(BaseMemoryStream source)
             {
                 this.Error = source.ReadErrorCode();
                 this.Name = source.ReadCompactString();
@@ -74,7 +74,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Metadata
 
             public TaggedField[] TaggedFields { get; private set; } = Array.Empty<TaggedField>();
 
-            public void Read(Stream source)
+            public void Read(BaseMemoryStream source)
             {
                 this.Error = source.ReadErrorCode();
                 this.Id = source.ReadInt32();
@@ -99,7 +99,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Metadata
 
             public TaggedField[] TaggedFields { get; private set; } = Array.Empty<TaggedField>();
 
-            public void Read(Stream source)
+            public void Read(BaseMemoryStream source)
             {
                 this.NodeId = source.ReadInt32();
                 this.Host = source.ReadCompactString();

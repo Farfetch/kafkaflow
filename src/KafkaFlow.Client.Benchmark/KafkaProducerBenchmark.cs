@@ -13,6 +13,7 @@ namespace KafkaFlow.Client.Benchmark
     [MemoryDiagnoser]
     [StopOnFirstError]
     [ShortRunJob]
+    // [SimpleJob(launchCount: 1, warmupCount: 1, targetCount: 1, invocationCount: 10)]
     public class KafkaProducerBenchmark
     {
         private readonly IProducer kafkaFlowProducer;
@@ -48,12 +49,17 @@ namespace KafkaFlow.Client.Benchmark
                 .Build();
         }
 
-        //
-        // [IterationCleanup]
-        // public void Clean()
-        // {
-        //
-        // }
+        [Benchmark]
+        public async Task KafkaFlow_1_Message()
+        {
+            await this.ProduceKafkaFlow();
+        }
+
+        [Benchmark]
+        public async Task Confluent_1_Message()
+        {
+            await this.ProduceConfluent();
+        }
 
         [Benchmark]
         public async Task KafkaFlow_100_Messages()
@@ -78,18 +84,6 @@ namespace KafkaFlow.Client.Benchmark
         // {
         //     await Task.WhenAll(Enumerable.Range(0, 1000).Select(x => this.ProduceConfluent()));
         // }
-
-        [Benchmark]
-        public async Task KafkaFlowOneMessage()
-        {
-            await this.ProduceKafkaFlow();
-        }
-
-        [Benchmark]
-        public async Task ConfluentOneMessage()
-        {
-            await this.ProduceConfluent();
-        }
 
         private Task ProduceKafkaFlow()
         {

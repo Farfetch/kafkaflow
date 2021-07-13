@@ -55,7 +55,7 @@ namespace KafkaFlow.Client.Producers
         private ProducerSender GetBrokerSender(int partitionLeaderId)
         {
             return this.senders
-                .SafeGetOrAdd(
+                .ThreadSafeGetOrAdd(
                     partitionLeaderId,
                     id => new ProducerSender(
                         this.cluster.GetBroker(id),

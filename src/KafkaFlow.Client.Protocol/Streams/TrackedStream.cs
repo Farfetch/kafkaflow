@@ -4,14 +4,14 @@ namespace KafkaFlow.Client.Protocol.Streams
     using System.IO;
     using System.Runtime.CompilerServices;
 
-    public class TrackedStream : Stream
+    public class TrackedStream : BaseMemoryStream
     {
-        private readonly Stream stream;
+        private readonly BaseMemoryStream stream;
         private long position;
         private long length = 0;
         private readonly long offsetPosition;
 
-        public TrackedStream(Stream stream, int size)
+        public TrackedStream(BaseMemoryStream stream, int size)
         {
             this.Size = size;
             this.stream = stream;
@@ -98,6 +98,13 @@ namespace KafkaFlow.Client.Protocol.Streams
             this.MovePosition(offset);
             return this.stream.Seek(offset, origin);
         }
+
+        public override Span<byte> GetSpan(int size)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override byte this[int index] => this.stream[index];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void SetLength(long value) => throw new NotSupportedException();

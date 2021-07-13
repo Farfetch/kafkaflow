@@ -29,7 +29,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Heartbeat
 
         public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
 
-        public void Write(Stream destination)
+        public void Write(DynamicMemoryStream destination)
         {
             destination.WriteCompactString(this.GroupId);
             destination.WriteInt32(this.GenerationId);
