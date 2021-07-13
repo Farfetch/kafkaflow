@@ -1,4 +1,4 @@
-namespace KafkaFlow.Client.Protocol.Messages.Implementations
+namespace KafkaFlow.Client.Protocol.Messages.Implementations.FindCoordinator
 {
     using System;
     using System.IO;

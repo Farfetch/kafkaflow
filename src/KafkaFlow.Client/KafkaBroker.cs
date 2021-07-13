@@ -6,6 +6,7 @@ namespace KafkaFlow.Client
     using KafkaFlow.Client.Protocol;
     using KafkaFlow.Client.Protocol.Messages;
     using KafkaFlow.Client.Protocol.Messages.Implementations;
+    using KafkaFlow.Client.Protocol.Messages.Implementations.ApiVersion;
 
     internal class KafkaBroker : IKafkaBroker
     {

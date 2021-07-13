@@ -1,7 +1,5 @@
 namespace KafkaFlow.Client.Protocol.Messages
 {
-    using KafkaFlow.Client.Protocol.Messages.Implementations;
-
     public interface IMetadataResponse : IResponse
     {
         int ThrottleTime { get; }

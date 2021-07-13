@@ -1,4 +1,4 @@
-namespace KafkaFlow.Client.Protocol.Messages.Implementations
+namespace KafkaFlow.Client.Protocol.Messages.Implementations.SyncGroup
 {
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;

@@ -1,7 +1,6 @@
 namespace KafkaFlow.Client.Protocol.Messages
 {
     using KafkaFlow.Client.Protocol;
-    using KafkaFlow.Client.Protocol.Messages.Implementations;
 
     public interface IProduceResponse : IResponse
     {

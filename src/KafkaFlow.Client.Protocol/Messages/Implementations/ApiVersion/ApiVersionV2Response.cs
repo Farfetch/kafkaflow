@@ -1,4 +1,4 @@
-namespace KafkaFlow.Client.Protocol.Messages.Implementations
+namespace KafkaFlow.Client.Protocol.Messages.Implementations.ApiVersion
 {
     using System.IO;
     using KafkaFlow.Client.Protocol.Streams;

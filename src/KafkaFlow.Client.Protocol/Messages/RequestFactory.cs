@@ -1,7 +1,8 @@
 namespace KafkaFlow.Client.Protocol.Messages
 {
     using KafkaFlow.Client.Protocol;
-    using KafkaFlow.Client.Protocol.Messages.Implementations;
+    using KafkaFlow.Client.Protocol.Messages.Implementations.Metadata;
+    using KafkaFlow.Client.Protocol.Messages.Implementations.Produce;
 
     public class RequestFactory : IRequestFactory
     {

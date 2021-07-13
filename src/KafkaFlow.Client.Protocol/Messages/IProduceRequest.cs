@@ -2,7 +2,6 @@ namespace KafkaFlow.Client.Protocol.Messages
 {
     using System.Collections.Concurrent;
     using KafkaFlow.Client.Protocol;
-    using KafkaFlow.Client.Protocol.Messages.Implementations;
 
     public interface IProduceRequest : IRequestMessage<IProduceResponse>
     {
