@@ -9,8 +9,11 @@ namespace KafkaFlow.Client.Protocol
     public class Request : IRequest
     {
         public int CorrelationId { get; }
+
         public string ClientId { get; }
+
         public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
+
         public IRequestMessage Message { get; }
 
         public Request(
@@ -25,24 +28,25 @@ namespace KafkaFlow.Client.Protocol
 
         public void Write(Stream destination)
         {
-            using var tmp = new DynamicMemoryStream(MemoryManager.Instance);
-
-            tmp.WriteInt16((short) this.Message.ApiKey);
-            tmp.WriteInt16(this.Message.ApiVersion);
-            tmp.WriteInt32(this.CorrelationId);
-            tmp.WriteString(this.ClientId);
+            destination.WriteInt32(0); // Skip message size to write later
+            var startPosition = destination.Position;
+            destination.WriteInt16((short) this.Message.ApiKey);
+            destination.WriteInt16(this.Message.ApiVersion);
+            destination.WriteInt32(this.CorrelationId);
+            destination.WriteString(this.ClientId);
 
             if (this.Message is ITaggedFields)
-                tmp.WriteTaggedFields(this.TaggedFields);
+                destination.WriteTaggedFields(this.TaggedFields);
 
-            tmp.WriteMessage(this.Message);
+            destination.WriteMessage(this.Message);
 
-            destination.WriteInt32(Convert.ToInt32(tmp.Length));
+            var endPosition = destination.Position;
 
-            Debug.WriteLine($"Sending {this.Message.GetType().Name} with {tmp.Length:N0}b");
+            // Write message size at the beginning
+            destination.Position = 0;
+            destination.WriteInt32(Convert.ToInt32(endPosition - startPosition));
 
-            tmp.Position = 0;
-            tmp.CopyTo(destination);
+            Debug.WriteLine($"Sending {this.Message.GetType().Name} with {destination.Length:N0}b");
         }
     }
 }

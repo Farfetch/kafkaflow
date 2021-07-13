@@ -5,7 +5,7 @@ namespace KafkaFlow.Client
     using KafkaFlow.Client.Protocol;
     using KafkaFlow.Client.Protocol.Messages;
 
-    internal interface IKafkaBroker : IAsyncDisposable
+    public interface IKafkaBroker : IAsyncDisposable
     {
         IBrokerConnection Connection { get; }
 

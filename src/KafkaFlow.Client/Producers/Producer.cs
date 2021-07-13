@@ -9,7 +9,7 @@ namespace KafkaFlow.Client.Producers
     using KafkaFlow.Client.Producers.Partitioners;
     using KafkaFlow.Client.Protocol.Messages;
 
-    internal class Producer : IProducer
+    public class Producer : IProducer
     {
         private readonly IKafkaCluster cluster;
         private readonly ProducerConfiguration configuration;

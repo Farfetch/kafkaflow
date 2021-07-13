@@ -115,17 +115,18 @@ namespace KafkaFlow.Client.Protocol
         {
             var pendingRequest = new PendingRequest(this.requestTimeout, request.ResponseType);
 
+            using var tmp = new DynamicMemoryStream(MemoryManager.Instance);
+
+            var correlationId = Interlocked.Increment(ref this.lastCorrelationId);
+
+            this.pendingRequests.TryAdd(correlationId, pendingRequest);
+
+            tmp.WriteMessage(new Request(correlationId, this.clientId, request));
+            tmp.Position = 0;
+
             lock (this.stream)
             {
-                this.pendingRequests.TryAdd(
-                    Interlocked.Increment(ref this.lastCorrelationId),
-                    pendingRequest);
-
-                this.stream.WriteMessage(
-                    new Request(
-                        this.lastCorrelationId,
-                        this.clientId,
-                        request));
+                tmp.CopyTo(this.stream);
             }
 
             return pendingRequest.GetTask<TResponse>();

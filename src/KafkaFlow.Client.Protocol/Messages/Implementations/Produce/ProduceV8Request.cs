@@ -1,7 +1,7 @@
 namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 {
     using System;
-    using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using KafkaFlow.Client.Protocol.Streams;
@@ -20,14 +20,13 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 
         public Type ResponseType => typeof(ProduceV8Response);
 
-        public string? TransactionalId { get; } = null;
+        public string? TransactionalId = null;
 
         public ProduceAcks Acks { get; }
 
         public int Timeout { get; }
 
-        public ConcurrentDictionary<string, IProduceRequest.ITopic> Topics { get; } =
-            new();
+        public Dictionary<string, IProduceRequest.ITopic> Topics { get; } = new();
 
         public IProduceRequest.ITopic CreateTopic(string name) => new Topic(name);
 
@@ -48,7 +47,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 
             public string Name { get; }
 
-            public ConcurrentDictionary<int, IProduceRequest.IPartition> Partitions { get; } =
+            public Dictionary<int, IProduceRequest.IPartition> Partitions { get; } =
                 new();
 
             public IProduceRequest.IPartition CreatePartition(int id) => new Partition(id);

@@ -1,6 +1,7 @@
 namespace KafkaFlow.Client.Protocol.Messages
 {
     using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using KafkaFlow.Client.Protocol;
 
     public interface IProduceRequest : IRequestMessage<IProduceResponse>
@@ -9,7 +10,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         int Timeout { get; }
 
-        ConcurrentDictionary<string, ITopic> Topics { get; }
+        Dictionary<string, ITopic> Topics { get; }
 
         ITopic CreateTopic(string name);
 
@@ -17,7 +18,7 @@ namespace KafkaFlow.Client.Protocol.Messages
         {
             string Name { get; }
 
-            ConcurrentDictionary<int, IPartition> Partitions { get; }
+            Dictionary<int, IPartition> Partitions { get; }
 
             IPartition CreatePartition(int id);
         }

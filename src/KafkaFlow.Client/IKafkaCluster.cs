@@ -2,7 +2,7 @@ namespace KafkaFlow.Client
 {
     using System.Threading.Tasks;
 
-    internal interface IKafkaCluster
+    public interface IKafkaCluster
     {
         IKafkaBroker AnyBroker { get; }
 

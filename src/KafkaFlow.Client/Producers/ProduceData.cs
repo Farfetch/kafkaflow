@@ -2,7 +2,7 @@ namespace KafkaFlow.Client.Producers
 {
     using KafkaFlow.Client.Protocol.Messages;
 
-    public readonly struct ProduceData
+    public class ProduceData
     {
         public ProduceData(string topic, byte[] key, byte[] value) :
             this(topic, key, value, null)

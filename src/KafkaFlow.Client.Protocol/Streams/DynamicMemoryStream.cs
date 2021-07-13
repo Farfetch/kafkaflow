@@ -2,6 +2,7 @@ namespace KafkaFlow.Client.Protocol.Streams
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.IO;
     using System.Net.Sockets;
     using System.Runtime.CompilerServices;
@@ -119,9 +120,26 @@ namespace KafkaFlow.Client.Protocol.Streams
         public new void CopyTo(Stream destination)
         {
             if (destination is DynamicMemoryStream fast)
+            {
                 this.FastCopyTo(fast);
+            }
             else
-                base.CopyTo(destination);
+            {
+                this.InternalCopyTo(destination);
+            }
+        }
+
+        private unsafe void InternalCopyTo(Stream destination)
+        {
+            var totalBytes = this.length;
+
+            foreach (var segment in this.segments)
+            {
+                var bytesToWriteCount = (int) Math.Min(totalBytes, this.segmentSize);
+                destination.Write(new ReadOnlySpan<byte>(segment.ToPointer(), bytesToWriteCount));
+
+                totalBytes -= bytesToWriteCount;
+            }
         }
 
         private unsafe void FastCopyTo(DynamicMemoryStream dest)

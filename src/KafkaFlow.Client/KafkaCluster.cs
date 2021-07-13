@@ -7,7 +7,7 @@ namespace KafkaFlow.Client
     using System.Threading.Tasks;
     using KafkaFlow.Client.Protocol;
 
-    internal class KafkaCluster : IKafkaCluster
+    public class KafkaCluster : IKafkaCluster
     {
         private readonly IReadOnlyCollection<BrokerAddress> addresses;
         private readonly string clientId;

@@ -21,7 +21,7 @@ namespace KafkaFlow.Client.Producers
         private volatile int messageCount;
         private DateTime lastProductionTime = DateTime.MinValue;
 
-        private Dictionary<(string, int), LinkedList<ProduceQueueItem>> pendingRequests = new();
+        private SortedDictionary<(string, int), LinkedList<ProduceQueueItem>> pendingRequests = new();
 
         public ProducerSender(
             IKafkaBroker broker,
@@ -39,11 +39,13 @@ namespace KafkaFlow.Client.Producers
 
             try
             {
-                var topic = this.request.Topics.GetOrAdd(
+                this.request ??= await this.CreateProduceRequestAsync();
+
+                var topic = this.request.Topics.SafeGetOrAdd(
                     item.Data.Topic,
                     _ => this.request.CreateTopic(item.Data.Topic));
 
-                var partition = topic.Partitions.GetOrAdd(
+                var partition = topic.Partitions.SafeGetOrAdd(
                     item.PartitionId,
                     _ => topic.CreatePartition(item.PartitionId));
 
@@ -84,7 +86,7 @@ namespace KafkaFlow.Client.Producers
                 }
 
                 Task<IProduceResponse> resultTask;
-                Dictionary<(string, int), LinkedList<ProduceQueueItem>> requests;
+                SortedDictionary<(string, int), LinkedList<ProduceQueueItem>> requests;
 
                 await this.produceSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -101,7 +103,7 @@ namespace KafkaFlow.Client.Producers
 
                     requests = Interlocked.Exchange(
                         ref this.pendingRequests,
-                        new Dictionary<(string, int), LinkedList<ProduceQueueItem>>());
+                        new SortedDictionary<(string, int), LinkedList<ProduceQueueItem>>());
                 }
                 finally
                 {
@@ -142,13 +144,11 @@ namespace KafkaFlow.Client.Producers
                         continue;
                     }
 
-                    requests.Remove((topic.Name, partition.Id));
+                    // requests.Remove((topic.Name, partition.Id));
 
-                    foreach (var item in items)
+                    if (partition.Error == ErrorCode.None)
                     {
-                        if (
-                            partition.Error == ErrorCode.None &&
-                            partition.RecordErrors.All(x => x.BatchIndex != item.OffsetDelta))
+                        foreach (var item in items)
                         {
                             item.CompletionSource.SetResult(
                                 new ProduceResult(
@@ -157,16 +157,30 @@ namespace KafkaFlow.Client.Producers
                                     partition.BaseOffset + item.OffsetDelta,
                                     item.Data));
                         }
-                        else
+                    }
+                    else
+                    {
+                        foreach (var item in items)
                         {
-                            var recordError = partition.RecordErrors
-                                .FirstOrDefault(x => x.BatchIndex == item.OffsetDelta);
+                            var recordError = partition.RecordErrors.FirstOrDefault(x => x.BatchIndex == item.OffsetDelta);
 
-                            item.CompletionSource.SetException(
-                                new ProduceException(
-                                    partition.Error,
-                                    partition.ErrorMessage,
-                                    recordError?.Message));
+                            if (recordError is null)
+                            {
+                                item.CompletionSource.SetResult(
+                                    new ProduceResult(
+                                        topic.Name,
+                                        partition.Id,
+                                        partition.BaseOffset + item.OffsetDelta,
+                                        item.Data));
+                            }
+                            else
+                            {
+                                item.CompletionSource.SetException(
+                                    new ProduceException(
+                                        partition.Error,
+                                        partition.ErrorMessage,
+                                        recordError?.Message));
+                            }
                         }
                     }
                 }
