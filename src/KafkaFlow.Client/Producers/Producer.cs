@@ -16,10 +16,10 @@ namespace KafkaFlow.Client.Producers
         private readonly IProducerPartitioner partitioner;
 
         private readonly ConcurrentAsyncDictionary<string, IMetadataResponse.ITopic> metadataCache =
-            new ConcurrentAsyncDictionary<string, IMetadataResponse.ITopic>();
+            new();
 
         private readonly ConcurrentDictionary<int, ProducerSender> senders =
-            new ConcurrentDictionary<int, ProducerSender>();
+            new();
 
         public Producer(
             IKafkaCluster cluster,
@@ -70,7 +70,9 @@ namespace KafkaFlow.Client.Producers
                 {
                     var host = this.cluster.AnyBroker;
 
-                    var request = host.RequestFactory.CreateMetadata();
+                    var requestFactory = await host.GetRequestFactoryAsync();
+
+                    var request = requestFactory.CreateMetadata();
 
                     var topic = request.CreateTopic();
                     topic.Name = topicName;

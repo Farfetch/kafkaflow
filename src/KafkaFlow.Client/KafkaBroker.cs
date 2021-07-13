@@ -2,13 +2,14 @@ namespace KafkaFlow.Client
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using KafkaFlow.Client.Protocol;
     using KafkaFlow.Client.Protocol.Messages;
     using KafkaFlow.Client.Protocol.Messages.Implementations;
 
     internal class KafkaBroker : IKafkaBroker
     {
-        private readonly Lazy<IRequestFactory> lazyRequestFactory;
+        private readonly Lazy<Task<IRequestFactory>> lazyRequestFactory;
 
         public KafkaBroker(BrokerAddress address, int nodeId, string clientId, TimeSpan requestTimeout)
         {
@@ -19,7 +20,7 @@ namespace KafkaFlow.Client
                 clientId,
                 requestTimeout);
 
-            this.lazyRequestFactory = new Lazy<IRequestFactory>(this.CreateRequestFactory);
+            this.lazyRequestFactory = new Lazy<Task<IRequestFactory>>(this.CreateRequestFactoryAsync);
         }
 
         public BrokerAddress Address { get; }
@@ -28,12 +29,11 @@ namespace KafkaFlow.Client
 
         public IBrokerConnection Connection { get; }
 
-        private IRequestFactory CreateRequestFactory()
+        public Task<IRequestFactory> GetRequestFactoryAsync() => this.lazyRequestFactory.Value;
+
+        private async Task<IRequestFactory> CreateRequestFactoryAsync()
         {
-            var apiVersionResponse = this.Connection
-                .SendAsync(new ApiVersionV2Request())
-                .GetAwaiter()
-                .GetResult();
+            var apiVersionResponse = await this.Connection.SendAsync(new ApiVersionV2Request());
 
             if (apiVersionResponse.Error != ErrorCode.None)
             {
@@ -46,11 +46,9 @@ namespace KafkaFlow.Client
                         .Select(x => new ApiVersionRange(x.ApiKey, x.MinVersion, x.MaxVersion))));
         }
 
-        public IRequestFactory RequestFactory => this.lazyRequestFactory.Value;
-
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            this.Connection.Dispose();
+            await this.Connection.DisposeAsync();
         }
     }
 }

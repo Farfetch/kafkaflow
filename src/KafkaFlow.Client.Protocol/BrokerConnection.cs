@@ -49,7 +49,7 @@ namespace KafkaFlow.Client.Protocol
                 try
                 {
                     var messageSize = await this.WaitForMessageSizeAsync().ConfigureAwait(false);
-                    
+
                     Debug.WriteLine($"Received message with {messageSize}b size");
 
                     if (messageSize <= 0)
@@ -93,7 +93,9 @@ namespace KafkaFlow.Client.Protocol
             response.Read(source);
 
             if (source.Size != source.Position)
+            {
                 throw new Exception("Some data was not read from response");
+            }
 
             request.CompletionSource.TrySetResult(response);
         }
@@ -128,20 +130,19 @@ namespace KafkaFlow.Client.Protocol
             return pendingRequest.GetTask<TResponse>();
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             this.stopTokenSource.Cancel();
-            this.listenerTask.GetAwaiter().GetResult();
+            await this.listenerTask;
+
+            this.stopTokenSource.Dispose();
             this.listenerTask.Dispose();
-            this.stream.Dispose();
+            await this.stream.DisposeAsync();
             this.client.Dispose();
         }
 
         private readonly struct PendingRequest
         {
-            public TimeSpan Timeout { get; }
-            public Type ResponseType { get; }
-
             public readonly TaskCompletionSource<IResponse> CompletionSource;
 
             public PendingRequest(TimeSpan timeout, Type responseType)
@@ -151,7 +152,12 @@ namespace KafkaFlow.Client.Protocol
                 this.CompletionSource = new TaskCompletionSource<IResponse>();
             }
 
-            public Task<TResponse> GetTask<TResponse>() where TResponse : IResponse =>
+            public TimeSpan Timeout { get; }
+
+            public Type ResponseType { get; }
+
+            public Task<TResponse> GetTask<TResponse>()
+                where TResponse : IResponse =>
                 this.CompletionSource.Task.ContinueWith(x => (TResponse) x.Result);
         }
     }

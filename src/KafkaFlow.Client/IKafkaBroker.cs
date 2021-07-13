@@ -1,17 +1,18 @@
 namespace KafkaFlow.Client
 {
     using System;
+    using System.Threading.Tasks;
     using KafkaFlow.Client.Protocol;
     using KafkaFlow.Client.Protocol.Messages;
 
-    internal interface IKafkaBroker : IDisposable
+    internal interface IKafkaBroker : IAsyncDisposable
     {
-        IRequestFactory RequestFactory { get; }
-
         IBrokerConnection Connection { get; }
 
         BrokerAddress Address { get; }
 
         int NodeId { get; }
+
+        Task<IRequestFactory> GetRequestFactoryAsync();
     }
 }

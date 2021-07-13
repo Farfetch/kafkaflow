@@ -7,7 +7,7 @@ namespace KafkaFlow.Client.Core
 
     internal class ConcurrentAsyncDictionary<TKey, TValue> : ConcurrentDictionary<TKey, TValue>
     {
-        private readonly SemaphoreSlim addSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim addSemaphore = new(1, 1);
 
         public async ValueTask<TValue> GetOrAddAsync(TKey key, Func<Task<TValue>> addHandler)
         {

@@ -8,23 +8,20 @@ namespace KafkaFlow.Client.Producers
     using KafkaFlow.Client.Exceptions;
     using KafkaFlow.Client.Extensions;
     using KafkaFlow.Client.Protocol.Messages;
-    using KafkaFlow.Client.Protocol.Messages.Implementations;
 
-    internal class ProducerSender : IDisposable, IAsyncDisposable
+    internal class ProducerSender : IAsyncDisposable
     {
         private readonly IKafkaBroker broker;
         private readonly ProducerConfiguration configuration;
+        private readonly Task produceTimeoutTask;
+        private readonly CancellationTokenSource stopLingerProduceTokenSource = new();
+        private readonly SemaphoreSlim produceSemaphore = new(1, 1);
 
         private IProduceRequest request;
         private volatile int messageCount;
         private DateTime lastProductionTime = DateTime.MinValue;
 
-        private readonly Task produceTimeoutTask;
-        private readonly CancellationTokenSource stopLingerProduceTokenSource = new CancellationTokenSource();
-        private readonly SemaphoreSlim produceSemaphore = new SemaphoreSlim(1, 1);
-
-        private SortedDictionary<(string, int), LinkedList<ProduceQueueItem>> pendingRequests
-            = new SortedDictionary<(string, int), LinkedList<ProduceQueueItem>>();
+        private Dictionary<(string, int), LinkedList<ProduceQueueItem>> pendingRequests = new();
 
         public ProducerSender(
             IKafkaBroker broker,
@@ -33,7 +30,6 @@ namespace KafkaFlow.Client.Producers
             this.broker = broker;
             this.configuration = configuration;
 
-            this.request = this.CreateProduceRequest();
             this.produceTimeoutTask = Task.Run(this.LingerProduceAsync);
         }
 
@@ -73,7 +69,9 @@ namespace KafkaFlow.Client.Producers
             }
 
             if (Interlocked.Increment(ref this.messageCount) >= this.configuration.MaxProduceBatchSize)
-                await this.ProduceAsync().ConfigureAwait(false);
+            {
+                await this.ProduceAsync();
+            }
         }
 
         private async Task ProduceAsync()
@@ -81,25 +79,29 @@ namespace KafkaFlow.Client.Producers
             try
             {
                 if (this.messageCount == 0)
+                {
                     return;
+                }
 
                 Task<IProduceResponse> resultTask;
-                SortedDictionary<(string, int), LinkedList<ProduceQueueItem>> requests;
+                Dictionary<(string, int), LinkedList<ProduceQueueItem>> requests;
 
                 await this.produceSemaphore.WaitAsync().ConfigureAwait(false);
 
                 try
                 {
                     if (Interlocked.Exchange(ref this.messageCount, 0) == 0)
+                    {
                         return;
+                    }
 
-                    var queued = Interlocked.Exchange(ref this.request, this.CreateProduceRequest());
+                    var queued = Interlocked.Exchange(ref this.request, await this.CreateProduceRequestAsync());
 
                     resultTask = this.broker.Connection.SendAsync(queued);
 
                     requests = Interlocked.Exchange(
                         ref this.pendingRequests,
-                        new SortedDictionary<(string, int), LinkedList<ProduceQueueItem>>());
+                        new Dictionary<(string, int), LinkedList<ProduceQueueItem>>());
                 }
                 finally
                 {
@@ -118,9 +120,11 @@ namespace KafkaFlow.Client.Producers
             }
         }
 
-        private IProduceRequest CreateProduceRequest()
+        private async Task<IProduceRequest> CreateProduceRequestAsync()
         {
-            return this.broker.RequestFactory.CreateProduce(
+            var requestFactory = await this.broker.GetRequestFactoryAsync();
+
+            return requestFactory.CreateProduce(
                 this.configuration.Acks,
                 (int) this.configuration.ProduceTimeout.TotalMilliseconds);
         }
@@ -134,7 +138,9 @@ namespace KafkaFlow.Client.Producers
                 foreach (var partition in topic.Partitions)
                 {
                     if (!requests.TryGetValue((topic.Name, partition.Id), out var items))
+                    {
                         continue;
+                    }
 
                     requests.Remove((topic.Name, partition.Id));
 
@@ -194,11 +200,6 @@ namespace KafkaFlow.Client.Producers
             }
 
             await this.ProduceAsync().ConfigureAwait(false);
-        }
-
-        public void Dispose()
-        {
-            this.DisposeAsync().GetAwaiter().GetResult();
         }
 
         public async ValueTask DisposeAsync()

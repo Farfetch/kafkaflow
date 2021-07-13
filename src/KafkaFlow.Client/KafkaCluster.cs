@@ -13,9 +13,9 @@ namespace KafkaFlow.Client
         private readonly string clientId;
         private readonly TimeSpan requestTimeout;
 
-        private readonly Dictionary<int, IKafkaBroker> brokers = new Dictionary<int, IKafkaBroker>();
+        private readonly Dictionary<int, IKafkaBroker> brokers = new();
 
-        private readonly SemaphoreSlim initializeSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim initializeSemaphore = new(1, 1);
 
         public KafkaCluster(
             IReadOnlyCollection<BrokerAddress> addresses,
@@ -37,19 +37,25 @@ namespace KafkaFlow.Client
         public async ValueTask EnsureInitializationAsync()
         {
             if (this.brokers.Any())
+            {
                 return;
+            }
 
             await this.initializeSemaphore.WaitAsync().ConfigureAwait(false);
 
             try
             {
                 if (this.brokers.Any())
+                {
                     return;
+                }
 
                 var first = new KafkaBroker(this.addresses.First(), 0, this.clientId, this.requestTimeout);
 
+                var requestFactory = await first.GetRequestFactoryAsync();
+
                 var metadata = await first.Connection
-                    .SendAsync(first.RequestFactory.CreateMetadata())
+                    .SendAsync(requestFactory.CreateMetadata())
                     .ConfigureAwait(false);
 
                 this.brokers.Add(first.NodeId, first);
