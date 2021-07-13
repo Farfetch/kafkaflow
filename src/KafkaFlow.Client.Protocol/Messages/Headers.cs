@@ -10,7 +10,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
     public class Headers : ISerializable, IEnumerable<KeyValuePair<string, byte[]>>, IRequest, IResponse
     {
-        private readonly List<Header> headers = new List<Header>();
+        private readonly List<Header> headers = new();
 
         public void Add(string key, byte[]? value)
         {

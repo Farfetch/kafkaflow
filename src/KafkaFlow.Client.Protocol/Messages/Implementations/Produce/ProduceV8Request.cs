@@ -27,7 +27,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
         public int Timeout { get; }
 
         public ConcurrentDictionary<string, IProduceRequest.ITopic> Topics { get; } =
-            new ConcurrentDictionary<string, IProduceRequest.ITopic>();
+            new();
 
         public IProduceRequest.ITopic CreateTopic(string name) => new Topic(name);
 
@@ -49,7 +49,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
             public string Name { get; }
 
             public ConcurrentDictionary<int, IProduceRequest.IPartition> Partitions { get; } =
-                new ConcurrentDictionary<int, IProduceRequest.IPartition>();
+                new();
 
             public IProduceRequest.IPartition CreatePartition(int id) => new Partition(id);
 
@@ -69,7 +69,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 
             public int Id { get; }
 
-            public RecordBatch RecordBatch { get; set; } = new RecordBatch();
+            public RecordBatch RecordBatch { get; set; } = new();
 
             public void Write(Stream destination)
             {

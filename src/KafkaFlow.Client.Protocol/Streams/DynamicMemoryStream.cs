@@ -14,7 +14,7 @@ namespace KafkaFlow.Client.Protocol.Streams
         private readonly IMemoryManager memoryManager;
         private readonly int segmentSize;
 
-        private readonly List<IntPtr> segments = new List<IntPtr>();
+        private readonly List<IntPtr> segments = new();
 
         public DynamicMemoryStream(IMemoryManager memoryManager, int segmentSize)
         {

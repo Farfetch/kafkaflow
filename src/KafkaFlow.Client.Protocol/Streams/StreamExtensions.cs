@@ -379,7 +379,7 @@ namespace KafkaFlow.Client.Protocol.Streams
 
         public static Span<byte> GetSpan(this Stream destination, long offset, long count)
         {
-            return new Span<byte>();
+            return new();
         }
     }
 }

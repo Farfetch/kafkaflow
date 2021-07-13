@@ -10,7 +10,7 @@ namespace KafkaFlow.Client.Protocol.Streams
         {
         }
 
-        public static readonly MemoryManager Instance = new MemoryManager();
+        public static readonly MemoryManager Instance = new();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IntPtr Allocate(int size) => Marshal.AllocHGlobal(size);

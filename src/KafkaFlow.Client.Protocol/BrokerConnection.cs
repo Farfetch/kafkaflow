@@ -16,18 +16,17 @@ namespace KafkaFlow.Client.Protocol
         private readonly TcpClient client;
         private readonly NetworkStream stream;
 
-        private readonly SortedDictionary<int, PendingRequest> pendingRequests =
-            new SortedDictionary<int, PendingRequest>();
+        private readonly Dictionary<int, PendingRequest> pendingRequests = new();
 
-        private volatile int lastCorrelationId;
-
-        private readonly CancellationTokenSource stopTokenSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource stopTokenSource = new();
         private readonly Task listenerTask;
 
         private readonly byte[] messageSizeBuffer = new byte[sizeof(int)];
 
         private readonly string clientId;
         private readonly TimeSpan requestTimeout;
+
+        private volatile int lastCorrelationId;
 
         public BrokerConnection(BrokerAddress address, string clientId, TimeSpan requestTimeout)
         {
@@ -53,13 +52,15 @@ namespace KafkaFlow.Client.Protocol
                     Debug.WriteLine($"Received message with {messageSize}b size");
 
                     if (messageSize <= 0)
+                    {
                         continue;
+                    }
 
-                    using var memory = new StaticMemoryStream(MemoryManager.Instance, messageSize);
+                    await using var memory = new StaticMemoryStream(MemoryManager.Instance, messageSize);
                     memory.ReadFrom(this.stream);
                     memory.Position = 0;
 
-                    using var tracked = new TrackedStream(memory, messageSize);
+                    await using var tracked = new TrackedStream(memory, messageSize);
                     this.RespondMessage(tracked);
                 }
                 catch (OperationCanceledException)

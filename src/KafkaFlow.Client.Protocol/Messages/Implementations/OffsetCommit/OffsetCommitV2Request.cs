@@ -21,7 +21,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetCommit
 
         public long RetentionTimeMs { get; set; }
 
-        public List<IOffsetCommitRequest.ITopic> Topics { get; } = new List<IOffsetCommitRequest.ITopic>();
+        public List<IOffsetCommitRequest.ITopic> Topics { get; } = new();
 
         public IOffsetCommitRequest.ITopic AddTopic()
         {
@@ -43,7 +43,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetCommit
         {
             public string Name { get; set; }
 
-            public List<IOffsetCommitRequest.IPartition> Partitions { get; } = new List<IOffsetCommitRequest.IPartition>();
+            public List<IOffsetCommitRequest.IPartition> Partitions { get; } = new();
 
             public IOffsetCommitRequest.IPartition AddPartition()
             {

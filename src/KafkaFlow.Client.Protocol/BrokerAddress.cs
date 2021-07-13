@@ -2,9 +2,10 @@ namespace KafkaFlow.Client.Protocol
 {
     using System;
 
-    public readonly struct BrokerAddress : IEquatable<BrokerAddress>
+    public class BrokerAddress : IEquatable<BrokerAddress>
     {
         public string Host { get; }
+
         public int Port { get; }
 
         public BrokerAddress(string host, int port)

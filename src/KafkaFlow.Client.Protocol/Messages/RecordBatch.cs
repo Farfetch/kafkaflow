@@ -7,7 +7,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
     public class RecordBatch : IRequest, IResponse
     {
-        private readonly LinkedList<Record> records = new LinkedList<Record>();
+        private readonly LinkedList<Record> records = new();
 
         public long BaseOffset { get; private set; } = 0;
 
