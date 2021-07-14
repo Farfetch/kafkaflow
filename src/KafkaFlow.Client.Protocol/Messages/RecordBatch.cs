@@ -8,17 +8,17 @@ namespace KafkaFlow.Client.Protocol.Messages
     {
         private readonly LinkedList<Record> records = new();
 
-        public long BaseOffset { get; private set; }
+        public long BaseOffset { get; private set; } = 0;
 
         public int BatchLength { get; private set; }
 
-        public int PartitionLeaderEpoch { get; private set; }
+        public int PartitionLeaderEpoch { get; private set; } = 0;
 
         public byte Magic { get; private set; } = 2;
 
         public int Crc { get; private set; }
 
-        public short Attributes { get; private set; }
+        public short Attributes { get; private set; } = 0;
 
         public int LastOffsetDelta { get; private set; }
 
@@ -57,7 +57,7 @@ namespace KafkaFlow.Client.Protocol.Messages
             // }
         }
 
-        public void Write(MemoryWritter destination)
+        public void Write(MemoryWriter destination)
         {
             // destination.WriteInt32(crcSliceLength + 8 + 4 + 4 + 1 + 4);
             var lengthStartPosition = destination.Position;
@@ -96,7 +96,7 @@ namespace KafkaFlow.Client.Protocol.Messages
             destination.Position = endPosition;
         }
 
-        public void Read(BaseMemoryStream source)
+        public void Read(MemoryReader source)
         {
             var size = source.ReadInt32();
 
@@ -128,7 +128,7 @@ namespace KafkaFlow.Client.Protocol.Messages
         {
             public int Length { get; private set; }
 
-            public byte Attributes { get; private set; }
+            public byte Attributes { get; private set; } = 0;
 
             public int TimestampDelta { get; internal set; }
 
@@ -140,9 +140,9 @@ namespace KafkaFlow.Client.Protocol.Messages
 
             public Headers? Headers { get; set; }
 
-            public void Write(MemoryWritter destination)
+            public void Write(MemoryWriter destination)
             {
-                using var tmp = new MemoryWritter(MemoryManager.Instance, 256);
+                using var tmp = new MemoryWriter(256);
 
                 tmp.WriteByte(this.Attributes);
                 tmp.WriteVarint(this.TimestampDelta);
@@ -183,7 +183,7 @@ namespace KafkaFlow.Client.Protocol.Messages
                 tmp.CopyTo(destination);
             }
 
-            public void Read(BaseMemoryStream source)
+            public void Read(MemoryReader source)
             {
                 this.Length = source.ReadVarint();
                 this.Attributes = (byte) source.ReadByte();

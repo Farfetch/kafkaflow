@@ -8,7 +8,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 
         public int ThrottleTimeMs { get; private set; }
 
-        public void Read(BaseMemoryStream source)
+        public void Read(MemoryReader source)
         {
             this.Topics = source.ReadArray<Topic>();
             this.ThrottleTimeMs = source.ReadInt32();
@@ -20,7 +20,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 
             public IProduceResponse.IPartition[] Partitions { get; private set; }
 
-            public void Read(BaseMemoryStream source)
+            public void Read(MemoryReader source)
             {
                 this.Name = source.ReadString();
                 this.Partitions = source.ReadArray<Partition>();
@@ -43,7 +43,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 
             public string? ErrorMessage { get; private set; }
 
-            public void Read(BaseMemoryStream source)
+            public void Read(MemoryReader source)
             {
                 this.Id = source.ReadInt32();
                 this.Error = source.ReadErrorCode();
@@ -61,7 +61,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 
             public string? Message { get; private set; }
 
-            public void Read(BaseMemoryStream source)
+            public void Read(MemoryReader source)
             {
                 this.BatchIndex = source.ReadInt32();
                 this.Message = source.ReadNullableString();

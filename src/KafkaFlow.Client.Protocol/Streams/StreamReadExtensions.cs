@@ -9,58 +9,55 @@ namespace KafkaFlow.Client.Protocol.Streams
     public static class StreamReadExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte ReadByte(this BaseMemoryStream source) => source.GetSpan(1)[0];
+        public static bool ReadBoolean(this MemoryReader source) => source.ReadByte() != 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ReadBoolean(this BaseMemoryStream source) => source.ReadByte() != 0;
+        public static ErrorCode ReadErrorCode(this MemoryReader source) => (ErrorCode) source.ReadInt16();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ErrorCode ReadErrorCode(this BaseMemoryStream source) => (ErrorCode) source.ReadInt16();
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short ReadInt16(this BaseMemoryStream source)
+        public static short ReadInt16(this MemoryReader source)
         {
             return BinaryPrimitives.ReadInt16BigEndian(source.GetSpan(2));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ReadInt32(this BaseMemoryStream source)
+        public static int ReadInt32(this MemoryReader source)
         {
             return BinaryPrimitives.ReadInt32BigEndian(source.GetSpan(4));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long ReadInt64(this BaseMemoryStream source)
+        public static long ReadInt64(this MemoryReader source)
         {
             return BinaryPrimitives.ReadInt64BigEndian(source.GetSpan(8));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string? ReadString(this BaseMemoryStream source)
+        public static string? ReadString(this MemoryReader source)
         {
             return source.ReadString(source.ReadInt16());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string? ReadNullableString(this BaseMemoryStream source)
+        public static string? ReadNullableString(this MemoryReader source)
         {
             return source.ReadNullableString(source.ReadInt16());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string? ReadNullableString(this BaseMemoryStream source, int size)
+        public static string? ReadNullableString(this MemoryReader source, int size)
         {
             return size < 0 ? null : source.ReadString(size);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string ReadString(this BaseMemoryStream source, int size)
+        public static string ReadString(this MemoryReader source, int size)
         {
             return Encoding.UTF8.GetString(source.GetSpan(size));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string? ReadCompactNullableString(this BaseMemoryStream source)
+        public static string? ReadCompactNullableString(this MemoryReader source)
         {
             var size = source.ReadUVarint();
 
@@ -70,13 +67,13 @@ namespace KafkaFlow.Client.Protocol.Streams
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string ReadCompactString(this BaseMemoryStream source)
+        public static string ReadCompactString(this MemoryReader source)
         {
             return source.ReadString(source.ReadUVarint() - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte[] ReadCompactByteArray(this BaseMemoryStream source)
+        public static byte[] ReadCompactByteArray(this MemoryReader source)
         {
             var size = source.ReadUVarint();
 
@@ -87,7 +84,7 @@ namespace KafkaFlow.Client.Protocol.Streams
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TMessage ReadMessage<TMessage>(this BaseMemoryStream source)
+        public static TMessage ReadMessage<TMessage>(this MemoryReader source)
             where TMessage : class, IResponse, new()
         {
             var message = new TMessage();
@@ -96,14 +93,14 @@ namespace KafkaFlow.Client.Protocol.Streams
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TMessage[] ReadArray<TMessage>(this BaseMemoryStream source) where TMessage : class, IResponse, new() =>
+        public static TMessage[] ReadArray<TMessage>(this MemoryReader source) where TMessage : class, IResponse, new() =>
             source.ReadArray<TMessage>(source.ReadInt32());
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TMessage[] ReadCompactArray<TMessage>(this BaseMemoryStream source) where TMessage : class, IResponse, new() =>
+        public static TMessage[] ReadCompactArray<TMessage>(this MemoryReader source) where TMessage : class, IResponse, new() =>
             source.ReadArray<TMessage>(source.ReadUVarint() - 1);
 
-        public static TMessage[] ReadArray<TMessage>(this BaseMemoryStream source, int count) where TMessage : class, IResponse, new()
+        public static TMessage[] ReadArray<TMessage>(this MemoryReader source, int count) where TMessage : class, IResponse, new()
         {
             if (count < 0)
                 return null;
@@ -122,7 +119,7 @@ namespace KafkaFlow.Client.Protocol.Streams
             return result;
         }
 
-        public static TaggedField[] ReadTaggedFields(this BaseMemoryStream source)
+        public static TaggedField[] ReadTaggedFields(this MemoryReader source)
         {
             var count = source.ReadUVarint();
 
@@ -141,12 +138,12 @@ namespace KafkaFlow.Client.Protocol.Streams
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int[] ReadInt32Array(this BaseMemoryStream source) => source.ReadInt32Array(source.ReadInt32());
+        public static int[] ReadInt32Array(this MemoryReader source) => source.ReadInt32Array(source.ReadInt32());
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int[] ReadCompactInt32Array(this BaseMemoryStream source) => source.ReadInt32Array(source.ReadUVarint() - 1);
+        public static int[] ReadCompactInt32Array(this MemoryReader source) => source.ReadInt32Array(source.ReadUVarint() - 1);
 
-        public static int[] ReadInt32Array(this BaseMemoryStream source, int count)
+        public static int[] ReadInt32Array(this MemoryReader source, int count)
         {
             if (count < 0)
                 return null;
@@ -165,7 +162,7 @@ namespace KafkaFlow.Client.Protocol.Streams
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ReadVarint(this BaseMemoryStream source)
+        public static int ReadVarint(this MemoryReader source)
         {
             var num = source.ReadUVarint();
 
@@ -173,9 +170,9 @@ namespace KafkaFlow.Client.Protocol.Streams
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ReadUVarint(this BaseMemoryStream source) => source.ReadUVarint(out _);
+        public static int ReadUVarint(this MemoryReader source) => source.ReadUVarint(out _);
 
-        public static int ReadUVarint(this BaseMemoryStream source, out int bytesRead)
+        public static int ReadUVarint(this MemoryReader source, out int bytesRead)
         {
             const int endMask = 0b1000_0000;
             const int valueMask = 0b0111_1111;

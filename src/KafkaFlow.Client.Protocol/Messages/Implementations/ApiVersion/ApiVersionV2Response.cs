@@ -10,7 +10,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.ApiVersion
 
         public int ThrottleTime { get; private set; }
 
-        public void Read(BaseMemoryStream source)
+        public void Read(MemoryReader source)
         {
             this.Error = source.ReadErrorCode();
             this.ApiVersions = source.ReadArray<ApiVersion>();
@@ -25,7 +25,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.ApiVersion
 
             public short MaxVersion { get; private set; }
 
-            public void Read(BaseMemoryStream source)
+            public void Read(MemoryReader source)
             {
                 this.ApiKey = (ApiKey) source.ReadInt16();
                 this.MinVersion = source.ReadInt16();

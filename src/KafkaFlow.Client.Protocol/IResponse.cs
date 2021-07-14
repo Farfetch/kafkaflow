@@ -4,6 +4,6 @@ namespace KafkaFlow.Client.Protocol
 
     public interface IResponse
     {
-        public void Read(BaseMemoryStream source);
+        public void Read(MemoryReader source);
     }
 }

@@ -4,6 +4,7 @@ namespace KafkaFlow.Client.Protocol
     using System.Buffers.Binary;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using System.Net.Sockets;
     using System.Runtime.CompilerServices;
     using System.Threading;
@@ -56,7 +57,7 @@ namespace KafkaFlow.Client.Protocol
                         continue;
                     }
 
-                    using var memoryStream = new MemoryReader(MemoryManager.Instance, messageSize);
+                    using var memoryStream = new MemoryReader(messageSize);
                     memoryStream.ReadFrom(this.stream);
                     memoryStream.Position = 0;
                     this.RespondMessage(memoryStream);
@@ -75,11 +76,11 @@ namespace KafkaFlow.Client.Protocol
 
             if (!this.pendingRequests.TryGetValue(correlationId, out var request))
             {
-                Debug.WriteLine($"Received Invalid message CID: {correlationId}");
+                Console.WriteLine($"Received Invalid message CID: {correlationId}");
                 return;
             }
 
-            Debug.WriteLine($"Received CID: {correlationId}, Type {request.ResponseType.Name} with {source.Length:N0}b");
+            Console.WriteLine($"Received CID: {correlationId}, Type {request.ResponseType.Name} with {source.Length:N0}b");
 
             this.pendingRequests.Remove(correlationId);
 
@@ -112,7 +113,7 @@ namespace KafkaFlow.Client.Protocol
         {
             var pendingRequest = new PendingRequest(this.requestTimeout, request.ResponseType);
 
-            using var tmp = new MemoryWritter(MemoryManager.Instance);
+            using var tmp = new MemoryWriter();
 
             var correlationId = Interlocked.Increment(ref this.lastCorrelationId);
 
@@ -120,6 +121,11 @@ namespace KafkaFlow.Client.Protocol
 
             tmp.WriteMessage(new Request(correlationId, this.clientId, request));
             tmp.Position = 0;
+
+#if DEBUG
+            var bytes = tmp.ToArray();
+            Debug.WriteLine($"{request.GetType().Name}: {string.Join(",", bytes)}");
+#endif
 
             lock (this.stream)
             {

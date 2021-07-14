@@ -20,7 +20,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.LeaveGroup
 
         public ILeaveGroupRequest.IMember CreateMember() => new Member();
 
-        public void Write(MemoryWritter destination)
+        public void Write(MemoryWriter destination)
         {
             destination.WriteCompactString(this.GroupId);
             destination.WriteCompactArray(this.Members);
@@ -35,7 +35,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.LeaveGroup
 
             public TaggedField[] TaggedFields { get; set; } = Array.Empty<TaggedField>();
 
-            public void Write(MemoryWritter destination)
+            public void Write(MemoryWriter destination)
             {
                 destination.WriteCompactString(this.MemberId);
                 destination.WriteCompactNullableString(this.GroupInstanceId);

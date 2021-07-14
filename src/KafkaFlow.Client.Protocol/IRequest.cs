@@ -4,6 +4,6 @@ namespace KafkaFlow.Client.Protocol
 
     public interface IRequest
     {
-        public void Write(MemoryWritter destination);
+        public void Write(MemoryWriter destination);
     }
 }

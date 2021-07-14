@@ -9,14 +9,14 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public byte[] Data { get; private set; } = Array.Empty<byte>();
 
-        public void Write(MemoryWritter destination)
+        public void Write(MemoryWriter destination)
         {
             destination.WriteUVarint((ulong) this.Tag);
             destination.WriteUVarint((ulong) this.Data.Length);
             destination.Write(this.Data);
         }
 
-        public void Read(BaseMemoryStream source)
+        public void Read(MemoryReader source)
         {
             this.Tag = source.ReadUVarint();
             this.Data = source.GetSpan(source.ReadUVarint()).ToArray();

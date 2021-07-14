@@ -28,7 +28,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Heartbeat
 
         public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
 
-        public void Write(MemoryWritter destination)
+        public void Write(MemoryWriter destination)
         {
             destination.WriteCompactString(this.GroupId);
             destination.WriteInt32(this.GenerationId);

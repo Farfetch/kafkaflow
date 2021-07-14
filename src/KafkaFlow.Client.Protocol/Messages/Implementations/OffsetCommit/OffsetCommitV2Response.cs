@@ -6,7 +6,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetCommit
     {
         public IOffsetCommitResponse.ITopic[] Topics { get; private set; }
 
-        public void Read(BaseMemoryStream source)
+        public void Read(MemoryReader source)
         {
             this.Topics = source.ReadArray<Topic>();
         }
@@ -17,7 +17,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetCommit
 
             public IOffsetCommitResponse.IPartition[] Partitions { get; private set; }
 
-            public void Read(BaseMemoryStream source)
+            public void Read(MemoryReader source)
             {
                 this.Name = source.ReadString();
                 this.Partitions = source.ReadArray<Partition>();
@@ -30,7 +30,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetCommit
 
             public ErrorCode Error { get; private set; }
 
-            public void Read(BaseMemoryStream source)
+            public void Read(MemoryReader source)
             {
                 this.Id = source.ReadInt32();
                 this.Error = source.ReadErrorCode();

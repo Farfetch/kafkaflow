@@ -11,7 +11,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.ApiVersion
 
         public Type ResponseType => typeof(ApiVersionV2Response);
 
-        public void Write(MemoryWritter destination)
+        public void Write(MemoryWriter destination)
         {
             // Do Nothing
         }

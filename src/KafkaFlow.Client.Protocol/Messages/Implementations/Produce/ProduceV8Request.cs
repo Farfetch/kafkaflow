@@ -29,7 +29,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 
         public IProduceRequest.ITopic CreateTopic(string name) => new Topic(name);
 
-        public void Write(MemoryWritter destination)
+        public void Write(MemoryWriter destination)
         {
             destination.WriteString(this.TransactionalId);
             destination.WriteInt16((short) this.Acks);
@@ -51,7 +51,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 
             public IProduceRequest.IPartition CreatePartition(int id) => new Partition(id);
 
-            public void Write(MemoryWritter destination)
+            public void Write(MemoryWriter destination)
             {
                 destination.WriteString(this.Name);
                 destination.WriteArray(this.Partitions.Select(x => x.Value), this.Partitions.Count);
@@ -69,7 +69,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 
             public RecordBatch RecordBatch { get; set; } = new();
 
-            public void Write(MemoryWritter destination)
+            public void Write(MemoryWriter destination)
             {
                 destination.WriteInt32(this.Id);
                 destination.WriteMessage(this.RecordBatch);

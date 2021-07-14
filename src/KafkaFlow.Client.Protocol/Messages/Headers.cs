@@ -57,7 +57,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
-        public void Write(MemoryWritter destination)
+        public void Write(MemoryWriter destination)
         {
             destination.WriteVarint(this.headers.Count);
 
@@ -80,7 +80,7 @@ namespace KafkaFlow.Client.Protocol.Messages
             }
         }
 
-        public void Read(BaseMemoryStream source)
+        public void Read(MemoryReader source)
         {
             var count = source.ReadVarint();
             this.headers.Capacity = count;

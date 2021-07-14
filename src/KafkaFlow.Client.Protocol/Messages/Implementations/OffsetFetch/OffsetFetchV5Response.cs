@@ -10,7 +10,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
 
         public ErrorCode Error { get; set; }
 
-        public void Read(BaseMemoryStream source)
+        public void Read(MemoryReader source)
         {
             this.ThrottleTimeMs = source.ReadInt32();
             this.Topics = source.ReadArray<Topic>();
@@ -23,7 +23,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
 
             public Partition[] Partitions { get; set; }
 
-            public void Read(BaseMemoryStream source)
+            public void Read(MemoryReader source)
             {
                 this.Name = source.ReadString();
                 this.Partitions = source.ReadArray<Partition>();
@@ -42,7 +42,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
 
             public short ErrorCode { get; set; }
 
-            public void Read(BaseMemoryStream source)
+            public void Read(MemoryReader source)
             {
                 this.Id = source.ReadInt32();
                 this.CommittedOffset = source.ReadInt64();

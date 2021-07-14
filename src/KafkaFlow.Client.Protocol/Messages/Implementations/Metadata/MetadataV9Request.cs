@@ -23,7 +23,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Metadata
 
         public IMetadataRequest.ITopic CreateTopic() => new Topic();
 
-        public void Write(MemoryWritter destination)
+        public void Write(MemoryWriter destination)
         {
             destination.WriteCompactArray(this.Topics);
             destination.WriteBoolean(this.AllowAutoTopicCreation);
@@ -38,7 +38,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Metadata
 
             public TaggedField[] TaggedFields { get; } = Array.Empty<TaggedField>();
 
-            public void Write(MemoryWritter destination)
+            public void Write(MemoryWriter destination)
             {
                 destination.WriteCompactString(this.Name);
                 destination.WriteTaggedFields(this.TaggedFields);

@@ -12,7 +12,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.LeaveGroup
 
         public TaggedField[] TaggedFields { get; private set; }
 
-        public void Read(BaseMemoryStream source)
+        public void Read(MemoryReader source)
         {
             this.ThrottleTimeMs = source.ReadInt32();
             this.Error = (ErrorCode) source.ReadInt16();
@@ -30,7 +30,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.LeaveGroup
 
             public TaggedField[] TaggedFields { get; private set; }
 
-            public void Read(BaseMemoryStream source)
+            public void Read(MemoryReader source)
             {
                 this.MemberId = source.ReadCompactString();
                 this.GroupInstanceId = source.ReadCompactString();

@@ -1,44 +1,45 @@
 namespace KafkaFlow.Client.Protocol.Streams
 {
     using System;
+    using System.Buffers;
     using System.IO;
     using System.Runtime.CompilerServices;
 
-    public sealed class MemoryReader : BaseMemoryStream
+    public sealed class MemoryReader : IDisposable
     {
-        private readonly IntPtr buffer;
-        private readonly IMemoryManager memoryManager;
+        private readonly byte[] buffer;
         private int position;
 
-        public MemoryReader(IMemoryManager memoryManager, int length)
+        public MemoryReader(int length)
         {
-            this.memoryManager = memoryManager;
-            this.buffer = memoryManager.Allocate(length);
-            this.length = length;
+            this.buffer = ArrayPool<byte>.Shared.Rent(length);
+            this.Length = length;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void ReadFrom(Stream stream)
+        public void ReadFrom(Stream stream)
         {
-            stream.Read(
-                new Span<byte>(
-                    (this.buffer + this.position).ToPointer(),
-                    this.length - this.position));
+            stream.Read(new Span<byte>(this.buffer, this.position, this.Length - this.position));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override unsafe Span<byte> GetSpan(int size)
+        public Span<byte> GetSpan(int size)
         {
             var start = this.position;
             this.Position += size;
-            return new Span<byte>((this.buffer + start).ToPointer(), size);
+            return new Span<byte>(this.buffer, start, size);
         }
 
-        public override void Dispose() => this.memoryManager.Free(this.buffer);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ReadByte() => this.buffer[this.Position++];
 
-        public override unsafe byte this[int index] => *(byte*) (this.buffer + this.position);
+        public void Dispose() => ArrayPool<byte>.Shared.Return(this.buffer);
 
-        public override int Position
+        public byte this[int index] => this.buffer[index];
+
+        public int Length { get; }
+
+        public int Position
         {
             get => this.position;
             set

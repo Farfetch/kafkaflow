@@ -23,7 +23,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.FindCoordinator
 
         public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
 
-        public void Write(MemoryWritter destination)
+        public void Write(MemoryWriter destination)
         {
             destination.WriteCompactString(this.Key);
             destination.WriteByte(this.KeyType);

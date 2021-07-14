@@ -2,34 +2,35 @@ namespace KafkaFlow.Client.Protocol.Streams
 {
     using System;
     using System.Buffers;
+    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Runtime.CompilerServices;
 
-    public sealed class MemoryWritter : BaseMemoryStream
+    public sealed class MemoryWriter : IDisposable, IReadOnlyList<byte>
     {
-        private int currentSegment;
-        private int relativePosition;
+        private int currentSegment = 0;
+        private int relativePosition = 0;
 
-        private readonly IMemoryManager memoryManager;
         private readonly int segmentSize;
 
-        private readonly List<IntPtr> segments = new();
+        private readonly List<byte[]> segments = new();
 
-        public MemoryWritter(IMemoryManager memoryManager, int segmentSize)
+        public MemoryWriter(int segmentSize)
         {
-            this.memoryManager = memoryManager;
             this.segmentSize = segmentSize;
         }
 
-        public MemoryWritter(IMemoryManager memoryManager) : this(memoryManager, 1024)
+        public MemoryWriter() : this(1024)
         {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(byte[] buffer, int offset, int count) => this.Write(new Span<byte>(buffer, offset, count));
 
-        public unsafe void Write(ReadOnlySpan<byte> buffer)
+        public void WriteByte(byte value) => this.Write(new[] { value }, 0, 1);
+
+        public void Write(ReadOnlySpan<byte> buffer)
         {
             var count = buffer.Length;
             var offset = 0;
@@ -42,6 +43,11 @@ namespace KafkaFlow.Client.Protocol.Streams
 
             this.Position = endPosition;
 
+            if (endPosition > this.Length)
+            {
+                this.Length = endPosition;
+            }
+
             while (count > 0)
             {
                 var segment = this.segments[startSegment++];
@@ -50,7 +56,7 @@ namespace KafkaFlow.Client.Protocol.Streams
 
                 buffer
                     .Slice(offset, writeCount)
-                    .CopyTo(new Span<byte>((segment + startRelPosition).ToPointer(), writeCount));
+                    .CopyTo(new Span<byte>(segment, startRelPosition, writeCount));
 
                 startRelPosition = 0;
 
@@ -59,20 +65,20 @@ namespace KafkaFlow.Client.Protocol.Streams
             }
         }
 
-        public unsafe void CopyTo(Stream destination)
+        public void CopyTo(Stream destination)
         {
-            var totalBytes = this.length;
+            var totalBytes = this.Length;
 
             foreach (var segment in this.segments)
             {
                 var bytesToWriteCount = Math.Min(totalBytes, this.segmentSize);
-                destination.Write(new ReadOnlySpan<byte>(segment.ToPointer(), bytesToWriteCount));
+                destination.Write(new ReadOnlySpan<byte>(segment, 0, bytesToWriteCount));
 
                 totalBytes -= bytesToWriteCount;
             }
         }
 
-        public unsafe void CopyTo(MemoryWritter dest)
+        public void CopyTo(MemoryWriter dest)
         {
             var sourceSegmentIndex = this.currentSegment;
             var sourceOffset = this.relativePosition;
@@ -87,6 +93,11 @@ namespace KafkaFlow.Client.Protocol.Streams
             this.Position = this.Length;
             dest.Position += totalWriteCount;
 
+            if (dest.Position > dest.Length)
+            {
+                dest.Length = dest.Position;
+            }
+
             while (totalWriteCount > 0)
             {
                 var sourceSegment = this.segments[sourceSegmentIndex];
@@ -96,11 +107,8 @@ namespace KafkaFlow.Client.Protocol.Streams
                 var destWriteCount = Math.Min(dest.segmentSize - destOffset, totalWriteCount);
                 var writeCount = Math.Min(sourceWriteCount, destWriteCount);
 
-                Buffer.MemoryCopy(
-                    (sourceSegment + sourceOffset).ToPointer(),
-                    (destSegment + destOffset).ToPointer(),
-                    writeCount,
-                    writeCount);
+                new Span<byte>(sourceSegment, sourceOffset, writeCount)
+                    .CopyTo(new Span<byte>(destSegment, destOffset, writeCount));
 
                 totalWriteCount -= writeCount;
 
@@ -126,23 +134,11 @@ namespace KafkaFlow.Client.Protocol.Streams
             }
         }
 
-        public override unsafe Span<byte> GetSpan(int size)
-        {
-            this.EnsureCapacity(this.Position + size);
-
-            if (this.relativePosition + size <= this.segmentSize)
-            {
-                return new Span<byte>(this.segments[this.currentSegment].ToPointer(), size);
-            }
-
-            return new Span<byte>();
-        }
-
-        public override void Dispose()
+        public void Dispose()
         {
             foreach (var segment in this.segments)
             {
-                this.memoryManager.Free(segment);
+                ArrayPool<byte>.Shared.Return(segment);
             }
 
             this.segments.Clear();
@@ -151,7 +147,9 @@ namespace KafkaFlow.Client.Protocol.Streams
         private void EnsureCapacity(long capacity)
         {
             if (capacity <= this.Capacity)
+            {
                 return;
+            }
 
             var diff = capacity - this.Capacity;
 
@@ -160,7 +158,7 @@ namespace KafkaFlow.Client.Protocol.Streams
 
             while (--newSegmentsCount >= 0)
             {
-                this.segments.Add(this.memoryManager.Allocate(this.segmentSize));
+                this.segments.Add(ArrayPool<byte>.Shared.Rent(this.segmentSize));
             }
         }
 
@@ -170,30 +168,41 @@ namespace KafkaFlow.Client.Protocol.Streams
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int GetRelativePosition(long globalPosition) => (int) (globalPosition % this.segmentSize);
 
-        public override unsafe byte this[int index] => *(byte*) (this.segments[this.GetSegment(index)] + this.GetRelativePosition(index));
+        public byte this[int index] => this.segments[this.GetSegment(index)][this.GetRelativePosition(index)];
 
-        public override int Position
+        public int Length { get; private set; }
+
+        public int Capacity { get; private set; }
+
+        public int Position
         {
-            get => this.segmentSize * this.currentSegment + this.relativePosition;
+            get => (this.segmentSize * this.currentSegment) + this.relativePosition;
             set
             {
-                if (value < 0)
+                if (value < 0 && value <= this.Capacity)
                 {
                     throw new ArgumentOutOfRangeException(
                         nameof(this.Position),
-                        $"The {nameof(this.Position)} must be greater or equal 0");
+                        $"The {nameof(this.Position)} must be greater or equal 0 and less than Capacity");
                 }
-
-                if (value > this.length)
-                    this.length = value;
 
                 this.currentSegment = this.GetSegment(value);
                 this.relativePosition = this.GetRelativePosition(value);
             }
         }
 
-        public int Capacity { get; private set; }
+        public IEnumerable<byte> AsEnumerable()
+        {
+            for (var i = 0; i < this.Length; i++)
+            {
+                yield return this[i];
+            }
+        }
 
-        public void WriteByte(byte value) => this.Write(new[] { value }, 0, 1);
+        public IEnumerator<byte> GetEnumerator() => this.AsEnumerable().GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+
+        public int Count => this.Length;
     }
 }
