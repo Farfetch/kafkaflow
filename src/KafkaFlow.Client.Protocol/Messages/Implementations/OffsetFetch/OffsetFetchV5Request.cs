@@ -1,7 +1,6 @@
 namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
 {
     using System;
-    using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
     public class OffsetFetchV5Request : IRequestMessage<OffsetFetchV5Response>
@@ -22,7 +21,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
 
         public Topic[] Topics { get; }
 
-        public void Write(DynamicMemoryStream destination)
+        public void Write(MemoryWritter destination)
         {
             destination.WriteString(this.GroupId);
             destination.WriteArray(this.Topics);
@@ -40,7 +39,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
 
             public int[] Partitions { get; }
 
-            public void Write(DynamicMemoryStream destination)
+            public void Write(MemoryWritter destination)
             {
                 destination.WriteString(this.Name);
                 destination.WriteInt32Array(this.Partitions);

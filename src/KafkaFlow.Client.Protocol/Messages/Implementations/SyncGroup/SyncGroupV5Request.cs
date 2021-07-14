@@ -1,7 +1,6 @@
 namespace KafkaFlow.Client.Protocol.Messages.Implementations.SyncGroup
 {
     using System;
-    using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
     public class SyncGroupV5Request : IRequestMessage<SyncGroupV5Response>, ITaggedFields
@@ -40,7 +39,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.SyncGroup
 
         public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
 
-        public void Write(DynamicMemoryStream destination)
+        public void Write(MemoryWritter destination)
         {
             destination.WriteCompactString(this.GroupId);
             destination.WriteInt32(this.GenerationId);
@@ -66,7 +65,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.SyncGroup
 
             public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
 
-            public void Write(DynamicMemoryStream destination)
+            public void Write(MemoryWritter destination)
             {
                 destination.WriteCompactString(this.MemberId);
                 destination.WriteCompactByteArray(this.Metadata);

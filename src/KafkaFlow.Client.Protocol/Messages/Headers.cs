@@ -2,7 +2,6 @@ namespace KafkaFlow.Client.Protocol.Messages
 {
     using System.Collections;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Runtime.Serialization;
     using System.Text;
@@ -58,7 +57,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
-        public void Write(DynamicMemoryStream destination)
+        public void Write(MemoryWritter destination)
         {
             destination.WriteVarint(this.headers.Count);
 

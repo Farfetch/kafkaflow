@@ -2,7 +2,6 @@ namespace KafkaFlow.Client.Protocol
 {
     using System;
     using System.Diagnostics;
-    using System.IO;
     using KafkaFlow.Client.Protocol.Messages;
     using KafkaFlow.Client.Protocol.Streams;
 
@@ -26,7 +25,7 @@ namespace KafkaFlow.Client.Protocol
             this.Message = message;
         }
 
-        public void Write(DynamicMemoryStream destination)
+        public void Write(MemoryWritter destination)
         {
             destination.WriteInt32(0); // Skip message size to write later
             var startPosition = destination.Position;

@@ -2,7 +2,6 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.LeaveGroup
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
     internal class LeaveGroupV4Request : ITaggedFields, ILeaveGroupRequest
@@ -21,7 +20,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.LeaveGroup
 
         public ILeaveGroupRequest.IMember CreateMember() => new Member();
 
-        public void Write(DynamicMemoryStream destination)
+        public void Write(MemoryWritter destination)
         {
             destination.WriteCompactString(this.GroupId);
             destination.WriteCompactArray(this.Members);
@@ -36,7 +35,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.LeaveGroup
 
             public TaggedField[] TaggedFields { get; set; } = Array.Empty<TaggedField>();
 
-            public void Write(DynamicMemoryStream destination)
+            public void Write(MemoryWritter destination)
             {
                 destination.WriteCompactString(this.MemberId);
                 destination.WriteCompactNullableString(this.GroupInstanceId);

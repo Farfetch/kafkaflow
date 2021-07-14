@@ -1,7 +1,6 @@
 namespace KafkaFlow.Client.Protocol.Messages
 {
     using System;
-    using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
     public class TaggedField : IRequest, IResponse
@@ -10,7 +9,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public byte[] Data { get; private set; } = Array.Empty<byte>();
 
-        public void Write(DynamicMemoryStream destination)
+        public void Write(MemoryWritter destination)
         {
             destination.WriteUVarint((ulong) this.Tag);
             destination.WriteUVarint((ulong) this.Data.Length);

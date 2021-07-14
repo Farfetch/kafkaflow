@@ -1,7 +1,6 @@
 namespace KafkaFlow.Client.Protocol.Messages.Implementations.Metadata
 {
     using System;
-    using System.IO;
     using KafkaFlow.Client.Protocol.Streams;
 
     internal class MetadataV9Request : IMetadataRequest, ITaggedFields
@@ -24,7 +23,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Metadata
 
         public IMetadataRequest.ITopic CreateTopic() => new Topic();
 
-        public void Write(DynamicMemoryStream destination)
+        public void Write(MemoryWritter destination)
         {
             destination.WriteCompactArray(this.Topics);
             destination.WriteBoolean(this.AllowAutoTopicCreation);
@@ -39,7 +38,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Metadata
 
             public TaggedField[] TaggedFields { get; } = Array.Empty<TaggedField>();
 
-            public void Write(DynamicMemoryStream destination)
+            public void Write(MemoryWritter destination)
             {
                 destination.WriteCompactString(this.Name);
                 destination.WriteTaggedFields(this.TaggedFields);
