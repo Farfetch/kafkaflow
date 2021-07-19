@@ -1,94 +1,81 @@
 namespace KafkaFlow.Client.Protocol
 {
     using System;
-    using System.Collections.Generic;
+    using System.Buffers;
 
-    public class Crc32CHash
+    public static class Crc32CHash
     {
         private const uint Poly = 0x82f63b78;
 
-        private static readonly uint[,] Table = new uint[8, 256];
+        private static readonly uint[] Table = new uint[16 * 256];
 
         static Crc32CHash()
         {
-            uint n, crc, k;
-
-            for (n = 0; n < 256; ++n)
+            uint[] table = Table;
+            for (uint i = 0; i < 256; i++)
             {
-                crc = n;
-                crc = (crc & 1) != 0 ? (crc >> 1) ^ Poly : crc >> 1;
-                crc = (crc & 1) != 0 ? (crc >> 1) ^ Poly : crc >> 1;
-                crc = (crc & 1) != 0 ? (crc >> 1) ^ Poly : crc >> 1;
-                crc = (crc & 1) != 0 ? (crc >> 1) ^ Poly : crc >> 1;
-                crc = (crc & 1) != 0 ? (crc >> 1) ^ Poly : crc >> 1;
-                crc = (crc & 1) != 0 ? (crc >> 1) ^ Poly : crc >> 1;
-                crc = (crc & 1) != 0 ? (crc >> 1) ^ Poly : crc >> 1;
-                crc = (crc & 1) != 0 ? (crc >> 1) ^ Poly : crc >> 1;
-                Table[0, n] = crc;
-            }
-
-            for (n = 0; n < 256; n++)
-            {
-                crc = Table[0, n];
-                for (k = 1; k < 8; k++)
+                uint res = i;
+                for (int t = 0; t < 16; t++)
                 {
-                    crc = Table[0, crc & 0xff] ^ (crc >> 8);
-                    Table[k, n] = crc;
+                    for (int k = 0; k < 8; k++)
+                    {
+                        res = (res & 1) == 1 ? Poly ^ (res >> 1) : (res >> 1);
+                    }
+
+                    table[(t * 256) + i] = res;
                 }
             }
         }
 
-        static uint InternalCompute(uint crci, IReadOnlyList<byte> data, int offset, int len)
+        public static uint Compute(uint crc, ReadOnlySpan<byte> input, int offset, int length)
         {
-            ulong crc = crci ^ 0xffffffff;
+            uint crcLocal = uint.MaxValue ^ crc;
 
-            while (len > 0 && (data[offset] & 7) != 0)
+            uint[] table = Table;
+            while (length >= 16)
             {
-                crc = Table[0, (crc ^ data[offset++]) & 0xff] ^ (crc >> 8);
-                len--;
-            }
-            
-            Span<byte> buffer = stackalloc byte[8];
-
-            while (len >= 8)
-            {
-                for (var i = 0; i < buffer.Length; ++i)
-                {
-                    buffer[i] = data[offset + i];
-                }
-                
-                var ncopy = BitConverter.ToUInt64(buffer);
-
-                crc ^= ncopy;
-                crc = Table[7, crc & 0xff] ^
-                      Table[6, (crc >> 8) & 0xff] ^
-                      Table[5, (crc >> 16) & 0xff] ^
-                      Table[4, (crc >> 24) & 0xff] ^
-                      Table[3, (crc >> 32) & 0xff] ^
-                      Table[2, (crc >> 40) & 0xff] ^
-                      Table[1, (crc >> 48) & 0xff] ^
-                      Table[0, crc >> 56];
-                offset += 8;
-                len -= 8;
+                crcLocal = table[(15 * 256) + ((crcLocal ^ input[offset]) & 0xff)]
+                           ^ table[(14 * 256) + (((crcLocal >> 8) ^ input[offset + 1]) & 0xff)]
+                           ^ table[(13 * 256) + (((crcLocal >> 16) ^ input[offset + 2]) & 0xff)]
+                           ^ table[(12 * 256) + (((crcLocal >> 24) ^ input[offset + 3]) & 0xff)]
+                           ^ table[(11 * 256) + input[offset + 4]]
+                           ^ table[(10 * 256) + input[offset + 5]]
+                           ^ table[(9 * 256) + input[offset + 6]]
+                           ^ table[(8 * 256) + input[offset + 7]]
+                           ^ table[(7 * 256) + input[offset + 8]]
+                           ^ table[(6 * 256) + input[offset + 9]]
+                           ^ table[(5 * 256) + input[offset + 10]]
+                           ^ table[(4 * 256) + input[offset + 11]]
+                           ^ table[(3 * 256) + input[offset + 12]]
+                           ^ table[(2 * 256) + input[offset + 13]]
+                           ^ table[(1 * 256) + input[offset + 14]]
+                           ^ table[(0 * 256) + input[offset + 15]];
+                offset += 16;
+                length -= 16;
             }
 
-            while (len > 0)
+            while (--length >= 0)
             {
-                crc = Table[0, (crc ^ data[offset++]) & 0xff] ^ (crc >> 8);
-                len--;
+                crcLocal = table[(crcLocal ^ input[offset++]) & 0xff] ^ crcLocal >> 8;
             }
 
-            return (uint) crc ^ 0xffffffff;
+            return crcLocal ^ uint.MaxValue;
         }
 
-        public static uint Compute(IReadOnlyList<byte> data)
-        {
-            return InternalCompute(0, data, 0, data.Count);
-        }
+        public static uint Compute(ReadOnlySpan<byte> buffer) => Compute(0, buffer, 0, buffer.Length);
 
-        public static uint Compute(IReadOnlyList<byte> data, int offset, int length)
+        public static uint Compute(uint initial, ReadOnlySpan<byte> buffer) => Compute(initial, buffer, 0, buffer.Length);
+
+        public static uint Compute(ReadOnlySequence<byte> buffer)
         {
-            return InternalCompute(0, data, offset, length);
+            uint hash = 0;
+
+            foreach (var chunk in buffer)
+            {
+                hash = Compute(hash, chunk.Span);
+            }
+
+            return hash;
         }
     }
 }

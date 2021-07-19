@@ -76,11 +76,11 @@ namespace KafkaFlow.Client.Protocol
 
             if (!this.pendingRequests.TryGetValue(correlationId, out var request))
             {
-                Console.WriteLine($"Received Invalid message CID: {correlationId}");
+                Debug.WriteLine($"Received Invalid message CID: {correlationId}");
                 return;
             }
 
-            Console.WriteLine($"Received CID: {correlationId}, Type {request.ResponseType.Name} with {source.Length:N0}b");
+            Debug.WriteLine($"Received CID: {correlationId}, Type {request.ResponseType.Name} with {source.Length:N0}b");
 
             this.pendingRequests.Remove(correlationId);
 

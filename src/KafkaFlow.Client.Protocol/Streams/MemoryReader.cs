@@ -35,8 +35,6 @@ namespace KafkaFlow.Client.Protocol.Streams
 
         public void Dispose() => ArrayPool<byte>.Shared.Return(this.buffer);
 
-        public byte this[int index] => this.buffer[index];
-
         public int Length { get; }
 
         public int Position

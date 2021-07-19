@@ -2,12 +2,11 @@ namespace KafkaFlow.Client.Protocol.Streams
 {
     using System;
     using System.Buffers;
-    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Runtime.CompilerServices;
 
-    public sealed class MemoryWriter : IDisposable, IReadOnlyList<byte>
+    public sealed class MemoryWriter : IDisposable
     {
         private int currentSegment = 0;
         private int relativePosition = 0;
@@ -78,6 +77,26 @@ namespace KafkaFlow.Client.Protocol.Streams
             }
         }
 
+        public byte[] ToArray()
+        {
+            var buffer = new byte[this.Length];
+            var totalBytes = this.Length;
+
+            var segmentIndex = 0;
+
+            foreach (var segment in this.segments)
+            {
+                var bytesToWriteCount = Math.Min(totalBytes, this.segmentSize);
+                segment
+                    .AsSpan(0, bytesToWriteCount)
+                    .CopyTo(buffer.AsSpan(segmentIndex++ * this.segmentSize, bytesToWriteCount));
+
+                totalBytes -= bytesToWriteCount;
+            }
+
+            return buffer;
+        }
+
         public void CopyTo(MemoryWriter dest)
         {
             var sourceSegmentIndex = this.currentSegment;
@@ -144,6 +163,28 @@ namespace KafkaFlow.Client.Protocol.Streams
             this.segments.Clear();
         }
 
+        public uint ComputeCRC32C(int start, int count)
+        {
+            var startSegment = this.GetSegment(start);
+            var startRelativePosition = this.GetRelativePosition(start);
+
+            uint hash = 0;
+
+            do
+            {
+                var bytesToCompute = Math.Min(this.segmentSize - startRelativePosition, count);
+
+                var segment = new Span<byte>(this.segments[startSegment++], startRelativePosition, bytesToCompute);
+
+                hash = Crc32CHash.Compute(hash, segment);
+
+                startRelativePosition = 0;
+                count -= bytesToCompute;
+            } while (count > 0);
+
+            return hash;
+        }
+
         private void EnsureCapacity(long capacity)
         {
             if (capacity <= this.Capacity)
@@ -190,19 +231,5 @@ namespace KafkaFlow.Client.Protocol.Streams
                 this.relativePosition = this.GetRelativePosition(value);
             }
         }
-
-        public IEnumerable<byte> AsEnumerable()
-        {
-            for (var i = 0; i < this.Length; i++)
-            {
-                yield return this[i];
-            }
-        }
-
-        public IEnumerator<byte> GetEnumerator() => this.AsEnumerable().GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
-
-        public int Count => this.Length;
     }
 }

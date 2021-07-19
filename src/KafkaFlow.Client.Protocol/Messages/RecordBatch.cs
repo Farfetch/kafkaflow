@@ -89,7 +89,7 @@ namespace KafkaFlow.Client.Protocol.Messages
             destination.WriteInt32(this.BatchLength = totalLength - 8 - 4);
 
             // Write CRC
-            var crc = Crc32CHash.Compute(destination, crcPosition, endPosition - crcPosition);
+            var crc = destination.ComputeCRC32C(crcPosition, endPosition - crcPosition);
             destination.Position = crcPosition - 4;
             destination.WriteInt32((int) crc);
 

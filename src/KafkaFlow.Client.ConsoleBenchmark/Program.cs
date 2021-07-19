@@ -25,8 +25,8 @@
                 {
                     Acks = ProduceAcks.All,
                     ProduceTimeout = TimeSpan.FromSeconds(10),
-                    MaxProduceBatchSize = 500,
-                    Linger = TimeSpan.FromMilliseconds(30)
+                    MaxProduceBatchSize = 200,
+                    Linger = TimeSpan.FromMilliseconds(5)
                 },
                 new ByteSumPartitioner());
 
@@ -35,18 +35,15 @@
                 ["test_header"] = Encoding.UTF8.GetBytes("header_value")
             };
 
-            var tasks = Enumerable
-                .Range(0, 20)
-                .Select(
-                    x => producer.ProduceAsync(
-                        new ProduceData(
-                            "test-client",
-                            Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
-                            Encoding.UTF8.GetBytes("teste_value"),
-                            header)));
-
-
-            await Task.WhenAll(tasks);
+            for (var i = 0; i < 20; i++)
+            {
+                await producer.ProduceAsync(
+                    new ProduceData(
+                        "test-client",
+                        Encoding.UTF8.GetBytes($"teste_key_{i}"),
+                        Encoding.UTF8.GetBytes("teste_value"),
+                        header));
+            }
 
             Console.WriteLine("Starting...");
 
@@ -55,18 +52,17 @@
 
             JetBrains.Profiler.Api.MeasureProfiler.StartCollectingData();
 
-            tasks = Enumerable
+            var tasks = Enumerable
                 .Range(0, 100000)
                 .Select(
                     x => producer.ProduceAsync(
                         new ProduceData(
                             "test-client",
-                            Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
+                            Encoding.UTF8.GetBytes($"teste_key_{x}"),
                             Encoding.UTF8.GetBytes("teste_value"),
                             header)))
-                .AsParallel()
                 .ToList();
-            
+
             var results = await Task.WhenAll(tasks);
 
             JetBrains.Profiler.Api.MeasureProfiler.SaveData();
