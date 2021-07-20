@@ -3,7 +3,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.JoinGroup
     using System;
     using KafkaFlow.Client.Protocol.Streams;
 
-    internal class JoinGroupV7Request : ITaggedFields, IJoinGroupRequest
+    public class JoinGroupV7Request : ITaggedFields, IJoinGroupRequest
     {
         public ApiKey ApiKey => ApiKey.JoinGroup;
 
@@ -41,7 +41,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.JoinGroup
             destination.WriteTaggedFields(this.TaggedFields);
         }
 
-        private class Protocol : IJoinGroupRequest.IProtocol, ITaggedFields
+        public class Protocol : IJoinGroupRequest.IProtocol, ITaggedFields
         {
             public string Name { get; set; }
 

@@ -74,7 +74,7 @@ namespace KafkaFlow.Client.Producers
 
             if (Interlocked.Increment(ref this.messageCount) >= this.configuration.MaxProduceBatchSize)
             {
-                await this.ProduceAsync();
+                _ = this.ProduceAsync();
             }
         }
 
@@ -196,10 +196,6 @@ namespace KafkaFlow.Client.Producers
                     var diff = DateTime.Now - this.lastProductionTime;
                     if (diff < this.configuration.Linger)
                     {
-                        // await Task.Delay(
-                        //     this.configuration.Linger - diff,
-                        //     this.stopLingerProduceTokenSource.Token);
-
                         Thread.Sleep(this.configuration.Linger - diff);
 
                         continue;

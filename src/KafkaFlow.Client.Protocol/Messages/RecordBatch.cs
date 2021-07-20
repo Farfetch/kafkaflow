@@ -34,11 +34,9 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public IReadOnlyCollection<Record> Records => this.records;
 
-        public void AddRecord(Record record)
+        public void AddRecord(Record record, long? timestamp = null)
         {
-            // lock (this.records)
-            // {
-            var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            var now = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
             if (this.records.Count == 0)
             {
@@ -54,7 +52,6 @@ namespace KafkaFlow.Client.Protocol.Messages
 
             this.MaxTimestamp = now;
             this.records.AddLast(record);
-            // }
         }
 
         public void Write(MemoryWriter destination)

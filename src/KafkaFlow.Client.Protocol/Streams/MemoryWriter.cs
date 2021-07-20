@@ -20,7 +20,7 @@ namespace KafkaFlow.Client.Protocol.Streams
             this.segmentSize = segmentSize;
         }
 
-        public MemoryWriter() : this(1024)
+        public MemoryWriter() : this(1024 * 8)
         {
         }
 

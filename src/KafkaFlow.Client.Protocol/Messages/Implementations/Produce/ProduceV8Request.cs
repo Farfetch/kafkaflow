@@ -5,7 +5,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
     using System.Linq;
     using KafkaFlow.Client.Protocol.Streams;
 
-    internal class ProduceV8Request : IProduceRequest
+    public class ProduceV8Request : IProduceRequest
     {
         public ProduceV8Request(ProduceAcks acks, int timeout)
         {

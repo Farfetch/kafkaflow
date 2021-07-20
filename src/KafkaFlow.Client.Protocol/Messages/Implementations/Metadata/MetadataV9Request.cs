@@ -3,7 +3,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Metadata
     using System;
     using KafkaFlow.Client.Protocol.Streams;
 
-    internal class MetadataV9Request : IMetadataRequest, ITaggedFields
+    public class MetadataV9Request : IMetadataRequest, ITaggedFields
     {
         public ApiKey ApiKey => ApiKey.Metadata;
 
@@ -32,7 +32,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Metadata
             destination.WriteTaggedFields(this.TaggedFields);
         }
 
-        private class Topic : IMetadataRequest.ITopic, ITaggedFields
+        public class Topic : IMetadataRequest.ITopic, ITaggedFields
         {
             public string Name { get; set; } = string.Empty;
 

@@ -85,6 +85,30 @@ namespace KafkaFlow.Client.Benchmark
         //     await Task.WhenAll(Enumerable.Range(0, 1000).Select(x => this.ProduceConfluent()));
         // }
 
+        // [Benchmark]
+        // public async Task KafkaFlow_10000_Messages()
+        // {
+        //     await Task.WhenAll(Enumerable.Range(0, 10000).Select(x => this.ProduceKafkaFlow()));
+        // }
+        //
+        // [Benchmark]
+        // public async Task Confluent_10000_Messages()
+        // {
+        //     await Task.WhenAll(Enumerable.Range(0, 10000).Select(x => this.ProduceConfluent()));
+        // }
+        //
+        // [Benchmark]
+        // public async Task KafkaFlow_100000_Messages()
+        // {
+        //     await Task.WhenAll(Enumerable.Range(0, 100000).Select(x => this.ProduceKafkaFlow()));
+        // }
+        //
+        // [Benchmark]
+        // public async Task Confluent_100000_Messages()
+        // {
+        //     await Task.WhenAll(Enumerable.Range(0, 100000).Select(x => this.ProduceConfluent()));
+        // }
+
         private Task ProduceKafkaFlow()
         {
             var header = new KafkaFlow.Client.Protocol.Messages.Headers()

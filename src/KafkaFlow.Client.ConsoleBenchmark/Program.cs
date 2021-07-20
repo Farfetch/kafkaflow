@@ -25,8 +25,8 @@
                 {
                     Acks = ProduceAcks.All,
                     ProduceTimeout = TimeSpan.FromSeconds(10),
-                    MaxProduceBatchSize = 200,
-                    Linger = TimeSpan.FromMilliseconds(5)
+                    MaxProduceBatchSize = 25000,
+                    Linger = TimeSpan.FromMilliseconds(1)
                 },
                 new ByteSumPartitioner());
 
