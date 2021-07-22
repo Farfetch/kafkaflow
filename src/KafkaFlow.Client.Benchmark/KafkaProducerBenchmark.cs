@@ -117,11 +117,10 @@ namespace KafkaFlow.Client.Benchmark
             };
 
             return this.kafkaFlowProducer.ProduceAsync(
-                new ProduceData(
-                    "test-client",
-                    Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
-                    Encoding.UTF8.GetBytes("teste_value"),
-                    header));
+                "test-client",
+                Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
+                Encoding.UTF8.GetBytes("teste_value"),
+                header);
         }
 
         private Task ProduceConfluent()

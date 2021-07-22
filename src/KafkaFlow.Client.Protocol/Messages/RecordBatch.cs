@@ -131,9 +131,9 @@ namespace KafkaFlow.Client.Protocol.Messages
 
             public int OffsetDelta { get; internal set; }
 
-            public byte[]? Key { get; set; }
+            public Memory<byte>? Key { get; set; }
 
-            public byte[]? Value { get; set; }
+            public Memory<byte>? Value { get; set; }
 
             public Headers? Headers { get; set; }
 
@@ -151,8 +151,8 @@ namespace KafkaFlow.Client.Protocol.Messages
                 }
                 else
                 {
-                    tmp.WriteVarint(this.Key.Length);
-                    tmp.Write(this.Key);
+                    tmp.WriteVarint(this.Key.Value.Length);
+                    tmp.Write(this.Key.Value.Span);
                 }
 
                 if (this.Value is null)
@@ -161,8 +161,8 @@ namespace KafkaFlow.Client.Protocol.Messages
                 }
                 else
                 {
-                    tmp.WriteVarint(this.Value.Length);
-                    tmp.Write(this.Value);
+                    tmp.WriteVarint(this.Value.Value.Length);
+                    tmp.Write(this.Value.Value.Span);
                 }
 
                 if (this.Headers is null)
@@ -183,7 +183,7 @@ namespace KafkaFlow.Client.Protocol.Messages
             public void Read(MemoryReader source)
             {
                 this.Length = source.ReadVarint();
-                this.Attributes = (byte) source.ReadByte();
+                this.Attributes = source.ReadByte();
                 this.TimestampDelta = source.ReadVarint();
                 this.OffsetDelta = source.ReadVarint();
                 this.Key = source.GetSpan(source.ReadVarint()).ToArray();

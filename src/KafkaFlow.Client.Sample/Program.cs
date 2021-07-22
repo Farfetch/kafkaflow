@@ -42,11 +42,10 @@
                         .Range(0, messageCount)
                         .Select(
                             x => producer.ProduceAsync(
-                                new ProduceData(
-                                    "test-client",
-                                    Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
-                                    Encoding.UTF8.GetBytes("teste_value"),
-                                    header)));
+                                "test-client",
+                                Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
+                                Encoding.UTF8.GetBytes("teste_value"),
+                                header));
 
 
                     var results = await Task.WhenAll(tasks);

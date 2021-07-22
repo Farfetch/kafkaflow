@@ -38,11 +38,10 @@
             for (var i = 0; i < 20; i++)
             {
                 await producer.ProduceAsync(
-                    new ProduceData(
-                        "test-client",
-                        Encoding.UTF8.GetBytes($"teste_key_{i}"),
-                        Encoding.UTF8.GetBytes("teste_value"),
-                        header));
+                    "test-client",
+                    Encoding.UTF8.GetBytes($"teste_key_{i}"),
+                    Encoding.UTF8.GetBytes("teste_value"),
+                    header);
             }
 
             Console.WriteLine("Starting...");
@@ -56,11 +55,10 @@
                 .Range(0, 100000)
                 .Select(
                     x => producer.ProduceAsync(
-                        new ProduceData(
-                            "test-client",
-                            Encoding.UTF8.GetBytes($"teste_key_{x}"),
-                            Encoding.UTF8.GetBytes("teste_value"),
-                            header)))
+                        "test-client",
+                        Encoding.UTF8.GetBytes($"teste_key_{x}"),
+                        Encoding.UTF8.GetBytes("teste_value"),
+                        header))
                 .ToList();
 
             var results = await Task.WhenAll(tasks);

@@ -1,5 +1,6 @@
 namespace KafkaFlow.Client.Producers
 {
+    using System;
     using System.Collections.Concurrent;
     using System.Linq;
     using System.Threading.Tasks;
@@ -31,25 +32,34 @@ namespace KafkaFlow.Client.Producers
             this.partitioner = partitioner;
         }
 
-        public async Task<ProduceResult> ProduceAsync(ProduceData data)
+        public async Task<ProduceItem> ProduceAsync(
+            string topicName,
+            Memory<byte> key,
+            Memory<byte> value,
+            Headers headers)
         {
             await this.cluster.EnsureInitializationAsync().ConfigureAwait(false);
 
-            var topic = await this.GetTopicMetadataAsync(data.Topic).ConfigureAwait(false);
+            var topic = await this.GetTopicMetadataAsync(topicName).ConfigureAwait(false);
 
-            var partitionId = this.partitioner.GetPartition(topic.Partitions.Length, data.Key);
+            var partitionId = this.partitioner.GetPartition(topic.Partitions.Length, key);
 
             //TODO: update cache and retry when NotLeaderForPartition occur
 
             var sender = this.GetBrokerSender(topic.Partitions.First(x => x.Id == partitionId).LeaderId);
 
-            var completionSource = new TaskCompletionSource<ProduceResult>();
+            var produceItem = new ProduceItem(
+                topicName,
+                key,
+                value,
+                headers,
+                partitionId);
 
             await sender
-                .EnqueueAsync(new ProduceQueueItem(data, partitionId, completionSource))
+                .EnqueueAsync(produceItem)
                 .ConfigureAwait(false);
 
-            return await completionSource.Task.ConfigureAwait(false);
+            return await produceItem.CompletionTask.ConfigureAwait(false);
         }
 
         private ProducerSender GetBrokerSender(int partitionLeaderId)

@@ -21,7 +21,7 @@ namespace KafkaFlow.Client.Producers
         private volatile int messageCount;
         private DateTime lastProductionTime = DateTime.MinValue;
 
-        private Dictionary<(string, int), LinkedList<ProduceQueueItem>> pendingRequests = new();
+        private Dictionary<(string, int), LinkedList<ProduceItem>> pendingRequests = new();
 
         public ProducerSender(
             IKafkaBroker broker,
@@ -33,7 +33,7 @@ namespace KafkaFlow.Client.Producers
             this.produceTimeoutTask = Task.Run(this.LingerProduceAsync);
         }
 
-        public async Task EnqueueAsync(ProduceQueueItem item)
+        public async Task EnqueueAsync(ProduceItem item)
         {
             // this.lastProductionTime = DateTime.Now;
 
@@ -44,8 +44,8 @@ namespace KafkaFlow.Client.Producers
                 this.request ??= await this.CreateProduceRequestAsync();
 
                 var topic = this.request.Topics.GetOrAdd(
-                    item.Data.Topic,
-                    _ => this.request.CreateTopic(item.Data.Topic));
+                    item.TopicName,
+                    _ => this.request.CreateTopic(item.TopicName));
 
                 var partition = topic.Partitions.GetOrAdd(
                     item.PartitionId,
@@ -54,17 +54,17 @@ namespace KafkaFlow.Client.Producers
                 partition.RecordBatch.AddRecord(
                     new RecordBatch.Record
                     {
-                        Key = item.Data.Key,
-                        Value = item.Data.Value,
-                        Headers = item.Data.Headers,
+                        Key = item.Key,
+                        Value = item.Value,
+                        Headers = item.Headers,
                     });
 
                 item.OffsetDelta = partition.RecordBatch.LastOffsetDelta;
 
                 this.pendingRequests
                     .GetOrAdd(
-                        (item.Data.Topic, item.PartitionId),
-                        key => new LinkedList<ProduceQueueItem>())
+                        (item.TopicName, item.PartitionId),
+                        key => new LinkedList<ProduceItem>())
                     .AddLast(item);
             }
             finally
@@ -87,7 +87,7 @@ namespace KafkaFlow.Client.Producers
                     return;
                 }
 
-                Dictionary<(string, int), LinkedList<ProduceQueueItem>> localPendingRequests;
+                Dictionary<(string, int), LinkedList<ProduceItem>> localPendingRequests;
                 Task<IProduceResponse> resultTask;
 
                 await this.produceSemaphore.WaitAsync().ConfigureAwait(false);
@@ -103,7 +103,7 @@ namespace KafkaFlow.Client.Producers
 
                     localPendingRequests = Interlocked.Exchange(
                         ref this.pendingRequests,
-                        new Dictionary<(string, int), LinkedList<ProduceQueueItem>>());
+                        new Dictionary<(string, int), LinkedList<ProduceItem>>());
 
                     resultTask = this.broker.Connection.SendAsync(localRequest);
                 }
@@ -135,7 +135,7 @@ namespace KafkaFlow.Client.Producers
 
         private void RespondRequests(
             IProduceResponse result,
-            IDictionary<(string, int), LinkedList<ProduceQueueItem>> requests)
+            IDictionary<(string, int), LinkedList<ProduceItem>> requests)
         {
             foreach (var topic in result.Topics)
             {
@@ -150,12 +150,7 @@ namespace KafkaFlow.Client.Producers
                     {
                         foreach (var item in items)
                         {
-                            item.CompletionSource.SetResult(
-                                new ProduceResult(
-                                    topic.Name,
-                                    partition.Id,
-                                    partition.BaseOffset + item.OffsetDelta,
-                                    item.Data));
+                            item.SetResult(partition.BaseOffset);
                         }
                     }
                     else
@@ -166,16 +161,11 @@ namespace KafkaFlow.Client.Producers
 
                             if (recordError is null)
                             {
-                                item.CompletionSource.SetResult(
-                                    new ProduceResult(
-                                        topic.Name,
-                                        partition.Id,
-                                        partition.BaseOffset + item.OffsetDelta,
-                                        item.Data));
+                                item.SetResult(partition.BaseOffset);
                             }
                             else
                             {
-                                item.CompletionSource.SetException(
+                                item.SetException(
                                     new ProduceException(
                                         partition.Error,
                                         partition.ErrorMessage,
