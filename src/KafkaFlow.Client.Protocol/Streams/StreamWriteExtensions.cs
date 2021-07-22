@@ -10,10 +10,8 @@ namespace KafkaFlow.Client.Protocol.Streams
 
     public static class StreamWriteExtensions
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteMessage(this MemoryWriter destination, IRequest message) => message.Write(destination);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteInt16(this MemoryWriter destination, short value)
         {
             Span<byte> tmp = stackalloc byte[2];
@@ -21,7 +19,6 @@ namespace KafkaFlow.Client.Protocol.Streams
             destination.Write(tmp);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteInt32(this MemoryWriter destination, int value)
         {
             Span<byte> tmp = stackalloc byte[4];
@@ -29,7 +26,6 @@ namespace KafkaFlow.Client.Protocol.Streams
             destination.Write(tmp);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteInt64(this MemoryWriter destination, long value)
         {
             Span<byte> tmp = stackalloc byte[8];
@@ -37,14 +33,12 @@ namespace KafkaFlow.Client.Protocol.Streams
             destination.Write(tmp);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteInt32Array(this MemoryWriter destination, IReadOnlyList<int> values)
         {
             destination.WriteInt32(values.Count);
             InternalWriteInt32Array(destination, values);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteCompactInt32Array(this MemoryWriter destination, IReadOnlyList<int> values)
         {
             destination.WriteUVarint((uint) values.Count);
@@ -59,7 +53,6 @@ namespace KafkaFlow.Client.Protocol.Streams
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteString(this MemoryWriter destination, string? value)
         {
             if (value is null)
@@ -72,14 +65,12 @@ namespace KafkaFlow.Client.Protocol.Streams
             destination.Write(Encoding.UTF8.GetBytes(value));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteCompactString(this MemoryWriter destination, string value)
         {
             destination.WriteUVarint((uint) value.Length + 1u);
             destination.Write(Encoding.UTF8.GetBytes(value));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteCompactNullableString(this MemoryWriter destination, string? value)
         {
             if (value is null)
@@ -91,7 +82,6 @@ namespace KafkaFlow.Client.Protocol.Streams
             destination.WriteCompactString(value);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteCompactNullableByteArray(this MemoryWriter destination, byte[]? data)
         {
             if (data is null)
@@ -103,14 +93,12 @@ namespace KafkaFlow.Client.Protocol.Streams
             destination.WriteCompactByteArray(data);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteCompactByteArray(this MemoryWriter destination, byte[] data)
         {
             destination.WriteUVarint((uint) data.Length + 1u);
             destination.Write(data);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteBoolean(this MemoryWriter destination, bool value)
         {
             destination.WriteByte((byte) (value ? 1 : 0));
@@ -127,7 +115,6 @@ namespace KafkaFlow.Client.Protocol.Streams
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteArray<TMessage>(this MemoryWriter destination, IReadOnlyCollection<TMessage> items)
             where TMessage : IRequest
         {
@@ -155,7 +142,6 @@ namespace KafkaFlow.Client.Protocol.Streams
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int WriteVarint(this MemoryWriter destination, long num) =>
             destination.WriteUVarint(((ulong) num << 1) ^ ((ulong) num >> 63));
 
