@@ -1,6 +1,5 @@
 namespace KafkaFlow.Admin.WebApi.Controllers
 {
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using KafkaFlow.Admin.Messages;
@@ -34,9 +33,9 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// Get all the consumer groups
         /// </summary>
         /// <returns>A list of consumer groups</returns>
-        [HttpGet(Name="GetAllGroups")]
+        [HttpGet(Name=nameof(GetAllGroups))]
         [ProducesResponseType(typeof(GroupsResponse), 200)]
-        public IActionResult Get()
+        public IActionResult GetAllGroups()
         {
             return this.Ok(
                 new GroupsResponse
@@ -58,9 +57,9 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="groupId">Identifier of the group</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{groupId}/pause", Name="PauseGroup")]
+        [Route("{groupId}/pause", Name=nameof(PauseGroup))]
         [ProducesResponseType(202)]
-        public async Task<IActionResult> Pause([FromRoute] string groupId)
+        public async Task<IActionResult> PauseGroup([FromRoute] string groupId)
         {
             await this.adminProducer.ProduceAsync(
                 new PauseConsumersByGroup
@@ -77,9 +76,9 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="groupId">Identifier of the group</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{groupId}/resume", Name="ResumeGroup")]
+        [Route("{groupId}/resume", Name=nameof(ResumeGroup))]
         [ProducesResponseType(202)]
-        public async Task<IActionResult> Resume([FromRoute] string groupId)
+        public async Task<IActionResult> ResumeGroup([FromRoute] string groupId)
         {
             await this.adminProducer.ProduceAsync(
                 new ResumeConsumersByGroup
