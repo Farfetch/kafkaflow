@@ -26,9 +26,9 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// Get telemetry data from all the consumer groups
         /// </summary>
         /// <returns>A telemetry response</returns>
-        [HttpGet(Name="GetTelemetry")]
+        [HttpGet(Name=nameof(GetTelemetry))]
         [ProducesResponseType(typeof(TelemetryResponse), 200)]
-        public IActionResult Get()
+        public IActionResult GetTelemetry()
         {
             var metrics = this.storage.Get();
 
