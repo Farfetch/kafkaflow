@@ -8,13 +8,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Confluent.SchemaRegistry" Version="1.6.3"/>
-        <PackageReference Include="Confluent.SchemaRegistry.Serdes.Json" Version="1.6.3"/>
+        <PackageReference Include="Confluent.SchemaRegistry" Version="1.7.0" />
+        <PackageReference Include="Confluent.SchemaRegistry.Serdes.Json" Version="1.7.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj"/>
-        <ProjectReference Include="..\KafkaFlow.SchemaRegistry\KafkaFlow.SchemaRegistry.csproj"/>
+        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
+        <ProjectReference Include="..\KafkaFlow.SchemaRegistry\KafkaFlow.SchemaRegistry.csproj" />
     </ItemGroup>
 
 </Project>
