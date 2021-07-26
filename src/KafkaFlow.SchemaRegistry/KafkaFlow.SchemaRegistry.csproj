@@ -8,8 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Confluent.SchemaRegistry" Version="1.6.3" />
-        <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.0.0" />
+        <PackageReference Include="Confluent.SchemaRegistry" Version="1.7.0" />
+        <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.1.3" />
     </ItemGroup>
 
     <ItemGroup>

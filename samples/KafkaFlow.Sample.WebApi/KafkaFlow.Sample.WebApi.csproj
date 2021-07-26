@@ -22,9 +22,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="5.5.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="5.5.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="5.5.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.1.4" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.1.4" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.1.4" />
     </ItemGroup>
 
 
