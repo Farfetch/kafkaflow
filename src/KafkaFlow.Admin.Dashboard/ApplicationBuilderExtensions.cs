@@ -11,14 +11,25 @@ namespace KafkaFlow.Admin.Dashboard
     public static class ApplicationBuilderExtensions
     {
         /// <summary>
-        /// Enable the KafkaFlow dashboard
+        /// Enable the KafkaFlow dashboard. The path will be `/kafka-flow`
         /// </summary>
         /// <param name="app">Instance of <see cref="IApplicationBuilder"/></param>
         /// <returns></returns>
         public static IApplicationBuilder UseKafkaFlowDashboard(this IApplicationBuilder app)
         {
+            return app.UseKafkaFlowDashboard("/kafka-flow");
+        }
+
+        /// <summary>
+        /// Enable the KafkaFlow dashboard
+        /// </summary>
+        /// <param name="app">Instance of <see cref="IApplicationBuilder"/></param>
+        /// <param name="pathMatch">The request path to match.</param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseKafkaFlowDashboard(this IApplicationBuilder app, PathString pathMatch)
+        {
             app.Map(
-                "/kafka-flow",
+                pathMatch,
                 builder =>
                 {
                     var provider = new ManifestEmbeddedFileProvider(
