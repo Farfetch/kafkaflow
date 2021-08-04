@@ -3,12 +3,13 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { NgxMaskModule, IConfig } from 'ngx-mask';
+import { CookieService } from 'ngx-cookie-service';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
 import { ConsumerComponent } from './consumer/consumer.component';
-import { HttpErrorInterceptor } from './http-error.interceptor';
+import { ApiInterceptor } from './api-interceptor.service';
 import { GroupByPipe } from './group-by.pipe';
 import { SortPipe } from './sort.pipe';
 
@@ -58,16 +59,17 @@ const appRoutes: Routes = [
   ],
   exports: [RouterModule],
   providers: [
+    CookieService,
     ConsumersService,
     {
       provide: HTTP_INTERCEPTORS,
-      useClass: HttpErrorInterceptor,
+      useClass: ApiInterceptor,
       multi: true
     },
     TelemetryService,
     {
       provide: HTTP_INTERCEPTORS,
-      useClass: HttpErrorInterceptor,
+      useClass: ApiInterceptor,
       multi: true
     }],
   bootstrap: [AppComponent]
