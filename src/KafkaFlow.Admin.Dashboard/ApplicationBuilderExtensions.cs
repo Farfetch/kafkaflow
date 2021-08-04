@@ -1,5 +1,6 @@
 namespace KafkaFlow.Admin.Dashboard
 {
+    using System;
     using System.Reflection;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
@@ -28,26 +29,51 @@ namespace KafkaFlow.Admin.Dashboard
         /// <returns></returns>
         public static IApplicationBuilder UseKafkaFlowDashboard(this IApplicationBuilder app, PathString pathMatch)
         {
+            return app.UseKafkaFlowDashboard(pathMatch, null);
+        }
+
+        /// <summary>
+        /// Enable the KafkaFlow dashboard
+        /// </summary>
+        /// <param name="app">Instance of <see cref="IApplicationBuilder"/></param>
+        /// <param name="pathMatch">The request path to match.</param>
+        /// <param name="actionBuilder">The handler to be executed after the dashboard url is mapped.</param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseKafkaFlowDashboard(
+            this IApplicationBuilder app,
+            PathString pathMatch,
+            Action<IDashboardConfigurationBuilder> actionBuilder)
+        {
+            var builder = new DashboardConfigurationBuilder();
+            actionBuilder?.Invoke(builder);
+            var configuration = builder.Build();
+
             app.Map(
                 pathMatch,
-                builder =>
+                appBuilder =>
                 {
                     var provider = new ManifestEmbeddedFileProvider(
-                        Assembly.GetAssembly(typeof(ApplicationBuilderExtensions)),
+                        Assembly.GetAssembly(typeof(KafkaFlow.Admin.Dashboard.ApplicationBuilderExtensions)),
                         "ClientApp/dist");
 
-                    builder.UseStaticFiles(new StaticFileOptions { FileProvider = provider });
+                    appBuilder
+                        .UseStaticFiles(new StaticFileOptions { FileProvider = provider })
+                        .UseRouting();
 
-                    builder.Run(
-                        async context =>
-                        {
-                            if (context.Request.Path == "/" || context.Request.Path == string.Empty)
-                            {
-                                await context.Response.SendFileAsync(provider.GetFileInfo("index.html"));
-                            }
-                        });
+                    foreach (var middleware in configuration.Middlewares)
+                    {
+                        appBuilder.UseMiddleware(middleware);
+                    }
+
+                    appBuilder.UseEndpoints(routeBuilder =>
+                    {
+                        var endpoint = routeBuilder.Map(
+                            "/",
+                            async context => await context.Response.SendFileAsync(provider.GetFileInfo("index.html")));
+
+                        configuration.RouteMappedHandler?.Invoke(endpoint);
+                    });
                 });
-
             return app;
         }
     }
