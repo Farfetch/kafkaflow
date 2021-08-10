@@ -9,16 +9,17 @@ namespace KafkaFlow.Admin.Dashboard
     public interface IDashboardConfigurationBuilder
     {
         /// <summary>
-        /// Adds a middleware type to the dashboard's request pipeline.
+        /// Use this method to configure the dashboard request pipeline
         /// </summary>
+        /// <param name="requestHandler">A handler to configure the request pipeline</param>
         /// <returns>The <see cref="IDashboardConfigurationBuilder"/> instance.</returns>
-        IDashboardConfigurationBuilder UseMiddleware<T>();
+        IDashboardConfigurationBuilder ConfigureRequestPipeline(Action<IApplicationBuilder> requestHandler);
 
         /// <summary>
-        /// Use this method to configure the dashboard endpoint pipeline.
+        /// Use this method to configure the dashboard endpoint
         /// </summary>
         /// <param name="endpointHandler">A handler to configure the endpoint</param>
-        /// <returns>The <see cref="IDashboardConfigurationBuilder"/> instance.</returns>
+        /// <returns>The <see cref="IEndpointConventionBuilder"/> instance.</returns>
         IDashboardConfigurationBuilder ConfigureEndpoint(Action<IEndpointConventionBuilder> endpointHandler);
     }
 }

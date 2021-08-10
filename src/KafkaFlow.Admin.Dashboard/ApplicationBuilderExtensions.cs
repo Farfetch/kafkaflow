@@ -18,38 +18,37 @@ namespace KafkaFlow.Admin.Dashboard
         /// <returns></returns>
         public static IApplicationBuilder UseKafkaFlowDashboard(this IApplicationBuilder app)
         {
-            return app.UseKafkaFlowDashboard("/kafka-flow");
+            return app.UseKafkaFlowDashboard((Action<IDashboardConfigurationBuilder>) null);
         }
 
         /// <summary>
         /// Enable the KafkaFlow dashboard
         /// </summary>
         /// <param name="app">Instance of <see cref="IApplicationBuilder"/></param>
-        /// <param name="pathMatch">The request path to match.</param>
+        /// <param name="pathMatch">Do nothing.</param>
         /// <returns></returns>
+        [Obsolete("This method was deprecated and the pathMatch parameter will not change the dashboard base path.", true)]
         public static IApplicationBuilder UseKafkaFlowDashboard(this IApplicationBuilder app, PathString pathMatch)
         {
-            return app.UseKafkaFlowDashboard(pathMatch, null);
+            return app.UseKafkaFlowDashboard((Action<IDashboardConfigurationBuilder>) null);
         }
 
         /// <summary>
         /// Enable the KafkaFlow dashboard
         /// </summary>
         /// <param name="app">Instance of <see cref="IApplicationBuilder"/></param>
-        /// <param name="pathMatch">The request path to match.</param>
-        /// <param name="actionBuilder">The handler to be executed after the dashboard url is mapped.</param>
+        /// <param name="dashboard">A handler to configure the dashboard.</param>
         /// <returns></returns>
         public static IApplicationBuilder UseKafkaFlowDashboard(
             this IApplicationBuilder app,
-            PathString pathMatch,
-            Action<IDashboardConfigurationBuilder> actionBuilder)
+            Action<IDashboardConfigurationBuilder> dashboard)
         {
             var builder = new DashboardConfigurationBuilder();
-            actionBuilder?.Invoke(builder);
+            dashboard?.Invoke(builder);
             var configuration = builder.Build();
 
             app.Map(
-                pathMatch,
+                configuration.BasePath,
                 appBuilder =>
                 {
                     var provider = new ManifestEmbeddedFileProvider(
@@ -60,10 +59,7 @@ namespace KafkaFlow.Admin.Dashboard
                         .UseStaticFiles(new StaticFileOptions { FileProvider = provider })
                         .UseRouting();
 
-                    foreach (var middleware in configuration.Middlewares)
-                    {
-                        appBuilder.UseMiddleware(middleware);
-                    }
+                    configuration.RequestHandler?.Invoke(appBuilder);
 
                     appBuilder.UseEndpoints(routeBuilder =>
                     {
