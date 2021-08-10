@@ -1,20 +1,24 @@
 namespace KafkaFlow.Admin.Dashboard
 {
     using System;
-    using System.Collections.Generic;
     using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
 
     internal class DashboardConfiguration
     {
-        private readonly List<Type> middlewares;
-
-        public DashboardConfiguration(List<Type> middlewares, Action<IEndpointConventionBuilder> endpointHandler)
+        public DashboardConfiguration(
+            PathString basePath,
+            Action<IApplicationBuilder> requestHandler,
+            Action<IEndpointConventionBuilder> endpointHandler)
         {
-            this.middlewares = middlewares;
+            this.BasePath = basePath;
+            this.RequestHandler = requestHandler;
             this.EndpointHandler = endpointHandler;
         }
 
-        public IReadOnlyCollection<Type> Middlewares => this.middlewares.AsReadOnly();
+        public PathString BasePath { get; }
+
+        public Action<IApplicationBuilder> RequestHandler { get; }
 
         public Action<IEndpointConventionBuilder> EndpointHandler { get; }
     }

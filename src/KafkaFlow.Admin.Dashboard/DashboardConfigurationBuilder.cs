@@ -1,17 +1,19 @@
 namespace KafkaFlow.Admin.Dashboard
 {
     using System;
-    using System.Collections.Generic;
     using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
 
     internal class DashboardConfigurationBuilder : IDashboardConfigurationBuilder
     {
-        private readonly List<Type> middlewares = new();
+        private readonly PathString basePath = "/kafka-flow";
+
+        private Action<IApplicationBuilder> requestHandler = _ => { };
         private Action<IEndpointConventionBuilder> endpointHandler = _ => { };
 
-        public IDashboardConfigurationBuilder UseMiddleware<T>()
+        public IDashboardConfigurationBuilder ConfigureRequestPipeline(Action<IApplicationBuilder> requestHandler)
         {
-            this.middlewares.Add(typeof(T));
+            this.requestHandler = requestHandler;
             return this;
         }
 
@@ -23,7 +25,7 @@ namespace KafkaFlow.Admin.Dashboard
 
         public DashboardConfiguration Build()
         {
-            return new(this.middlewares, this.endpointHandler);
+            return new(this.basePath, this.requestHandler, this.endpointHandler);
         }
     }
 }
