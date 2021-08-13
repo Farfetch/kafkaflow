@@ -70,21 +70,24 @@ namespace KafkaFlow.Client.Tests
             writer.Should().BeEquivalentTo(data);
         }
 
-        // [TestMethod]
-        // public void GetSpan_WriteArrayOfBytes_SameAsArray()
-        // {
-        //     // Arrange
-        //     var data = this.fixture
-        //         .CreateMany<byte>(4)
-        //         .ToArray();
-        //
-        //     // Act
-        //     data.AsSpan().CopyTo(this.target.GetSpan(4));
-        //
-        //     // Assert
-        //     this.target.Length.Should().Be(data.Length);
-        //     this.target.Position.Should().Be(data.Length);
-        //     this.target.Should().BeEquivalentTo(data);
-        // }
+        [TestMethod]
+        [DataRow(4, 1, new byte[] { 2 })]
+        [DataRow(16, 1, new byte[] { 2 })]
+        [DataRow(4, 12345, new byte[] { 242, 192, 1 })]
+        [DataRow(16, 12345, new byte[] { 242, 192, 1 })]
+        [DataRow(4, 123456789123, new byte[] { 134, 234, 200, 233, 151, 7 })]
+        [DataRow(16, 123456789123, new byte[] { 134, 234, 200, 233, 151, 7 })]
+        public void WriteVarint(int segmentSize, long value, byte[] expectedResult)
+        {
+            // Arrange
+            var writer = new MemoryWriter(segmentSize);
+
+            // Act
+            writer.WriteVarint(value);
+
+            // Assert
+            var result = writer.ToArray();
+            result.Should().BeEquivalentTo(expectedResult);
+        }
     }
 }

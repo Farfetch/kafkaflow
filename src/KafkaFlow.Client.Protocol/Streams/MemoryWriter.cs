@@ -27,8 +27,6 @@ namespace KafkaFlow.Client.Protocol.Streams
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(byte[] buffer, int offset, int count) => this.Write(new Span<byte>(buffer, offset, count));
 
-        public void WriteByte(byte value) => this.Write(new[] { value }, 0, 1);
-
         public void Write(ReadOnlySpan<byte> buffer)
         {
             var count = buffer.Length;
@@ -41,11 +39,6 @@ namespace KafkaFlow.Client.Protocol.Streams
             var startSegment = this.currentSegment;
 
             this.Position = endPosition;
-
-            if (endPosition > this.Length)
-            {
-                this.Length = endPosition;
-            }
 
             while (count > 0)
             {
@@ -63,6 +56,21 @@ namespace KafkaFlow.Client.Protocol.Streams
                 count -= writeCount;
             }
         }
+
+        public bool TryGetSpan(int length, out Span<byte> span)
+        {
+            if (this.segments.Count == 0 || this.segmentSize - this.relativePosition <= length)
+            {
+                span = Span<byte>.Empty;
+                return false;
+            }
+
+            span = new Span<byte>(this.segments[this.currentSegment], this.relativePosition, length);
+
+            return true;
+        }
+
+        public void Advance(int length) => this.Position += length;
 
         public void CopyTo(Stream destination)
         {
@@ -225,6 +233,11 @@ namespace KafkaFlow.Client.Protocol.Streams
                     throw new ArgumentOutOfRangeException(
                         nameof(this.Position),
                         $"The {nameof(this.Position)} must be greater or equal 0 and less than Capacity");
+                }
+
+                if (value > this.Length)
+                {
+                    this.Length = value;
                 }
 
                 this.currentSegment = this.GetSegment(value);

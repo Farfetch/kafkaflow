@@ -3,7 +3,6 @@ namespace KafkaFlow.Client.Protocol.Streams
     using System;
     using System.Buffers.Binary;
     using System.Collections.Generic;
-    using System.IO;
     using System.Runtime.CompilerServices;
     using System.Text;
     using KafkaFlow.Client.Protocol.Messages;
@@ -14,21 +13,64 @@ namespace KafkaFlow.Client.Protocol.Streams
 
         public static void WriteInt16(this MemoryWriter destination, short value)
         {
-            Span<byte> tmp = stackalloc byte[2];
+            const int byteCount = 2;
+
+            if (destination.TryGetSpan(byteCount, out var span))
+            {
+                BinaryPrimitives.WriteInt16BigEndian(span, value);
+                destination.Advance(byteCount);
+                return;
+            }
+
+            Span<byte> tmp = stackalloc byte[byteCount];
             BinaryPrimitives.WriteInt16BigEndian(tmp, value);
+            destination.Write(tmp);
+        }
+
+        public static void WriteByte(this MemoryWriter destination, byte value)
+        {
+            const int byteCount = 1;
+
+            if (destination.TryGetSpan(byteCount, out var span))
+            {
+                span[0] = value;
+                destination.Advance(byteCount);
+                return;
+            }
+
+            Span<byte> tmp = stackalloc byte[byteCount];
+            tmp[0] = value;
             destination.Write(tmp);
         }
 
         public static void WriteInt32(this MemoryWriter destination, int value)
         {
-            Span<byte> tmp = stackalloc byte[4];
+            const int byteCount = 4;
+
+            if (destination.TryGetSpan(byteCount, out var span))
+            {
+                BinaryPrimitives.WriteInt32BigEndian(span, value);
+                destination.Advance(byteCount);
+                return;
+            }
+
+            Span<byte> tmp = stackalloc byte[byteCount];
             BinaryPrimitives.WriteInt32BigEndian(tmp, value);
             destination.Write(tmp);
         }
 
         public static void WriteInt64(this MemoryWriter destination, long value)
         {
-            Span<byte> tmp = stackalloc byte[8];
+            const int byteCount = 8;
+
+            if (destination.TryGetSpan(byteCount, out var span))
+            {
+                BinaryPrimitives.WriteInt64BigEndian(span, value);
+                destination.Advance(byteCount);
+                return;
+            }
+
+            Span<byte> tmp = stackalloc byte[byteCount];
             BinaryPrimitives.WriteInt64BigEndian(tmp, value);
             destination.Write(tmp);
         }
@@ -62,12 +104,25 @@ namespace KafkaFlow.Client.Protocol.Streams
             }
 
             destination.WriteInt16(Convert.ToInt16(value.Length));
-            destination.Write(Encoding.UTF8.GetBytes(value));
+            destination.WriteRawString(value);
         }
 
         public static void WriteCompactString(this MemoryWriter destination, string value)
         {
             destination.WriteUVarint((uint) value.Length + 1u);
+            destination.WriteRawString(value);
+        }
+
+        private static void WriteRawString(this MemoryWriter destination, string value)
+        {
+            const int maxUtf8CharCount = 4;
+
+            if (destination.TryGetSpan(value.Length * maxUtf8CharCount, out var span))
+            {
+                destination.Advance(Encoding.UTF8.GetBytes(value, span));
+                return;
+            }
+
             destination.Write(Encoding.UTF8.GetBytes(value));
         }
 
@@ -142,10 +197,26 @@ namespace KafkaFlow.Client.Protocol.Streams
             }
         }
 
-        public static int WriteVarint(this MemoryWriter destination, long num) =>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteVarint(this MemoryWriter destination, long num) =>
             destination.WriteUVarint(((ulong) num << 1) ^ ((ulong) num >> 63));
 
-        public static int WriteUVarint(this MemoryWriter destination, ulong num)
+        public static void WriteUVarint(this MemoryWriter destination, ulong num)
+        {
+            const int byteCount = 8;
+
+            if (destination.TryGetSpan(byteCount, out var span))
+            {
+                destination.Advance(WriteUVarint(num, span));
+                return;
+            }
+
+            Span<byte> buffer = stackalloc byte[byteCount];
+            var bytesUsed = WriteUVarint(num, buffer);
+            destination.Write(buffer[..bytesUsed]);
+        }
+
+        private static int WriteUVarint(ulong num, Span<byte> buffer)
         {
             const ulong endMask = 0b1000_0000;
             const ulong valueMask = 0b0111_1111;
@@ -155,8 +226,7 @@ namespace KafkaFlow.Client.Protocol.Streams
             do
             {
                 var value = (byte) ((num & valueMask) | (num > valueMask ? endMask : 0));
-                destination.WriteByte(value);
-                ++bytesWritten;
+                buffer[bytesWritten++] = value;
                 num >>= 7;
             } while (num != 0);
 
