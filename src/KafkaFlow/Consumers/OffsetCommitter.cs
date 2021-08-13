@@ -2,6 +2,7 @@ namespace KafkaFlow.Consumers
 {
     using System;
     using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using Confluent.Kafka;
@@ -59,10 +60,19 @@ namespace KafkaFlow.Consumers
             }
             catch (Exception e)
             {
-                this.logHandler.Error(
+                this.logHandler.Warning(
                     "Error Commiting Offsets",
-                    e,
-                    null);
+                    new { ErrorMessage = e.Message });
+
+                this.RequeueFailedOffsets(offsets.Values);
+            }
+        }
+
+        private void RequeueFailedOffsets(IEnumerable<TopicPartitionOffset> offsets)
+        {
+            foreach (var tpo in offsets)
+            {
+                this.offsetsToCommit.TryAdd((tpo.Topic, tpo.Partition.Value), tpo);
             }
         }
     }
