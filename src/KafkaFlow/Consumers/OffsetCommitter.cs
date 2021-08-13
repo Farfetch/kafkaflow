@@ -2,6 +2,7 @@ namespace KafkaFlow.Consumers
 {
     using System;
     using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using Confluent.Kafka;
@@ -11,9 +12,9 @@ namespace KafkaFlow.Consumers
         private readonly IConsumer consumer;
         private readonly ILogHandler logHandler;
 
-        private ConcurrentDictionary<(string, int), TopicPartitionOffset> offsetsToCommit = new();
-
         private readonly Timer commitTimer;
+
+        private ConcurrentDictionary<(string, int), TopicPartitionOffset> offsetsToCommit = new();
 
         public OffsetCommitter(
             IConsumer consumer,
@@ -27,6 +28,20 @@ namespace KafkaFlow.Consumers
                 null,
                 consumer.Configuration.AutoCommitInterval,
                 consumer.Configuration.AutoCommitInterval);
+        }
+
+        public void Dispose()
+        {
+            this.commitTimer.Dispose();
+            this.CommitHandler();
+        }
+
+        public void StoreOffset(TopicPartitionOffset tpo)
+        {
+            this.offsetsToCommit.AddOrUpdate(
+                (tpo.Topic, tpo.Partition.Value),
+                tpo,
+                (_, _) => tpo);
         }
 
         private void CommitHandler()
@@ -45,25 +60,20 @@ namespace KafkaFlow.Consumers
             }
             catch (Exception e)
             {
-                this.logHandler.Error(
+                this.logHandler.Warning(
                     "Error Commiting Offsets",
-                    e,
-                    null);
+                    new { ErrorMessage = e.Message });
+
+                this.RequeueFailedOffsets(offsets.Values);
             }
         }
 
-        public void Dispose()
+        private void RequeueFailedOffsets(IEnumerable<TopicPartitionOffset> offsets)
         {
-            this.commitTimer.Dispose();
-            this.CommitHandler();
-        }
-
-        public void StoreOffset(TopicPartitionOffset tpo)
-        {
-            this.offsetsToCommit.AddOrUpdate(
-                (tpo.Topic, tpo.Partition.Value),
-                tpo,
-                (_, _) => tpo);
+            foreach (var tpo in offsets)
+            {
+                this.offsetsToCommit.TryAdd((tpo.Topic, tpo.Partition.Value), tpo);
+            }
         }
     }
 }
