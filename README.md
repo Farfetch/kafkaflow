@@ -1,6 +1,6 @@
 ![Build Master](https://github.com/Farfetch/kafka-flow/workflows/Build%20Master/badge.svg?branch=master) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/49878b337fde46839c5f08051c2ba098)](https://app.codacy.com/gh/Farfetch/kafka-flow?utm_source=github.com&utm_medium=referral&utm_content=Farfetch/kafka-flow&utm_campaign=Badge_Grade_Dashboard) [<img src="https://img.shields.io/badge/slack-@kafkaflow-green.svg?logo=slack">](https://join.slack.com/t/kafkaflow/shared_invite/zt-puihrtcl-NnnylPZloAiVlQfsw~RD6Q)
 
-## KafkaFlow
+# KafkaFlow
 
 KafkaFlow is a .NET framework to create Kafka based applications, simple to use and extend.
 
@@ -23,11 +23,11 @@ KafkaFlow uses [Confluent Kafka Client](https://github.com/confluentinc/confluen
 -   [Admin Web API](https://github.com/Farfetch/kafka-flow/wiki/admin) that allows pause, resume and restart consumers, change workers count and rewind offsets, **all at runtime**
 -   [Dashboard UI](https://github.com/Farfetch/kafka-flow/wiki/dashboard) that allows to visualize relevant informations about all consumers and manage them
 
-## Packages
+## Installation
 
-[Packages Page](https://github.com/Farfetch/kafka-flow/wiki/packages)
+Check the [setup page](https://github.com/Farfetch/kafka-flow/wiki/Setup)
 
-## Basic Usage
+## Usage
 
 **.NET Core 2.1 and later using Hosted Service**
 
@@ -66,20 +66,15 @@ public static void Main(string[] args)
         .Run();
 }
 ```
-See the [setup page](https://github.com/Farfetch/kafka-flow/wiki/Setup) and [samples](/samples) for more details
+See [samples](/samples) for more details
 
-## Documentation
+### Documentation
 
 [Wiki Page](https://github.com/Farfetch/kafka-flow/wiki)
 
 ## Contributing
 
 Read the [Contributing guidelines](CONTRIBUTING.md)
-
-## Maintainers
-
--   [filipeesch](https://github.com/filipeesch)
--   [dougolima](https://github.com/dougolima)
 
 ## License
 
