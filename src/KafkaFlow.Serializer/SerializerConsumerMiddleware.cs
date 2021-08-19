@@ -59,7 +59,7 @@
                 .DeserializeAsync(
                     stream,
                     messageType,
-                    SerializerContext.Empty)
+                    new SerializerContext(context.ConsumerContext.Topic))
                 .ConfigureAwait(false);
 
             await next(context.SetMessage(context.Message.Key, data)).ConfigureAwait(false);

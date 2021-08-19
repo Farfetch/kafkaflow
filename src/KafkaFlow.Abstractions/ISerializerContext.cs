@@ -5,5 +5,9 @@ namespace KafkaFlow
     /// </summary>
     public interface ISerializerContext
     {
+        /// <summary>
+        /// Gets the topic associated with the message
+        /// </summary>
+        string Topic { get; }
     }
 }

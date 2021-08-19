@@ -1,6 +1,5 @@
 namespace KafkaFlow.UnitTests.Serializers
 {
-    using System;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
@@ -40,6 +39,8 @@ namespace KafkaFlow.UnitTests.Serializers
             var key = new object();
             var deserializedMessage = new Message(key, new TestMessage());
             IMessageContext resultContext = null;
+            var producerContext = new Mock<IProducerContext>();
+            producerContext.SetupGet(x=>x.Topic).Returns("test-topic");
 
             var transformedContextMock = new Mock<IMessageContext>();
 
@@ -60,6 +61,10 @@ namespace KafkaFlow.UnitTests.Serializers
             this.contextMock
                 .Setup(x => x.SetMessage(key, It.Is<byte[]>(value => value.SequenceEqual(rawMessage))))
                 .Returns(transformedContextMock.Object);
+
+            this.contextMock
+                .SetupGet(x => x.ProducerContext)
+                .Returns(producerContext.Object);
 
             // Act
             await this.target.Invoke(

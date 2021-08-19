@@ -50,7 +50,7 @@
                         typeof(AvroSerializer<>).MakeGenericType(message.GetType()),
                         this.schemaRegistryClient,
                         this.serializerConfig))
-                .SerializeAsync(message, output);
+                .SerializeAsync(message, output, context);
         }
 
         /// <inheritdoc/>
@@ -64,7 +64,7 @@
                             typeof(AvroDeserializer<>).MakeGenericType(type),
                             this.schemaRegistryClient,
                             new AvroDeserializerConfig()))
-                .DeserializeAsync(input);
+                .DeserializeAsync(input, context);
         }
     }
 }

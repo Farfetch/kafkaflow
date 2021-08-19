@@ -37,8 +37,9 @@ namespace KafkaFlow
         /// Deserialize a message using the passed deserializer
         /// </summary>
         /// <param name="input">The message stream to deserialize</param>
+        /// <param name="context">Additional information provided for deserialization</param>
         /// <returns></returns>
-        public abstract Task<object> DeserializeAsync(Stream input);
+        public abstract Task<object> DeserializeAsync(Stream input, ISerializerContext context);
 
         private class InnerConfluentDeserializerWrapper<T> : ConfluentDeserializerWrapper
         {
@@ -49,7 +50,7 @@ namespace KafkaFlow
                 this.deserializer = (IAsyncDeserializer<T>) deserializerFactory();
             }
 
-            public override async Task<object> DeserializeAsync(Stream input)
+            public override async Task<object> DeserializeAsync(Stream input, ISerializerContext context)
             {
                 using var buffer = MemoryStreamManager.GetStream();
 
@@ -59,7 +60,7 @@ namespace KafkaFlow
                     .DeserializeAsync(
                         new ReadOnlyMemory<byte>(buffer.GetBuffer(), 0, (int) buffer.Length),
                         false,
-                        Confluent.Kafka.SerializationContext.Empty)
+                        new SerializationContext(MessageComponentType.Value, context.Topic))
                     .ConfigureAwait(false);
             }
         }
