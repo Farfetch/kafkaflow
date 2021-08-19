@@ -77,6 +77,13 @@ See [samples](/samples) for more details
 
 Read the [Contributing guidelines](CONTRIBUTING.md)
 
+## Authors
+
+- [filipeesch](https://github.com/filipeesch)
+- [dougolima](https://github.com/dougolima)
+
+We are available through [Issues](https://github.com/Farfetch/kafka-flow/issues), [Discussions](https://github.com/Farfetch/kafka-flow/discussions) or [Slack](https://join.slack.com/t/kafkaflow/shared_invite/zt-puihrtcl-NnnylPZloAiVlQfsw~RD6Q)
+
 ## License
 
 [MIT](LICENSE)
