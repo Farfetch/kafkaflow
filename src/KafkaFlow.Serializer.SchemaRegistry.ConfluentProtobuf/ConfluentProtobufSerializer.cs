@@ -50,7 +50,7 @@
                         typeof(ProtobufSerializer<>).MakeGenericType(message.GetType()),
                         this.schemaRegistryClient,
                         this.serializerConfig))
-                .SerializeAsync(message, output);
+                .SerializeAsync(message, output, context);
         }
 
         /// <inheritdoc/>
@@ -63,7 +63,7 @@
                         .CreateInstance(
                             typeof(ProtobufDeserializer<>).MakeGenericType(type),
                             Enumerable.Empty<KeyValuePair<string, string>>()))
-                .DeserializeAsync(input);
+                .DeserializeAsync(input, context);
         }
     }
 }

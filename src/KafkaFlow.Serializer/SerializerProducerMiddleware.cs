@@ -44,7 +44,7 @@
                     .SerializeAsync(
                         context.Message.Value,
                         buffer,
-                        SerializerContext.Empty)
+                        new SerializerContext(context.ProducerContext.Topic))
                     .ConfigureAwait(false);
 
                 messageValue = buffer.ToArray();

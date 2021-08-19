@@ -68,7 +68,7 @@
                         this.schemaRegistryClient,
                         this.serializerConfig,
                         this.schemaGeneratorSettings))
-                .SerializeAsync(message, output);
+                .SerializeAsync(message, output, context);
         }
 
         /// <inheritdoc/>
@@ -82,7 +82,7 @@
                             typeof(JsonDeserializer<>).MakeGenericType(type),
                             Enumerable.Empty<KeyValuePair<string, string>>(),
                             null))
-                .DeserializeAsync(input);
+                .DeserializeAsync(input, context);
         }
     }
 }

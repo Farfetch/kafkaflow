@@ -112,6 +112,9 @@ namespace KafkaFlow.UnitTests.Serializers
             var rawMessage = new Message(rawKey, rawValue);
             var deserializedMessage = new TestMessage();
 
+            var consumerContext = new Mock<IConsumerContext>();
+            consumerContext.SetupGet(x => x.Topic).Returns("test-topic");
+
             var transformedContextMock = new Mock<IMessageContext>();
             IMessageContext resultContext = null;
 
@@ -130,6 +133,10 @@ namespace KafkaFlow.UnitTests.Serializers
             this.serializerMock
                 .Setup(x => x.DeserializeAsync(It.IsAny<Stream>(), messageType, It.IsAny<ISerializerContext>()))
                 .ReturnsAsync(deserializedMessage);
+
+            this.contextMock
+                .SetupGet(x => x.ConsumerContext)
+                .Returns(consumerContext.Object);
 
             // Act
             await this.target.Invoke(
