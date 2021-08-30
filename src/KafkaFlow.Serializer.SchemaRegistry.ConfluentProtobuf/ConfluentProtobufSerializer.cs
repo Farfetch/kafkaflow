@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Threading.Tasks;
     using Confluent.SchemaRegistry;
     using Confluent.SchemaRegistry.Serdes;
@@ -20,17 +19,8 @@
         /// Initializes a new instance of the <see cref="ConfluentProtobufSerializer"/> class.
         /// </summary>
         /// <param name="resolver">An instance of <see cref="IDependencyResolver"/></param>
-        public ConfluentProtobufSerializer(IDependencyResolver resolver)
-            : this(resolver, new ProtobufSerializerConfig())
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ConfluentProtobufSerializer"/> class.
-        /// </summary>
-        /// <param name="resolver">An instance of <see cref="IDependencyResolver"/></param>
         /// <param name="serializerConfig">An instance of <see cref="ProtobufSerializerConfig"/></param>
-        public ConfluentProtobufSerializer(IDependencyResolver resolver, ProtobufSerializerConfig serializerConfig)
+        public ConfluentProtobufSerializer(IDependencyResolver resolver, ProtobufSerializerConfig serializerConfig = null)
         {
             this.schemaRegistryClient =
                 resolver.Resolve<ISchemaRegistryClient>() ??
@@ -62,7 +52,7 @@
                     () => Activator
                         .CreateInstance(
                             typeof(ProtobufDeserializer<>).MakeGenericType(type),
-                            Enumerable.Empty<KeyValuePair<string, string>>()))
+                            (IEnumerable<KeyValuePair<string, string>>)null))
                 .DeserializeAsync(input, context);
         }
     }

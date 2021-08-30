@@ -5,7 +5,7 @@
 //    is regenerated
 // </auto-generated>
 // ------------------------------------------------------------------------------
-namespace MessageTypes
+namespace SchemaRegistry
 {
 	using System;
 	using System.Collections.Generic;
@@ -14,18 +14,18 @@ namespace MessageTypes
 	using Avro.Specific;
 	
 	/// <summary>
-	/// A simple log message type as used by this blog post.
+	/// A simple log message.
 	/// </summary>
-	public partial class LogMessages2 : ISpecificRecord
+	public partial class AvroLogMessage2 : ISpecificRecord
 	{
-		public static Schema _SCHEMA = Avro.Schema.Parse("{\"type\":\"record\",\"name\":\"LogMessages2\",\"namespace\":\"MessageTypes\",\"fields\":[{\"nam" +
+		public static Schema _SCHEMA = Avro.Schema.Parse("{\"type\":\"record\",\"name\":\"AvroLogMessage2\",\"namespace\":\"SchemaRegistry\",\"fields\":[{\"nam" +
 				"e\":\"Message\",\"type\":\"string\"}]}");
 		private string _Message;
 		public virtual Schema Schema
 		{
 			get
 			{
-				return LogMessages2._SCHEMA;
+				return AvroLogMessage2._SCHEMA;
 			}
 		}
 		public string Message
