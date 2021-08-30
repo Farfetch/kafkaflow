@@ -8,14 +8,14 @@
     public interface IMessageTypeResolver
     {
         /// <summary>
-        /// Must return the message type when consuming
+        /// Returns the message type when consuming
         /// </summary>
         /// <param name="context">The <see cref="IMessageContext"/> containing the message and the metadata</param>
         /// <returns></returns>
         Type OnConsume(IMessageContext context);
 
         /// <summary>
-        /// Must store the message type somewhere
+        /// Stores the message type somewhere when producing
         /// </summary>
         /// <param name="context">The <see cref="IMessageContext"/> containing the message and the metadata</param>
         void OnProduce(IMessageContext context);
