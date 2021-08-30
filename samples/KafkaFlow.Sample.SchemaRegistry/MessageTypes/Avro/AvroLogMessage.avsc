@@ -1,8 +1,8 @@
 {
   "type": "record",
-  "name": "LogMessages1",
-  "namespace": "MessageTypes",
-  "doc": "A simple log message type as used by this blog post.",
+  "name": "AvroLogMessage",
+  "namespace": "SchemaRegistry",
+  "doc": "A simple log message.",
   "fields": [
     {
       "name": "Severity",

@@ -5,7 +5,7 @@
 //    is regenerated
 // </auto-generated>
 // ------------------------------------------------------------------------------
-namespace MessageTypes
+namespace SchemaRegistry
 {
 	using System;
 	using System.Collections.Generic;
@@ -14,11 +14,11 @@ namespace MessageTypes
 	using Avro.Specific;
 	
 	/// <summary>
-	/// A simple log message type as used by this blog post.
+	/// A simple log message.
 	/// </summary>
-	public partial class LogMessages1 : ISpecificRecord
+	public partial class AvroLogMessage : ISpecificRecord
 	{
-		public static Schema _SCHEMA = Avro.Schema.Parse("{\"type\":\"record\",\"name\":\"LogMessages1\",\"namespace\":\"MessageTypes\",\"fields\":[{\"nam" +
+		public static Schema _SCHEMA = Avro.Schema.Parse("{\"type\":\"record\",\"name\":\"AvroLogMessage\",\"namespace\":\"SchemaRegistry\",\"fields\":[{\"nam" +
 				"e\":\"Severity\",\"type\":{\"type\":\"enum\",\"name\":\"LogLevel\",\"namespace\":\"MessageTypes\"" +
 				",\"symbols\":[\"None\",\"Verbose\",\"Info\",\"Warning\",\"Error\"]}}]}");
 		private MessageTypes.LogLevel _Severity;
@@ -26,7 +26,7 @@ namespace MessageTypes
 		{
 			get
 			{
-				return LogMessages1._SCHEMA;
+				return AvroLogMessage._SCHEMA;
 			}
 		}
 		public MessageTypes.LogLevel Severity

@@ -1,9 +1,7 @@
 ﻿namespace KafkaFlow.Serializer.SchemaRegistry
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Threading.Tasks;
     using Confluent.SchemaRegistry;
     using Confluent.SchemaRegistry.Serdes;
@@ -22,18 +20,12 @@
         /// Initializes a new instance of the <see cref="ConfluentJsonSerializer"/> class.
         /// </summary>
         /// <param name="resolver">An instance of <see cref="IDependencyResolver"/></param>
-        public ConfluentJsonSerializer(IDependencyResolver resolver)
-            : this(resolver, new JsonSerializerConfig())
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ConfluentJsonSerializer"/> class.
-        /// </summary>
-        /// <param name="resolver">An instance of <see cref="IDependencyResolver"/></param>
         /// <param name="serializerConfig">An instance of <see cref="JsonSerializerConfig"/></param>
-        public ConfluentJsonSerializer(IDependencyResolver resolver, JsonSerializerConfig serializerConfig)
-            : this(resolver, serializerConfig, null)
+        public ConfluentJsonSerializer(IDependencyResolver resolver, JsonSerializerConfig serializerConfig = null)
+            : this(
+                resolver,
+                serializerConfig,
+                null)
         {
         }
 
@@ -46,7 +38,7 @@
         public ConfluentJsonSerializer(
             IDependencyResolver resolver,
             JsonSerializerConfig serializerConfig,
-            JsonSchemaGeneratorSettings schemaGeneratorSettings)
+            JsonSchemaGeneratorSettings schemaGeneratorSettings = null)
         {
             this.schemaRegistryClient =
                 resolver.Resolve<ISchemaRegistryClient>() ??
@@ -80,8 +72,8 @@
                     () => Activator
                         .CreateInstance(
                             typeof(JsonDeserializer<>).MakeGenericType(type),
-                            Enumerable.Empty<KeyValuePair<string, string>>(),
-                            null))
+                            null,
+                            this.schemaGeneratorSettings))
                 .DeserializeAsync(input, context);
         }
     }

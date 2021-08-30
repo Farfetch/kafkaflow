@@ -18,19 +18,10 @@
         /// Initializes a new instance of the <see cref="ConfluentAvroSerializer"/> class.
         /// </summary>
         /// <param name="resolver">The <see cref="IDependencyResolver"/> to be used by the framework</param>
-        public ConfluentAvroSerializer(IDependencyResolver resolver)
-            : this(resolver, new AvroSerializerConfig())
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ConfluentAvroSerializer"/> class.
-        /// </summary>
-        /// <param name="resolver">The <see cref="IDependencyResolver"/> to be used by the framework</param>
         /// <param name="serializerConfig">Avro serializer configuration</param>
         public ConfluentAvroSerializer(
             IDependencyResolver resolver,
-            AvroSerializerConfig serializerConfig)
+            AvroSerializerConfig serializerConfig = null)
         {
             this.schemaRegistryClient =
                 resolver.Resolve<ISchemaRegistryClient>() ??
@@ -63,7 +54,7 @@
                         .CreateInstance(
                             typeof(AvroDeserializer<>).MakeGenericType(type),
                             this.schemaRegistryClient,
-                            new AvroDeserializerConfig()))
+                            null))
                 .DeserializeAsync(input, context);
         }
     }

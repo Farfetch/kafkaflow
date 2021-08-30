@@ -64,7 +64,7 @@
 
             return middlewares.AddSerializer(
                 resolver => resolver.Resolve<TSerializer>(),
-                _ => new DefaultMessageTypeResolver());
+                _ => new DefaultTypeResolver());
         }
 
         /// <summary>
@@ -81,7 +81,7 @@
         {
             return middlewares.AddSerializer(
                 serializerFactory,
-                _ => new DefaultMessageTypeResolver());
+                _ => new DefaultTypeResolver());
         }
 
         /// <summary>
