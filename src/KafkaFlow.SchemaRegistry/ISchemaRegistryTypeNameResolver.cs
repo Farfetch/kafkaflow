@@ -1,7 +1,7 @@
 namespace KafkaFlow
 {
     /// <summary>
-    /// Used to implement a type name resolver to messages using schema registry
+    /// An interface to implement a type name resolver to messages serialized with schema registry serializers
     /// </summary>
     public interface ISchemaRegistryTypeNameResolver
     {
