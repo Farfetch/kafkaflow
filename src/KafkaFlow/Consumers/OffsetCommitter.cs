@@ -57,6 +57,24 @@ namespace KafkaFlow.Consumers
             try
             {
                 this.consumer.Commit(offsets.Values);
+
+                this.logHandler.Info(
+                    "Committed offsets",
+                    new
+                    {
+                        Offsets = offsets.GroupBy(
+                            x => x.Key.Item1,
+                            (topic, groupedOffsets) => new
+                            {
+                                Topic = topic,
+                                Partitions = groupedOffsets.Select(
+                                    offset => new
+                                    {
+                                        Partition = offset.Value.Partition.Value,
+                                        Offset = offset.Value.Offset.Value,
+                                    }),
+                            }),
+                    });
             }
             catch (Exception e)
             {
