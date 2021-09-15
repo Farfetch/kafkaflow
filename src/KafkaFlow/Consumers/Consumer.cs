@@ -52,6 +52,8 @@ namespace KafkaFlow.Consumers
             {
                 this.OnPartitionsRevoked((resolver, _, topicPartitions) => handler(resolver, topicPartitions));
             }
+
+            this.RegisterLogErrorHandler();
         }
 
         public IConsumerConfiguration Configuration { get; }
@@ -114,21 +116,22 @@ namespace KafkaFlow.Consumers
 
         public IEnumerable<TopicPartitionLag> GetTopicPartitionsLag()
         {
-            return this.Assignment.Select(tp =>
-            {
-                var offsetEnd = this.GetWatermarkOffsets(tp).High.Value;
-                if (!this.committedOffsets.TryGetValue(tp, out var offset))
+            return this.Assignment.Select(
+                tp =>
                 {
-                    var lastCommittedOffset = this.GetPosition(tp);
-                    offset = lastCommittedOffset == Offset.Unset ? 0 : lastCommittedOffset.Value;
-                    this.committedOffsets[tp] = offset;
-                }
+                    var offsetEnd = this.GetWatermarkOffsets(tp).High.Value;
+                    if (!this.committedOffsets.TryGetValue(tp, out var offset))
+                    {
+                        var lastCommittedOffset = this.GetPosition(tp);
+                        offset = lastCommittedOffset == Offset.Unset ? 0 : lastCommittedOffset.Value;
+                        this.committedOffsets[tp] = offset;
+                    }
 
-                return new TopicPartitionLag(tp.Topic, tp.Partition.Value, offsetEnd - offset);
-            });
+                    return new TopicPartitionLag(tp.Topic, tp.Partition.Value, offsetEnd - offset);
+                });
         }
 
-        public void Commit(IEnumerable<TopicPartitionOffset> offsetsValues)
+        public void Commit(IReadOnlyCollection<TopicPartitionOffset> offsetsValues)
         {
             this.consumer.Commit(offsetsValues);
 
@@ -176,6 +179,31 @@ namespace KafkaFlow.Consumers
 
         public void Dispose() => this.InvalidateConsumer();
 
+        private void RegisterLogErrorHandler()
+        {
+            this.OnError(
+                (_, error) =>
+                {
+                    var errorData = new
+                    {
+                        Code = error.Code.ToString(),
+                        error.Reason,
+                        error.IsBrokerError,
+                        error.IsLocalError,
+                        error.IsError,
+                    };
+
+                    if (error.IsFatal)
+                    {
+                        this.logHandler.Error("Kafka Consumer Internal Error", null, errorData);
+                    }
+                    else
+                    {
+                        this.logHandler.Warning("Kafka Consumer Internal Warning", errorData);
+                    }
+                });
+        }
+
         private void EnsureConsumer()
         {
             if (this.consumer != null)
@@ -196,8 +224,9 @@ namespace KafkaFlow.Consumers
                             this.Subscription = consumer.Subscription;
                             this.flowManager.Start(consumer);
 
-                            this.partitionsAssignedHandlers.ForEach(x =>
-                                x(this.dependencyResolver, consumer, partitions));
+                            this.partitionsAssignedHandlers.ForEach(
+                                x =>
+                                    x(this.dependencyResolver, consumer, partitions));
                         })
                     .SetPartitionsRevokedHandler(
                         (consumer, partitions) =>
@@ -211,8 +240,9 @@ namespace KafkaFlow.Consumers
                                 x => x(this.dependencyResolver, consumer, partitions));
                         })
                     .SetErrorHandler((consumer, error) => this.errorsHandlers.ForEach(x => x(consumer, error)))
-                    .SetStatisticsHandler((consumer, statistics) =>
-                        this.statisticsHandlers.ForEach(x => x(consumer, statistics)))
+                    .SetStatisticsHandler(
+                        (consumer, statistics) =>
+                            this.statisticsHandlers.ForEach(x => x(consumer, statistics)))
                     .Build();
 
             this.consumer.Subscribe(this.Configuration.Topics);

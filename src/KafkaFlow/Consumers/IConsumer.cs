@@ -84,7 +84,7 @@ namespace KafkaFlow.Consumers
             TimeSpan timeout);
 
         /// <inheritdoc cref="IConsumer{TKey,TValue}.Commit()"/>
-        void Commit(IEnumerable<TopicPartitionOffset> offsetsValues);
+        void Commit(IReadOnlyCollection<TopicPartitionOffset> offsetsValues);
 
         /// <inheritdoc cref="IConsumer{TKey,TValue}.Consume(CancellationToken)"/>
         ValueTask<ConsumeResult<byte[], byte[]>> ConsumeAsync(CancellationToken cancellationToken);
