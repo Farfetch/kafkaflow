@@ -1,10 +1,12 @@
 namespace KafkaFlow.Consumers
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
+    using KafkaFlow.Configuration;
 
     internal class ConsumerWorkerPool : IConsumerWorkerPool
     {
@@ -13,6 +15,7 @@ namespace KafkaFlow.Consumers
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly ILogHandler logHandler;
         private readonly Factory<IDistributionStrategy> distributionStrategyFactory;
+        private readonly IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)> pendingOffsetsHandlers;
 
         private List<IConsumerWorker> workers = new();
 
@@ -23,14 +26,15 @@ namespace KafkaFlow.Consumers
             IConsumer consumer,
             IDependencyResolver dependencyResolver,
             IMiddlewareExecutor middlewareExecutor,
-            ILogHandler logHandler,
-            Factory<IDistributionStrategy> distributionStrategyFactory)
+            IConsumerConfiguration consumerConfiguration,
+            ILogHandler logHandler)
         {
             this.consumer = consumer;
             this.dependencyResolver = dependencyResolver;
             this.middlewareExecutor = middlewareExecutor;
             this.logHandler = logHandler;
-            this.distributionStrategyFactory = distributionStrategyFactory;
+            this.pendingOffsetsHandlers = consumerConfiguration.PendingOffsetsHandlers;
+            this.distributionStrategyFactory = consumerConfiguration.DistributionStrategyFactory;
         }
 
         public async Task StartAsync(IEnumerable<TopicPartition> partitions)
@@ -38,6 +42,8 @@ namespace KafkaFlow.Consumers
             this.offsetManager = new OffsetManager(
                 new OffsetCommitter(
                     this.consumer,
+                    this.dependencyResolver,
+                    this.pendingOffsetsHandlers,
                     this.logHandler),
                 partitions);
 
@@ -87,7 +93,7 @@ namespace KafkaFlow.Consumers
                 return;
             }
 
-            this.offsetManager.AddOffset(message.TopicPartitionOffset);
+            this.offsetManager.Enqueue(message.TopicPartitionOffset);
 
             await worker
                 .EnqueueAsync(message, stopCancellationToken)

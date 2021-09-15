@@ -4,6 +4,6 @@ namespace KafkaFlow.Consumers
 
     internal interface IOffsetManager
     {
-        void StoreOffset(TopicPartitionOffset offset);
+        void Commit(TopicPartitionOffset offset);
     }
 }

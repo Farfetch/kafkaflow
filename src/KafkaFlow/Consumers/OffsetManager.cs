@@ -20,7 +20,7 @@ namespace KafkaFlow.Consumers
                 partition => new PartitionOffsets());
         }
 
-        public void StoreOffset(TopicPartitionOffset offset)
+        public void Commit(TopicPartitionOffset offset)
         {
             if (!this.partitionsOffsets.TryGetValue((offset.Topic, offset.Partition.Value), out var offsets))
             {
@@ -29,23 +29,23 @@ namespace KafkaFlow.Consumers
 
             lock (offsets)
             {
-                if (offsets.ShouldUpdateOffset(offset.Offset.Value))
+                if (offsets.ShouldCommit(offset.Offset.Value, out var lastProcessedOffset))
                 {
-                    this.committer.StoreOffset(
+                    this.committer.Commit(
                         new TopicPartitionOffset(
                             offset.TopicPartition,
-                            new Offset(offsets.LastOffset + 1)));
+                            new Offset(lastProcessedOffset + 1)));
                 }
             }
         }
 
-        public void AddOffset(TopicPartitionOffset offset)
+        public void Enqueue(TopicPartitionOffset offset)
         {
             if (this.partitionsOffsets.TryGetValue(
                 (offset.Topic, offset.Partition.Value),
                 out var offsets))
             {
-                offsets.AddOffset(offset.Offset.Value);
+                offsets.Enqueue(offset.Offset.Value);
             }
         }
 

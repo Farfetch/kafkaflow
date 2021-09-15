@@ -67,7 +67,7 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Adds a handler to be executed after KafkaFlow cluster started
         /// </summary>
-        /// <param name="handler">A handler to KafkaFlow  cluster start event</param>
+        /// <param name="handler">A handler to KafkaFlow cluster started event</param>
         /// <returns></returns>
         IClusterConfigurationBuilder OnStarted(Action<IDependencyResolver> handler);
     }

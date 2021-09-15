@@ -42,7 +42,7 @@ namespace KafkaFlow.Consumers
 
         public DateTime MessageTimestamp => this.kafkaResult.Message.Timestamp.UtcDateTime;
 
-        public void StoreOffset() => this.offsetManager.StoreOffset(this.kafkaResult.TopicPartitionOffset);
+        public void StoreOffset() => this.offsetManager.Commit(this.kafkaResult.TopicPartitionOffset);
 
         public IOffsetsWatermark GetOffsetsWatermark() =>
             new OffsetsWatermark(this.consumer.GetWatermarkOffsets(this.kafkaResult.TopicPartition));

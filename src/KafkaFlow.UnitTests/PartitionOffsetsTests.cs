@@ -1,7 +1,9 @@
 namespace KafkaFlow.UnitTests
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using FluentAssertions;
     using KafkaFlow.Consumers;
@@ -11,26 +13,13 @@ namespace KafkaFlow.UnitTests
     public class PartitionOffsetsTests
     {
         [TestMethod]
-        public void AddOffset_InitializeTheValue_DoNothing()
-        {
-            // Arrange
-            var offsets = new PartitionOffsets();
-
-            // Act
-            offsets.AddOffset(1);
-
-            // Assert
-            offsets.LastOffset.Should().Be(-1);
-        }
-
-        [TestMethod]
         public void ShouldUpdate_WithoutAddingOffsets_ThrowsException()
         {
             // Arrange
             var offsets = new PartitionOffsets();
 
             // Act
-            Func<bool> act = () => offsets.ShouldUpdateOffset(1);
+            Func<bool> act = () => offsets.ShouldCommit(1, out _);
 
             // Assert
             act.Should().Throw<InvalidOperationException>();
@@ -41,14 +30,14 @@ namespace KafkaFlow.UnitTests
         {
             // Arrange
             var offsets = new PartitionOffsets();
-            offsets.AddOffset(1);
+            offsets.Enqueue(1);
 
             // Act
-            var shouldUpdate = offsets.ShouldUpdateOffset(1);
+            var shouldUpdate = offsets.ShouldCommit(1, out var offset);
 
             // Assert
             Assert.IsTrue(shouldUpdate);
-            Assert.AreEqual(1, offsets.LastOffset);
+            Assert.AreEqual(1, offset);
         }
 
         [TestMethod]
@@ -56,14 +45,14 @@ namespace KafkaFlow.UnitTests
         {
             // Arrange
             var offsets = new PartitionOffsets();
-            offsets.AddOffset(1);
+            offsets.Enqueue(1);
 
             // Act
-            var shouldUpdate = offsets.ShouldUpdateOffset(2);
+            var shouldUpdate = offsets.ShouldCommit(2, out var offset);
 
             // Assert
             Assert.IsFalse(shouldUpdate);
-            Assert.AreEqual(-1, offsets.LastOffset);
+            Assert.AreEqual(-1, offset);
         }
 
         [TestMethod]
@@ -71,80 +60,80 @@ namespace KafkaFlow.UnitTests
         {
             // Arrange
             var offsets = new PartitionOffsets();
-            offsets.AddOffset(1);
-            offsets.AddOffset(2);
-            offsets.AddOffset(4);
-            offsets.AddOffset(5);
-            offsets.AddOffset(7);
-            offsets.AddOffset(8);
-            offsets.AddOffset(15);
-            offsets.AddOffset(20);
-            offsets.AddOffset(50);
+            offsets.Enqueue(1);
+            offsets.Enqueue(2);
+            offsets.Enqueue(4);
+            offsets.Enqueue(5);
+            offsets.Enqueue(7);
+            offsets.Enqueue(8);
+            offsets.Enqueue(15);
+            offsets.Enqueue(20);
+            offsets.Enqueue(50);
 
             // Act
             var results = new[]
             {
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldUpdateOffset(7),
+                    ShouldUpdateResult = offsets.ShouldCommit(7, out long offset),
                     ShouldUpdateExpected = false,
-                    LastOffsetResult = offsets.LastOffset,
+                    LastOffsetResult = offset,
                     LastOffsetExpected = -1,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldUpdateOffset(1),
+                    ShouldUpdateResult = offsets.ShouldCommit(1, out offset),
                     ShouldUpdateExpected = true,
-                    LastOffsetResult = offsets.LastOffset,
+                    LastOffsetResult = offset,
                     LastOffsetExpected = 1,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldUpdateOffset(2),
+                    ShouldUpdateResult = offsets.ShouldCommit(2, out offset),
                     ShouldUpdateExpected = true,
-                    LastOffsetResult = offsets.LastOffset,
+                    LastOffsetResult = offset,
                     LastOffsetExpected = 2,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldUpdateOffset(20),
+                    ShouldUpdateResult = offsets.ShouldCommit(20, out offset),
                     ShouldUpdateExpected = false,
-                    LastOffsetResult = offsets.LastOffset,
-                    LastOffsetExpected = 2,
+                    LastOffsetResult = offset,
+                    LastOffsetExpected = -1,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldUpdateOffset(5),
+                    ShouldUpdateResult = offsets.ShouldCommit(5, out offset),
                     ShouldUpdateExpected = false,
-                    LastOffsetResult = offsets.LastOffset,
-                    LastOffsetExpected = 2,
+                    LastOffsetResult = offset,
+                    LastOffsetExpected = -1,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldUpdateOffset(8),
+                    ShouldUpdateResult = offsets.ShouldCommit(8, out offset),
                     ShouldUpdateExpected = false,
-                    LastOffsetResult = offsets.LastOffset,
-                    LastOffsetExpected = 2,
+                    LastOffsetResult = offset,
+                    LastOffsetExpected = -1,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldUpdateOffset(4),
+                    ShouldUpdateResult = offsets.ShouldCommit(4, out offset),
                     ShouldUpdateExpected = true,
-                    LastOffsetResult = offsets.LastOffset,
+                    LastOffsetResult = offset,
                     LastOffsetExpected = 8,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldUpdateOffset(15),
+                    ShouldUpdateResult = offsets.ShouldCommit(15, out offset),
                     ShouldUpdateExpected = true,
-                    LastOffsetResult = offsets.LastOffset,
+                    LastOffsetResult = offset,
                     LastOffsetExpected = 20,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldUpdateOffset(50),
+                    ShouldUpdateResult = offsets.ShouldCommit(50, out offset),
                     ShouldUpdateExpected = true,
-                    LastOffsetResult = offsets.LastOffset,
+                    LastOffsetResult = offset,
                     LastOffsetExpected = 50,
                 },
             };
@@ -165,18 +154,25 @@ namespace KafkaFlow.UnitTests
 
             var target = new PartitionOffsets();
             var offsets = new List<int>(count);
+            var offsetsCommitted = new ConcurrentQueue<long>();
 
             for (var i = 0; i < count; i += 2)
             {
-                target.AddOffset(i);
+                target.Enqueue(i);
                 offsets.Add(i);
             }
 
             // Act
-            Parallel.ForEach(offsets, offset => target.ShouldUpdateOffset(offset));
+            Parallel.ForEach(offsets, offset =>
+            {
+                if (target.ShouldCommit(offset, out var lastProcessedOffset))
+                {
+                    offsetsCommitted.Enqueue(lastProcessedOffset);
+                }
+            });
 
             // Assert
-            Assert.AreEqual(999998, target.LastOffset);
+            Assert.AreEqual(999998, offsetsCommitted.Last());
         }
     }
 }

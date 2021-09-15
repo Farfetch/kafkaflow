@@ -80,6 +80,11 @@ namespace KafkaFlow.Configuration
         IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
 
         /// <summary>
+        /// Gets the handlers that will be called when there are pending offsets
+        /// </summary>
+        IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)> PendingOffsetsHandlers { get; }
+
+        /// <summary>
         /// Gets the custom factory used to create a new <see cref="KafkaFlow.Consumers.IConsumer"/>
         /// </summary>
         ConsumerCustomFactory CustomFactory { get; }

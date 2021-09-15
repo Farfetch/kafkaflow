@@ -13,11 +13,15 @@ namespace KafkaFlow.Consumers
         private readonly ILogHandler logHandler;
 
         private readonly Timer commitTimer;
+        private readonly IReadOnlyList<Timer> statisticsTimers;
 
         private ConcurrentDictionary<(string, int), TopicPartitionOffset> offsetsToCommit = new();
 
         public OffsetCommitter(
             IConsumer consumer,
+            IDependencyResolver resolver,
+            IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
+                pendingOffsetsHandlers,
             ILogHandler logHandler)
         {
             this.consumer = consumer;
@@ -28,20 +32,43 @@ namespace KafkaFlow.Consumers
                 null,
                 consumer.Configuration.AutoCommitInterval,
                 consumer.Configuration.AutoCommitInterval);
+
+            this.statisticsTimers = pendingOffsetsHandlers.Select(s =>
+                    new Timer(
+                        _ => this.PendingOffsetsHandler(resolver, s.handler),
+                        null,
+                        TimeSpan.Zero,
+                        s.interval))
+                .ToList();
         }
 
         public void Dispose()
         {
             this.commitTimer.Dispose();
             this.CommitHandler();
+
+            foreach (var timer in this.statisticsTimers)
+            {
+                timer.Dispose();
+            }
         }
 
-        public void StoreOffset(TopicPartitionOffset tpo)
+        public void Commit(TopicPartitionOffset tpo)
         {
             this.offsetsToCommit.AddOrUpdate(
                 (tpo.Topic, tpo.Partition.Value),
                 tpo,
                 (_, _) => tpo);
+        }
+
+        private void PendingOffsetsHandler(
+            IDependencyResolver resolver,
+            Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler)
+        {
+            if (!this.offsetsToCommit.IsEmpty)
+            {
+                handler(resolver, this.offsetsToCommit.Values);
+            }
         }
 
         private void CommitHandler()

@@ -15,6 +15,7 @@ namespace KafkaFlow.UnitTests
         private const int TestTimeout = 1000;
 
         private Mock<IConsumer> consumerMock;
+        private Mock<IDependencyResolver> dependencyResolverMock;
 
         private Mock<ILogHandler> logHandlerMock;
 
@@ -27,12 +28,18 @@ namespace KafkaFlow.UnitTests
         {
             this.consumerMock = new Mock<IConsumer>();
             this.logHandlerMock = new Mock<ILogHandler>();
+            this.dependencyResolverMock = new Mock<IDependencyResolver>();
             this.topicPartition = new TopicPartition("topic-A", new Partition(1));
 
-            this.consumerMock.Setup(c => c.Configuration.AutoCommitInterval)
-                .Returns(TimeSpan.FromMilliseconds(10));
+            this.consumerMock
+                .Setup(c => c.Configuration.AutoCommitInterval)
+                .Returns(TimeSpan.FromMilliseconds(100));
 
-            this.offsetCommitter = new OffsetCommitter(this.consumerMock.Object, this.logHandlerMock.Object);
+            this.offsetCommitter = new OffsetCommitter(
+                this.consumerMock.Object,
+                this.dependencyResolverMock.Object,
+                new List<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>>, TimeSpan)>(),
+                this.logHandlerMock.Object);
         }
 
         [TestCleanup]
@@ -42,7 +49,7 @@ namespace KafkaFlow.UnitTests
         }
 
         [TestMethod]
-        public void StoreOffset_ShouldCommit()
+        public void Commit_ShouldCommit()
         {
             // Arrange
             var offset = new TopicPartitionOffset(this.topicPartition, new Offset(1));
@@ -58,7 +65,7 @@ namespace KafkaFlow.UnitTests
                 });
 
             // Act
-            this.offsetCommitter.StoreOffset(offset);
+            this.offsetCommitter.Commit(offset);
             ready.WaitOne(TestTimeout);
 
             // Assert
@@ -68,7 +75,27 @@ namespace KafkaFlow.UnitTests
         }
 
         [TestMethod]
-        public void StoreOffset_WithFailure_ShouldRequeueFailedOffsetAndCommit()
+        public void PendingOffsetsState_ShouldExecuteHandlers()
+        {
+            // Arrange
+            var ready = new ManualResetEvent(false);
+
+            var committer = new OffsetCommitter(
+                this.consumerMock.Object,
+                this.dependencyResolverMock.Object,
+                new List<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
+                {
+                    ((_, _) => ready.Set(), new TimeSpan(0, 0, 10)),
+                },
+                this.logHandlerMock.Object);
+
+            // Act
+            committer.Commit(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
+            Assert.IsTrue(ready.WaitOne(TestTimeout));
+        }
+
+        [TestMethod]
+        public void Commit_WithFailure_ShouldRequeueFailedOffsetAndCommit()
         {
             // Arrange
             var offset = new TopicPartitionOffset(this.topicPartition, new Offset(2));
@@ -91,7 +118,7 @@ namespace KafkaFlow.UnitTests
                 });
 
             // Act
-            this.offsetCommitter.StoreOffset(offset);
+            this.offsetCommitter.Commit(offset);
             ready.WaitOne(TestTimeout);
 
             // Assert

@@ -16,8 +16,8 @@ namespace KafkaFlow
                 consumer,
                 resolver,
                 new MiddlewareExecutor(configuration.MiddlewaresConfigurations),
-                logHandler,
-                configuration.DistributionStrategyFactory);
+                configuration,
+                logHandler);
 
             var feeder = new WorkerPoolFeeder(
                 consumer,

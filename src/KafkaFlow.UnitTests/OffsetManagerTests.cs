@@ -28,32 +28,32 @@ namespace KafkaFlow.UnitTests
         public void StoreOffset_WithInvalidTopicPartition_ShouldDoNothing()
         {
             // Arrange
-            this.target.AddOffset(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
+            this.target.Enqueue(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
 
             // Act
-            this.target.StoreOffset(new TopicPartitionOffset(new TopicPartition("topic-B", new Partition(1)), new Offset(1)));
+            this.target.Commit(new TopicPartitionOffset(new TopicPartition("topic-B", new Partition(1)), new Offset(1)));
 
             // Assert
-            this.committerMock.Verify(c => c.StoreOffset(It.IsAny<TopicPartitionOffset>()), Times.Never());
+            this.committerMock.Verify(c => c.Commit(It.IsAny<TopicPartitionOffset>()), Times.Never());
         }
 
         [TestMethod]
         public void StoreOffset_WithGaps_ShouldStoreOffsetJustOnce()
         {
             // Arrange
-            this.target.AddOffset(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
-            this.target.AddOffset(new TopicPartitionOffset(this.topicPartition, new Offset(2)));
-            this.target.AddOffset(new TopicPartitionOffset(this.topicPartition, new Offset(3)));
+            this.target.Enqueue(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
+            this.target.Enqueue(new TopicPartitionOffset(this.topicPartition, new Offset(2)));
+            this.target.Enqueue(new TopicPartitionOffset(this.topicPartition, new Offset(3)));
 
             // Act
-            this.target.StoreOffset(new TopicPartitionOffset(this.topicPartition, new Offset(3)));
-            this.target.StoreOffset(new TopicPartitionOffset(this.topicPartition, new Offset(2)));
-            this.target.StoreOffset(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
+            this.target.Commit(new TopicPartitionOffset(this.topicPartition, new Offset(3)));
+            this.target.Commit(new TopicPartitionOffset(this.topicPartition, new Offset(2)));
+            this.target.Commit(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
 
             // Assert
             this.committerMock.Verify(
                 c =>
-                    c.StoreOffset(
+                    c.Commit(
                         It.Is<TopicPartitionOffset>(
                             p =>
                                 p.Partition.Equals(this.topicPartition.Partition) &&

@@ -29,7 +29,7 @@
                     .UseConsoleLog()
                     .AddCluster(
                         cluster => cluster
-                            .WithBrokers(new[] { "localhost:9092" })
+                            .WithBrokers(new[] {"localhost:9092"})
                             .EnableAdminMessages("kafka-flow.admin", Guid.NewGuid().ToString())
                             .AddProducer(
                                 producerName,
@@ -50,6 +50,21 @@
                                     .WithBufferSize(100)
                                     .WithWorkersCount(20)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                    .WithPendingOffsetsStatisticsHandler(
+                                        (resolver, offsets) =>
+                                            resolver.Resolve<ILogHandler>().Info(
+                                                "Offsets pending to be committed",
+                                                new
+                                                {
+                                                    Offsets = offsets.Select(o =>
+                                                        new
+                                                        {
+                                                            Partition = o.Partition.Value,
+                                                            Offset = o.Offset.Value,
+                                                            o.Topic
+                                                        })
+                                                }),
+                                        new TimeSpan(0, 0, 1))
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSerializer<ProtobufNetSerializer>()
@@ -89,10 +104,10 @@
                                         x => new BatchProduceItem(
                                             "test-topic",
                                             Guid.NewGuid().ToString(),
-                                            new TestMessage { Text = $"Message: {Guid.NewGuid()}" },
+                                            new TestMessage {Text = $"Message: {Guid.NewGuid()}"},
                                             null))
                                     .ToList());
-                        
+
                         break;
 
                     case "pause":
@@ -116,7 +131,7 @@
                         break;
 
                     case "reset":
-                        await adminProducer.ProduceAsync(new ResetConsumerOffset { ConsumerName = consumerName });
+                        await adminProducer.ProduceAsync(new ResetConsumerOffset {ConsumerName = consumerName});
 
                         break;
 

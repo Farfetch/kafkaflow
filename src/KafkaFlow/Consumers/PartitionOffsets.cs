@@ -7,42 +7,40 @@ namespace KafkaFlow.Consumers
 
     internal class PartitionOffsets
     {
-        private readonly SortedSet<long> pendingOffsets = new();
-        private readonly LinkedList<long> offsetsOrder = new();
+        private readonly SortedSet<long> processedOffsets = new();
+        private readonly LinkedList<long> receivedOffsets = new();
 
-        public long LastOffset { get; private set; } = -1;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddOffset(long offset)
+        public void Enqueue(long offset)
         {
-            lock (this.offsetsOrder)
+            lock (this.receivedOffsets)
             {
-                this.offsetsOrder.AddLast(offset);
+                this.receivedOffsets.AddLast(offset);
             }
         }
 
-        public bool ShouldUpdateOffset(long newOffset)
+        public bool ShouldCommit(long offset, out long lastProcessedOffset)
         {
-            lock (this.offsetsOrder)
+            lastProcessedOffset = -1;
+            lock (this.receivedOffsets)
             {
-                if (!this.offsetsOrder.Any())
+                if (!this.receivedOffsets.Any())
                 {
                     throw new InvalidOperationException(
-                        $"There is no offsets in the queue. Call {nameof(this.AddOffset)} first");
+                        $"There is no offsets in the received queue. Call {nameof(this.Enqueue)} first");
                 }
 
-                if (newOffset != this.offsetsOrder.First.Value)
+                if (offset != this.receivedOffsets.First.Value)
                 {
-                    this.pendingOffsets.Add(newOffset);
+                    this.processedOffsets.Add(offset);
                     return false;
                 }
 
                 do
                 {
-                    this.LastOffset = this.offsetsOrder.First.Value;
-                    this.offsetsOrder.RemoveFirst();
+                    lastProcessedOffset = this.receivedOffsets.First.Value;
+                    this.receivedOffsets.RemoveFirst();
                 }
-                while (this.offsetsOrder.Count > 0 && this.pendingOffsets.Remove(this.offsetsOrder.First.Value));
+                while (this.receivedOffsets.Count > 0 && this.processedOffsets.Remove(this.receivedOffsets.First.Value));
             }
 
             return true;
