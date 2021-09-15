@@ -131,7 +131,7 @@ namespace KafkaFlow.Consumers
                 });
         }
 
-        public void Commit(IReadOnlyCollection<TopicPartitionOffset> offsetsValues)
+        public void Commit(IEnumerable<TopicPartitionOffset> offsetsValues)
         {
             this.consumer.Commit(offsetsValues);
 
@@ -236,13 +236,10 @@ namespace KafkaFlow.Consumers
                             this.committedOffsets.Clear();
                             this.flowManager.Stop();
 
-                            this.partitionsRevokedHandlers.ForEach(
-                                x => x(this.dependencyResolver, consumer, partitions));
+                            this.partitionsRevokedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions));
                         })
                     .SetErrorHandler((consumer, error) => this.errorsHandlers.ForEach(x => x(consumer, error)))
-                    .SetStatisticsHandler(
-                        (consumer, statistics) =>
-                            this.statisticsHandlers.ForEach(x => x(consumer, statistics)))
+                    .SetStatisticsHandler((consumer, statistics) => this.statisticsHandlers.ForEach(x => x(consumer, statistics)))
                     .Build();
 
             this.consumer.Subscribe(this.Configuration.Topics);
