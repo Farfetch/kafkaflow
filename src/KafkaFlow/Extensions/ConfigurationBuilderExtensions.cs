@@ -64,8 +64,7 @@ namespace KafkaFlow
             this IConsumerConfigurationBuilder builder,
             Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler)
         {
-            ((ConsumerConfigurationBuilder)builder).WithPartitionsAssignedHandler(partitionsAssignedHandler);
-            return builder;
+            return ((ConsumerConfigurationBuilder)builder).WithPartitionsAssignedHandler(partitionsAssignedHandler);
         }
 
         /// <summary>
@@ -78,8 +77,22 @@ namespace KafkaFlow
             this IConsumerConfigurationBuilder builder,
             Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler)
         {
-            ((ConsumerConfigurationBuilder)builder).WithPartitionsRevokedHandler(partitionsRevokedHandler);
-            return builder;
+            return ((ConsumerConfigurationBuilder)builder).WithPartitionsRevokedHandler(partitionsRevokedHandler);
+        }
+
+        /// <summary>
+        /// Adds a handler to be executed when KafkaFlow has pending offsets to be committed
+        /// </summary>
+        /// <param name="builder">The configuration builder</param>
+        /// <param name="pendingOffsetsHandler">A handler for the consumer pending offsets state</param>
+        /// <param name="interval">The time interval between handler executions</param>
+        /// <returns></returns>
+        public static IConsumerConfigurationBuilder WithPendingOffsetsStatisticsHandler(
+            this IConsumerConfigurationBuilder builder,
+            Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> pendingOffsetsHandler,
+            TimeSpan interval)
+        {
+            return ((ConsumerConfigurationBuilder)builder).WithPendingOffsetsStatisticsHandler(pendingOffsetsHandler, interval);
         }
 
         /// <summary>

@@ -11,6 +11,7 @@ namespace KafkaFlow.Configuration
     {
         private readonly List<string> topics = new();
         private readonly List<Action<string>> statisticsHandlers = new();
+        private readonly List<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>>, TimeSpan interval)> pendingOffsetsStatisticsHandlers = new();
         private readonly List<Action<IDependencyResolver, List<TopicPartition>>> partitionAssignedHandlers = new();
         private readonly List<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionRevokedHandlers = new();
         private readonly ConsumerMiddlewareConfigurationBuilder middlewareConfigurationBuilder;
@@ -175,6 +176,14 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
+        public IConsumerConfigurationBuilder WithPendingOffsetsStatisticsHandler(
+            Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> pendingOffsetsHandler,
+            TimeSpan interval)
+        {
+            this.pendingOffsetsStatisticsHandlers.Add((pendingOffsetsHandler, interval));
+            return this;
+        }
+
         public IConsumerConfigurationBuilder WithCustomFactory(ConsumerCustomFactory customFactory)
         {
             this.customFactory = customFactory;
@@ -212,6 +221,7 @@ namespace KafkaFlow.Configuration
                 this.statisticsHandlers,
                 this.partitionAssignedHandlers,
                 this.partitionRevokedHandlers,
+                this.pendingOffsetsStatisticsHandlers,
                 this.customFactory);
         }
     }

@@ -5,6 +5,6 @@ namespace KafkaFlow.Consumers
 
     internal interface IOffsetCommitter : IDisposable
     {
-        void StoreOffset(TopicPartitionOffset tpo);
+        void Commit(TopicPartitionOffset tpo);
     }
 }
