@@ -7,6 +7,8 @@ namespace KafkaFlow.Consumers
 
     internal class OffsetManager : IOffsetManager, IDisposable
     {
+        private readonly Dictionary<TopicPartitionOffset, List<Action>> onProcessedActions = new();
+
         private readonly IOffsetCommitter committer;
         private readonly Dictionary<(string, int), PartitionOffsets> partitionsOffsets;
 
@@ -17,26 +19,35 @@ namespace KafkaFlow.Consumers
             this.committer = committer;
             this.partitionsOffsets = partitions.ToDictionary(
                 partition => (partition.Topic, partition.Partition.Value),
-                partition => new PartitionOffsets());
+                _ => new PartitionOffsets());
         }
 
-        public void Commit(TopicPartitionOffset offset)
+        public void MarkAsProcessed(TopicPartitionOffset offset)
         {
             if (!this.partitionsOffsets.TryGetValue((offset.Topic, offset.Partition.Value), out var offsets))
             {
                 return;
             }
 
+            this.ExecuteOffsetActions(offset);
+
             lock (offsets)
             {
                 if (offsets.ShouldCommit(offset.Offset.Value, out var lastProcessedOffset))
                 {
-                    this.committer.Commit(
+                    this.committer.MarkAsProcessed(
                         new TopicPartitionOffset(
                             offset.TopicPartition,
                             new Offset(lastProcessedOffset + 1)));
                 }
             }
+        }
+
+        public void OnOffsetProcessed(TopicPartitionOffset offset, Action action)
+        {
+            this.onProcessedActions
+                .GetOrAdd(offset, _ => new List<Action>())
+                .Add(action);
         }
 
         public void Enqueue(TopicPartitionOffset offset)
@@ -52,6 +63,21 @@ namespace KafkaFlow.Consumers
         public void Dispose()
         {
             this.committer.Dispose();
+        }
+
+        private void ExecuteOffsetActions(TopicPartitionOffset offset)
+        {
+            if (!this.onProcessedActions.TryGetValue(offset, out var actions))
+            {
+                return;
+            }
+
+            this.onProcessedActions.Remove(offset);
+
+            foreach (var action in actions)
+            {
+                action();
+            }
         }
     }
 }

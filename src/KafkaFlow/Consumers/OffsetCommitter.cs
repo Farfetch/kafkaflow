@@ -33,8 +33,9 @@ namespace KafkaFlow.Consumers
                 consumer.Configuration.AutoCommitInterval,
                 consumer.Configuration.AutoCommitInterval);
 
-            this.statisticsTimers = pendingOffsetsHandlers.Select(s =>
-                    new Timer(
+            this.statisticsTimers = pendingOffsetsHandlers
+                .Select(
+                    s => new Timer(
                         _ => this.PendingOffsetsHandler(resolver, s.handler),
                         null,
                         TimeSpan.Zero,
@@ -53,7 +54,7 @@ namespace KafkaFlow.Consumers
             }
         }
 
-        public void Commit(TopicPartitionOffset tpo)
+        public void MarkAsProcessed(TopicPartitionOffset tpo)
         {
             this.offsetsToCommit.AddOrUpdate(
                 (tpo.Topic, tpo.Partition.Value),
