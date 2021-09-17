@@ -49,7 +49,7 @@ namespace KafkaFlow.UnitTests
         }
 
         [TestMethod]
-        public void Commit_ShouldCommit()
+        public void MarkAsProcessed_ShouldCommit()
         {
             // Arrange
             var offset = new TopicPartitionOffset(this.topicPartition, new Offset(1));
@@ -65,7 +65,7 @@ namespace KafkaFlow.UnitTests
                 });
 
             // Act
-            this.offsetCommitter.Commit(offset);
+            this.offsetCommitter.MarkAsProcessed(offset);
             ready.WaitOne(TestTimeout);
 
             // Assert
@@ -90,12 +90,12 @@ namespace KafkaFlow.UnitTests
                 this.logHandlerMock.Object);
 
             // Act
-            committer.Commit(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
+            committer.MarkAsProcessed(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
             Assert.IsTrue(ready.WaitOne(TestTimeout));
         }
 
         [TestMethod]
-        public void Commit_WithFailure_ShouldRequeueFailedOffsetAndCommit()
+        public void MarkAsProcessed_WithFailure_ShouldRequeueFailedOffsetAndCommit()
         {
             // Arrange
             var offset = new TopicPartitionOffset(this.topicPartition, new Offset(2));
@@ -118,7 +118,7 @@ namespace KafkaFlow.UnitTests
                 });
 
             // Act
-            this.offsetCommitter.Commit(offset);
+            this.offsetCommitter.MarkAsProcessed(offset);
             ready.WaitOne(TestTimeout);
 
             // Assert

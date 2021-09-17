@@ -74,7 +74,11 @@ namespace KafkaFlow.Consumers
 
                             try
                             {
-                                using var scope = this.dependencyResolver.CreateScope();
+                                var scope = this.dependencyResolver.CreateScope();
+
+                                this.offsetManager.OnOffsetProcessed(
+                                    message.TopicPartitionOffset,
+                                    () => scope.Dispose());
 
                                 await this.middlewareExecutor
                                     .Execute(scope.Resolver, context, _ => Task.CompletedTask)
@@ -97,7 +101,7 @@ namespace KafkaFlow.Consumers
                             {
                                 if (this.consumer.Configuration.AutoStoreOffsets && context.ConsumerContext.ShouldStoreOffset)
                                 {
-                                    this.offsetManager.Commit(message.TopicPartitionOffset);
+                                    this.offsetManager.MarkAsProcessed(message.TopicPartitionOffset);
                                 }
 
                                 this.onMessageFinishedHandler?.Invoke();
