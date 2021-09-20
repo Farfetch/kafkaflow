@@ -24,9 +24,9 @@ namespace SchemaRegistry {
     static ProtobufLogMessageReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Chhwcm90b2J1ZkxvZ01lc3NhZ2UucHJvdG8SDlNjaGVtYVJlZ2lzdHJ5IjMK",
-            "ElByb3RvYnVmTG9nTWVzc2FnZRIPCgdNZXNzYWdlGAEgASgJEgwKBENvZGUY",
-            "AiABKAViBnByb3RvMw=="));
+            "Chhwcm90b2J1ZkxvZ01lc3NhZ2UucHJvdG8SD3NjaGVtYV9yZWdpc3RyeSIz",
+            "ChJQcm90b2J1ZkxvZ01lc3NhZ2USDwoHTWVzc2FnZRgBIAEoCRIMCgRDb2Rl",
+            "GAIgASgFYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
