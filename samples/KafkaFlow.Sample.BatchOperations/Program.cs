@@ -1,4 +1,4 @@
-﻿namespace KafkaFlow.Sample.BatchConsume
+﻿namespace KafkaFlow.Sample.BatchOperations
 {
     using System;
     using System.Linq;

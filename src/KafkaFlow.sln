@@ -61,7 +61,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Middlewares", "Middlewares"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.BatchConsume", "KafkaFlow.BatchConsume\KafkaFlow.BatchConsume.csproj", "{C891D0DB-BE19-4D20-9E2F-61D413210F8D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Sample.BatchConsume", "..\samples\KafkaFlow.Sample.BatchConsume\KafkaFlow.Sample.BatchConsume.csproj", "{DE8A8871-B19E-489D-8292-386A06A4CDFA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Sample.BatchOperations", "..\samples\KafkaFlow.Sample.BatchOperations\KafkaFlow.Sample.BatchOperations.csproj", "{DE8A8871-B19E-489D-8292-386A06A4CDFA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Extensions.Hosting", "KafkaFlow.Extensions.Hosting\KafkaFlow.Extensions.Hosting.csproj", "{7913342E-80FD-4094-B892-18DAA2E6948F}"
 EndProject
