@@ -29,8 +29,6 @@ namespace KafkaFlow.Consumers
                 return;
             }
 
-            this.ExecuteOffsetActions(offset);
-
             lock (offsets)
             {
                 if (offsets.ShouldCommit(offset.Offset.Value, out var lastProcessedOffset))
@@ -41,6 +39,8 @@ namespace KafkaFlow.Consumers
                             new Offset(lastProcessedOffset + 1)));
                 }
             }
+
+            this.ExecuteOffsetActions(offset);
         }
 
         public void OnOffsetProcessed(TopicPartitionOffset offset, Action action)
