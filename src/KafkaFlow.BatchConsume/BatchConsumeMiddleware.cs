@@ -2,18 +2,16 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
     internal class BatchConsumeMiddleware : IMessageMiddleware
     {
-        private readonly SemaphoreSlim semaphore = new(1, 1);
-
-        private readonly List<IMessageContext> batch;
+        private readonly int batchSize;
         private readonly TimeSpan batchTimeout;
         private readonly ILogHandler logHandler;
 
+        private List<IMessageContext> batch;
         private Task<Task> dispatchTask;
         private CancellationTokenSource cancelScheduleTokenSource;
 
@@ -22,75 +20,40 @@
             TimeSpan batchTimeout,
             ILogHandler logHandler)
         {
-            this.batch = new(batchSize);
+            this.batchSize = batchSize;
             this.batchTimeout = batchTimeout;
             this.logHandler = logHandler;
+            this.batch = new(batchSize);
         }
 
         public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
             context.ConsumerContext.ShouldStoreOffset = false;
+            this.batch.Add(context);
 
-            await this.semaphore.WaitAsync().ConfigureAwait(false);
-
-            try
+            if (this.batch.Count == 1)
             {
-                this.batch.Add(context);
+                this.cancelScheduleTokenSource = new CancellationTokenSource();
 
-                if (this.batch.Count < this.batch.Capacity)
-                {
-                    this.dispatchTask ??= this.ScheduleDispatch(context, next);
-                    return;
-                }
+                this.dispatchTask = Task
+                    .Delay(this.batchTimeout, this.cancelScheduleTokenSource.Token)
+                    .ContinueWith(_ => this.Dispatch(context, next));
+            }
 
+            if (this.batch.Count == this.batch.Capacity)
+            {
                 this.cancelScheduleTokenSource.Cancel();
+                await (await this.dispatchTask.ConfigureAwait(false)).ConfigureAwait(false);
             }
-            finally
-            {
-                this.semaphore.Release();
-            }
-
-            // stores the Task in a local variable to avoid NullReferenceException in case the schedule Task ends before the await below
-            var localTask = this.dispatchTask;
-
-            if (localTask != null)
-            {
-                await localTask.Unwrap().ConfigureAwait(false);
-            }
-        }
-
-        private Task<Task> ScheduleDispatch(IMessageContext context, MiddlewareDelegate next)
-        {
-            this.cancelScheduleTokenSource = new CancellationTokenSource();
-
-            return Task
-                .Delay(this.batchTimeout, this.cancelScheduleTokenSource.Token)
-                .ContinueWith(
-                    async _ =>
-                    {
-                        await this.semaphore.WaitAsync().ConfigureAwait(false);
-
-                        try
-                        {
-                            if (this.batch.Count > 0)
-                            {
-                                await this.Dispatch(context, next).ConfigureAwait(false);
-                            }
-                        }
-                        finally
-                        {
-                            this.semaphore.Release();
-                        }
-                    });
         }
 
         private async Task Dispatch(IMessageContext context, MiddlewareDelegate next)
         {
+            var localBatch = Interlocked.Exchange(ref this.batch, new(this.batchSize));
+
             try
             {
-                var batchContext = new BatchConsumeMessageContext(
-                    context.ConsumerContext,
-                    this.batch.ToList());
+                var batchContext = new BatchConsumeMessageContext(context.ConsumerContext, localBatch);
 
                 await next(batchContext).ConfigureAwait(false);
             }
@@ -108,13 +71,10 @@
             }
             finally
             {
-                foreach (var messageContext in this.batch)
+                foreach (var messageContext in localBatch)
                 {
                     messageContext.ConsumerContext.StoreOffset();
                 }
-
-                this.dispatchTask = null;
-                this.batch.Clear();
             }
         }
     }
