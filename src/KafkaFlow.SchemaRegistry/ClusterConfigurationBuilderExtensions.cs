@@ -21,7 +21,7 @@ namespace KafkaFlow
         {
             var config = new SchemaRegistryConfig();
             handler(config);
-            cluster.DependencyConfigurator.AddTransient<ISchemaRegistryClient>(_ => new CachedSchemaRegistryClient(config));
+            cluster.DependencyConfigurator.AddSingleton<ISchemaRegistryClient>(_ => new CachedSchemaRegistryClient(config));
             return cluster;
         }
     }
