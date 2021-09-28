@@ -98,7 +98,7 @@ namespace KafkaFlow
             int index,
             MiddlewareConfiguration configuration)
         {
-            return this.consumerOrProducerMiddlewares.GetOrAdd(
+            return this.consumerOrProducerMiddlewares.SafeGetOrAdd(
                 index,
                 _ => CreateInstance(dependencyResolver, configuration));
         }
@@ -109,7 +109,7 @@ namespace KafkaFlow
             IMessageContext context,
             MiddlewareConfiguration configuration)
         {
-            return this.workersMiddlewares.GetOrAdd(
+            return this.workersMiddlewares.SafeGetOrAdd(
                 (index, context.ConsumerContext?.WorkerId ?? 0),
                 _ => CreateInstance(dependencyResolver, configuration));
         }

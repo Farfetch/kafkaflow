@@ -1,13 +1,14 @@
 namespace KafkaFlow.Consumers
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using Confluent.Kafka;
 
     internal class OffsetManager : IOffsetManager, IDisposable
     {
-        private readonly Dictionary<TopicPartitionOffset, List<Action>> onProcessedActions = new();
+        private readonly ConcurrentDictionary<TopicPartitionOffset, ConcurrentBag<Action>> onProcessedActions = new();
 
         private readonly IOffsetCommitter committer;
         private readonly Dictionary<(string, int), PartitionOffsets> partitionsOffsets;
@@ -46,7 +47,7 @@ namespace KafkaFlow.Consumers
         public void OnOffsetProcessed(TopicPartitionOffset offset, Action action)
         {
             this.onProcessedActions
-                .GetOrAdd(offset, _ => new List<Action>())
+                .SafeGetOrAdd(offset, _ => new())
                 .Add(action);
         }
 
@@ -72,7 +73,7 @@ namespace KafkaFlow.Consumers
                 return;
             }
 
-            this.onProcessedActions.Remove(offset);
+            this.onProcessedActions.TryRemove(offset, out _);
 
             foreach (var action in actions)
             {

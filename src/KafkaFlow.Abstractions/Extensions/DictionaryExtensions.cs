@@ -17,7 +17,7 @@ namespace KafkaFlow
         /// <typeparam name="TKey">The key type</typeparam>
         /// <typeparam name="TValue">The value type</typeparam>
         /// <returns></returns>
-        public static TValue GetOrAdd<TKey, TValue>(
+        public static TValue SafeGetOrAdd<TKey, TValue>(
             this IDictionary<TKey, TValue> dictionary,
             TKey key,
             Func<TKey, TValue> addFactory)
