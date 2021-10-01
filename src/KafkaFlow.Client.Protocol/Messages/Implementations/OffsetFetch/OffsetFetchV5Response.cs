@@ -2,11 +2,11 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
 {
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class OffsetFetchV5Response : IResponse
+    public class OffsetFetchV5Response : IOffsetFetchResponse
     {
         public int ThrottleTimeMs { get; set; }
 
-        public Topic[] Topics { get; set; }
+        public IOffsetFetchResponse.ITopic[] Topics { get; set; }
 
         public ErrorCode Error { get; set; }
 
@@ -17,11 +17,11 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
             this.Error = source.ReadErrorCode();
         }
 
-        public class Topic : IResponse
+        public class Topic : IOffsetFetchResponse.ITopic
         {
             public string Name { get; set; }
 
-            public Partition[] Partitions { get; set; }
+            public IOffsetFetchResponse.IPartition[] Partitions { get; set; }
 
             public void Read(MemoryReader source)
             {
@@ -30,7 +30,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
             }
         }
 
-        public class Partition : IResponse
+        public class Partition : IOffsetFetchResponse.IPartition
         {
             public int Id { get; set; }
 
@@ -40,7 +40,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
 
             public string Metadata { get; set; }
 
-            public short ErrorCode { get; set; }
+            public ErrorCode ErrorCode { get; set; }
 
             public void Read(MemoryReader source)
             {
@@ -48,7 +48,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
                 this.CommittedOffset = source.ReadInt64();
                 this.CommittedLeaderEpoch = source.ReadInt32();
                 this.Metadata = source.ReadString();
-                this.ErrorCode = source.ReadInt16();
+                this.ErrorCode = source.ReadErrorCode();
             }
         }
     }

@@ -3,12 +3,12 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
     using System;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class OffsetFetchV5Request : IRequestMessage<OffsetFetchV5Response>
+    public class OffsetFetchV5Request : IOffsetFetchRequest
     {
-        public OffsetFetchV5Request(string groupId, Topic[] topics)
+        public OffsetFetchV5Request(string groupId, string topicName, int[] partitions)
         {
             this.GroupId = groupId;
-            this.Topics = topics;
+            this.Topics = new[] { this.CreateTopic(topicName, partitions) };
         }
 
         public ApiKey ApiKey => ApiKey.OffsetFetch;
@@ -19,7 +19,9 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
 
         public string GroupId { get; }
 
-        public Topic[] Topics { get; }
+        public IOffsetFetchRequest.ITopic[] Topics { get; }
+
+        private IOffsetFetchRequest.ITopic CreateTopic(string name, int[] partitions) => new Topic(name, partitions);
 
         public void Write(MemoryWriter destination)
         {
@@ -27,7 +29,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
             destination.WriteArray(this.Topics);
         }
 
-        public class Topic : IRequest
+        public class Topic : IOffsetFetchRequest.ITopic
         {
             public Topic(string name, int[] partitions)
             {

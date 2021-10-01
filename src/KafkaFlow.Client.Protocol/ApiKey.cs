@@ -4,7 +4,7 @@ namespace KafkaFlow.Client.Protocol
     {
         Produce = 0,
         Fetch = 1,
-        Offsets = 2,
+        ListOffsets = 2,
         Metadata = 3,
         LeaderAndIsr = 4,
         StopReplica = 5,

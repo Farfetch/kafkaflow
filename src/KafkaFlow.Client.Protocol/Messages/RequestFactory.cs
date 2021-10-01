@@ -1,6 +1,8 @@
 namespace KafkaFlow.Client.Protocol.Messages
 {
+    using System.Collections.Generic;
     using KafkaFlow.Client.Protocol.Messages.Implementations.Metadata;
+    using KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch;
     using KafkaFlow.Client.Protocol.Messages.Implementations.Produce;
 
     public class RequestFactory : IRequestFactory
@@ -24,6 +26,20 @@ namespace KafkaFlow.Client.Protocol.Messages
             // var cap = this.capabilities.GetVersionRange(ApiKey.Produce);
 
             return new MetadataV9Request();
+        }
+
+        public IOffsetFetchRequest CreateOffsetFetch(string groupId, string topicName, int[] partitions)
+        {
+            // var cap = this.capabilities.GetVersionRange(ApiKey.Produce);
+
+            return new OffsetFetchV5Request(groupId, topicName, partitions);
+        }
+
+        public IListOffsetsRequest CreateListOffset(string topicName, int[] partitions)
+        {
+            // var cap = this.capabilities.GetVersionRange(ApiKey.Produce);
+
+            return new ListOffsetsV5Request(-1, 0, topicName, partitions);
         }
     }
 }

@@ -13,6 +13,12 @@
     {
         static async Task Main(string[] args)
         {
+            var metricReader = MetricsBuilder.CreateReader();
+
+            var lag = await metricReader.GetLagAsync("test-client", "print-console-handler-1");
+
+            //return;
+            
             var producer = ProducerBuilder.CreateProducer();
 
             string input;

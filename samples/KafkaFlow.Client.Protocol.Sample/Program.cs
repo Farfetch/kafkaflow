@@ -1,16 +1,12 @@
 ﻿namespace KafkaFlow.Client.Sample
 {
     using System;
+    using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Protocol;
     using KafkaFlow.Client.Protocol.Messages;
-    using KafkaFlow.Client.Protocol.Messages.Implementations;
-    using KafkaFlow.Client.Protocol.Messages.Implementations.ApiVersion;
     using KafkaFlow.Client.Protocol.Messages.Implementations.Fetch;
-    using KafkaFlow.Client.Protocol.Messages.Implementations.FindCoordinator;
-    using KafkaFlow.Client.Protocol.Messages.Implementations.Heartbeat;
-    using KafkaFlow.Client.Protocol.Messages.Implementations.JoinGroup;
     using KafkaFlow.Client.Protocol.Messages.Implementations.Metadata;
     using KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch;
     using KafkaFlow.Client.Protocol.Messages.Implementations.Produce;
@@ -19,28 +15,27 @@
     {
         static async Task Main(string[] args)
         {
-            const string groupId = "print-console-handler";
+            const string groupId = "print-console-handler-1";
+            const string topicName = "test-client";
+            string broker = "localhost";
 
             var connection = new BrokerConnection(
-                new BrokerAddress("localhost", 9092),
+                new BrokerAddress(broker, 9092),
                 "test-client-id",
                 TimeSpan.FromSeconds(30));
-
-            var apiVersion = await connection.SendAsync(
-                new ApiVersionV2Request());
 
             var topicMetadata = await connection.SendAsync(
                 new MetadataV9Request
                 {
                     Topics = new IMetadataRequest.ITopic[]
                     {
-                        new MetadataV9Request.Topic { Name = "test-client" }
-                    },
-                    AllowAutoTopicCreation = false,
-                    IncludeClusterAuthorizedOperations = true,
-                    IncludeTopicAuthorizedOperations = true
+                        new MetadataV9Request.Topic { Name = topicName }
+                    }
                 });
-
+/*
+ 
+            var apiVersion = await connection.SendAsync(new ApiVersionV2Request());
+                
             var findCoordResponse = await connection.SendAsync(
                 new FindCoordinatorV3Request(string.Empty, 0));
 
@@ -76,20 +71,23 @@
                 new HeartbeatV4Request(
                     groupId,
                     joinGroupResponse1.GenerationId,
-                    joinGroupResponse1.MemberId));
+                    joinGroupResponse1.MemberId));*/
 
-            var offsetFetchResponse = await connection.SendAsync(
-                new OffsetFetchV5Request(
-                    groupId,
-                    new[]
-                    {
-                        new OffsetFetchV5Request.Topic(
-                            "test-client",
-                            new[] { 0, 1, 2 })
-                    }));
+            var partitions = topicMetadata
+                .Topics
+                .First(t => t.Name == topicName)
+                .Partitions
+                .Select(p => p.Id)
+                .ToArray();
 
-            var produceResponse = await ProduceMessage(connection);
-            produceResponse = await MassProduceMessage(connection);
+            var committedOffsets = await connection.SendAsync(new OffsetFetchV5Request(groupId, topicName, partitions ));
+
+
+            var lastOffsets = await connection.SendAsync(new ListOffsetsV5Request(-1, 0, topicName, partitions));
+
+
+            //var produceResponse = await ProduceMessage(connection);
+            //produceResponse = await MassProduceMessage(connection);
             //var fetchResponse = await FetchMessage(connection);
 
             Console.WriteLine("Ended!");
