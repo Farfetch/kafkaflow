@@ -26,7 +26,7 @@ namespace KafkaFlow.Client.Metrics
                 new KafkaCluster(
                     brokers.ToList(),
                     clientId ?? Guid.NewGuid().ToString(),
-                    timeout));
+                    timeout ?? TimeSpan.FromSeconds(5)));
         }
     }
 }

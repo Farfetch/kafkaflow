@@ -45,7 +45,7 @@ namespace KafkaFlow.Client.Metrics
                 .Where(p => p.ErrorCode == (short)ErrorCode.None)
                 .Select(p => new PartitionLag(
                     p.PartitionIndex,
-                    p.Offset - (validOffsets.TryGetValue(p.PartitionIndex, out var value) ? value : 0)));
+                    validOffsets.TryGetValue(p.PartitionIndex, out var value) ? p.Offset -value : 0));
         }
 
         private ValueTask<IMetadataResponse.ITopic> GetTopicMetadataAsync(string topicName)
