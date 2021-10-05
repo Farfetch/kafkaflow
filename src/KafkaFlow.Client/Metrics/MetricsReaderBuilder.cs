@@ -3,8 +3,6 @@ namespace KafkaFlow.Client.Producers
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
     using KafkaFlow.Client.Metrics;
     using KafkaFlow.Client.Protocol;
 

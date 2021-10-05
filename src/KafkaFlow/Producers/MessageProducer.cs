@@ -2,6 +2,7 @@ namespace KafkaFlow.Producers
 {
     using System;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
@@ -31,7 +32,8 @@ namespace KafkaFlow.Producers
             string topic,
             object messageKey,
             object messageValue,
-            IMessageHeaders headers = null)
+            IMessageHeaders headers = null,
+            CancellationToken cancellationToken = default)
         {
             DeliveryResult<byte[], byte[]> report = null;
 
@@ -44,7 +46,7 @@ namespace KafkaFlow.Producers
                         new Message(messageKey, messageValue),
                         headers,
                         null,
-                        new ProducerContext(topic)),
+                        new ProducerContext(topic, cancellationToken)),
                     async context =>
                     {
                         report = await this
@@ -59,7 +61,8 @@ namespace KafkaFlow.Producers
         public Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
             object messageKey,
             object messageValue,
-            IMessageHeaders headers = null)
+            IMessageHeaders headers = null,
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(this.configuration.DefaultTopic))
             {
@@ -71,7 +74,8 @@ namespace KafkaFlow.Producers
                 this.configuration.DefaultTopic,
                 messageKey,
                 messageValue,
-                headers);
+                headers,
+                cancellationToken);
         }
 
         public void Produce(
@@ -79,7 +83,8 @@ namespace KafkaFlow.Producers
             object messageKey,
             object messageValue,
             IMessageHeaders headers = null,
-            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null)
+            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
+            CancellationToken cancellationToken = default)
         {
             var scope = this.dependencyResolver.CreateScope();
 
@@ -90,7 +95,7 @@ namespace KafkaFlow.Producers
                         new Message(messageKey, messageValue),
                         headers,
                         null,
-                        new ProducerContext(topic)),
+                        new ProducerContext(topic, cancellationToken)),
                     context =>
                     {
                         var completionSource = new TaskCompletionSource<byte>();
@@ -120,7 +125,8 @@ namespace KafkaFlow.Producers
             object messageKey,
             object messageValue,
             IMessageHeaders headers = null,
-            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null)
+            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(this.configuration.DefaultTopic))
             {
@@ -133,7 +139,8 @@ namespace KafkaFlow.Producers
                 messageKey,
                 messageValue,
                 headers,
-                deliveryHandler);
+                deliveryHandler,
+                cancellationToken);
         }
 
         public void Dispose()
@@ -245,7 +252,8 @@ namespace KafkaFlow.Producers
                     .EnsureProducer()
                     .ProduceAsync(
                         context.ProducerContext.Topic,
-                        CreateMessage(context))
+                        CreateMessage(context),
+                        context.ProducerContext.ClientStopped)
                     .ConfigureAwait(false);
             }
             catch (ProduceException<byte[], byte[]> e)

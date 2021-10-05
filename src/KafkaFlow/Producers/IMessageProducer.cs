@@ -1,6 +1,7 @@
 namespace KafkaFlow
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
 
@@ -29,12 +30,14 @@ namespace KafkaFlow
         /// <param name="messageKey">The message key</param>
         /// <param name="messageValue">The message value</param>
         /// <param name="headers">The message headers</param>
+        /// <param name="cancellationToken">A cancellation token to observe whilst waiting the returned task to complete.</param>
         /// <returns></returns>
         Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
             string topic,
             object messageKey,
             object messageValue,
-            IMessageHeaders headers = null);
+            IMessageHeaders headers = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Produces a new message in the configured default topic
@@ -42,11 +45,13 @@ namespace KafkaFlow
         /// <param name="messageKey">The message key</param>
         /// <param name="messageValue">The message value</param>
         /// <param name="headers">The message headers</param>
+        /// <param name="cancellationToken">A cancellation token to observe whilst waiting the returned task to complete.</param>
         /// <returns></returns>
         Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
             object messageKey,
             object messageValue,
-            IMessageHeaders headers = null);
+            IMessageHeaders headers = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Produces a new message
@@ -57,12 +62,14 @@ namespace KafkaFlow
         /// <param name="messageValue">The message value</param>
         /// <param name="headers">The message headers</param>
         /// <param name="deliveryHandler">A handler with the operation result</param>
+        /// <param name="cancellationToken">A cancellation token to observe whilst waiting the returned task to complete.</param>
         void Produce(
             string topic,
             object messageKey,
             object messageValue,
             IMessageHeaders headers = null,
-            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null);
+            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Produces a new message in the configured default topic
@@ -72,10 +79,12 @@ namespace KafkaFlow
         /// <param name="messageValue">The message value</param>
         /// <param name="headers">The message headers</param>
         /// <param name="deliveryHandler">A handler with the operation result</param>
+        /// <param name="cancellationToken">A cancellation token to observe whilst waiting the returned task to complete.</param>
         void Produce(
             object messageKey,
             object messageValue,
             IMessageHeaders headers = null,
-            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null);
+            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
+            CancellationToken cancellationToken = default);
     }
 }
