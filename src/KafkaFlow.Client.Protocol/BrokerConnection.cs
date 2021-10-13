@@ -2,9 +2,8 @@ namespace KafkaFlow.Client.Protocol
 {
     using System;
     using System.Buffers.Binary;
-    using System.Collections.Generic;
+    using System.Collections.Concurrent;
     using System.Diagnostics;
-    using System.Linq;
     using System.Net.Sockets;
     using System.Runtime.CompilerServices;
     using System.Threading;
@@ -16,24 +15,19 @@ namespace KafkaFlow.Client.Protocol
     {
         private readonly TcpClient client;
         private readonly NetworkStream stream;
-
-        private readonly Dictionary<int, PendingRequest> pendingRequests = new();
-
+        private readonly ConcurrentDictionary<int, PendingRequest> waitingResponse = new();
         private readonly CancellationTokenSource stopTokenSource = new();
         private readonly Task listenerTask;
-
         private readonly byte[] messageSizeBuffer = new byte[sizeof(int)];
-
         private readonly string clientId;
-        private readonly TimeSpan requestTimeout;
-
+        private readonly TimeSpan timeout;
         private volatile int lastCorrelationId;
 
-        public BrokerConnection(BrokerAddress address, string clientId, TimeSpan requestTimeout)
+        public BrokerConnection(BrokerAddress address, string clientId, TimeSpan timeout)
         {
             this.Address = address;
             this.clientId = clientId;
-            this.requestTimeout = requestTimeout;
+            this.timeout = timeout;
             this.client = new TcpClient(address.Host, address.Port);
             this.stream = this.client.GetStream();
 
@@ -74,7 +68,7 @@ namespace KafkaFlow.Client.Protocol
         {
             var correlationId = source.ReadInt32();
 
-            if (!this.pendingRequests.TryGetValue(correlationId, out var request))
+            if (!this.waitingResponse.TryRemove(correlationId, out var request))
             {
                 Debug.WriteLine($"Received Invalid message CID: {correlationId}");
                 return;
@@ -82,12 +76,12 @@ namespace KafkaFlow.Client.Protocol
 
             Debug.WriteLine($"Received CID: {correlationId}, Type {request.ResponseType.Name} with {source.Length:N0}b");
 
-            this.pendingRequests.Remove(correlationId);
-
-            var response = (IResponse) Activator.CreateInstance(request.ResponseType);
+            var response = (IResponse) Activator.CreateInstance(request.ResponseType)!;
 
             if (response is ITaggedFields)
+            {
                 _ = source.ReadTaggedFields();
+            }
 
             response.Read(source);
 
@@ -108,41 +102,37 @@ namespace KafkaFlow.Client.Protocol
             return BinaryPrimitives.ReadInt32BigEndian(this.messageSizeBuffer);
         }
 
-        public Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> request)
+        public Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> message)
             where TResponse : class, IResponse
         {
-            var pendingRequest = new PendingRequest(this.requestTimeout, request.ResponseType);
+            var request = new PendingRequest(message.ResponseType);
 
-            using var tmp = new MemoryWriter();
+            using var writer = new MemoryWriter();
 
             var correlationId = Interlocked.Increment(ref this.lastCorrelationId);
 
-            this.pendingRequests.TryAdd(correlationId, pendingRequest);
+            this.waitingResponse.TryAdd(correlationId, request);
+            Debug.WriteLine($"Sent CID: {correlationId}, Type {request.ResponseType.Name}");
 
-            tmp.WriteMessage(new Request(correlationId, this.clientId, request));
-            tmp.Position = 0;
-
-#if DEBUG
-            var bytes = tmp.ToArray();
-            Debug.WriteLine($"{request.GetType().Name}: {string.Join(",", bytes)}");
-#endif
+            writer.WriteMessage(new Request(correlationId, this.clientId, message));
+            writer.Position = 0;
 
             lock (this.stream)
             {
-                tmp.CopyTo(this.stream);
+                writer.CopyTo(this.stream);
             }
 
-            return pendingRequest.GetTask<TResponse>();
+            return request.GetTask<TResponse>(this.timeout);
         }
 
         public async ValueTask DisposeAsync()
         {
             this.stopTokenSource.Cancel();
-            await this.listenerTask;
+            await this.listenerTask.ConfigureAwait(false);
 
             this.stopTokenSource.Dispose();
             this.listenerTask.Dispose();
-            await this.stream.DisposeAsync();
+            await this.stream.DisposeAsync().ConfigureAwait(false);
             this.client.Dispose();
         }
 
@@ -150,20 +140,27 @@ namespace KafkaFlow.Client.Protocol
         {
             public readonly TaskCompletionSource<IResponse> CompletionSource;
 
-            public PendingRequest(TimeSpan timeout, Type responseType)
+            public PendingRequest(Type responseType)
             {
-                this.Timeout = timeout;
                 this.ResponseType = responseType;
                 this.CompletionSource = new TaskCompletionSource<IResponse>();
             }
 
-            public TimeSpan Timeout { get; }
-
             public Type ResponseType { get; }
 
-            public Task<TResponse> GetTask<TResponse>()
-                where TResponse : IResponse =>
-                this.CompletionSource.Task.ContinueWith(x => (TResponse) x.Result);
+            public async Task<TResponse> GetTask<TResponse>(TimeSpan timeout)
+                where TResponse : IResponse
+            {
+                var requestTask = this.CompletionSource.Task.ContinueWith(x => (TResponse)x.Result);
+                var resultTask = await Task.WhenAny(requestTask, Task.Delay(timeout));
+
+                if (resultTask != requestTask)
+                {
+                    throw new TimeoutException($"The operation {this.ResponseType} has timeout");
+                }
+
+                return requestTask.GetAwaiter().GetResult();
+            }
         }
     }
 }

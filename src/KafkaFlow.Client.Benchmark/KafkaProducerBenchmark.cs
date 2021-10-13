@@ -5,139 +5,71 @@ namespace KafkaFlow.Client.Benchmark
     using System.Text;
     using System.Threading.Tasks;
     using BenchmarkDotNet.Attributes;
-    using Confluent.Kafka;
+    using KafkaFlow.Client.Metrics;
     using KafkaFlow.Client.Producers;
-    using KafkaFlow.Client.Producers.Partitioners;
     using KafkaFlow.Client.Protocol;
 
     [MemoryDiagnoser]
     [StopOnFirstError]
+    [RankColumn]
+    [MinColumn]
+    [MaxColumn]
+    [Q1Column]
+    [Q3Column]
+    [AllStatisticsColumn]
     [ShortRunJob]
-    // [SimpleJob(launchCount: 1, warmupCount: 1, targetCount: 1, invocationCount: 10)]
-    public class KafkaProducerBenchmark
+    [MarkdownExporterAttribute.GitHub]
+    [GcServer(true)]
+    public class KafkaMetricsBenchmark
     {
-        private readonly IProducer kafkaFlowProducer;
+        private readonly ILagReader lagReader;
 
-        private readonly IProducer<byte[], byte[]> confluentProducer;
-
-        public KafkaProducerBenchmark()
+        public KafkaMetricsBenchmark()
         {
-            var cluster = new KafkaCluster(
+            this.lagReader = MetricsReaderBuilder.BuildLagReader(
                 new[] { new BrokerAddress("localhost", 9092) },
-                "test-id",
-                TimeSpan.FromSeconds(5));
+                timeout: TimeSpan.FromSeconds(100));
+        }
 
-            this.kafkaFlowProducer = new Producer(
-                cluster,
-                new ProducerConfiguration
-                {
-                    Acks = ProduceAcks.All,
-                    ProduceTimeout = TimeSpan.FromSeconds(10),
-                    MaxProduceBatchSize = 25000,
-                    Linger = TimeSpan.FromMilliseconds(5)
-                },
-                new ByteSumPartitioner());
-
-            this.confluentProducer = new ProducerBuilder<byte[], byte[]>(
-                    new ProducerConfig
-                    {
-                        Acks = Acks.All,
-                        LingerMs = 5,
-                        BatchNumMessages = 25000,
-                        BootstrapServers = "localhost",
-                    })
-                .Build();
+        private Task GetLagAsync()
+        {
+            return this.lagReader.GetLagAsync("test-client", "print-console-handler-1");
         }
 
         [Benchmark]
-        public async Task KafkaFlow_1_Message()
+        public async Task Lag_1_Call()
         {
-            await this.ProduceKafkaFlow();
+            await this.GetLagAsync();
         }
 
         [Benchmark]
-        public async Task Confluent_1_Message()
+        public async Task Lag_10_Call()
         {
-            await this.ProduceConfluent();
+            await Task.WhenAll(Enumerable.Range(0, 10).Select(x => this.GetLagAsync()));
         }
 
         [Benchmark]
-        public async Task KafkaFlow_100_Messages()
+        public async Task Lag_100_Call()
         {
-            await Task.WhenAll(Enumerable.Range(0, 100).Select(x => this.ProduceKafkaFlow()));
+            await Task.WhenAll(Enumerable.Range(0, 100).Select(x => this.GetLagAsync()));
         }
 
         [Benchmark]
-        public async Task Confluent_100_Messages()
+        public async Task Lag_1000_Call()
         {
-            await Task.WhenAll(Enumerable.Range(0, 100).Select(x => this.ProduceConfluent()));
+            await Task.WhenAll(Enumerable.Range(0, 1000).Select(x => this.GetLagAsync()));
         }
 
-        // [Benchmark]
-        // public async Task KafkaFlow_1000_Messages()
-        // {
-        //     await Task.WhenAll(Enumerable.Range(0, 1000).Select(x => this.ProduceKafkaFlow()));
-        // }
-        //
-        // [Benchmark]
-        // public async Task Confluent_1000_Messages()
-        // {
-        //     await Task.WhenAll(Enumerable.Range(0, 1000).Select(x => this.ProduceConfluent()));
-        // }
-
-        // [Benchmark]
-        // public async Task KafkaFlow_10000_Messages()
-        // {
-        //     await Task.WhenAll(Enumerable.Range(0, 10000).Select(x => this.ProduceKafkaFlow()));
-        // }
-        //
-        // [Benchmark]
-        // public async Task Confluent_10000_Messages()
-        // {
-        //     await Task.WhenAll(Enumerable.Range(0, 10000).Select(x => this.ProduceConfluent()));
-        // }
-        //
-        // [Benchmark]
-        // public async Task KafkaFlow_100000_Messages()
-        // {
-        //     await Task.WhenAll(Enumerable.Range(0, 100000).Select(x => this.ProduceKafkaFlow()));
-        // }
-        //
-        // [Benchmark]
-        // public async Task Confluent_100000_Messages()
-        // {
-        //     await Task.WhenAll(Enumerable.Range(0, 100000).Select(x => this.ProduceConfluent()));
-        // }
-
-        private Task ProduceKafkaFlow()
+        [Benchmark]
+        public async Task Lag_10000_Call()
         {
-            var header = new KafkaFlow.Client.Protocol.Messages.Headers()
-            {
-                ["test_header"] = Encoding.UTF8.GetBytes("header_value"),
-            };
-
-            return this.kafkaFlowProducer.ProduceAsync(
-                "test-client",
-                Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
-                Encoding.UTF8.GetBytes("teste_value"),
-                header);
+            await Task.WhenAll(Enumerable.Range(0, 10000).Select(x => this.GetLagAsync()));
         }
 
-        private Task ProduceConfluent()
+        //[Benchmark]
+        public async Task Lag_100000_Call()
         {
-            var header = new Confluent.Kafka.Headers
-            {
-                { "test_header", Encoding.UTF8.GetBytes("header_value") },
-            };
-
-            return this.confluentProducer.ProduceAsync(
-                "test-client",
-                new Message<byte[], byte[]>
-                {
-                    Key = Encoding.UTF8.GetBytes($"teste_key_{Guid.NewGuid()}"),
-                    Value = Encoding.UTF8.GetBytes("teste_value"),
-                    Headers = header,
-                });
+            await Task.WhenAll(Enumerable.Range(0, 100000).Select(x => this.GetLagAsync()));
         }
     }
 }

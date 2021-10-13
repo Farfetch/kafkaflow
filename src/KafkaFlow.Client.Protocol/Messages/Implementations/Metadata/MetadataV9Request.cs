@@ -21,7 +21,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Metadata
 
         public TaggedField[] TaggedFields { get; } = Array.Empty<TaggedField>();
 
-        public IMetadataRequest.ITopic CreateTopic() => new Topic();
+        public IMetadataRequest.ITopic CreateTopic(string topicName) => new Topic { Name = topicName };
 
         public void Write(MemoryWriter destination)
         {

@@ -5,7 +5,6 @@ namespace KafkaFlow.Client
     using System.Threading.Tasks;
     using KafkaFlow.Client.Protocol;
     using KafkaFlow.Client.Protocol.Messages;
-    using KafkaFlow.Client.Protocol.Messages.Implementations;
     using KafkaFlow.Client.Protocol.Messages.Implementations.ApiVersion;
 
     internal class KafkaBroker : IKafkaBroker
@@ -34,16 +33,16 @@ namespace KafkaFlow.Client
 
         private async Task<IRequestFactory> CreateRequestFactoryAsync()
         {
-            var apiVersionResponse = await this.Connection.SendAsync(new ApiVersionV2Request());
+            var apiVersion = await this.Connection.SendAsync(new ApiVersionV2Request()).ConfigureAwait(false);
 
-            if (apiVersionResponse.Error != ErrorCode.None)
+            if (apiVersion.Error != ErrorCode.None)
             {
-                throw new Exception($"Error trying to get Kafka host api version: {apiVersionResponse.Error}");
+                throw new Exception($"Error trying to get Kafka host api version: {apiVersion.Error}");
             }
 
             return new RequestFactory(
                 new BrokerCapabilities(
-                    apiVersionResponse.ApiVersions
+                    apiVersion.ApiVersions
                         .Select(x => new ApiVersionRange(x.ApiKey, x.MinVersion, x.MaxVersion))));
         }
 

@@ -188,7 +188,8 @@ namespace KafkaFlow.Client.Protocol.Streams
 
                 startRelativePosition = 0;
                 count -= bytesToCompute;
-            } while (count > 0);
+            }
+            while (count > 0);
 
             return hash;
         }

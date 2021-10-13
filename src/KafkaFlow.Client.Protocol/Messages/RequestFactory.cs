@@ -1,9 +1,8 @@
 namespace KafkaFlow.Client.Protocol.Messages
 {
-    using System.Collections.Generic;
+    using System;
     using KafkaFlow.Client.Protocol.Messages.Implementations.Metadata;
     using KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch;
-    using KafkaFlow.Client.Protocol.Messages.Implementations.Produce;
 
     public class RequestFactory : IRequestFactory
     {
@@ -14,32 +13,31 @@ namespace KafkaFlow.Client.Protocol.Messages
             this.capabilities = capabilities;
         }
 
-        public IProduceRequest CreateProduce(ProduceAcks acks, int timeout)
-        {
-            // var cap = this.capabilities.GetVersionRange(ApiKey.Produce);
-
-            return new ProduceV8Request(acks, timeout);
-        }
-
         public IMetadataRequest CreateMetadata()
         {
-            // var cap = this.capabilities.GetVersionRange(ApiKey.Produce);
-
-            return new MetadataV9Request();
+            return this.capabilities.GetVersionRange(ApiKey.Metadata) switch
+            {
+                { Min: <= 9, Max: >= 9 } => new MetadataV9Request(),
+                _ => throw new Exception()
+            };
         }
 
         public IOffsetFetchRequest CreateOffsetFetch(string groupId, string topicName, int[] partitions)
         {
-            // var cap = this.capabilities.GetVersionRange(ApiKey.Produce);
-
-            return new OffsetFetchV5Request(groupId, topicName, partitions);
+            return this.capabilities.GetVersionRange(ApiKey.OffsetFetch) switch
+            {
+                { Min: <= 5, Max: >= 5 } => new OffsetFetchV5Request(groupId, topicName, partitions),
+                _ => throw new Exception()
+            };
         }
 
         public IListOffsetsRequest CreateListOffset(string topicName, int[] partitions)
         {
-            // var cap = this.capabilities.GetVersionRange(ApiKey.Produce);
-
-            return new ListOffsetsV5Request(-1, 0, topicName, partitions);
+            return this.capabilities.GetVersionRange(ApiKey.ListOffsets) switch
+            {
+                { Min: <= 5, Max: >= 5 } => new ListOffsetsV5Request(-1, 0, topicName, partitions),
+                _ => throw new Exception()
+            };
         }
     }
 }

@@ -78,7 +78,9 @@ namespace KafkaFlow.Client.Protocol.Streams
             var size = source.ReadUVarint();
 
             if (size <= 0)
+            {
                 return null;
+            }
 
             return source.GetSpan(size - 1).ToArray();
         }
@@ -103,10 +105,14 @@ namespace KafkaFlow.Client.Protocol.Streams
         public static TMessage[] ReadArray<TMessage>(this MemoryReader source, int count) where TMessage : class, IResponse, new()
         {
             if (count < 0)
+            {
                 return null;
+            }
 
             if (count == 0)
+            {
                 return Array.Empty<TMessage>();
+            }
 
             var result = new TMessage[count];
 
@@ -124,7 +130,9 @@ namespace KafkaFlow.Client.Protocol.Streams
             var count = source.ReadUVarint();
 
             if (count == 0)
+            {
                 return Array.Empty<TaggedField>();
+            }
 
             var result = new TaggedField[count];
 
@@ -146,10 +154,14 @@ namespace KafkaFlow.Client.Protocol.Streams
         public static int[] ReadInt32Array(this MemoryReader source, int count)
         {
             if (count < 0)
+            {
                 return null;
+            }
 
             if (count == 0)
+            {
                 return Array.Empty<int>();
+            }
 
             var result = new int[count];
 
@@ -188,11 +200,14 @@ namespace KafkaFlow.Client.Protocol.Streams
                 current = source.ReadByte();
 
                 if (++bytesRead > 4)
+                {
                     throw new InvalidOperationException("The value is not a valid VARINT");
+                }
 
                 num |= (current & valueMask) << shift;
                 shift += 7;
-            } while ((current & endMask) != 0);
+            }
+            while ((current & endMask) != 0);
 
             return num;
         }

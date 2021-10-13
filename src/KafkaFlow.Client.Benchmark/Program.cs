@@ -6,7 +6,7 @@
     {
         static void Main(string[] args)
         {
-            BenchmarkRunner.Run<KafkaProducerBenchmark>();
+            BenchmarkRunner.Run<KafkaMetricsBenchmark>();
         }
     }
 }

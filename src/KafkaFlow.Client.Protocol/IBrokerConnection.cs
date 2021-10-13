@@ -5,7 +5,7 @@ namespace KafkaFlow.Client.Protocol
 
     public interface IBrokerConnection : IAsyncDisposable
     {
-        Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> request)
+        Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> message)
             where TResponse : class, IResponse;
 
         BrokerAddress Address { get; }

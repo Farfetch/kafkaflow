@@ -17,11 +17,6 @@ namespace KafkaFlow.Client.Protocol
             this.Port = port;
         }
 
-        public static BrokerAddress Parse(string address)
-        {
-            throw new NotImplementedException();
-        }
-
         public bool Equals(BrokerAddress other)
         {
             return this.Host == other.Host && this.Port == other.Port;

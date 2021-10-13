@@ -6,10 +6,6 @@ namespace KafkaFlow.Client
     {
         IKafkaBroker AnyBroker { get; }
 
-        IKafkaBroker GetBroker(int hostId);
-
         ValueTask EnsureInitializationAsync();
-
-        ValueTask<IKafkaBroker> GetCoordinatorAsync();
     }
 }

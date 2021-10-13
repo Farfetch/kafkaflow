@@ -10,7 +10,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         bool IncludeTopicAuthorizedOperations { get; set; }
 
-        ITopic CreateTopic();
+        ITopic CreateTopic(string topicName);
 
         public interface ITopic : IRequest
         {

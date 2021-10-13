@@ -35,7 +35,9 @@ namespace KafkaFlow.Client.Protocol
             destination.WriteString(this.ClientId);
 
             if (this.Message is ITaggedFields)
+            {
                 destination.WriteTaggedFields(this.TaggedFields);
+            }
 
             destination.WriteMessage(this.Message);
 
@@ -44,8 +46,6 @@ namespace KafkaFlow.Client.Protocol
             // Write message size at the beginning
             destination.Position = 0;
             destination.WriteInt32(Convert.ToInt32(endPosition - startPosition));
-
-            Debug.WriteLine($"Sending {this.Message.GetType().Name} with {destination.Length:N0}b");
         }
     }
 }

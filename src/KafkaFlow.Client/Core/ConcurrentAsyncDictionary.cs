@@ -12,14 +12,18 @@ namespace KafkaFlow.Client.Core
         public async ValueTask<TValue> GetOrAddAsync(TKey key, Func<Task<TValue>> addHandler)
         {
             if (this.TryGetValue(key, out var value))
+            {
                 return value;
+            }
 
             await this.addSemaphore.WaitAsync().ConfigureAwait(false);
 
             try
             {
                 if (this.TryGetValue(key, out value))
+                {
                     return value;
+                }
 
                 value = await addHandler().ConfigureAwait(false);
 

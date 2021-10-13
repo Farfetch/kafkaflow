@@ -2,7 +2,7 @@ namespace KafkaFlow.Client.Metrics
 {
     using System.Threading.Tasks;
 
-    public interface IMetricReader
+    public interface ILagReader
     {
         Task<long> GetLagAsync(
             string topic,

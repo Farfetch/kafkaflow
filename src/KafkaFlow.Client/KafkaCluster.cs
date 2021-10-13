@@ -1,21 +1,20 @@
 namespace KafkaFlow.Client
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Protocol;
 
-    public class KafkaCluster : IKafkaCluster
+    internal class KafkaCluster : IKafkaCluster
     {
         private readonly IReadOnlyCollection<BrokerAddress> addresses;
         private readonly string clientId;
         private readonly TimeSpan requestTimeout;
-
-        private readonly Dictionary<int, IKafkaBroker> brokers = new();
-
-        private readonly SemaphoreSlim initializeSemaphore = new(1, 1);
+        private readonly ConcurrentDictionary<int, IKafkaBroker> brokers = new();
+        private readonly SemaphoreSlim semaphore = new(1, 1);
 
         public KafkaCluster(
             IReadOnlyCollection<BrokerAddress> addresses,
@@ -29,65 +28,52 @@ namespace KafkaFlow.Client
 
         public IKafkaBroker AnyBroker => this.brokers.Values.First();
 
-        public IKafkaBroker GetBroker(int hostId) =>
-            this.brokers.TryGetValue(hostId, out var host) ?
-                host :
-                throw new InvalidOperationException($"There os no host with id {hostId}");
-
         public async ValueTask EnsureInitializationAsync()
         {
-            if (this.brokers.Any())
+            if (!this.brokers.IsEmpty)
             {
                 return;
             }
 
-            await this.initializeSemaphore.WaitAsync().ConfigureAwait(false);
+            await this.semaphore.WaitAsync().ConfigureAwait(false);
 
             try
             {
-                if (this.brokers.Any())
+                if (!this.brokers.IsEmpty)
                 {
                     return;
                 }
 
-                var first = new KafkaBroker(this.addresses.First(), 0, this.clientId, this.requestTimeout);
+                var firstBroker = new KafkaBroker(this.addresses.First(), 0, this.clientId, this.requestTimeout);
+                this.brokers.TryAdd(firstBroker.NodeId, firstBroker);
 
-                var requestFactory = await first.GetRequestFactoryAsync();
+                var requestFactory = await firstBroker.GetRequestFactoryAsync();
 
-                var metadata = await first.Connection
+                var metadata = await firstBroker
+                    .Connection
                     .SendAsync(requestFactory.CreateMetadata())
                     .ConfigureAwait(false);
 
-                this.brokers.Add(first.NodeId, first);
+                firstBroker.NodeId = metadata
+                    .Brokers
+                    .First(b => b.Host == firstBroker.Address.Host && b.Port == firstBroker.Address.Port)
+                    .NodeId;
 
                 foreach (var broker in metadata.Brokers)
                 {
-                    if (broker.Host == first.Address.Host && broker.Port == first.Address.Port)
-                    {
-                        first.NodeId = broker.NodeId;
-                        this.brokers.Add(first.NodeId, first);
-                    }
-                    else
-                    {
-                        this.brokers.Add(
+                    this.brokers.TryAdd(
+                        broker.NodeId,
+                        new KafkaBroker(
+                            new BrokerAddress(broker.Host, broker.Port),
                             broker.NodeId,
-                            new KafkaBroker(
-                                new BrokerAddress(broker.Host, broker.Port),
-                                broker.NodeId,
-                                this.clientId,
-                                this.requestTimeout));
-                    }
+                            this.clientId,
+                            this.requestTimeout));
                 }
             }
             finally
             {
-                this.initializeSemaphore.Release();
+                this.semaphore.Release();
             }
-        }
-
-        public ValueTask<IKafkaBroker> GetCoordinatorAsync()
-        {
-            throw new System.NotImplementedException();
         }
     }
 }

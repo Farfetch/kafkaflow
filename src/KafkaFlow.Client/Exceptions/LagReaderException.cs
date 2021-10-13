@@ -2,10 +2,10 @@ namespace KafkaFlow.Client.Exceptions
 {
     using System;
     using System.Collections.Generic;
-    using Extensions;
+    using KafkaFlow.Client.Extensions;
     using KafkaFlow.Client.Protocol.Messages;
 
-    public class MetricReaderException : Exception
+    public class LagReaderException : Exception
     {
         public ErrorCode ErrorCode { get; }
 
@@ -15,7 +15,7 @@ namespace KafkaFlow.Client.Exceptions
 
         public string? GroupName { get; }
 
-        public MetricReaderException(
+        public LagReaderException(
             ErrorCode errorCode,
             string topicName,
             IEnumerable<int> partitions,

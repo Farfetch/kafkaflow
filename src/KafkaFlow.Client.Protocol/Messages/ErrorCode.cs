@@ -288,5 +288,56 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         [Description("There are unstable offsets that need to be cleared.")]
         UnstableOffsetCommit = 88,
+
+        [Description("The throttling quota has been exceeded.")]
+        ThrottlingQuotaExceeded = 89,
+
+        [Description("There is a newer producer with the same transactionalId which fences the current one.")]
+        ProducerFenced = 90,
+
+        [Description("A request illegally referred to a resource that does not exist.")]
+        ResourceNotFound = 91,
+
+        [Description("A request illegally referred to the same resource twice.")]
+        DuplicateResource = 92,
+
+        [Description("Requested credential would not meet criteria for acceptability.")]
+        UnacceptableCredential = 93,
+
+        [Description("Indicates that the either the sender or recipient of a voter-only request is not one of the expected voters.")]
+        InconsistentVoterSet = 94,
+
+        [Description("The given update version was invalid.")]
+        InvalidUpdateVersion = 95,
+
+        [Description("Unable to update finalized features due to an unexpected server error.")]
+        FeatureUpdateFailed = 96,
+
+        [Description("Request principal deserialization failed during forwarding. This indicates an internal error on the broker cluster security setup.")]
+        PrincipalDeserializationFailure = 97,
+
+        [Description("Requested snapshot was not found.")]
+        SnapshotNotFound = 98,
+
+        [Description("Requested position is not greater than or equal to zero, and less than the size of the snapshot.")]
+        PositionOutOfRange = 99,
+
+        [Description("This server does not host this topic ID.")]
+        UnknownTopicId = 100,
+
+        [Description("This broker ID is already in use.")]
+        DuplicateBrokerRegistration = 101,
+
+        [Description("The given broker ID was not registered.")]
+        BrokerIdNotRegistered = 102,
+
+        [Description("The log's topic ID did not match the topic ID in the request.")]
+        InconsistentTopicId = 103,
+
+        [Description("The clusterId in the request does not match that found on the server.")]
+        InconsistentClusterId = 104,
+
+        [Description("The transactionalId could not be found.")]
+        TransactionalIdNotFound = 105,
     }
 }
