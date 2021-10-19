@@ -14,13 +14,19 @@ namespace KafkaFlow
         }
 
         /// <inheritdoc />
+        public void Warning(string message, object data)
+        {
+            // Do nothing
+        }
+
+        /// <inheritdoc />
         public void Info(string message, object data)
         {
             // Do nothing
         }
 
         /// <inheritdoc />
-        public void Warning(string message, object data)
+        public void Verbose(string message, object data)
         {
             // Do nothing
         }

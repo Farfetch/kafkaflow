@@ -88,7 +88,7 @@ namespace KafkaFlow.Consumers
 
                 if (!this.consumer.Configuration.ManagementDisabled)
                 {
-                    this.logHandler.Info(
+                    this.logHandler.Verbose(
                         "Committed offsets",
                         new
                         {
