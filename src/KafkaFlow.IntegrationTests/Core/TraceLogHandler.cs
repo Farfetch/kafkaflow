@@ -18,6 +18,17 @@ namespace KafkaFlow.IntegrationTests.Core
                     }));
         }
 
+        public void Warning(string message, object data)
+        {
+            Trace.TraceWarning(
+                JsonSerializer.Serialize(
+                    new
+                    {
+                        Message = message,
+                        Data = data,
+                    }));
+        }
+
         public void Info(string message, object data)
         {
             Trace.TraceInformation(
@@ -29,9 +40,9 @@ namespace KafkaFlow.IntegrationTests.Core
                     }));
         }
 
-        public void Warning(string message, object data)
+        public void Verbose(string message, object data)
         {
-            Trace.TraceWarning(
+            Trace.WriteLine(
                 JsonSerializer.Serialize(
                     new
                     {

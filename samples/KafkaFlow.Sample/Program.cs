@@ -52,7 +52,7 @@
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .WithPendingOffsetsStatisticsHandler(
                                         (resolver, offsets) =>
-                                            resolver.Resolve<ILogHandler>().Info(
+                                            resolver.Resolve<ILogHandler>().Verbose(
                                                 "Offsets pending to be committed",
                                                 new
                                                 {
