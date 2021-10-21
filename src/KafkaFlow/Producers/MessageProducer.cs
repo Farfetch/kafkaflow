@@ -113,7 +113,20 @@ namespace KafkaFlow.Producers
 
                         return completionSource.Task;
                     })
-                .ContinueWith(_ => scope.Dispose());
+                .ContinueWith(task =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        deliveryHandler?.Invoke(new DeliveryReport<byte[], byte[]>()
+                        {
+                            Error = new Error(ErrorCode.Local_Fail, task.Exception?.Message),
+                            Status = PersistenceStatus.NotPersisted,
+                            Topic = topic,
+                        });
+                    }
+
+                    scope.Dispose();
+                });
         }
 
         public void Produce(
