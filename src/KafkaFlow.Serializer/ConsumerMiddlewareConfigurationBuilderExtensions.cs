@@ -6,7 +6,7 @@
     /// <summary>
     /// No needed
     /// </summary>
-    public static class ConsumerConfigurationBuilderExtensions
+    public static class ConsumerMiddlewareConfigurationBuilderExtensions
     {
         /// <summary>
         /// Registers a middleware to deserialize messages

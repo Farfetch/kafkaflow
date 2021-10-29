@@ -6,7 +6,7 @@
     /// <summary>
     /// No needed
     /// </summary>
-    public static class ProducerConfigurationBuilderExtensions
+    public static class ProducerMiddlewareConfigurationBuilder
     {
         /// <summary>
         /// Registers a middleware to serialize messages
