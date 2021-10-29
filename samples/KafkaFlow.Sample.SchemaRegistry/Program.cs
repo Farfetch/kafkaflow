@@ -7,7 +7,6 @@
     using Confluent.SchemaRegistry.Serdes;
     using global::SchemaRegistry;
     using Handlers;
-    using MessageTypes;
     using Microsoft.Extensions.DependencyInjection;
     using Producers;
     using TypedHandler;
