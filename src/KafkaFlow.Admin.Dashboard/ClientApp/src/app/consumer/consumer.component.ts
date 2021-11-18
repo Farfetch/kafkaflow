@@ -43,6 +43,14 @@ export class ConsumerComponent implements OnInit {
     });
   }
 
+  hasRunningPartition = (element: any) => {
+    return element.runningPartitions?.length > 0;
+  }
+
+  hasPausedPartition = (element: any) => {
+    return element.pausedPartitions?.length > 0;
+  }
+
   updateConsumersStatus(telemetryResponse: TelemetryResponse): TelemetryResponse {
     const self = this;
 
@@ -78,25 +86,27 @@ export class ConsumerComponent implements OnInit {
     });
   }
 
-  openResetModal = (groupId: string, consumerName: string) => {
+  openResetModal = (groupId: string, consumerName: string, topic: string) => {
     const modalRef = this.modalService.open(ResetModalComponent);
     modalRef.componentInstance.groupId = groupId;
     modalRef.componentInstance.consumerName = consumerName;
+    modalRef.componentInstance.topic = topic;
     modalRef.result.then((_: any) => {
       const body: ResetOffsetsRequest = {confirm: true};
       this.consumersService
-        .resetOffsets({groupId, consumerName, body})
+        .resetOffsets({groupId, consumerName, topics: [topic], body})
         .subscribe(value => this.successSubject.next('The partition-offsets of your consumer were reseted successfully'));
     });
   }
 
-  openPauseModal = (groupId: string, consumerName: string) => {
+  openPauseModal = (groupId: string, consumerName: string, topic: string) => {
     const modalRef = this.modalService.open(PauseModalComponent);
     modalRef.componentInstance.groupId = groupId;
+    modalRef.componentInstance.topic = topic;
     modalRef.componentInstance.consumerName = consumerName;
     modalRef.result.then((_: any) => {
       this.consumersService
-        .pauseConsumer({groupId, consumerName})
+        .pauseConsumer({groupId, consumerName, topics: [topic]})
         .subscribe((value: void) => this.successSubject.next('Your consumer was paused successfully'));
     });
   }
@@ -112,25 +122,27 @@ export class ConsumerComponent implements OnInit {
     });
   }
 
-  openResumeModal = (groupId: string, consumerName: string) => {
+  openResumeModal = (groupId: string, consumerName: string, topic: string) => {
     const modalRef = this.modalService.open(ResumeModalComponent);
     modalRef.componentInstance.groupId = groupId;
     modalRef.componentInstance.consumerName = consumerName;
+    modalRef.componentInstance.topic = topic;
     modalRef.result.then((_: any) => {
       this.consumersService
-        .resumeConsumer({groupId, consumerName})
+        .resumeConsumer({groupId, consumerName, topics: [topic]})
         .subscribe(value => this.successSubject.next('Your consumer was resumed successfully'));
     });
   }
 
-  openRewindModal = (groupId: string, consumerName: string) => {
+  openRewindModal = (groupId: string, consumerName: string, topic: string) => {
     const modalRef = this.modalService.open(RewindModalComponent);
     modalRef.componentInstance.consumerName = consumerName;
     modalRef.componentInstance.groupId = groupId;
+    modalRef.componentInstance.topic = topic;
     modalRef.result.then((result: string) => {
       const body: RewindOffsetsToDateRequest = {date: result};
       this.consumersService
-        .rewindOffsets({groupId, consumerName, body})
+        .rewindOffsets({groupId, consumerName, topics: [topic], body})
         .subscribe(value => this.successSubject.next('The partition-offset of your consumer were rewound successfully'));
     });
   }

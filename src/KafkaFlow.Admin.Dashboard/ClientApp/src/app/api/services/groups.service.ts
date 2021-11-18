@@ -116,11 +116,13 @@ export class GroupsService extends BaseService {
    */
   pauseGroup$Response(params: {
     groupId: string;
+    topics?: Array<string>;
   }): Observable<StrictHttpResponse<void>> {
 
     const rb = new RequestBuilder(this.rootUrl, GroupsService.PauseGroupPath, 'post');
     if (params) {
       rb.path('groupId', params.groupId, {});
+      rb.query('topics', params.topics, {});
     }
 
     return this.http.request(rb.build({
@@ -142,6 +144,7 @@ export class GroupsService extends BaseService {
    */
   pauseGroup(params: {
     groupId: string;
+    topics?: Array<string>;
   }): Observable<void> {
 
     return this.pauseGroup$Response(params).pipe(
@@ -162,11 +165,13 @@ export class GroupsService extends BaseService {
    */
   resumeGroup$Response(params: {
     groupId: string;
+    topics?: Array<string>;
   }): Observable<StrictHttpResponse<void>> {
 
     const rb = new RequestBuilder(this.rootUrl, GroupsService.ResumeGroupPath, 'post');
     if (params) {
       rb.path('groupId', params.groupId, {});
+      rb.query('topics', params.topics, {});
     }
 
     return this.http.request(rb.build({
@@ -188,6 +193,7 @@ export class GroupsService extends BaseService {
    */
   resumeGroup(params: {
     groupId: string;
+    topics?: Array<string>;
   }): Observable<void> {
 
     return this.resumeGroup$Response(params).pipe(

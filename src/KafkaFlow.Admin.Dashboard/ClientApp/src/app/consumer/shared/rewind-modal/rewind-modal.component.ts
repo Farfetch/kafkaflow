@@ -9,6 +9,7 @@ export class RewindModalComponent implements OnInit {
   public rewindDate: Date | undefined;
   @Input() public groupId: string;
   @Input() public consumerName: string;
+  @Input() public topic: string;
 
   constructor(public activeModal: NgbActiveModal) { }
 
