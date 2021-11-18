@@ -1,5 +1,6 @@
 namespace KafkaFlow.Admin.WebApi.Controllers
 {
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using KafkaFlow.Admin.Messages;
@@ -78,6 +79,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
+        /// <param name="topics">List of topics</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
         [Route("{consumerName}/pause", Name=nameof(PauseConsumer))]
@@ -85,7 +87,8 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> PauseConsumer(
             [FromRoute] string groupId,
-            [FromRoute] string consumerName)
+            [FromRoute] string consumerName,
+            [FromQuery] IList<string> topics)
         {
             var consumer = this.consumers.All
                 .FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
@@ -99,6 +102,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 new PauseConsumerByName
                 {
                     ConsumerName = consumerName,
+                    Topics = topics,
                 });
 
             return this.Accepted();
@@ -109,6 +113,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
+        /// <param name="topics">List of topics</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
         [Route("{consumerName}/resume", Name=nameof(ResumeConsumer))]
@@ -116,7 +121,8 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> ResumeConsumer(
             [FromRoute] string groupId,
-            [FromRoute] string consumerName)
+            [FromRoute] string consumerName,
+            [FromQuery] IList<string> topics)
         {
             var consumer = this.consumers.All
                 .FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
@@ -130,6 +136,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 new ResumeConsumerByName
                 {
                     ConsumerName = consumerName,
+                    Topics = topics,
                 });
 
             return this.Accepted();
@@ -171,6 +178,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
+        /// <param name="topics">List of topics</param>
         /// <param name="request">The request to confirm the operation</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
@@ -181,6 +189,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         public async Task<IActionResult> ResetOffsets(
             [FromRoute] string groupId,
             [FromRoute] string consumerName,
+            [FromQuery] IList<string> topics,
             [FromBody] ResetOffsetsRequest request)
         {
             if (request?.Confirm == false)
@@ -200,6 +209,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 new ResetConsumerOffset
                 {
                     ConsumerName = consumerName,
+                    Topics = topics,
                 });
 
             return this.Accepted();
@@ -210,6 +220,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
+        /// <param name="topics">List of topics</param>
         /// <param name="request">The request to confirm the operation</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
@@ -220,6 +231,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         public async Task<IActionResult> RewindOffsets(
             [FromRoute] string groupId,
             [FromRoute] string consumerName,
+            [FromQuery] IList<string> topics,
             [FromBody] RewindOffsetsToDateRequest request)
         {
             if (request is null)
@@ -240,6 +252,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 {
                     ConsumerName = consumerName,
                     DateTime = request.Date,
+                    Topics = topics,
                 });
 
             return this.Accepted();
