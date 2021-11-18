@@ -55,12 +55,10 @@
                                             typeof(ChangeConsumerWorkersCountHandler),
                                             typeof(PauseConsumerByNameHandler),
                                             typeof(PauseConsumersByGroupHandler),
-                                            typeof(PauseConsumersByGroupTopicHandler),
                                             typeof(ResetConsumerOffsetHandler),
                                             typeof(RestartConsumerByNameHandler),
                                             typeof(ResumeConsumerByNameHandler),
                                             typeof(ResumeConsumersByGroupHandler),
-                                            typeof(ResumeConsumersByGroupTopicHandler),
                                             typeof(RewindConsumerOffsetToDateTimeHandler),
                                         }))));
         }

@@ -50,13 +50,13 @@ namespace KafkaFlow.Consumers
         public void Pause(IReadOnlyCollection<TopicPartition> topicPartitions)
         {
             this.consumerManager.Consumer.FlowManager.Pause(topicPartitions);
-            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was paused", null);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was paused", topicPartitions);
         }
 
         public void Resume(IReadOnlyCollection<TopicPartition> topicPartitions)
         {
             this.consumerManager.Consumer.FlowManager.Resume(topicPartitions);
-            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was resumed", null);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was resumed", topicPartitions);
         }
 
         public Offset GetPosition(TopicPartition topicPartition) =>
@@ -78,11 +78,6 @@ namespace KafkaFlow.Consumers
 
         public async Task OverrideOffsetsAndRestartAsync(IReadOnlyCollection<TopicPartitionOffset> offsets)
         {
-            if (offsets is null)
-            {
-                throw new ArgumentNullException(nameof(offsets));
-            }
-
             try
             {
                 await this.consumerManager.Feeder.StopAsync().ConfigureAwait(false);
