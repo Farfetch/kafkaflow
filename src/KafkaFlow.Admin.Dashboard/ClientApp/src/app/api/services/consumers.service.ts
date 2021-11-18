@@ -220,12 +220,14 @@ export class ConsumersService extends BaseService {
   pauseConsumer$Response(params: {
     groupId: string;
     consumerName: string;
+    topics?: Array<string>;
   }): Observable<StrictHttpResponse<void>> {
 
     const rb = new RequestBuilder(this.rootUrl, ConsumersService.PauseConsumerPath, 'post');
     if (params) {
       rb.path('groupId', params.groupId, {});
       rb.path('consumerName', params.consumerName, {});
+      rb.query('topics', params.topics, {});
     }
 
     return this.http.request(rb.build({
@@ -248,6 +250,7 @@ export class ConsumersService extends BaseService {
   pauseConsumer(params: {
     groupId: string;
     consumerName: string;
+    topics?: Array<string>;
   }): Observable<void> {
 
     return this.pauseConsumer$Response(params).pipe(
@@ -269,12 +272,14 @@ export class ConsumersService extends BaseService {
   resumeConsumer$Response(params: {
     groupId: string;
     consumerName: string;
+    topics?: Array<string>;
   }): Observable<StrictHttpResponse<void>> {
 
     const rb = new RequestBuilder(this.rootUrl, ConsumersService.ResumeConsumerPath, 'post');
     if (params) {
       rb.path('groupId', params.groupId, {});
       rb.path('consumerName', params.consumerName, {});
+      rb.query('topics', params.topics, {});
     }
 
     return this.http.request(rb.build({
@@ -297,6 +302,7 @@ export class ConsumersService extends BaseService {
   resumeConsumer(params: {
     groupId: string;
     consumerName: string;
+    topics?: Array<string>;
   }): Observable<void> {
 
     return this.resumeConsumer$Response(params).pipe(
@@ -367,6 +373,7 @@ export class ConsumersService extends BaseService {
   resetOffsets$Response(params: {
     groupId: string;
     consumerName: string;
+    topics?: Array<string>;
     body?: ResetOffsetsRequest
   }): Observable<StrictHttpResponse<void>> {
 
@@ -374,6 +381,7 @@ export class ConsumersService extends BaseService {
     if (params) {
       rb.path('groupId', params.groupId, {});
       rb.path('consumerName', params.consumerName, {});
+      rb.query('topics', params.topics, {});
       rb.body(params.body, 'application/*+json');
     }
 
@@ -397,6 +405,7 @@ export class ConsumersService extends BaseService {
   resetOffsets(params: {
     groupId: string;
     consumerName: string;
+    topics?: Array<string>;
     body?: ResetOffsetsRequest
   }): Observable<void> {
 
@@ -419,6 +428,7 @@ export class ConsumersService extends BaseService {
   rewindOffsets$Response(params: {
     groupId: string;
     consumerName: string;
+    topics?: Array<string>;
     body?: RewindOffsetsToDateRequest
   }): Observable<StrictHttpResponse<void>> {
 
@@ -426,6 +436,7 @@ export class ConsumersService extends BaseService {
     if (params) {
       rb.path('groupId', params.groupId, {});
       rb.path('consumerName', params.consumerName, {});
+      rb.query('topics', params.topics, {});
       rb.body(params.body, 'application/*+json');
     }
 
@@ -449,6 +460,7 @@ export class ConsumersService extends BaseService {
   rewindOffsets(params: {
     groupId: string;
     consumerName: string;
+    topics?: Array<string>;
     body?: RewindOffsetsToDateRequest
   }): Observable<void> {
 
