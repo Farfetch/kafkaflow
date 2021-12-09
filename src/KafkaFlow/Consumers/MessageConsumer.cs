@@ -47,6 +47,24 @@ namespace KafkaFlow.Consumers
 
         public IEnumerable<TopicPartition> RunningPartitions => this.Assignment.Except(this.PausedPartitions);
 
+        public async Task StartAsync()
+        {
+            await this.consumerManager.StartAsync().ConfigureAwait(false);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was manually started", null);
+        }
+
+        public async Task StopAsync()
+        {
+            await this.consumerManager.StopAsync().ConfigureAwait(false);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was manually stopped", null);
+        }
+
+        public async Task RestartAsync()
+        {
+            await this.InternalRestart().ConfigureAwait(false);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was manually restarted", null);
+        }
+
         public void Pause(IReadOnlyCollection<TopicPartition> topicPartitions)
         {
             this.consumerManager.Consumer.FlowManager.Pause(topicPartitions);
@@ -108,12 +126,6 @@ namespace KafkaFlow.Consumers
             this.logHandler.Info(
                 $"Total of workers in Kafkaflow consumer '{this.ConsumerName}' were updated",
                 new { workersCount });
-        }
-
-        public async Task RestartAsync()
-        {
-            await this.InternalRestart().ConfigureAwait(false);
-            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was manually restarted", null);
         }
 
         private static object GetOffsetsLogData(IEnumerable<TopicPartitionOffset> offsets) => offsets
