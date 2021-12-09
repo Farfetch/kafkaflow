@@ -20,11 +20,13 @@ namespace KafkaFlow.Configuration
             Factory<IDistributionStrategy> distributionStrategyFactory,
             IReadOnlyList<MiddlewareConfiguration> middlewaresConfigurations,
             bool autoStoreOffsets,
+            ConsumerInitialState initialState,
             TimeSpan autoCommitInterval,
             IReadOnlyList<Action<string>> statisticsHandlers,
             IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> partitionsAssignedHandlers,
             IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionsRevokedHandlers,
-            IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)> pendingOffsetsHandlers,
+            IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
+                pendingOffsetsHandlers,
             ConsumerCustomFactory customFactory)
         {
             this.consumerConfig = consumerConfig ?? throw new ArgumentNullException(nameof(consumerConfig));
@@ -36,8 +38,10 @@ namespace KafkaFlow.Configuration
 
             this.DistributionStrategyFactory =
                 distributionStrategyFactory ?? throw new ArgumentNullException(nameof(distributionStrategyFactory));
-            this.MiddlewaresConfigurations = middlewaresConfigurations ?? throw new ArgumentNullException(nameof(middlewaresConfigurations));
+            this.MiddlewaresConfigurations =
+                middlewaresConfigurations ?? throw new ArgumentNullException(nameof(middlewaresConfigurations));
             this.AutoStoreOffsets = autoStoreOffsets;
+            this.InitialState = initialState;
             this.AutoCommitInterval = autoCommitInterval;
             this.Topics = topics ?? throw new ArgumentNullException(nameof(topics));
             this.ConsumerName = consumerName ?? Guid.NewGuid().ToString();
@@ -88,6 +92,8 @@ namespace KafkaFlow.Configuration
 
         public bool AutoStoreOffsets { get; }
 
+        public ConsumerInitialState InitialState { get; }
+
         public TimeSpan AutoCommitInterval { get; }
 
         public IReadOnlyList<Action<string>> StatisticsHandlers { get; }
@@ -96,7 +102,8 @@ namespace KafkaFlow.Configuration
 
         public IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
 
-        public IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)> PendingOffsetsHandlers { get; }
+        public IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
+            PendingOffsetsHandlers { get; }
 
         public ConsumerCustomFactory CustomFactory { get; }
 

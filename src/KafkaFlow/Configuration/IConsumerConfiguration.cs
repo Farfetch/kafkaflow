@@ -90,6 +90,11 @@ namespace KafkaFlow.Configuration
         ConsumerCustomFactory CustomFactory { get; }
 
         /// <summary>
+        /// Gets the consumer initial state
+        /// </summary>
+        ConsumerInitialState InitialState { get; }
+
+        /// <summary>
         /// Parses KafkaFlow configuration to Confluent configuration
         /// </summary>
         /// <returns></returns>

@@ -11,7 +11,10 @@ namespace KafkaFlow.Configuration
     {
         private readonly List<string> topics = new();
         private readonly List<Action<string>> statisticsHandlers = new();
-        private readonly List<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>>, TimeSpan interval)> pendingOffsetsStatisticsHandlers = new();
+
+        private readonly List<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>>, TimeSpan interval)>
+            pendingOffsetsStatisticsHandlers = new();
+
         private readonly List<Action<IDependencyResolver, List<TopicPartition>>> partitionAssignedHandlers = new();
         private readonly List<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionRevokedHandlers = new();
         private readonly ConsumerMiddlewareConfigurationBuilder middlewareConfigurationBuilder;
@@ -26,6 +29,7 @@ namespace KafkaFlow.Configuration
         private int workersCount;
         private int bufferSize;
         private bool autoStoreOffsets = true;
+        private ConsumerInitialState initialState = ConsumerInitialState.Running;
         private int statisticsInterval;
 
         private Factory<IDistributionStrategy> distributionStrategyFactory = _ => new BytesSumDistributionStrategy();
@@ -87,7 +91,7 @@ namespace KafkaFlow.Configuration
                 KafkaFlow.AutoOffsetReset.Latest => AutoOffsetReset.Latest,
                 _ => throw new InvalidEnumArgumentException(
                     nameof(autoOffsetReset),
-                    (int) autoOffsetReset,
+                    (int)autoOffsetReset,
                     typeof(KafkaFlow.AutoOffsetReset))
             };
 
@@ -146,19 +150,27 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
+        public IConsumerConfigurationBuilder WithInitialState(ConsumerInitialState state)
+        {
+            this.initialState = state;
+            return this;
+        }
+
         public IConsumerConfigurationBuilder AddMiddlewares(Action<IConsumerMiddlewareConfigurationBuilder> middlewares)
         {
             middlewares(this.middlewareConfigurationBuilder);
             return this;
         }
 
-        public IConsumerConfigurationBuilder WithPartitionsAssignedHandler(Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler)
+        public IConsumerConfigurationBuilder WithPartitionsAssignedHandler(
+            Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler)
         {
             this.partitionAssignedHandlers.Add(partitionsAssignedHandler);
             return this;
         }
 
-        public IConsumerConfigurationBuilder WithPartitionsRevokedHandler(Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler)
+        public IConsumerConfigurationBuilder WithPartitionsRevokedHandler(
+            Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler)
         {
             this.partitionRevokedHandlers.Add(partitionsRevokedHandler);
             return this;
@@ -217,6 +229,7 @@ namespace KafkaFlow.Configuration
                 this.distributionStrategyFactory,
                 middlewareConfiguration,
                 this.autoStoreOffsets,
+                this.initialState,
                 this.autoCommitInterval,
                 this.statisticsHandlers,
                 this.partitionAssignedHandlers,
