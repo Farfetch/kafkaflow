@@ -105,6 +105,18 @@ namespace KafkaFlow.Consumers
         Task RestartAsync();
 
         /// <summary>
+        /// Starts KafkaFlow consumer creating a new Confluent Consumer
+        /// </summary>
+        /// <returns></returns>
+        Task StartAsync();
+
+        /// <summary>
+        /// Stops KafkaFlow consumer destroying the Confluent Consumer
+        /// </summary>
+        /// <returns></returns>
+        Task StopAsync();
+
+        /// <summary>
         ///     Pause consumption for the provided list
         ///     of partitions.
         /// </summary>
