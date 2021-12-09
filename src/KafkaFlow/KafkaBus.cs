@@ -54,7 +54,10 @@ namespace KafkaFlow
                             consumerManager,
                             dependencyScope.Resolver.Resolve<ILogHandler>()));
 
-                    await consumerManager.StartAsync().ConfigureAwait(false);
+                    if (consumerConfiguration.InitialState == ConsumerInitialState.Running)
+                    {
+                        await consumerManager.StartAsync().ConfigureAwait(false);
+                    }
                 }
 
                 cluster.OnStartedHandler(this.dependencyResolver);
