@@ -29,6 +29,8 @@ namespace KafkaFlow.Consumers
 
         public string GroupId => this.consumerManager.Consumer.Configuration.GroupId;
 
+        public IReadOnlyList<string> Topics => this.consumerManager.Consumer.Configuration.Topics;
+
         public IReadOnlyList<string> Subscription => this.consumerManager.Consumer.Subscription;
 
         public IReadOnlyList<TopicPartition> Assignment => this.consumerManager.Consumer.Assignment ?? EmptyTopicPartition;

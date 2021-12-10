@@ -360,6 +360,104 @@ export class ConsumersService extends BaseService {
   }
 
   /**
+   * Path part for operation restartConsumer
+   */
+  static readonly StartConsumerPath = '/kafka-flow/groups/{groupId}/consumers/{consumerName}/start';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `restartConsumer()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  startConsumer$Response(params: {
+    groupId: string;
+    consumerName: string;
+  }): Observable<StrictHttpResponse<void>> {
+
+    const rb = new RequestBuilder(this.rootUrl, ConsumersService.StartConsumerPath, 'post');
+    if (params) {
+      rb.path('groupId', params.groupId, {});
+      rb.path('consumerName', params.consumerName, {});
+    }
+
+    return this.http.request(rb.build({
+      responseType: 'text',
+      accept: '*/*'
+    })).pipe(
+      filter((r: any) => r instanceof HttpResponse),
+      map((r: HttpResponse<any>) => {
+        return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
+      })
+    );
+  }
+
+  /**
+   * This method provides access to only to the response body.
+   * To access the full response (for headers, for example), `restartConsumer$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  startConsumer(params: {
+    groupId: string;
+    consumerName: string;
+  }): Observable<void> {
+
+    return this.startConsumer$Response(params).pipe(
+      map((r: StrictHttpResponse<void>) => r.body as void)
+    );
+  }
+
+  /**
+   * Path part for operation restartConsumer
+   */
+  static readonly StopConsumerPath = '/kafka-flow/groups/{groupId}/consumers/{consumerName}/stop';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `restartConsumer()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  stopConsumer$Response(params: {
+    groupId: string;
+    consumerName: string;
+  }): Observable<StrictHttpResponse<void>> {
+
+    const rb = new RequestBuilder(this.rootUrl, ConsumersService.StopConsumerPath, 'post');
+    if (params) {
+      rb.path('groupId', params.groupId, {});
+      rb.path('consumerName', params.consumerName, {});
+    }
+
+    return this.http.request(rb.build({
+      responseType: 'text',
+      accept: '*/*'
+    })).pipe(
+      filter((r: any) => r instanceof HttpResponse),
+      map((r: HttpResponse<any>) => {
+        return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
+      })
+    );
+  }
+
+  /**
+   * This method provides access to only to the response body.
+   * To access the full response (for headers, for example), `restartConsumer$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  stopConsumer(params: {
+    groupId: string;
+    consumerName: string;
+  }): Observable<void> {
+
+    return this.stopConsumer$Response(params).pipe(
+      map((r: StrictHttpResponse<void>) => r.body as void)
+    );
+  }
+
+  /**
    * Path part for operation resetOffsets
    */
   static readonly ResetOffsetsPath = '/kafka-flow/groups/{groupId}/consumers/{consumerName}/reset-offsets';

@@ -22,7 +22,7 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Gets the consumer configured topics
         /// </summary>
-        IEnumerable<string> Topics { get; }
+        IReadOnlyList<string> Topics { get; }
 
         /// <summary>
         /// Gets the consumer name

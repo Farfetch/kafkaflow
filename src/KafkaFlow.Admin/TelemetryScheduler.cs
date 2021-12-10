@@ -53,32 +53,34 @@ namespace KafkaFlow.Admin
 
         private static void ProduceTelemetry(
             string topicName,
-            IList<IMessageConsumer> consumers,
+            IReadOnlyCollection<IMessageConsumer> consumers,
             IMessageProducer producer)
         {
             var items = consumers
-                .Where(c => c.Subscription?.Any() == true)
-                .SelectMany(c =>
-                {
-                    var consumerLag = c.GetTopicPartitionsLag();
-                    return c.Subscription?.Select(topic => new ConsumerTelemetryMetric
+                .SelectMany(
+                    c =>
                     {
-                        ConsumerName = c.ConsumerName,
-                        Topic = topic,
-                        GroupId = c.GroupId,
-                        InstanceName = Environment.MachineName,
-                        PausedPartitions = c.PausedPartitions
-                            .Where(p => p.Topic == topic)
-                            .Select(p => p.Partition.Value),
-                        RunningPartitions = c.RunningPartitions
-                            .Where(p => p.Topic == topic)
-                            .Select(p => p.Partition.Value),
-                        WorkersCount = c.WorkersCount,
-                        Status = c.Status,
-                        Lag = consumerLag.Where(l => l.Topic == topic).Sum(l => l.Lag),
-                        SentAt = DateTime.Now.ToUniversalTime(),
+                        var consumerLag = c.GetTopicPartitionsLag();
+
+                        return c.Topics.Select(
+                            topic => new ConsumerTelemetryMetric
+                            {
+                                ConsumerName = c.ConsumerName,
+                                Topic = topic,
+                                GroupId = c.GroupId,
+                                InstanceName = Environment.MachineName,
+                                PausedPartitions = c.PausedPartitions
+                                    .Where(p => p.Topic == topic)
+                                    .Select(p => p.Partition.Value),
+                                RunningPartitions = c.RunningPartitions
+                                    .Where(p => p.Topic == topic)
+                                    .Select(p => p.Partition.Value),
+                                WorkersCount = c.WorkersCount,
+                                Status = c.Status,
+                                Lag = consumerLag.Where(l => l.Topic == topic).Sum(l => l.Lag),
+                                SentAt = DateTime.Now.ToUniversalTime(),
+                            });
                     });
-                });
 
             foreach (var item in items)
             {

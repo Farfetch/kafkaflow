@@ -35,7 +35,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <returns>A list of consumers</returns>
-        [HttpGet(Name=nameof(GetConsumersByGroupId))]
+        [HttpGet(Name = nameof(GetConsumersByGroupId))]
         [ProducesResponseType(typeof(ConsumersResponse), 200)]
         public IActionResult GetConsumersByGroupId([FromRoute] string groupId)
         {
@@ -56,7 +56,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="consumerName">Name of consumer</param>
         /// <returns>A list of consumers</returns>
         [HttpGet]
-        [Route("{consumerName}", Name=nameof(GetConsumerByGroupIdName))]
+        [Route("{consumerName}", Name = nameof(GetConsumerByGroupIdName))]
         [ProducesResponseType(typeof(ConsumerResponse), 200)]
         [ProducesResponseType(404)]
         public IActionResult GetConsumerByGroupIdName(
@@ -82,7 +82,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="topics">List of topics</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{consumerName}/pause", Name=nameof(PauseConsumer))]
+        [Route("{consumerName}/pause", Name = nameof(PauseConsumer))]
         [ProducesResponseType(202)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> PauseConsumer(
@@ -116,7 +116,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="topics">List of topics</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{consumerName}/resume", Name=nameof(ResumeConsumer))]
+        [Route("{consumerName}/resume", Name = nameof(ResumeConsumer))]
         [ProducesResponseType(202)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> ResumeConsumer(
@@ -143,13 +143,65 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         }
 
         /// <summary>
+        /// Starts a consumer
+        /// </summary>
+        /// <param name="groupId">Identifier of the group</param>
+        /// <param name="consumerName">Name of consumer</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
+        [HttpPost]
+        [Route("{consumerName}/start", Name = nameof(StartConsumer))]
+        [ProducesResponseType(202)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> StartConsumer(
+            [FromRoute] string groupId,
+            [FromRoute] string consumerName)
+        {
+            var consumer = this.consumers.All.FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
+
+            if (consumer is null)
+            {
+                return this.NotFound();
+            }
+
+            await this.adminProducer.ProduceAsync(new StartConsumerByName { ConsumerName = consumerName });
+
+            return this.Accepted();
+        }
+
+        /// <summary>
+        /// Stops a consumer
+        /// </summary>
+        /// <param name="groupId">Identifier of the group</param>
+        /// <param name="consumerName">Name of consumer</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
+        [HttpPost]
+        [Route("{consumerName}/stop", Name = nameof(StopConsumer))]
+        [ProducesResponseType(202)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> StopConsumer(
+            [FromRoute] string groupId,
+            [FromRoute] string consumerName)
+        {
+            var consumer = this.consumers.All.FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
+
+            if (consumer is null)
+            {
+                return this.NotFound();
+            }
+
+            await this.adminProducer.ProduceAsync(new StopConsumerByName { ConsumerName = consumerName });
+
+            return this.Accepted();
+        }
+
+        /// <summary>
         /// Restart the consumer based on the provided filters
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
         /// <param name="consumerName">Name of consumer</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{consumerName}/restart", Name=nameof(RestartConsumer))]
+        [Route("{consumerName}/restart", Name = nameof(RestartConsumer))]
         [ProducesResponseType(202)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> RestartConsumer(
@@ -182,7 +234,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="request">The request to confirm the operation</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{consumerName}/reset-offsets", Name=nameof(ResetOffsets))]
+        [Route("{consumerName}/reset-offsets", Name = nameof(ResetOffsets))]
         [ProducesResponseType(202)]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]
@@ -224,7 +276,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="request">The request to confirm the operation</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{consumerName}/rewind-offsets-to-date", Name=nameof(RewindOffsets))]
+        [Route("{consumerName}/rewind-offsets-to-date", Name = nameof(RewindOffsets))]
         [ProducesResponseType(202)]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]
@@ -266,7 +318,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="request">The request to confirm the operation</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{consumerName}/change-worker-count", Name=nameof(ChangeWorkersCount))]
+        [Route("{consumerName}/change-worker-count", Name = nameof(ChangeWorkersCount))]
         [ProducesResponseType(202)]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]

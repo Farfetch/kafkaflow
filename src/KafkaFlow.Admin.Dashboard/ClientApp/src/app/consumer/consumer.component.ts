@@ -1,21 +1,23 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
-import {TelemetryService} from '../api/services/telemetry.service';
-import {interval, Subject} from 'rxjs';
-import {debounceTime} from 'rxjs/operators';
-import {NgbModal, NgbAlert} from '@ng-bootstrap/ng-bootstrap';
-import {RewindModalComponent} from './shared/rewind-modal/rewind-modal.component';
-import {WorkersCountModalComponent} from './shared/workers-count-modal/workers-count-modal.component';
-import {ResetModalComponent} from './shared/reset-modal/reset-modal.component';
-import {PauseModalComponent} from './shared/pause-modal/pause-modal.component';
-import {ResumeModalComponent} from './shared/resume-modal/resume-modal.component';
-import {RestartModalComponent} from './shared/restart-modal/restart-modal.component';
-import {TelemetryResponse} from '../api/models/telemetry-response';
-import {ConsumersService} from '../api/services/consumers.service';
-import {ChangeWorkersCountRequest} from '../api/models/change-workers-count-request';
-import {ResetOffsetsRequest} from '../api/models/reset-offsets-request';
-import {RewindOffsetsToDateRequest} from '../api/models/rewind-offsets-to-date-request';
-import {ConsumerGroup} from '../api/models/consumer-group';
-import {TopicPartitionAssignment} from '../api/models/topic-partition-assignment';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { TelemetryService } from '../api/services/telemetry.service';
+import { interval, Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+import { NgbModal, NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { RewindModalComponent } from './shared/rewind-modal/rewind-modal.component';
+import { WorkersCountModalComponent } from './shared/workers-count-modal/workers-count-modal.component';
+import { ResetModalComponent } from './shared/reset-modal/reset-modal.component';
+import { PauseModalComponent } from './shared/pause-modal/pause-modal.component';
+import { ResumeModalComponent } from './shared/resume-modal/resume-modal.component';
+import { RestartModalComponent } from './shared/restart-modal/restart-modal.component';
+import { TelemetryResponse } from '../api/models/telemetry-response';
+import { ConsumersService } from '../api/services/consumers.service';
+import { ChangeWorkersCountRequest } from '../api/models/change-workers-count-request';
+import { ResetOffsetsRequest } from '../api/models/reset-offsets-request';
+import { RewindOffsetsToDateRequest } from '../api/models/rewind-offsets-to-date-request';
+import { ConsumerGroup } from '../api/models/consumer-group';
+import { TopicPartitionAssignment } from '../api/models/topic-partition-assignment';
+import { StartModalComponent } from './shared/start-modal/start-modal.component';
+import { StopModalComponent } from './shared/stop-modal/stop-modal.component';
 
 @Component({
   selector: 'app-consumer',
@@ -23,7 +25,7 @@ import {TopicPartitionAssignment} from '../api/models/topic-partition-assignment
 })
 export class ConsumerComponent implements OnInit {
   public telemetryResponse: TelemetryResponse;
-  @ViewChild('successAlert', {static: false}) successAlert: NgbAlert | undefined;
+  @ViewChild('successAlert', { static: false }) successAlert: NgbAlert | undefined;
   private successSubject = new Subject<string>();
   private delayMs = 5000;
   successMessage = '';
@@ -62,7 +64,7 @@ export class ConsumerComponent implements OnInit {
             c.assignments.some((pa: any) => pa.pausedPartitions?.length > 0 && self.isActive(pa.lastUpdate)) ?
               'Paused' :
               'Not Running';
-        c.lag =  c.assignments.map((item: TopicPartitionAssignment) => item.lag).reduce((prev: number, next: number) => prev + next);
+        c.lag = c.assignments.map((item: TopicPartitionAssignment) => item.lag).reduce((prev: number, next: number) => prev + next);
         c.assignments.forEach((pa: any) => pa.isLost = !self.isActive(pa.lastUpdate)
         );
       });
@@ -79,10 +81,10 @@ export class ConsumerComponent implements OnInit {
     modalRef.componentInstance.consumerName = consumerName;
     modalRef.componentInstance.workersCount = workersCount;
     modalRef.result.then((result: number) => {
-      const body: ChangeWorkersCountRequest = {workersCount: result};
+      const body: ChangeWorkersCountRequest = { workersCount: result };
       this.consumersService
-        .changeWorkersCount({groupId, consumerName, body})
-        .subscribe({next: _ => this.successSubject.next('The number of workers was updated successfully')});
+        .changeWorkersCount({ groupId, consumerName, body })
+        .subscribe({ next: _ => this.successSubject.next('The number of workers was updated successfully') });
     });
   }
 
@@ -92,9 +94,9 @@ export class ConsumerComponent implements OnInit {
     modalRef.componentInstance.consumerName = consumerName;
     modalRef.componentInstance.topic = topic;
     modalRef.result.then((_: any) => {
-      const body: ResetOffsetsRequest = {confirm: true};
+      const body: ResetOffsetsRequest = { confirm: true };
       this.consumersService
-        .resetOffsets({groupId, consumerName, topics: [topic], body})
+        .resetOffsets({ groupId, consumerName, topics: [topic], body })
         .subscribe(value => this.successSubject.next('The partition-offsets of your consumer were reseted successfully'));
     });
   }
@@ -106,7 +108,7 @@ export class ConsumerComponent implements OnInit {
     modalRef.componentInstance.consumerName = consumerName;
     modalRef.result.then((_: any) => {
       this.consumersService
-        .pauseConsumer({groupId, consumerName, topics: [topic]})
+        .pauseConsumer({ groupId, consumerName, topics: [topic] })
         .subscribe((value: void) => this.successSubject.next('Your consumer was paused successfully'));
     });
   }
@@ -117,8 +119,30 @@ export class ConsumerComponent implements OnInit {
     modalRef.componentInstance.consumerName = consumerName;
     modalRef.result.then((_: any) => {
       this.consumersService
-        .restartConsumer({groupId, consumerName})
+        .restartConsumer({ groupId, consumerName })
         .subscribe(value => this.successSubject.next('Your consumer was restarted successfully'));
+    });
+  }
+
+  openStartModal = (groupId: string, consumerName: string) => {
+    const modalRef = this.modalService.open(StartModalComponent);
+    modalRef.componentInstance.groupId = groupId;
+    modalRef.componentInstance.consumerName = consumerName;
+    modalRef.result.then((_: any) => {
+      this.consumersService
+        .startConsumer({ groupId, consumerName })
+        .subscribe(value => this.successSubject.next('Your consumer was started successfully'));
+    });
+  }
+
+  openStopModal = (groupId: string, consumerName: string) => {
+    const modalRef = this.modalService.open(StopModalComponent);
+    modalRef.componentInstance.groupId = groupId;
+    modalRef.componentInstance.consumerName = consumerName;
+    modalRef.result.then((_: any) => {
+      this.consumersService
+        .stopConsumer({ groupId, consumerName })
+        .subscribe(value => this.successSubject.next('Your consumer was stopped successfully'));
     });
   }
 
@@ -129,7 +153,7 @@ export class ConsumerComponent implements OnInit {
     modalRef.componentInstance.topic = topic;
     modalRef.result.then((_: any) => {
       this.consumersService
-        .resumeConsumer({groupId, consumerName, topics: [topic]})
+        .resumeConsumer({ groupId, consumerName, topics: [topic] })
         .subscribe(value => this.successSubject.next('Your consumer was resumed successfully'));
     });
   }
@@ -140,9 +164,9 @@ export class ConsumerComponent implements OnInit {
     modalRef.componentInstance.groupId = groupId;
     modalRef.componentInstance.topic = topic;
     modalRef.result.then((result: string) => {
-      const body: RewindOffsetsToDateRequest = {date: result};
+      const body: RewindOffsetsToDateRequest = { date: result };
       this.consumersService
-        .rewindOffsets({groupId, consumerName, topics: [topic], body})
+        .rewindOffsets({ groupId, consumerName, topics: [topic], body })
         .subscribe(value => this.successSubject.next('The partition-offset of your consumer were rewound successfully'));
     });
   }

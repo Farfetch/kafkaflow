@@ -11,7 +11,7 @@ namespace KafkaFlow.Configuration
 
         public ConsumerConfiguration(
             ConsumerConfig consumerConfig,
-            IEnumerable<string> topics,
+            IReadOnlyList<string> topics,
             string consumerName,
             ClusterConfiguration clusterConfiguration,
             bool managementDisabled,
@@ -66,7 +66,7 @@ namespace KafkaFlow.Configuration
 
         public IReadOnlyList<MiddlewareConfiguration> MiddlewaresConfigurations { get; }
 
-        public IEnumerable<string> Topics { get; }
+        public IReadOnlyList<string> Topics { get; }
 
         public string ConsumerName { get; }
 
