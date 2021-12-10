@@ -36,6 +36,11 @@ namespace KafkaFlow.Consumers
         int WorkersCount { get; }
 
         /// <summary>
+        /// Gets the consumer configured topics
+        /// </summary>
+        IReadOnlyList<string> Topics { get; }
+
+        /// <summary>
         /// Gets the current topic subscription
         /// </summary>
         IReadOnlyList<string> Subscription { get; }

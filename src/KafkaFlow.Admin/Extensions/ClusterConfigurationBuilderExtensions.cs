@@ -50,17 +50,7 @@
                                 .AddTypedHandlers(
                                     handlers => handlers
                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                        .AddHandlers(new[]
-                                        {
-                                            typeof(ChangeConsumerWorkersCountHandler),
-                                            typeof(PauseConsumerByNameHandler),
-                                            typeof(PauseConsumersByGroupHandler),
-                                            typeof(ResetConsumerOffsetHandler),
-                                            typeof(RestartConsumerByNameHandler),
-                                            typeof(ResumeConsumerByNameHandler),
-                                            typeof(ResumeConsumersByGroupHandler),
-                                            typeof(RewindConsumerOffsetToDateTimeHandler),
-                                        }))));
+                                        .AddHandlersFromAssemblyOf<ChangeConsumerWorkersCountHandler>())));
         }
 
         /// <inheritdoc cref="EnableAdminMessages(KafkaFlow.Configuration.IClusterConfigurationBuilder,string,string)"/>

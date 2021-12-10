@@ -72,7 +72,7 @@ namespace KafkaFlow.Consumers
         {
             get
             {
-                if (this.FlowManager is null)
+                if (this.FlowManager is null || !this.Assignment.Any())
                 {
                     return ConsumerStatus.Stopped;
                 }

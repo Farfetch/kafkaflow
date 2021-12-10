@@ -2,7 +2,7 @@ namespace KafkaFlow.Admin.Handlers
 {
     using System.Linq;
     using System.Threading.Tasks;
-    using Extensions;
+    using KafkaFlow.Admin.Extensions;
     using KafkaFlow.Admin.Messages;
     using KafkaFlow.Consumers;
     using KafkaFlow.TypedHandler;
