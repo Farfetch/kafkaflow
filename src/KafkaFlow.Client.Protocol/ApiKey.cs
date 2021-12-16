@@ -21,5 +21,6 @@ namespace KafkaFlow.Client.Protocol
         ListGroups = 16,
         SaslHandshake = 17,
         ApiVersions = 18,
+        SaslAuthenticate = 36,
     }
 }

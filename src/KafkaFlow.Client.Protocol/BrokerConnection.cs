@@ -84,7 +84,7 @@ namespace KafkaFlow.Client.Protocol
 
             this.pendingRequests.Remove(correlationId);
 
-            var response = (IResponse) Activator.CreateInstance(request.ResponseType);
+            var response = (IResponse)Activator.CreateInstance(request.ResponseType);
 
             if (response is ITaggedFields)
                 _ = source.ReadTaggedFields();
@@ -101,9 +101,22 @@ namespace KafkaFlow.Client.Protocol
 
         private async Task<int> WaitForMessageSizeAsync()
         {
-            await this.stream
-                .ReadAsync(this.messageSizeBuffer, 0, sizeof(int), this.stopTokenSource.Token)
-                .ConfigureAwait(false);
+            while (true)
+            {
+                if (this.stream.DataAvailable)
+                {
+                    var read = await this.stream
+                        .ReadAsync(this.messageSizeBuffer, 0, sizeof(int), this.stopTokenSource.Token)
+                        .ConfigureAwait(false);
+
+                    if (read > 0)
+                    {
+                        break;
+                    }
+                }
+
+                await Task.Delay(100);
+            }
 
             return BinaryPrimitives.ReadInt32BigEndian(this.messageSizeBuffer);
         }
@@ -163,7 +176,7 @@ namespace KafkaFlow.Client.Protocol
 
             public Task<TResponse> GetTask<TResponse>()
                 where TResponse : IResponse =>
-                this.CompletionSource.Task.ContinueWith(x => (TResponse) x.Result);
+                this.CompletionSource.Task.ContinueWith(x => (TResponse)x.Result);
         }
     }
 }

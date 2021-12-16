@@ -33,7 +33,7 @@ namespace KafkaFlow.Client.Protocol.Streams
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string? ReadString(this MemoryReader source)
+        public static string ReadString(this MemoryReader source)
         {
             return source.ReadString(source.ReadInt16());
         }

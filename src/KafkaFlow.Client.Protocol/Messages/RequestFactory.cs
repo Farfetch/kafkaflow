@@ -1,9 +1,9 @@
 namespace KafkaFlow.Client.Protocol.Messages
 {
-    using System.Collections.Generic;
     using KafkaFlow.Client.Protocol.Messages.Implementations.Metadata;
     using KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch;
     using KafkaFlow.Client.Protocol.Messages.Implementations.Produce;
+    using KafkaFlow.Client.Protocol.Messages.Implementations.SaslAuthenticate;
 
     public class RequestFactory : IRequestFactory
     {
@@ -40,6 +40,11 @@ namespace KafkaFlow.Client.Protocol.Messages
             // var cap = this.capabilities.GetVersionRange(ApiKey.Produce);
 
             return new ListOffsetsV5Request(-1, 0, topicName, partitions);
+        }
+
+        public ISaslAuthenticateRequest CreateSaslAuthenticate(byte[] authBytes)
+        {
+            return new SaslAuthenticateRequestV2(authBytes);
         }
     }
 }

@@ -1,7 +1,5 @@
 namespace KafkaFlow.Client.Protocol.Messages
 {
-    using System.Collections.Generic;
-
     public interface IRequestFactory
     {
         IProduceRequest CreateProduce(ProduceAcks acks, int timeout);
@@ -11,5 +9,7 @@ namespace KafkaFlow.Client.Protocol.Messages
         IOffsetFetchRequest CreateOffsetFetch(string groupId, string topicName, int[] partitions);
 
         IListOffsetsRequest CreateListOffset(string topicName, int[] partitions);
+
+        ISaslAuthenticateRequest CreateSaslAuthenticate(byte[] authBytes);
     }
 }
