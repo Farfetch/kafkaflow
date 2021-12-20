@@ -1,6 +1,7 @@
 namespace KafkaFlow.Client.Protocol.Authentication.SASL.Scram
 {
     using System;
+    using System.Linq;
     using System.Security.Authentication;
     using System.Text;
     using System.Text.RegularExpressions;
@@ -14,10 +15,17 @@ namespace KafkaFlow.Client.Protocol.Authentication.SASL.Scram
             @"r=(?<nonce>[\w+/=]+),s=(?<salt>[\w+/=]+),i=(?<iteration>[\d]+)",
             RegexOptions.None);
 
+        private static readonly Regex FinalServerMessagePattern = new(
+            @"v=(?<signature>[\w+/=]+)",
+            RegexOptions.None);
+
         private readonly string username;
         private readonly string password;
         private readonly string scramMechanism;
         private readonly IScramHashMethods scramHashMethods;
+
+        private string authMessage;
+        private byte[] saltedPassword;
 
         protected BaseScramAuthentication(
             string username,
@@ -68,7 +76,7 @@ namespace KafkaFlow.Client.Protocol.Authentication.SASL.Scram
                 throw new AuthenticationException("Authentication failed: Invalid server Nonce");
             }
 
-            var clientLastMessageBytes = this.GetClientLastMessage(
+            var clientLastMessageBytes = this.BuildClientLastMessage(
                 clientFirstMessage.GetGs2Header(),
                 clientFirstMessage.GetBareData(),
                 firstServerMessage.Nonce,
@@ -85,10 +93,34 @@ namespace KafkaFlow.Client.Protocol.Authentication.SASL.Scram
                     $"Authentication failed: Code={serverFinalAuthResponse.ErrorCode}, Message={serverFinalAuthResponse.ErrorMessage}");
             }
 
+            this.AuthenticateServer(serverFinalAuthResponse.AuthBytes);
+
             return serverFinalAuthResponse.SessionLifetimeMs;
         }
 
-        private byte[] GetClientLastMessage(
+        private void AuthenticateServer(byte[] rawMessage)
+        {
+            var message = Encoding.UTF8.GetString(rawMessage);
+
+            var result = FinalServerMessagePattern.Match(message);
+
+            if (!result.Success)
+            {
+                throw new AuthenticationException("Authentication failed: Invalid server final response");
+            }
+
+            var serverSignature = Convert.FromBase64String(result.Groups["signature"].Value);
+
+            var serverKey = this.scramHashMethods.HMAC(this.saltedPassword, "Server Key");
+            var calculatedSignature = this.scramHashMethods.HMAC(serverKey, this.authMessage);
+
+            if (!serverSignature.SequenceEqual(calculatedSignature))
+            {
+                throw new AuthenticationException("Authentication failed: Invalid server signature");
+            }
+        }
+
+        private byte[] BuildClientLastMessage(
             string gs2Header,
             string clientBareData,
             string serverNonce,
@@ -99,11 +131,11 @@ namespace KafkaFlow.Client.Protocol.Authentication.SASL.Scram
         {
             var base64Gs2Header = Convert.ToBase64String(Encoding.UTF8.GetBytes(gs2Header));
             var withoutProof = $"c={base64Gs2Header},r={serverNonce}";
-            var authMessage = $"{clientBareData},{serverFirstRaw},{withoutProof}";
-            var saltedPassword = this.scramHashMethods.Hi(password, salt, iteration);
-            var clientKey = this.scramHashMethods.HMAC(saltedPassword, "Client Key");
+            this.authMessage = $"{clientBareData},{serverFirstRaw},{withoutProof}";
+            this.saltedPassword = this.scramHashMethods.Hi(password, salt, iteration);
+            var clientKey = this.scramHashMethods.HMAC(this.saltedPassword, "Client Key");
             var storedKey = this.scramHashMethods.H(clientKey);
-            var clientSignature = this.scramHashMethods.HMAC(storedKey, authMessage);
+            var clientSignature = this.scramHashMethods.HMAC(storedKey, this.authMessage);
             var clientProof = Xor(clientKey, clientSignature);
 
             var clientLastMessage = $"{withoutProof},p={Convert.ToBase64String(clientProof)}";
