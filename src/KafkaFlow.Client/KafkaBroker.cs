@@ -7,6 +7,7 @@ namespace KafkaFlow.Client
     using KafkaFlow.Client.Protocol.Messages;
     using KafkaFlow.Client.Protocol.Messages.Implementations;
     using KafkaFlow.Client.Protocol.Messages.Implementations.ApiVersion;
+    using KafkaFlow.Client.Protocol.Security;
 
     internal class KafkaBroker : IKafkaBroker
     {
@@ -19,7 +20,8 @@ namespace KafkaFlow.Client
             this.Connection = new BrokerConnection(
                 address,
                 clientId,
-                requestTimeout);
+                requestTimeout,
+                NullSecurityProtocol.Instance);
 
             this.lazyRequestFactory = new Lazy<Task<IRequestFactory>>(this.CreateRequestFactoryAsync);
         }

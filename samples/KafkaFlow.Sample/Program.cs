@@ -2,6 +2,8 @@
 {
     using System;
     using System.Linq;
+    using System.Net.Security;
+    using System.Security.Cryptography.X509Certificates;
     using System.Threading.Tasks;
     using KafkaFlow.Admin;
     using Confluent.Kafka;
@@ -13,6 +15,8 @@
     using KafkaFlow.TypedHandler;
     using Acks = KafkaFlow.Acks;
     using AutoOffsetReset = KafkaFlow.AutoOffsetReset;
+    using SaslMechanism = KafkaFlow.Configuration.SaslMechanism;
+    using SecurityProtocol = KafkaFlow.Configuration.SecurityProtocol;
 
     internal static class Program
     {
@@ -29,8 +33,16 @@
                     .UseConsoleLog()
                     .AddCluster(
                         cluster => cluster
-                            .WithBrokers(new[] {"localhost:9092"})
-                            .EnableAdminMessages("kafka-flow.admin", Guid.NewGuid().ToString())
+                            .WithBrokers(new[] { "localhost:19094" })
+                            .WithSecurityInformation(
+                                information =>
+                                {
+                                    information.SaslMechanism = SaslMechanism.ScramSha512;
+                                    information.SecurityProtocol = SecurityProtocol.SaslSsl;
+                                    information.SaslUsername = "user";
+                                    information.SaslPassword = "password";
+                                    information.SslCaLocation = "";
+                                })
                             .AddProducer(
                                 producerName,
                                 producer => producer
@@ -52,18 +64,20 @@
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .WithPendingOffsetsStatisticsHandler(
                                         (resolver, offsets) =>
-                                            resolver.Resolve<ILogHandler>().Info(
-                                                "Offsets pending to be committed",
-                                                new
-                                                {
-                                                    Offsets = offsets.Select(o =>
-                                                        new
-                                                        {
-                                                            Partition = o.Partition.Value,
-                                                            Offset = o.Offset.Value,
-                                                            o.Topic
-                                                        })
-                                                }),
+                                            resolver.Resolve<ILogHandler>()
+                                                .Info(
+                                                    "Offsets pending to be committed",
+                                                    new
+                                                    {
+                                                        Offsets = offsets.Select(
+                                                            o =>
+                                                                new
+                                                                {
+                                                                    Partition = o.Partition.Value,
+                                                                    Offset = o.Offset.Value,
+                                                                    o.Topic
+                                                                })
+                                                    }),
                                         new TimeSpan(0, 0, 1))
                                     .AddMiddlewares(
                                         middlewares => middlewares
@@ -83,10 +97,7 @@
 
             await bus.StartAsync();
 
-            var consumers = provider.GetRequiredService<IConsumerAccessor>();
             var producers = provider.GetRequiredService<IProducerAccessor>();
-
-            var adminProducer = provider.GetService<IAdminProducer>();
 
             while (true)
             {
@@ -104,66 +115,9 @@
                                         x => new BatchProduceItem(
                                             "test-topic",
                                             Guid.NewGuid().ToString(),
-                                            new TestMessage {Text = $"Message: {Guid.NewGuid()}"},
+                                            new TestMessage { Text = $"Message: {Guid.NewGuid()}" },
                                             null))
                                     .ToList());
-
-                        break;
-
-                    case "pause":
-                        foreach (var consumer in consumers.All)
-                        {
-                            consumer.Pause(consumer.Assignment);
-                        }
-
-                        Console.WriteLine("Consumer paused");
-
-                        break;
-
-                    case "resume":
-                        foreach (var consumer in consumers.All)
-                        {
-                            consumer.Resume(consumer.Assignment);
-                        }
-
-                        Console.WriteLine("Consumer resumed");
-
-                        break;
-
-                    case "reset":
-                        await adminProducer.ProduceAsync(new ResetConsumerOffset {ConsumerName = consumerName});
-
-                        break;
-
-                    case "rewind":
-                        Console.Write("Input a time: ");
-                        var timeInput = Console.ReadLine();
-
-                        if (DateTime.TryParse(timeInput, out var time))
-                        {
-                            await adminProducer.ProduceAsync(
-                                new RewindConsumerOffsetToDateTime
-                                {
-                                    ConsumerName = consumerName,
-                                    DateTime = time
-                                });
-                        }
-
-                        break;
-
-                    case "workers":
-                        Console.Write("Input a new worker count: ");
-                        var workersInput = Console.ReadLine();
-
-                        if (int.TryParse(workersInput, out var workers))
-                        {
-                            await adminProducer.ProduceAsync(
-                                new ChangeConsumerWorkersCount
-                                {
-                                    ConsumerName = consumerName,
-                                    WorkersCount = workers
-                                });
-                        }
 
                         break;
 

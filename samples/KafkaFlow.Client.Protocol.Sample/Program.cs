@@ -4,12 +4,12 @@
     using System.Text;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Protocol;
-    using KafkaFlow.Client.Protocol.Authentication;
-    using KafkaFlow.Client.Protocol.Authentication.SASL.Scram;
     using KafkaFlow.Client.Protocol.Messages;
     using KafkaFlow.Client.Protocol.Messages.Implementations.Fetch;
     using KafkaFlow.Client.Protocol.Messages.Implementations.Metadata;
     using KafkaFlow.Client.Protocol.Messages.Implementations.Produce;
+    using KafkaFlow.Client.Protocol.Security;
+    using KafkaFlow.Client.Protocol.Security.Authentication.SASL.Scram;
 
     class Program
     {
@@ -19,12 +19,12 @@
             const string topicName = "test-client";
             string broker = "localhost";
 
-            var connection = new SecureBrokerConnection(
+            var connection =
                 new BrokerConnection(
-                    new BrokerAddress(broker, 9092),
+                    new BrokerAddress(broker, 19094),
                     "test-client-id",
-                    TimeSpan.FromSeconds(30)),
-                new ScramSha512Authentication("alice", "alice-pwd"));
+                    TimeSpan.FromSeconds(30),
+                    new SslSecurityProtocol(new ScramSha512Authentication("user", "password")));
 
             // var apiVersion = await connection.SendAsync(new ApiVersionV2Request());
 

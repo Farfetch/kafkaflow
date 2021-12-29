@@ -4,39 +4,47 @@ namespace KafkaFlow.Client.Protocol
     using System.Buffers.Binary;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Linq;
+    using System.IO;
     using System.Net.Sockets;
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Protocol.Messages;
+    using KafkaFlow.Client.Protocol.Security;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class BrokerConnection : IBrokerConnection
+    public class BrokerConnection : IBrokerConnection, IInternalBrokerConnection
     {
-        private readonly TcpClient client;
-        private readonly NetworkStream stream;
-
+        private readonly SemaphoreSlim authenticationSemaphore = new(1, 1);
         private readonly Dictionary<int, PendingRequest> pendingRequests = new();
-
         private readonly CancellationTokenSource stopTokenSource = new();
-        private readonly Task listenerTask;
-
         private readonly byte[] messageSizeBuffer = new byte[sizeof(int)];
 
         private readonly string clientId;
         private readonly TimeSpan requestTimeout;
+        private readonly ISecurityProtocol securityProtocol;
+
+        private readonly TcpClient client;
+        private readonly Stream stream;
+        private readonly Task listenerTask;
+
+        private DateTime sessionExpiryTime = DateTime.MinValue;
 
         private volatile int lastCorrelationId;
 
-        public BrokerConnection(BrokerAddress address, string clientId, TimeSpan requestTimeout)
+        public BrokerConnection(
+            BrokerAddress address,
+            string clientId,
+            TimeSpan requestTimeout,
+            ISecurityProtocol securityProtocol)
         {
             this.Address = address;
             this.clientId = clientId;
             this.requestTimeout = requestTimeout;
-            this.client = new TcpClient(address.Host, address.Port);
-            this.stream = this.client.GetStream();
+            this.securityProtocol = securityProtocol;
 
+            this.client = new TcpClient(address.Host, address.Port);
+            this.stream = securityProtocol.CreateSecureStream(this.client.GetStream());
             this.listenerTask = Task.Run(this.ListenStream);
         }
 
@@ -103,7 +111,7 @@ namespace KafkaFlow.Client.Protocol
         {
             while (true)
             {
-                if (this.stream.DataAvailable)
+                if (this.stream.CanRead)
                 {
                     var read = await this.stream
                         .ReadAsync(this.messageSizeBuffer, 0, sizeof(int), this.stopTokenSource.Token)
@@ -121,8 +129,39 @@ namespace KafkaFlow.Client.Protocol
             return BinaryPrimitives.ReadInt32BigEndian(this.messageSizeBuffer);
         }
 
-        public Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> request)
+        public async Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> request)
             where TResponse : class, IResponse
+        {
+            await this.EnsureAuthenticationAsync();
+            return await ((IInternalBrokerConnection)this).InternalSendAsync(request);
+        }
+
+        private async ValueTask EnsureAuthenticationAsync()
+        {
+            if (this.sessionExpiryTime >= DateTime.Now)
+            {
+                return;
+            }
+
+            await this.authenticationSemaphore.WaitAsync();
+
+            try
+            {
+                if (this.sessionExpiryTime < DateTime.Now)
+                {
+                    var sessionLifetime = await this.securityProtocol.AuthenticateAsync(this);
+                    this.sessionExpiryTime = sessionLifetime == 0 ?
+                        DateTime.MaxValue :
+                        DateTime.Now.AddMilliseconds(sessionLifetime);
+                }
+            }
+            finally
+            {
+                this.authenticationSemaphore.Release();
+            }
+        }
+
+        Task<TResponse> IInternalBrokerConnection.InternalSendAsync<TResponse>(IRequestMessage<TResponse> request)
         {
             var pendingRequest = new PendingRequest(this.requestTimeout, request.ResponseType);
 

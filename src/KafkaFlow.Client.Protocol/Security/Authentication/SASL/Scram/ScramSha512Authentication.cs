@@ -1,4 +1,4 @@
-namespace KafkaFlow.Client.Protocol.Authentication.SASL.Scram
+namespace KafkaFlow.Client.Protocol.Security.Authentication.SASL.Scram
 {
     using System;
     using System.Security.Cryptography;
