@@ -9,10 +9,10 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         public byte[] Data { get; private set; } = Array.Empty<byte>();
 
-        public void Write(MemoryWriter destination)
+        void IRequest.Write(MemoryWriter destination)
         {
-            destination.WriteUVarint((ulong) this.Tag);
-            destination.WriteUVarint((ulong) this.Data.Length);
+            destination.WriteUVarint((ulong)this.Tag);
+            destination.WriteUVarint((ulong)this.Data.Length);
             destination.Write(this.Data);
         }
 

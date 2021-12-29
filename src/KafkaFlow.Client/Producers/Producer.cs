@@ -83,11 +83,7 @@ namespace KafkaFlow.Client.Producers
                     var requestFactory = await host.GetRequestFactoryAsync();
 
                     var request = requestFactory.CreateMetadata();
-
-                    var topic = request.CreateTopic();
-                    topic.Name = topicName;
-                    request.Topics = new[] { topic };
-
+                    request.AddTopic(topicName);
                     var metadata = await host.Connection.SendAsync(request).ConfigureAwait(false);
 
                     if (!metadata.Topics.Any())

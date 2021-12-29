@@ -3,7 +3,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Heartbeat
     using System;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class HeartbeatV4Request : IRequestMessage<HeartbeatV4Response>, ITaggedFields, IHeartbeatRequest
+    internal class HeartbeatV4Request : IRequestMessage<HeartbeatV4Response>, ITaggedFields, IHeartbeatRequest
     {
         public HeartbeatV4Request(string groupId, int generationId, string memberId)
         {
@@ -28,7 +28,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Heartbeat
 
         public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
 
-        public void Write(MemoryWriter destination)
+        void IRequest.Write(MemoryWriter destination)
         {
             destination.WriteCompactString(this.GroupId);
             destination.WriteInt32(this.GenerationId);

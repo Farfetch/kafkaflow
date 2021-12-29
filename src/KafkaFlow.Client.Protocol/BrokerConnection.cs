@@ -50,6 +50,51 @@ namespace KafkaFlow.Client.Protocol
 
         public BrokerAddress Address { get; }
 
+        public async Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> request)
+            where TResponse : class, IResponse
+        {
+            await this.EnsureAuthenticationAsync();
+            return await ((IInternalBrokerConnection)this).SendAsync(request);
+        }
+
+        Task<TResponse> IInternalBrokerConnection.SendAsync<TResponse>(IRequestMessage<TResponse> request)
+        {
+            var pendingRequest = new PendingRequest(this.requestTimeout, request.ResponseType);
+
+            using var tmp = new MemoryWriter();
+
+            var correlationId = Interlocked.Increment(ref this.lastCorrelationId);
+
+            this.pendingRequests.TryAdd(correlationId, pendingRequest);
+
+            tmp.WriteMessage(new Request(correlationId, this.clientId, request));
+            tmp.Position = 0;
+
+#if DEBUG
+            var bytes = tmp.ToArray();
+            Debug.WriteLine($"{request.GetType().Name}: {string.Join(",", bytes)}");
+#endif
+
+            lock (this.stream)
+            {
+                tmp.CopyTo(this.stream);
+            }
+
+            return pendingRequest.GetTask<TResponse>();
+        }
+
+        /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>>
+        public async ValueTask DisposeAsync()
+        {
+            this.stopTokenSource.Cancel();
+            await this.listenerTask;
+
+            this.stopTokenSource.Dispose();
+            this.listenerTask.Dispose();
+            await this.stream.DisposeAsync();
+            this.client.Dispose();
+        }
+
         private async Task ListenStream()
         {
             while (!this.stopTokenSource.IsCancellationRequested)
@@ -66,7 +111,7 @@ namespace KafkaFlow.Client.Protocol
                     }
 
                     using var memoryStream = new MemoryReader(messageSize);
-                    memoryStream.ReadFrom(this.stream);
+                    await memoryStream.ReadFromAsync(this.stream).ConfigureAwait(false);
                     memoryStream.Position = 0;
                     this.RespondMessage(memoryStream);
                 }
@@ -109,7 +154,7 @@ namespace KafkaFlow.Client.Protocol
 
         private async Task<int> WaitForMessageSizeAsync()
         {
-            while (true)
+            while (!this.stopTokenSource.IsCancellationRequested)
             {
                 if (this.stream.CanRead)
                 {
@@ -127,13 +172,6 @@ namespace KafkaFlow.Client.Protocol
             }
 
             return BinaryPrimitives.ReadInt32BigEndian(this.messageSizeBuffer);
-        }
-
-        public async Task<TResponse> SendAsync<TResponse>(IRequestMessage<TResponse> request)
-            where TResponse : class, IResponse
-        {
-            await this.EnsureAuthenticationAsync();
-            return await ((IInternalBrokerConnection)this).InternalSendAsync(request);
         }
 
         private async ValueTask EnsureAuthenticationAsync()
@@ -159,43 +197,6 @@ namespace KafkaFlow.Client.Protocol
             {
                 this.authenticationSemaphore.Release();
             }
-        }
-
-        Task<TResponse> IInternalBrokerConnection.InternalSendAsync<TResponse>(IRequestMessage<TResponse> request)
-        {
-            var pendingRequest = new PendingRequest(this.requestTimeout, request.ResponseType);
-
-            using var tmp = new MemoryWriter();
-
-            var correlationId = Interlocked.Increment(ref this.lastCorrelationId);
-
-            this.pendingRequests.TryAdd(correlationId, pendingRequest);
-
-            tmp.WriteMessage(new Request(correlationId, this.clientId, request));
-            tmp.Position = 0;
-
-#if DEBUG
-            var bytes = tmp.ToArray();
-            Debug.WriteLine($"{request.GetType().Name}: {string.Join(",", bytes)}");
-#endif
-
-            lock (this.stream)
-            {
-                tmp.CopyTo(this.stream);
-            }
-
-            return pendingRequest.GetTask<TResponse>();
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            this.stopTokenSource.Cancel();
-            await this.listenerTask;
-
-            this.stopTokenSource.Dispose();
-            this.listenerTask.Dispose();
-            await this.stream.DisposeAsync();
-            this.client.Dispose();
         }
 
         private readonly struct PendingRequest

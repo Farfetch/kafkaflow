@@ -7,7 +7,7 @@ namespace KafkaFlow.Client.Protocol.Streams
     using System.Text;
     using KafkaFlow.Client.Protocol.Messages;
 
-    public static class StreamWriteExtensions
+    internal static class StreamWriteExtensions
     {
         public static void WriteMessage(this MemoryWriter destination, IRequest message) => message.Write(destination);
 
@@ -83,16 +83,8 @@ namespace KafkaFlow.Client.Protocol.Streams
 
         public static void WriteCompactInt32Array(this MemoryWriter destination, IReadOnlyList<int> values)
         {
-            destination.WriteUVarint((uint) values.Count);
+            destination.WriteUVarint((uint)values.Count);
             InternalWriteInt32Array(destination, values);
-        }
-
-        private static void InternalWriteInt32Array(MemoryWriter destination, IReadOnlyList<int> values)
-        {
-            for (var i = 0; i < values.Count; ++i)
-            {
-                destination.WriteInt32(values[i]);
-            }
         }
 
         public static void WriteString(this MemoryWriter destination, string? value)
@@ -109,21 +101,8 @@ namespace KafkaFlow.Client.Protocol.Streams
 
         public static void WriteCompactString(this MemoryWriter destination, string value)
         {
-            destination.WriteUVarint((uint) value.Length + 1u);
+            destination.WriteUVarint((uint)value.Length + 1u);
             destination.WriteRawString(value);
-        }
-
-        private static void WriteRawString(this MemoryWriter destination, string value)
-        {
-            const int maxUtf8CharCount = 4;
-
-            if (destination.TryGetSpan(value.Length * maxUtf8CharCount, out var span))
-            {
-                destination.Advance(Encoding.UTF8.GetBytes(value, span));
-                return;
-            }
-
-            destination.Write(Encoding.UTF8.GetBytes(value));
         }
 
         public static void WriteCompactNullableString(this MemoryWriter destination, string? value)
@@ -150,13 +129,13 @@ namespace KafkaFlow.Client.Protocol.Streams
 
         public static void WriteCompactByteArray(this MemoryWriter destination, byte[] data)
         {
-            destination.WriteUVarint((uint) data.Length + 1u);
+            destination.WriteUVarint((uint)data.Length + 1u);
             destination.Write(data);
         }
 
         public static void WriteBoolean(this MemoryWriter destination, bool value)
         {
-            destination.WriteByte((byte) (value ? 1 : 0));
+            destination.WriteByte((byte)(value ? 1 : 0));
         }
 
         public static void WriteArray<TMessage>(this MemoryWriter destination, IEnumerable<TMessage> items, int count)
@@ -178,7 +157,7 @@ namespace KafkaFlow.Client.Protocol.Streams
 
         public static void WriteTaggedFields(this MemoryWriter destination, IReadOnlyList<TaggedField> items)
         {
-            destination.WriteUVarint((uint) items.Count);
+            destination.WriteUVarint((uint)items.Count);
 
             for (var i = 0; i < items.Count; ++i)
             {
@@ -189,7 +168,7 @@ namespace KafkaFlow.Client.Protocol.Streams
         public static void WriteCompactArray<TMessage>(this MemoryWriter destination, IReadOnlyList<TMessage> items)
             where TMessage : IRequest
         {
-            destination.WriteUVarint((uint) items.Count + 1);
+            destination.WriteUVarint((uint)items.Count + 1);
 
             for (var i = 0; i < items.Count; ++i)
             {
@@ -199,7 +178,7 @@ namespace KafkaFlow.Client.Protocol.Streams
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteVarint(this MemoryWriter destination, long num) =>
-            destination.WriteUVarint(((ulong) num << 1) ^ ((ulong) num >> 63));
+            destination.WriteUVarint(((ulong)num << 1) ^ ((ulong)num >> 63));
 
         public static void WriteUVarint(this MemoryWriter destination, ulong num)
         {
@@ -216,6 +195,27 @@ namespace KafkaFlow.Client.Protocol.Streams
             destination.Write(buffer[..bytesUsed]);
         }
 
+        private static void InternalWriteInt32Array(MemoryWriter destination, IReadOnlyList<int> values)
+        {
+            for (var i = 0; i < values.Count; ++i)
+            {
+                destination.WriteInt32(values[i]);
+            }
+        }
+
+        private static void WriteRawString(this MemoryWriter destination, string value)
+        {
+            const int maxUtf8CharCount = 4;
+
+            if (destination.TryGetSpan(value.Length * maxUtf8CharCount, out var span))
+            {
+                destination.Advance(Encoding.UTF8.GetBytes(value, span));
+                return;
+            }
+
+            destination.Write(Encoding.UTF8.GetBytes(value));
+        }
+
         private static int WriteUVarint(ulong num, Span<byte> buffer)
         {
             const ulong endMask = 0b1000_0000;
@@ -225,7 +225,7 @@ namespace KafkaFlow.Client.Protocol.Streams
 
             do
             {
-                var value = (byte) ((num & valueMask) | (num > valueMask ? endMask : 0));
+                var value = (byte)((num & valueMask) | (num > valueMask ? endMask : 0));
                 buffer[bytesWritten++] = value;
                 num >>= 7;
             } while (num != 0);

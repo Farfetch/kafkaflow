@@ -6,13 +6,13 @@ namespace KafkaFlow.Client.Protocol.Streams
     using System.Text;
     using KafkaFlow.Client.Protocol.Messages;
 
-    public static class StreamReadExtensions
+    internal static class StreamReadExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool ReadBoolean(this MemoryReader source) => source.ReadByte() != 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ErrorCode ReadErrorCode(this MemoryReader source) => (ErrorCode) source.ReadInt16();
+        public static ErrorCode ReadErrorCode(this MemoryReader source) => (ErrorCode)source.ReadInt16();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short ReadInt16(this MemoryReader source)
@@ -73,12 +73,14 @@ namespace KafkaFlow.Client.Protocol.Streams
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte[] ReadCompactByteArray(this MemoryReader source)
+        public static byte[]? ReadCompactByteArray(this MemoryReader source)
         {
             var size = source.ReadUVarint();
 
             if (size <= 0)
+            {
                 return null;
+            }
 
             return source.GetSpan(size - 1).ToArray();
         }
@@ -93,20 +95,27 @@ namespace KafkaFlow.Client.Protocol.Streams
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TMessage[] ReadArray<TMessage>(this MemoryReader source) where TMessage : class, IResponse, new() =>
+        public static TMessage[] ReadArray<TMessage>(this MemoryReader source)
+            where TMessage : class, IResponse, new() =>
             source.ReadArray<TMessage>(source.ReadInt32());
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TMessage[] ReadCompactArray<TMessage>(this MemoryReader source) where TMessage : class, IResponse, new() =>
+        public static TMessage[] ReadCompactArray<TMessage>(this MemoryReader source)
+            where TMessage : class, IResponse, new() =>
             source.ReadArray<TMessage>(source.ReadUVarint() - 1);
 
-        public static TMessage[] ReadArray<TMessage>(this MemoryReader source, int count) where TMessage : class, IResponse, new()
+        public static TMessage[] ReadArray<TMessage>(this MemoryReader source, int count)
+            where TMessage : class, IResponse, new()
         {
             if (count < 0)
-                return null;
+            {
+                throw new ArgumentOutOfRangeException(nameof(count), count, "The value should be greater or equal than 0");
+            }
 
             if (count == 0)
+            {
                 return Array.Empty<TMessage>();
+            }
 
             var result = new TMessage[count];
 
@@ -124,7 +133,9 @@ namespace KafkaFlow.Client.Protocol.Streams
             var count = source.ReadUVarint();
 
             if (count == 0)
+            {
                 return Array.Empty<TaggedField>();
+            }
 
             var result = new TaggedField[count];
 
@@ -146,10 +157,14 @@ namespace KafkaFlow.Client.Protocol.Streams
         public static int[] ReadInt32Array(this MemoryReader source, int count)
         {
             if (count < 0)
-                return null;
+            {
+                throw new ArgumentOutOfRangeException(nameof(count), count, "The value should be greater or equal than 0");
+            }
 
             if (count == 0)
+            {
                 return Array.Empty<int>();
+            }
 
             var result = new int[count];
 
@@ -188,7 +203,9 @@ namespace KafkaFlow.Client.Protocol.Streams
                 current = source.ReadByte();
 
                 if (++bytesRead > 4)
+                {
                     throw new InvalidOperationException("The value is not a valid VARINT");
+                }
 
                 num |= (current & valueMask) << shift;
                 shift += 7;

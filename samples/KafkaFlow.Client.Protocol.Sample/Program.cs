@@ -1,13 +1,9 @@
 ﻿namespace KafkaFlow.Client.Protocol.Sample
 {
     using System;
-    using System.Text;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Protocol;
-    using KafkaFlow.Client.Protocol.Messages;
-    using KafkaFlow.Client.Protocol.Messages.Implementations.Fetch;
     using KafkaFlow.Client.Protocol.Messages.Implementations.Metadata;
-    using KafkaFlow.Client.Protocol.Messages.Implementations.Produce;
     using KafkaFlow.Client.Protocol.Security;
     using KafkaFlow.Client.Protocol.Security.Authentication.SASL.Scram;
 
@@ -28,14 +24,11 @@
 
             // var apiVersion = await connection.SendAsync(new ApiVersionV2Request());
 
-            var topicMetadata = await connection.SendAsync(
-                new MetadataV9Request
-                {
-                    Topics = new IMetadataRequest.ITopic[]
-                    {
-                        new MetadataV9Request.Topic { Name = topicName }
-                    }
-                });
+            var metadataRequest = new MetadataV9Request();
+
+            metadataRequest.AddTopic(topicName);
+
+            var topicMetadata = await connection.SendAsync(metadataRequest);
             /*    
             var findCoordResponse = await connection.SendAsync(
                 new FindCoordinatorV3Request(string.Empty, 0));
@@ -97,121 +90,121 @@
             Console.ReadLine();
         }
 
-        private static Task<FetchV11Response> FetchMessage(IBrokerConnection connection)
-        {
-            return connection.SendAsync(
-                new FetchV11Request
-                {
-                    ReplicaId = -1,
-                    MaxWaitTime = 5000,
-                    MinBytes = 0,
-                    MaxBytes = 1024 * 16 * 3,
-                    IsolationLevel = 1,
-                    Topics = new[]
-                    {
-                        new FetchV11Request.Topic
-                        {
-                            Name = "test-client",
-                            Partitions = new[]
-                            {
-                                new FetchV11Request.Partition
-                                {
-                                    Id = 0,
-                                    FetchOffset = 0,
-                                    PartitionMaxBytes = 1024 * 16
-                                },
-                                new FetchV11Request.Partition
-                                {
-                                    Id = 1,
-                                    FetchOffset = 0,
-                                    PartitionMaxBytes = 1024 * 16
-                                },
-                                new FetchV11Request.Partition
-                                {
-                                    Id = 2,
-                                    FetchOffset = 0,
-                                    PartitionMaxBytes = 1024 * 16
-                                },
-                            }
-                        }
-                    }
-                });
-        }
-
-        private static Task<IProduceResponse> ProduceMessage(IBrokerConnection connection)
-        {
-            var batch = new RecordBatch();
-
-            var topic = new ProduceV8Request.Topic("test-client");
-
-            var headers = new Headers();
-
-            var timestamp = 1626732933960;
-
-            headers.Add("teste_header_key", Encoding.UTF8.GetBytes("teste_header_value"));
-
-            topic.Partitions.TryAdd(
-                0,
-                new ProduceV8Request.Partition(0)
-                {
-                    RecordBatch = batch
-                });
-
-            batch.AddRecord(
-                new RecordBatch.Record
-                {
-                    Key = Encoding.UTF8.GetBytes("teste_key"),
-                    Value = Encoding.UTF8.GetBytes("teste_value"),
-                    Headers = headers
-                },
-                timestamp);
-
-            var request = new ProduceV8Request(ProduceAcks.Leader, 5000);
-
-            request.Topics.TryAdd(topic.Name, topic);
-
-            return connection.SendAsync(request);
-        }
-
-        private static Task<IProduceResponse> MassProduceMessage(IBrokerConnection connection)
-        {
-            var topic = new ProduceV8Request.Topic("test-client");
-
-            var headers = new Headers();
-
-            headers.Add("teste_header_key", Encoding.UTF8.GetBytes("teste_header_value"));
-
-            var timestamp = 1626732933960;
-
-            for (var partition = 0; partition < 6; partition++)
-            {
-                var batch = new RecordBatch();
-
-                topic.Partitions.TryAdd(
-                    partition,
-                    new ProduceV8Request.Partition(partition)
-                    {
-                        RecordBatch = batch
-                    });
-
-                for (var msg = 0; msg < 100; msg++)
-                {
-                    batch.AddRecord(
-                        new RecordBatch.Record
-                        {
-                            Key = Encoding.UTF8.GetBytes($"teste_key_{msg}"),
-                            Value = Encoding.UTF8.GetBytes($"teste_value{msg}"),
-                            Headers = headers
-                        },
-                        timestamp + msg);
-                }
-            }
-
-            var request = new ProduceV8Request(ProduceAcks.Leader, 5000);
-
-            request.Topics.TryAdd(topic.Name, topic);
-
-            return connection.SendAsync(request);
-        }
+        // private static Task<FetchV11Response> FetchMessage(IBrokerConnection connection)
+        // {
+        //     return connection.SendAsync(
+        //         new FetchV11Request
+        //         {
+        //             ReplicaId = -1,
+        //             MaxWaitTime = 5000,
+        //             MinBytes = 0,
+        //             MaxBytes = 1024 * 16 * 3,
+        //             IsolationLevel = 1,
+        //             Topics = new[]
+        //             {
+        //                 new FetchV11Request.Topic
+        //                 {
+        //                     Name = "test-client",
+        //                     Partitions = new[]
+        //                     {
+        //                         new FetchV11Request.Partition
+        //                         {
+        //                             Id = 0,
+        //                             FetchOffset = 0,
+        //                             PartitionMaxBytes = 1024 * 16
+        //                         },
+        //                         new FetchV11Request.Partition
+        //                         {
+        //                             Id = 1,
+        //                             FetchOffset = 0,
+        //                             PartitionMaxBytes = 1024 * 16
+        //                         },
+        //                         new FetchV11Request.Partition
+        //                         {
+        //                             Id = 2,
+        //                             FetchOffset = 0,
+        //                             PartitionMaxBytes = 1024 * 16
+        //                         },
+        //                     }
+        //                 }
+        //             }
+        //         });
+        // }
+        //
+        // private static Task<IProduceResponse> ProduceMessage(IBrokerConnection connection)
+        // {
+        //     var batch = new RecordBatch();
+        //
+        //     var topic = new ProduceV8Request.Topic("test-client");
+        //
+        //     var headers = new Headers();
+        //
+        //     var timestamp = 1626732933960;
+        //
+        //     headers.Add("teste_header_key", Encoding.UTF8.GetBytes("teste_header_value"));
+        //
+        //     topic.Partitions.TryAdd(
+        //         0,
+        //         new ProduceV8Request.Partition(0)
+        //         {
+        //             RecordBatch = batch
+        //         });
+        //
+        //     batch.AddRecord(
+        //         new RecordBatch.Record
+        //         {
+        //             Key = Encoding.UTF8.GetBytes("teste_key"),
+        //             Value = Encoding.UTF8.GetBytes("teste_value"),
+        //             Headers = headers
+        //         },
+        //         timestamp);
+        //
+        //     var request = new ProduceV8Request(ProduceAcks.Leader, 5000);
+        //
+        //     request.Topics.TryAdd(topic.Name, topic);
+        //
+        //     return connection.SendAsync(request);
+        // }
+        //
+        // private static Task<IProduceResponse> MassProduceMessage(IBrokerConnection connection)
+        // {
+        //     var topic = new ProduceV8Request.Topic("test-client");
+        //
+        //     var headers = new Headers();
+        //
+        //     headers.Add("teste_header_key", Encoding.UTF8.GetBytes("teste_header_value"));
+        //
+        //     var timestamp = 1626732933960;
+        //
+        //     for (var partition = 0; partition < 6; partition++)
+        //     {
+        //         var batch = new RecordBatch();
+        //
+        //         topic.Partitions.TryAdd(
+        //             partition,
+        //             new ProduceV8Request.Partition(partition)
+        //             {
+        //                 RecordBatch = batch
+        //             });
+        //
+        //         for (var msg = 0; msg < 100; msg++)
+        //         {
+        //             batch.AddRecord(
+        //                 new RecordBatch.Record
+        //                 {
+        //                     Key = Encoding.UTF8.GetBytes($"teste_key_{msg}"),
+        //                     Value = Encoding.UTF8.GetBytes($"teste_value{msg}"),
+        //                     Headers = headers
+        //                 },
+        //                 timestamp + msg);
+        //         }
+        //     }
+        //
+        //     var request = new ProduceV8Request(ProduceAcks.Leader, 5000);
+        //
+        //     request.Topics.TryAdd(topic.Name, topic);
+        //
+        //     return connection.SendAsync(request);
+        // }
     }
 }

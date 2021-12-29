@@ -1,10 +1,10 @@
-namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
+namespace KafkaFlow.Client.Protocol.Messages.Implementations.ListOffsets
 {
     using System;
     using System.Linq;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class ListOffsetsV5Request : IListOffsetsRequest
+    internal class ListOffsetsV5Request : IListOffsetsRequest
     {
         public ListOffsetsV5Request(int replicaId, byte isolationLevel, string topicName, int[] partitions)
         {
@@ -17,43 +17,47 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
 
         public short ApiVersion => 5;
 
+        public Type ResponseType => typeof(ListOffsetsV5Response);
+
         public int ReplicaId { get; }
 
         public byte IsolationLevel { get; }
 
         public IListOffsetsRequest.ITopic[] Topics { get; }
 
-        private IListOffsetsRequest.ITopic CreateTopic(string name, int[] partitions) => new Topic(name, partitions);
-
-        public void Write(MemoryWriter destination)
+        void IRequest.Write(MemoryWriter destination)
         {
             destination.WriteInt32(this.ReplicaId);
             destination.WriteByte(this.IsolationLevel);
             destination.WriteArray(this.Topics);
         }
 
-        public class Topic : IListOffsetsRequest.ITopic
+        private IListOffsetsRequest.ITopic CreateTopic(string name, int[] partitions) => new Topic(name, partitions);
+
+        private class Topic : IListOffsetsRequest.ITopic
         {
             public Topic(string name, int[] partitions)
             {
                 this.Name = name;
-                this.Partitions = partitions.Select(p => new Partition(p)).ToArray();
+                this.Partitions = partitions
+                    .Select(p => (IListOffsetsRequest.IPartition)new Partition(p))
+                    .ToArray();
             }
 
-            public string Name { get; set; }
+            public string Name { get; }
 
-            public IListOffsetsRequest.IPartition[] Partitions { get; set; } = Array.Empty<Partition>();
+            public IListOffsetsRequest.IPartition[] Partitions { get; }
 
-            private IListOffsetsRequest.IPartition CreatePartition(int partition) => new Partition(partition);
-
-            public void Write(MemoryWriter destination)
+            void IRequest.Write(MemoryWriter destination)
             {
                 destination.WriteString(this.Name);
                 destination.WriteArray(this.Partitions);
             }
+
+            private IListOffsetsRequest.IPartition CreatePartition(int partition) => new Partition(partition);
         }
 
-        public class Partition : IListOffsetsRequest.IPartition
+        private class Partition : IListOffsetsRequest.IPartition
         {
             public Partition(int partitionIndex)
             {
@@ -62,20 +66,18 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
                 this.Timestamp = -1;
             }
 
-            public int PartitionIndex { get; set; }
+            public int PartitionIndex { get; }
 
-            public int CurrentLeaderEpoch { get; set; }
+            public int CurrentLeaderEpoch { get; }
 
-            public long Timestamp { get; set; }
+            public long Timestamp { get; }
 
-            public void Write(MemoryWriter destination)
+            void IRequest.Write(MemoryWriter destination)
             {
                 destination.WriteInt32(this.PartitionIndex);
                 destination.WriteInt32(this.CurrentLeaderEpoch);
                 destination.WriteInt64(this.Timestamp);
             }
         }
-
-        public Type ResponseType => typeof(ListOffsetsV5Response);
     }
 }

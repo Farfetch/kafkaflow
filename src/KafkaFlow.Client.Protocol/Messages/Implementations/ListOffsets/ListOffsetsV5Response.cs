@@ -1,4 +1,4 @@
-namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch
+namespace KafkaFlow.Client.Protocol.Messages.Implementations.ListOffsets
 {
     using KafkaFlow.Client.Protocol.Streams;
 

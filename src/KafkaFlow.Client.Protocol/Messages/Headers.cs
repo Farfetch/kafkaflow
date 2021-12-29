@@ -57,7 +57,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
         IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
-        public void Write(MemoryWriter destination)
+        void IRequest.Write(MemoryWriter destination)
         {
             destination.WriteVarint(this.headers.Count);
 

@@ -3,7 +3,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.SaslHandshake
     using System;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class SaslHandshakeRequestV1 : ISaslHandshakeRequest
+    internal class SaslHandshakeRequestV1 : ISaslHandshakeRequest
     {
         public SaslHandshakeRequestV1(string mechanism)
         {
@@ -18,7 +18,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.SaslHandshake
 
         public string Mechanism { get; }
 
-        public void Write(MemoryWriter destination)
+        void IRequest.Write(MemoryWriter destination)
         {
             destination.WriteString(this.Mechanism);
         }

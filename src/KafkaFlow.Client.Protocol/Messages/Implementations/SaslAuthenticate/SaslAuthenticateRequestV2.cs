@@ -3,7 +3,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.SaslAuthenticate
     using System;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class SaslAuthenticateRequestV2 : ISaslAuthenticateRequest, ITaggedFields
+    internal class SaslAuthenticateRequestV2 : ISaslAuthenticateRequest, ITaggedFields
     {
         public SaslAuthenticateRequestV2(byte[] authBytes)
         {
@@ -18,12 +18,12 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.SaslAuthenticate
 
         public byte[] AuthBytes { get; }
 
-        public void Write(MemoryWriter destination)
+        public TaggedField[] TaggedFields { get; } = Array.Empty<TaggedField>();
+
+        void IRequest.Write(MemoryWriter destination)
         {
             destination.WriteCompactByteArray(this.AuthBytes);
             destination.WriteTaggedFields(this.TaggedFields);
         }
-
-        public TaggedField[] TaggedFields { get; } = Array.Empty<TaggedField>();
     }
 }

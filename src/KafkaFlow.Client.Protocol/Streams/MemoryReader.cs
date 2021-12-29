@@ -4,6 +4,7 @@ namespace KafkaFlow.Client.Protocol.Streams
     using System.Buffers;
     using System.IO;
     using System.Runtime.CompilerServices;
+    using System.Threading.Tasks;
 
     public sealed class MemoryReader : IDisposable
     {
@@ -17,9 +18,9 @@ namespace KafkaFlow.Client.Protocol.Streams
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ReadFrom(Stream stream)
+        public async Task ReadFromAsync(Stream stream)
         {
-            stream.Read(new Span<byte>(this.buffer, this.position, this.Length - this.position));
+            await stream.ReadAsync(new Memory<byte>(this.buffer, this.position, this.Length - this.position));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

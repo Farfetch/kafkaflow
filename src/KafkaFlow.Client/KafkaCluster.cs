@@ -6,12 +6,14 @@ namespace KafkaFlow.Client
     using System.Threading;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Protocol;
+    using KafkaFlow.Client.Protocol.Security;
 
     public class KafkaCluster : IKafkaCluster
     {
         private readonly IReadOnlyCollection<BrokerAddress> addresses;
         private readonly string clientId;
         private readonly TimeSpan requestTimeout;
+        private readonly ISecurityProtocol securityProtocol;
 
         private readonly Dictionary<int, IKafkaBroker> brokers = new();
 
@@ -20,11 +22,13 @@ namespace KafkaFlow.Client
         public KafkaCluster(
             IReadOnlyCollection<BrokerAddress> addresses,
             string clientId,
-            TimeSpan requestTimeout)
+            TimeSpan requestTimeout,
+            ISecurityProtocol? securityProtocol = null)
         {
             this.addresses = addresses;
             this.clientId = clientId;
             this.requestTimeout = requestTimeout;
+            this.securityProtocol = securityProtocol ?? NullSecurityProtocol.Instance;
         }
 
         public IKafkaBroker AnyBroker => this.brokers.Values.First();
@@ -50,7 +54,12 @@ namespace KafkaFlow.Client
                     return;
                 }
 
-                var first = new KafkaBroker(this.addresses.First(), 0, this.clientId, this.requestTimeout);
+                var first = new KafkaBroker(
+                    this.addresses.First(),
+                    0,
+                    this.clientId,
+                    this.requestTimeout,
+                    this.securityProtocol);
 
                 var requestFactory = await first.GetRequestFactoryAsync();
 
@@ -75,7 +84,8 @@ namespace KafkaFlow.Client
                                 new BrokerAddress(broker.Host, broker.Port),
                                 broker.NodeId,
                                 this.clientId,
-                                this.requestTimeout));
+                                this.requestTimeout,
+                                this.securityProtocol));
                     }
                 }
             }
@@ -83,11 +93,6 @@ namespace KafkaFlow.Client
             {
                 this.initializeSemaphore.Release();
             }
-        }
-
-        public ValueTask<IKafkaBroker> GetCoordinatorAsync()
-        {
-            throw new System.NotImplementedException();
         }
     }
 }

@@ -3,7 +3,7 @@ namespace KafkaFlow.Client.Protocol
     using System;
     using System.Buffers;
 
-    public static class Crc32CHash
+    internal static class Crc32CHash
     {
         private const uint Poly = 0x82f63b78;
 
@@ -27,7 +27,7 @@ namespace KafkaFlow.Client.Protocol
             }
         }
 
-        public static uint Compute(uint crc, ReadOnlySpan<byte> input, int offset, int length)
+        private static uint Compute(uint crc, ReadOnlySpan<byte> input, int offset, int length)
         {
             uint crcLocal = uint.MaxValue ^ crc;
 

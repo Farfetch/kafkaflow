@@ -25,7 +25,7 @@ namespace KafkaFlow.Client.Protocol
             this.Message = message;
         }
 
-        public void Write(MemoryWriter destination)
+        void IRequest.Write(MemoryWriter destination)
         {
             destination.WriteInt32(0); // Skip message size to write later
             var startPosition = destination.Position;

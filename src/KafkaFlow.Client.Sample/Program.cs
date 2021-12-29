@@ -6,6 +6,7 @@
     using System.Text;
     using System.Threading.Tasks;
     using KafkaFlow.Client.Exceptions;
+    using KafkaFlow.Client.Metrics;
     using KafkaFlow.Client.Producers;
     using KafkaFlow.Client.Protocol.Messages;
 

@@ -3,6 +3,7 @@ namespace KafkaFlow.Client.Producers
     using System;
     using KafkaFlow.Client.Producers.Partitioners;
     using KafkaFlow.Client.Protocol;
+    using KafkaFlow.Client.Protocol.Security;
 
     public class ProducerBuilder
     {
@@ -20,7 +21,7 @@ namespace KafkaFlow.Client.Producers
                     Acks = ProduceAcks.All,
                     ProduceTimeout = TimeSpan.FromSeconds(10),
                     MaxProduceBatchSize = 25000,
-                    Linger = TimeSpan.FromMilliseconds(10)
+                    Linger = TimeSpan.FromMilliseconds(10),
                 },
                 new ByteSumPartitioner());
         }

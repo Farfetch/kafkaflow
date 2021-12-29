@@ -9,7 +9,5 @@ namespace KafkaFlow.Client
         IKafkaBroker GetBroker(int hostId);
 
         ValueTask EnsureInitializationAsync();
-
-        ValueTask<IKafkaBroker> GetCoordinatorAsync();
     }
 }

@@ -2,15 +2,13 @@ namespace KafkaFlow.Client.Protocol.Messages
 {
     public interface IMetadataRequest : IRequestMessage<IMetadataResponse>
     {
-        ITopic[] Topics { get; set; }
-
         bool AllowAutoTopicCreation { get; set; }
 
         bool IncludeClusterAuthorizedOperations { get; set; }
 
         bool IncludeTopicAuthorizedOperations { get; set; }
 
-        ITopic CreateTopic();
+        void AddTopic(string topicName);
 
         public interface ITopic : IRequest
         {

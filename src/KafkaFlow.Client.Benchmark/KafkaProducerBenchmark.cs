@@ -9,6 +9,7 @@ namespace KafkaFlow.Client.Benchmark
     using KafkaFlow.Client.Producers;
     using KafkaFlow.Client.Producers.Partitioners;
     using KafkaFlow.Client.Protocol;
+    using KafkaFlow.Client.Protocol.Security;
 
     [MemoryDiagnoser]
     [StopOnFirstError]
@@ -34,7 +35,7 @@ namespace KafkaFlow.Client.Benchmark
                     Acks = ProduceAcks.All,
                     ProduceTimeout = TimeSpan.FromSeconds(10),
                     MaxProduceBatchSize = 25000,
-                    Linger = TimeSpan.FromMilliseconds(5)
+                    Linger = TimeSpan.FromMilliseconds(5),
                 },
                 new ByteSumPartitioner());
 

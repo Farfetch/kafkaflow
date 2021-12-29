@@ -1,18 +1,22 @@
 namespace KafkaFlow.Client.Protocol.Messages
 {
+    using KafkaFlow.Client.Protocol.Messages.Implementations;
+    using KafkaFlow.Client.Protocol.Messages.Implementations.ApiVersion;
+    using KafkaFlow.Client.Protocol.Messages.Implementations.ListOffsets;
     using KafkaFlow.Client.Protocol.Messages.Implementations.Metadata;
     using KafkaFlow.Client.Protocol.Messages.Implementations.OffsetFetch;
     using KafkaFlow.Client.Protocol.Messages.Implementations.Produce;
-    using KafkaFlow.Client.Protocol.Messages.Implementations.SaslAuthenticate;
 
     public class RequestFactory : IRequestFactory
     {
-        private readonly IBrokerCapabilities capabilities;
+        private IBrokerCapabilities capabilities;
 
-        public RequestFactory(IBrokerCapabilities capabilities)
+        public void SetBrokerCapabilities(BrokerCapabilities capabilities)
         {
             this.capabilities = capabilities;
         }
+
+        public IApiVersionRequest CreateApiVersion() => new ApiVersionV2Request();
 
         public IProduceRequest CreateProduce(ProduceAcks acks, int timeout)
         {
@@ -40,11 +44,6 @@ namespace KafkaFlow.Client.Protocol.Messages
             // var cap = this.capabilities.GetVersionRange(ApiKey.Produce);
 
             return new ListOffsetsV5Request(-1, 0, topicName, partitions);
-        }
-
-        public ISaslAuthenticateRequest CreateSaslAuthenticate(byte[] authBytes)
-        {
-            return new SaslAuthenticateRequestV2(authBytes);
         }
     }
 }

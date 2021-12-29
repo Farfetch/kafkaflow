@@ -4,7 +4,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetCommit
     using System.Collections.Generic;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class OffsetCommitV2Request : IOffsetCommitRequest
+    internal class OffsetCommitV2Request : IOffsetCommitRequest
     {
         public ApiKey ApiKey => ApiKey.OffsetCommit;
 
@@ -29,7 +29,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetCommit
             return topic;
         }
 
-        public void Write(MemoryWriter destination)
+        void IRequest.Write(MemoryWriter destination)
         {
             destination.WriteString(this.GroupId);
             destination.WriteInt32(this.GroupGenerationId);
@@ -38,7 +38,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetCommit
             destination.WriteArray(this.Topics);
         }
 
-        public class Topic : IOffsetCommitRequest.ITopic
+        private class Topic : IOffsetCommitRequest.ITopic
         {
             public string Name { get; set; }
 
@@ -51,14 +51,14 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetCommit
                 return partition;
             }
 
-            public void Write(MemoryWriter destination)
+            void IRequest.Write(MemoryWriter destination)
             {
                 destination.WriteString(this.Name);
                 destination.WriteArray(this.Partitions);
             }
         }
 
-        public class Partition : IOffsetCommitRequest.IPartition
+        private class Partition : IOffsetCommitRequest.IPartition
         {
             public int Id { get; set; }
 
@@ -66,7 +66,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.OffsetCommit
 
             public string Metadata { get; set; }
 
-            public void Write(MemoryWriter destination)
+            void IRequest.Write(MemoryWriter destination)
             {
                 destination.WriteInt32(this.Id);
                 destination.WriteInt64(this.Offset);

@@ -9,7 +9,5 @@ namespace KafkaFlow.Client.Protocol.Messages
         IOffsetFetchRequest CreateOffsetFetch(string groupId, string topicName, int[] partitions);
 
         IListOffsetsRequest CreateListOffset(string topicName, int[] partitions);
-
-        ISaslAuthenticateRequest CreateSaslAuthenticate(byte[] authBytes);
     }
 }

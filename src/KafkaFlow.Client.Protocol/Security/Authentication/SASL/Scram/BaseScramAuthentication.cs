@@ -41,7 +41,7 @@ namespace KafkaFlow.Client.Protocol.Security.Authentication.SASL.Scram
 
         async Task<long> IAuthenticationMethod.AuthenticateAsync(IInternalBrokerConnection connection)
         {
-            var handshakeResponse = await connection.InternalSendAsync(new SaslHandshakeRequestV1(this.scramMechanism));
+            var handshakeResponse = await connection.SendAsync(new SaslHandshakeRequestV1(this.scramMechanism));
 
             if (handshakeResponse.ErrorCode != 0)
             {
@@ -50,7 +50,7 @@ namespace KafkaFlow.Client.Protocol.Security.Authentication.SASL.Scram
             }
 
             var clientFirstMessage = new ClientFirstMessage(this.username);
-            var serverFirstAuthResponse = await connection.InternalSendAsync(new SaslAuthenticateRequestV2(clientFirstMessage.GetBytes()));
+            var serverFirstAuthResponse = await connection.SendAsync(new SaslAuthenticateRequestV2(clientFirstMessage.GetBytes()));
 
             if (serverFirstAuthResponse.ErrorCode != 0)
             {
@@ -85,7 +85,7 @@ namespace KafkaFlow.Client.Protocol.Security.Authentication.SASL.Scram
                 serverFirstRaw,
                 this.password);
 
-            var serverFinalAuthResponse = await connection.InternalSendAsync(new SaslAuthenticateRequestV2(clientLastMessageBytes));
+            var serverFinalAuthResponse = await connection.SendAsync(new SaslAuthenticateRequestV2(clientLastMessageBytes));
 
             if (serverFinalAuthResponse.ErrorCode != 0)
             {

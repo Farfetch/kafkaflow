@@ -5,15 +5,18 @@ namespace KafkaFlow.Client
     using System.Threading.Tasks;
     using KafkaFlow.Client.Protocol;
     using KafkaFlow.Client.Protocol.Messages;
-    using KafkaFlow.Client.Protocol.Messages.Implementations;
-    using KafkaFlow.Client.Protocol.Messages.Implementations.ApiVersion;
     using KafkaFlow.Client.Protocol.Security;
 
     internal class KafkaBroker : IKafkaBroker
     {
         private readonly Lazy<Task<IRequestFactory>> lazyRequestFactory;
 
-        public KafkaBroker(BrokerAddress address, int nodeId, string clientId, TimeSpan requestTimeout)
+        public KafkaBroker(
+            BrokerAddress address,
+            int nodeId,
+            string clientId,
+            TimeSpan requestTimeout,
+            ISecurityProtocol securityProtocol)
         {
             this.Address = address;
             this.NodeId = nodeId;
@@ -21,7 +24,7 @@ namespace KafkaFlow.Client
                 address,
                 clientId,
                 requestTimeout,
-                NullSecurityProtocol.Instance);
+                securityProtocol);
 
             this.lazyRequestFactory = new Lazy<Task<IRequestFactory>>(this.CreateRequestFactoryAsync);
         }
@@ -36,17 +39,21 @@ namespace KafkaFlow.Client
 
         private async Task<IRequestFactory> CreateRequestFactoryAsync()
         {
-            var apiVersionResponse = await this.Connection.SendAsync(new ApiVersionV2Request());
+            var factory = new RequestFactory();
+
+            var apiVersionResponse = await this.Connection.SendAsync(factory.CreateApiVersion());
 
             if (apiVersionResponse.Error != ErrorCode.None)
             {
                 throw new Exception($"Error trying to get Kafka host api version: {apiVersionResponse.Error}");
             }
 
-            return new RequestFactory(
+            factory.SetBrokerCapabilities(
                 new BrokerCapabilities(
                     apiVersionResponse.ApiVersions
                         .Select(x => new ApiVersionRange(x.ApiKey, x.MinVersion, x.MaxVersion))));
+
+            return factory;
         }
 
         public async ValueTask DisposeAsync()

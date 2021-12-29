@@ -1,8 +1,7 @@
-namespace KafkaFlow.Client.Producers
+namespace KafkaFlow.Client.Metrics
 {
     using System;
     using KafkaFlow.Client.Protocol;
-    using Metrics;
 
     public class MetricsBuilder
     {

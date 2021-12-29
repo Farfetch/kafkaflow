@@ -3,7 +3,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.JoinGroup
     using System;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class JoinGroupV7Request : ITaggedFields, IJoinGroupRequest
+    internal class JoinGroupV7Request : ITaggedFields, IJoinGroupRequest
     {
         public ApiKey ApiKey => ApiKey.JoinGroup;
 
@@ -29,7 +29,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.JoinGroup
 
         public IJoinGroupRequest.IProtocol CreateProtocol() => new Protocol();
 
-        public void Write(MemoryWriter destination)
+        void IRequest.Write(MemoryWriter destination)
         {
             destination.WriteCompactString(this.GroupId);
             destination.WriteInt32(this.SessionTimeoutMs);
@@ -41,7 +41,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.JoinGroup
             destination.WriteTaggedFields(this.TaggedFields);
         }
 
-        public class Protocol : IJoinGroupRequest.IProtocol, ITaggedFields
+        private class Protocol : IJoinGroupRequest.IProtocol, ITaggedFields
         {
             public string Name { get; set; }
 
@@ -49,7 +49,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.JoinGroup
 
             public TaggedField[] TaggedFields { get; set; } = Array.Empty<TaggedField>();
 
-            public void Write(MemoryWriter destination)
+            void IRequest.Write(MemoryWriter destination)
             {
                 destination.WriteCompactString(this.Name);
                 destination.WriteCompactByteArray(this.Metadata);

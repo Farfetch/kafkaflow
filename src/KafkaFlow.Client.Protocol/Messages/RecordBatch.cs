@@ -54,7 +54,7 @@ namespace KafkaFlow.Client.Protocol.Messages
             this.records.AddLast(record);
         }
 
-        public void Write(MemoryWriter destination)
+        void IRequest.Write(MemoryWriter destination)
         {
             // destination.WriteInt32(crcSliceLength + 8 + 4 + 4 + 1 + 4);
             var lengthStartPosition = destination.Position;
@@ -137,7 +137,7 @@ namespace KafkaFlow.Client.Protocol.Messages
 
             public Headers? Headers { get; set; }
 
-            public void Write(MemoryWriter destination)
+            void IRequest.Write(MemoryWriter destination)
             {
                 using var tmp = new MemoryWriter(256);
 

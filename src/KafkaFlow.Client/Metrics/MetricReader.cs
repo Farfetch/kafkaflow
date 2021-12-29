@@ -6,21 +6,20 @@ namespace KafkaFlow.Client.Metrics
     using KafkaFlow.Client.Exceptions;
     using KafkaFlow.Client.Protocol.Messages;
 
-    class MetricReader : IMetricReader
+    internal class MetricReader : IMetricReader
     {
-        private readonly IKafkaCluster Cluster;
+        private readonly IKafkaCluster cluster;
 
-        private readonly ConcurrentAsyncDictionary<string, IMetadataResponse.ITopic> metadataCache =
-            new();
+        private readonly ConcurrentAsyncDictionary<string, IMetadataResponse.ITopic> metadataCache = new();
 
         public MetricReader(IKafkaCluster cluster)
         {
-            this.Cluster = cluster;
+            this.cluster = cluster;
         }
 
         public async Task<long> GetLagAsync(string topic, string consumerGroup)
         {
-            await this.Cluster.EnsureInitializationAsync();
+            await this.cluster.EnsureInitializationAsync();
 
             var topicMetadata = await this.GetTopicMetadataAsync(topic);
             var partitions = topicMetadata.Partitions.Select(t => t.Id).ToArray();
@@ -37,10 +36,11 @@ namespace KafkaFlow.Client.Metrics
 
             return topicOffsets.Partitions
                 .Where(p => p.ErrorCode == (short)ErrorCode.None)
-                .Sum(p => p.Offset -
-                          (consumerGroupOffsets.ContainsKey(p.PartitionIndex) ?
-                              consumerGroupOffsets[p.PartitionIndex] :
-                              0));
+                .Sum(
+                    p => p.Offset -
+                         (consumerGroupOffsets.ContainsKey(p.PartitionIndex) ?
+                             consumerGroupOffsets[p.PartitionIndex] :
+                             0));
         }
 
         private ValueTask<IMetadataResponse.ITopic> GetTopicMetadataAsync(string topicName)
@@ -49,15 +49,13 @@ namespace KafkaFlow.Client.Metrics
                 topicName,
                 async () =>
                 {
-                    var host = this.Cluster.AnyBroker;
+                    var host = this.cluster.AnyBroker;
 
                     var requestFactory = await host.GetRequestFactoryAsync();
 
                     var request = requestFactory.CreateMetadata();
 
-                    var topic = request.CreateTopic();
-                    topic.Name = topicName;
-                    request.Topics = new[] { topic };
+                    request.AddTopic(topicName);
 
                     var metadata = await host.Connection.SendAsync(request).ConfigureAwait(false);
 
@@ -70,10 +68,12 @@ namespace KafkaFlow.Client.Metrics
                 });
         }
 
-        private async Task<IOffsetFetchResponse.ITopic> GetConsumerGroupOffsetsAsync(string topicName, int[] partitions,
+        private async Task<IOffsetFetchResponse.ITopic> GetConsumerGroupOffsetsAsync(
+            string topicName,
+            int[] partitions,
             string groupName)
         {
-            var host = this.Cluster.AnyBroker;
+            var host = this.cluster.AnyBroker;
 
             var requestFactory = await host.GetRequestFactoryAsync();
 
@@ -91,7 +91,7 @@ namespace KafkaFlow.Client.Metrics
 
         private async Task<IListOffsetsResponse.ITopic> GetTopicOffsetsAsync(string topicName, int[] partitions)
         {
-            var host = this.Cluster.AnyBroker;
+            var host = this.cluster.AnyBroker;
 
             var requestFactory = await host.GetRequestFactoryAsync();
 

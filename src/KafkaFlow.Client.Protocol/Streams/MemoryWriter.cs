@@ -6,23 +6,51 @@ namespace KafkaFlow.Client.Protocol.Streams
     using System.IO;
     using System.Runtime.CompilerServices;
 
-    public sealed class MemoryWriter : IDisposable
+    internal sealed class MemoryWriter : IDisposable
     {
-        private int currentSegment = 0;
-        private int relativePosition = 0;
-
         private readonly int segmentSize;
-
         private readonly List<byte[]> segments = new();
+
+        private int currentSegment;
+        private int relativePosition;
 
         public MemoryWriter(int segmentSize)
         {
             this.segmentSize = segmentSize;
         }
 
-        public MemoryWriter() : this(1024 * 8)
+        public MemoryWriter()
+            : this(1024 * 8)
         {
         }
+
+        public int Length { get; private set; }
+
+        public int Capacity { get; private set; }
+
+        public int Position
+        {
+            get => (this.segmentSize * this.currentSegment) + this.relativePosition;
+            set
+            {
+                if (value < 0 && value <= this.Capacity)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        nameof(this.Position),
+                        $"The {nameof(this.Position)} must be greater or equal 0 and less than Capacity");
+                }
+
+                if (value > this.Length)
+                {
+                    this.Length = value;
+                }
+
+                this.currentSegment = this.GetSegment(value);
+                this.relativePosition = this.GetRelativePosition(value);
+            }
+        }
+
+        public byte this[int index] => this.segments[this.GetSegment(index)][this.GetRelativePosition(index)];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(byte[] buffer, int offset, int count) => this.Write(new Span<byte>(buffer, offset, count));
@@ -202,7 +230,7 @@ namespace KafkaFlow.Client.Protocol.Streams
 
             var diff = capacity - this.Capacity;
 
-            var newSegmentsCount = (int) Math.Ceiling(diff / (double) this.segmentSize);
+            var newSegmentsCount = (int)Math.Ceiling(diff / (double)this.segmentSize);
             this.Capacity += newSegmentsCount * this.segmentSize;
 
             while (--newSegmentsCount >= 0)
@@ -212,37 +240,9 @@ namespace KafkaFlow.Client.Protocol.Streams
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetSegment(long globalPosition) => (int) Math.Floor(globalPosition / (double) this.segmentSize);
+        private int GetSegment(long globalPosition) => (int)Math.Floor(globalPosition / (double)this.segmentSize);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetRelativePosition(long globalPosition) => (int) (globalPosition % this.segmentSize);
-
-        public byte this[int index] => this.segments[this.GetSegment(index)][this.GetRelativePosition(index)];
-
-        public int Length { get; private set; }
-
-        public int Capacity { get; private set; }
-
-        public int Position
-        {
-            get => (this.segmentSize * this.currentSegment) + this.relativePosition;
-            set
-            {
-                if (value < 0 && value <= this.Capacity)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(this.Position),
-                        $"The {nameof(this.Position)} must be greater or equal 0 and less than Capacity");
-                }
-
-                if (value > this.Length)
-                {
-                    this.Length = value;
-                }
-
-                this.currentSegment = this.GetSegment(value);
-                this.relativePosition = this.GetRelativePosition(value);
-            }
-        }
+        private int GetRelativePosition(long globalPosition) => (int)(globalPosition % this.segmentSize);
     }
 }

@@ -3,7 +3,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.FindCoordinator
     using System;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class FindCoordinatorV3Request : IRequestMessage<FindCoordinatorV3Response>, ITaggedFields, IFindCoordinatorRequest
+    internal class FindCoordinatorV3Request : IRequestMessage<FindCoordinatorV3Response>, ITaggedFields, IFindCoordinatorRequest
     {
         public FindCoordinatorV3Request(string key, byte keyType)
         {
@@ -23,7 +23,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.FindCoordinator
 
         public TaggedField[] TaggedFields => Array.Empty<TaggedField>();
 
-        public void Write(MemoryWriter destination)
+        void IRequest.Write(MemoryWriter destination)
         {
             destination.WriteCompactString(this.Key);
             destination.WriteByte(this.KeyType);

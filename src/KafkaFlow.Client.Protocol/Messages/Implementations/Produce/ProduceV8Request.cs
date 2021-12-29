@@ -5,7 +5,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
     using System.Linq;
     using KafkaFlow.Client.Protocol.Streams;
 
-    public class ProduceV8Request : IProduceRequest
+    internal class ProduceV8Request : IProduceRequest
     {
         public ProduceV8Request(ProduceAcks acks, int timeout)
         {
@@ -19,7 +19,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 
         public Type ResponseType => typeof(ProduceV8Response);
 
-        public string? TransactionalId = null;
+        public string? TransactionalId => null;
 
         public ProduceAcks Acks { get; }
 
@@ -29,15 +29,15 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 
         public IProduceRequest.ITopic CreateTopic(string name) => new Topic(name);
 
-        public void Write(MemoryWriter destination)
+        void IRequest.Write(MemoryWriter destination)
         {
             destination.WriteString(this.TransactionalId);
-            destination.WriteInt16((short) this.Acks);
+            destination.WriteInt16((short)this.Acks);
             destination.WriteInt32(this.Timeout);
             destination.WriteArray(this.Topics.Select(x => x.Value), this.Topics.Count);
         }
 
-        public class Topic : IProduceRequest.ITopic
+        private class Topic : IProduceRequest.ITopic
         {
             public Topic(string name)
             {
@@ -51,14 +51,14 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 
             public IProduceRequest.IPartition CreatePartition(int id) => new Partition(id);
 
-            public void Write(MemoryWriter destination)
+            void IRequest.Write(MemoryWriter destination)
             {
                 destination.WriteString(this.Name);
                 destination.WriteArray(this.Partitions.Select(x => x.Value), this.Partitions.Count);
             }
         }
 
-        public class Partition : IProduceRequest.IPartition
+        private class Partition : IProduceRequest.IPartition
         {
             public Partition(int id)
             {
@@ -69,7 +69,7 @@ namespace KafkaFlow.Client.Protocol.Messages.Implementations.Produce
 
             public RecordBatch RecordBatch { get; set; } = new();
 
-            public void Write(MemoryWriter destination)
+            void IRequest.Write(MemoryWriter destination)
             {
                 destination.WriteInt32(this.Id);
                 destination.WriteMessage(this.RecordBatch);
