@@ -36,15 +36,15 @@ namespace KafkaFlow.Client.Protocol
             BrokerAddress address,
             string clientId,
             TimeSpan requestTimeout,
-            ISecurityProtocol securityProtocol)
+            ISecurityProtocol? securityProtocol = null)
         {
             this.Address = address;
             this.clientId = clientId;
             this.requestTimeout = requestTimeout;
-            this.securityProtocol = securityProtocol;
+            this.securityProtocol = securityProtocol ?? NullSecurityProtocol.Instance;
 
             this.client = new TcpClient(address.Host, address.Port);
-            this.stream = securityProtocol.CreateSecureStream(this.client.GetStream());
+            this.stream = this.securityProtocol.CreateSecureStream(this.client.GetStream());
             this.listenerTask = Task.Run(this.ListenStream);
         }
 
