@@ -6,9 +6,11 @@ namespace KafkaFlow.BatchConsume
     internal class BatchConsumeMessageContext : IMessageContext
     {
         public BatchConsumeMessageContext(
+            string clusterName,
             IConsumerContext consumer,
             IReadOnlyCollection<IMessageContext> batchMessage)
         {
+            this.ClusterName = clusterName;
             this.ConsumerContext = consumer;
             this.Message = new Message(null, batchMessage);
         }
@@ -16,6 +18,8 @@ namespace KafkaFlow.BatchConsume
         public Message Message { get; }
 
         public IMessageHeaders Headers { get; } = new MessageHeaders();
+
+        public string ClusterName { get; }
 
         public IConsumerContext ConsumerContext { get; }
 

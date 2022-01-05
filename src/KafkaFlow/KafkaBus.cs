@@ -20,15 +20,19 @@ namespace KafkaFlow
             IDependencyResolver dependencyResolver,
             KafkaConfiguration configuration,
             IConsumerManagerFactory consumerManagerFactory,
+            IClusterAccessor clusters,
             IConsumerAccessor consumers,
             IProducerAccessor producers)
         {
             this.dependencyResolver = dependencyResolver;
             this.configuration = configuration;
             this.consumerManagerFactory = consumerManagerFactory;
+            this.ClusterAccessor = clusters;
             this.Consumers = consumers;
             this.Producers = producers;
         }
+
+        public IClusterAccessor ClusterAccessor { get; }
 
         public IConsumerAccessor Consumers { get; }
 

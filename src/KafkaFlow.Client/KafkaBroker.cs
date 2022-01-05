@@ -10,44 +10,37 @@ namespace KafkaFlow.Client
 
     internal class KafkaBroker : IKafkaBroker
     {
-        private readonly Lazy<Task<IRequestFactory>> lazyRequestFactory;
+        private readonly Lazy<IRequestFactory> lazyRequestFactory;
 
         public KafkaBroker(
             BrokerAddress address,
-            int nodeId,
             string clientId,
             TimeSpan requestTimeout,
             ISecurityProtocol securityProtocol)
         {
-            this.Address = address;
-            this.NodeId = nodeId;
             this.Connection = new BrokerConnection(
                 address,
                 clientId,
                 requestTimeout,
                 securityProtocol);
 
-            this.lazyRequestFactory = new Lazy<Task<IRequestFactory>>(this.CreateRequestFactoryAsync);
+            this.lazyRequestFactory = new Lazy<IRequestFactory>(this.CreateRequestFactory);
         }
-
-        public BrokerAddress Address { get; }
-
-        public int NodeId { get; set; }
 
         public IBrokerConnection Connection { get; }
 
-        public Task<IRequestFactory> GetRequestFactoryAsync() => this.lazyRequestFactory.Value;
+        public IRequestFactory RequestFactory => this.lazyRequestFactory.Value;
 
         public async ValueTask DisposeAsync()
         {
             await this.Connection.DisposeAsync();
         }
 
-        private async Task<IRequestFactory> CreateRequestFactoryAsync()
+        private IRequestFactory CreateRequestFactory()
         {
             var factory = new RequestFactory();
 
-            var apiVersion = await this.Connection.SendAsync(factory.CreateApiVersion()).ConfigureAwait(false);
+            var apiVersion = this.Connection.SendAsync(factory.CreateApiVersion()).GetAwaiter().GetResult();
 
             if (apiVersion.Error != ErrorCode.None)
             {

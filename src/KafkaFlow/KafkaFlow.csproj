@@ -13,6 +13,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
+        <ProjectReference Include="..\KafkaFlow.Client\KafkaFlow.Client.csproj" />
     </ItemGroup>
 
     <ItemGroup>

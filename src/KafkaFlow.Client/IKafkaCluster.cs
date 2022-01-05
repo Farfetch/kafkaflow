@@ -1,14 +1,13 @@
 namespace KafkaFlow.Client
 {
     using System;
-    using System.Threading.Tasks;
+    using System.Collections.Generic;
+    using KafkaFlow.Client.Metadata;
 
     public interface IKafkaCluster : IAsyncDisposable
     {
-        IKafkaBroker AnyBroker { get; }
+        IReadOnlyDictionary<int, IKafkaBroker> Brokers { get; }
 
-        IKafkaBroker GetBroker(int hostId);
-
-        ValueTask EnsureInitializationAsync();
+        IMetadataClient MetadataClient { get; }
     }
 }

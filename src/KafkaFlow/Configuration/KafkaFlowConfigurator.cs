@@ -40,6 +40,7 @@ namespace KafkaFlow.Configuration
                 scope.Resolver,
                 this.configuration,
                 scope.Resolver.Resolve<IConsumerManagerFactory>(),
+                scope.Resolver.Resolve<IClusterAccessor>(),
                 scope.Resolver.Resolve<IConsumerAccessor>(),
                 scope.Resolver.Resolve<IProducerAccessor>());
         }

@@ -45,6 +45,7 @@ namespace KafkaFlow.Producers
                     new MessageContext(
                         new Message(messageKey, messageValue),
                         headers,
+                        this.configuration.Cluster.Name,
                         null,
                         new ProducerContext(topic, cancellationToken)),
                     async context =>
@@ -94,6 +95,7 @@ namespace KafkaFlow.Producers
                     new MessageContext(
                         new Message(messageKey, messageValue),
                         headers,
+                        this.configuration.Cluster.Name,
                         null,
                         new ProducerContext(topic, cancellationToken)),
                     context =>

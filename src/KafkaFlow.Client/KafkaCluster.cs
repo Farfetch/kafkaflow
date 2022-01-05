@@ -5,19 +5,21 @@ namespace KafkaFlow.Client
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using KafkaFlow.Client.Metadata;
     using KafkaFlow.Client.Protocol;
+    using KafkaFlow.Client.Protocol.Messages;
     using KafkaFlow.Client.Protocol.Security;
 
     public class KafkaCluster : IKafkaCluster
     {
+        private readonly Dictionary<int, IKafkaBroker> brokers = new();
+        private readonly SemaphoreSlim initializeSemaphore = new(1, 1);
+
         private readonly IReadOnlyCollection<BrokerAddress> addresses;
         private readonly string clientId;
         private readonly TimeSpan requestTimeout;
         private readonly ISecurityProtocol securityProtocol;
-
-        private readonly Dictionary<int, IKafkaBroker> brokers = new();
-
-        private readonly SemaphoreSlim initializeSemaphore = new(1, 1);
+        private readonly Lazy<IMetadataClient> metadataClient;
 
         public KafkaCluster(
             IReadOnlyCollection<BrokerAddress> addresses,
@@ -29,73 +31,70 @@ namespace KafkaFlow.Client
             this.clientId = clientId;
             this.requestTimeout = requestTimeout ?? TimeSpan.FromSeconds(30);
             this.securityProtocol = securityProtocol ?? NullSecurityProtocol.Instance;
+            this.metadataClient = new Lazy<IMetadataClient>(() => new MetadataClient(this));
         }
 
-        public IKafkaBroker AnyBroker => this.brokers.Values.First();
+        public IReadOnlyDictionary<int, IKafkaBroker> Brokers
+        {
+            get
+            {
+                this.EnsureInitialization();
+                return this.brokers;
+            }
+        }
 
-        public IKafkaBroker GetBroker(int hostId) =>
-            this.brokers.TryGetValue(hostId, out var host) ?
-                host :
-                throw new InvalidOperationException($"There os no host with id {hostId}");
+        public IMetadataClient MetadataClient => this.metadataClient.Value;
 
-        public async ValueTask EnsureInitializationAsync()
+        /// <inheritdoc />>
+        public async ValueTask DisposeAsync()
+        {
+            this.initializeSemaphore.Dispose();
+            await Task.WhenAll(this.brokers.Select(b => b.Value.DisposeAsync().AsTask()));
+        }
+
+        private void EnsureInitialization()
         {
             if (this.brokers.Any())
             {
                 return;
             }
 
-            await this.initializeSemaphore.WaitAsync().ConfigureAwait(false);
-
-            try
+            lock (this.brokers)
             {
                 if (this.brokers.Any())
                 {
                     return;
                 }
 
-                var firstBroker = new KafkaBroker(
-                    this.addresses.First(),
-                    0,
-                    this.clientId,
-                    this.requestTimeout,
-                    this.securityProtocol);
-
-                this.brokers.TryAdd(firstBroker.NodeId, firstBroker);
-
-                var requestFactory = await firstBroker.GetRequestFactoryAsync();
-
-                var metadata = await firstBroker
-                    .Connection
-                    .SendAsync(requestFactory.CreateMetadata())
-                    .ConfigureAwait(false);
-
-                firstBroker.NodeId = metadata
-                    .Brokers
-                    .First(b => b.Host == firstBroker.Address.Host && b.Port == firstBroker.Address.Port)
-                    .NodeId;
+                var metadata = this.GetClusterMetadataAsync().GetAwaiter().GetResult();
 
                 foreach (var broker in metadata.Brokers)
                 {
-                    this.brokers.TryAdd(
+                    this.brokers.Add(
                         broker.NodeId,
                         new KafkaBroker(
                             new BrokerAddress(broker.Host, broker.Port),
-                            broker.NodeId,
                             this.clientId,
                             this.requestTimeout,
                             this.securityProtocol));
                 }
             }
-            finally
-            {
-                this.initializeSemaphore.Release();
-            }
         }
 
-        public async ValueTask DisposeAsync()
+        private async Task<IMetadataResponse> GetClusterMetadataAsync()
         {
-            await Task.WhenAll(this.brokers.Select(b => b.Value.DisposeAsync().AsTask()));
+            await using var broker = new KafkaBroker(
+                this.addresses.First(),
+                this.clientId,
+                this.requestTimeout,
+                this.securityProtocol);
+
+            var metadata = await broker
+                .Connection
+                .SendAsync(broker.RequestFactory.CreateMetadata())
+                .ConfigureAwait(false);
+
+            return metadata;
         }
     }
 }
