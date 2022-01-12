@@ -64,7 +64,6 @@ namespace KafkaFlow.Consumers
                             var context = new MessageContext(
                                 new Message(message.Message.Key, message.Message.Value),
                                 new MessageHeaders(message.Message.Headers),
-                                this.consumer.Configuration.ClusterConfiguration.Name,
                                 new ConsumerContext(
                                     this.consumer,
                                     this.offsetManager,

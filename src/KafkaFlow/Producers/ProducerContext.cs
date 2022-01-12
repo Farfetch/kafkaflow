@@ -4,11 +4,14 @@ namespace KafkaFlow.Producers
 
     internal class ProducerContext : IProducerContext
     {
-        public ProducerContext(string topic, CancellationToken clientStopped)
+        public ProducerContext(string producerName, string topic, CancellationToken clientStopped)
         {
+            this.ProducerName = producerName;
             this.Topic = topic;
             this.ClientStopped = clientStopped;
         }
+
+        public string ProducerName { get; }
 
         public string Topic { get; }
 

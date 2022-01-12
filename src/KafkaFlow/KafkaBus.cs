@@ -15,6 +15,7 @@ namespace KafkaFlow
         private readonly IConsumerManagerFactory consumerManagerFactory;
 
         private readonly List<IConsumerManager> consumerManagers = new();
+        private readonly CancellationTokenSource stopCancellationTokenSource = new();
 
         public KafkaBus(
             IDependencyResolver dependencyResolver,
@@ -27,22 +28,24 @@ namespace KafkaFlow
             this.dependencyResolver = dependencyResolver;
             this.configuration = configuration;
             this.consumerManagerFactory = consumerManagerFactory;
-            this.ClusterAccessor = clusters;
+            this.Clusters = clusters;
             this.Consumers = consumers;
             this.Producers = producers;
+
+            this.stopCancellationTokenSource.Token.Register(() => this.InternalStopAsync().GetAwaiter().GetResult());
         }
 
-        public IClusterAccessor ClusterAccessor { get; }
+        public IClusterAccessor Clusters { get; }
 
         public IConsumerAccessor Consumers { get; }
 
         public IProducerAccessor Producers { get; }
 
+        public CancellationToken BusStopping => this.stopCancellationTokenSource.Token;
+
         public async Task StartAsync(CancellationToken stopCancellationToken = default)
         {
-            var stopTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stopCancellationToken);
-
-            stopTokenSource.Token.Register(() => this.StopAsync().GetAwaiter().GetResult());
+            stopCancellationToken.Register(() => this.stopCancellationTokenSource.Cancel());
 
             foreach (var cluster in this.configuration.Clusters)
             {
@@ -66,6 +69,13 @@ namespace KafkaFlow
         }
 
         public Task StopAsync()
+        {
+            this.stopCancellationTokenSource.Cancel();
+            this.stopCancellationTokenSource.Token.WaitHandle.WaitOne();
+            return Task.CompletedTask;
+        }
+
+        private Task InternalStopAsync()
         {
             foreach (var cluster in this.configuration.Clusters)
             {

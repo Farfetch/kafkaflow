@@ -28,11 +28,6 @@ namespace KafkaFlow
         IProducerContext ProducerContext { get; }
 
         /// <summary>
-        /// Gets the cluster name from the current context
-        /// </summary>
-        string ClusterName { get; }
-
-        /// <summary>
         /// Creates a new <see cref="IMessageContext"/> with the new message
         /// </summary>
         /// <param name="key">The new message key</param>

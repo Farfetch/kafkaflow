@@ -8,6 +8,11 @@ namespace KafkaFlow
     public interface IProducerContext
     {
         /// <summary>
+        /// Gets the producer name
+        /// </summary>
+        public string ProducerName { get; }
+
+        /// <summary>
         /// Gets the topic associated with the message
         /// </summary>
         string Topic { get; }

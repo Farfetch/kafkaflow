@@ -18,7 +18,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IProducerConfigurationBuilder WithProducerConfig(this IProducerConfigurationBuilder builder, ProducerConfig config)
         {
-            return ((ProducerConfigurationBuilder) builder).WithProducerConfig(config);
+            return ((ProducerConfigurationBuilder)builder).WithProducerConfig(config);
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace KafkaFlow
             CompressionType compressionType,
             int? compressionLevel = null)
         {
-            return ((ProducerConfigurationBuilder) builder).WithCompression(compressionType, compressionLevel);
+            return ((ProducerConfigurationBuilder)builder).WithCompression(compressionType, compressionLevel);
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IConsumerConfigurationBuilder WithConsumerConfig(this IConsumerConfigurationBuilder builder, ConsumerConfig config)
         {
-            return ((ConsumerConfigurationBuilder) builder).WithConsumerConfig(config);
+            return ((ConsumerConfigurationBuilder)builder).WithConsumerConfig(config);
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace KafkaFlow
             this IConsumerConfigurationBuilder builder,
             ConsumerCustomFactory decoratorFactory)
         {
-            return ((ConsumerConfigurationBuilder) builder).WithCustomFactory(decoratorFactory);
+            return ((ConsumerConfigurationBuilder)builder).WithCustomFactory(decoratorFactory);
         }
 
         /// <summary>
@@ -118,7 +118,71 @@ namespace KafkaFlow
             this IProducerConfigurationBuilder builder,
             ProducerCustomFactory decoratorFactory)
         {
-            return ((ProducerConfigurationBuilder) builder).WithCustomFactory(decoratorFactory);
+            return ((ProducerConfigurationBuilder)builder).WithCustomFactory(decoratorFactory);
+        }
+
+        /// <summary>
+        /// Registers a middleware
+        /// </summary>
+        /// <param name="builder">The middleware builder</param>
+        /// <param name="factory">A factory to create the instance</param>
+        /// <param name="lifetime">The middleware instance lifetime</param>
+        /// <typeparam name="T">A class that implements the <see cref="IMessageMiddleware"/></typeparam>
+        public static IProducerMiddlewareConfigurationBuilder Add<T>(
+            this IProducerMiddlewareConfigurationBuilder builder,
+            Func<IDependencyResolver, IProducerConfiguration, T> factory,
+            MiddlewareLifetime lifetime = MiddlewareLifetime.ConsumerOrProducer)
+            where T : class, IMessageMiddleware
+        {
+            return ((ProducerMiddlewareConfigurationBuilder)builder).Add(factory, lifetime);
+        }
+
+        /// <summary>
+        /// Registers a middleware at the beginning
+        /// </summary>
+        /// <param name="builder">The middleware builder</param>
+        /// <param name="factory">A factory to create the instance</param>
+        /// <param name="lifetime">The middleware instance lifetime</param>
+        /// <typeparam name="T">A class that implements the <see cref="IMessageMiddleware"/></typeparam>
+        public static IProducerMiddlewareConfigurationBuilder AddAtBeginning<T>(
+            this IProducerMiddlewareConfigurationBuilder builder,
+            Func<IDependencyResolver, IProducerConfiguration, T> factory,
+            MiddlewareLifetime lifetime = MiddlewareLifetime.ConsumerOrProducer)
+            where T : class, IMessageMiddleware
+        {
+            return ((ProducerMiddlewareConfigurationBuilder)builder).AddAtBeginning(factory, lifetime);
+        }
+
+        /// <summary>
+        /// Registers a middleware
+        /// </summary>
+        /// <param name="builder">The middleware builder</param>
+        /// <param name="factory">A factory to create the instance</param>
+        /// <param name="lifetime">The middleware instance lifetime</param>
+        /// <typeparam name="T">A class that implements the <see cref="IMessageMiddleware"/></typeparam>
+        public static IConsumerMiddlewareConfigurationBuilder Add<T>(
+            this IConsumerMiddlewareConfigurationBuilder builder,
+            Func<IDependencyResolver, IConsumerConfiguration, T> factory,
+            MiddlewareLifetime lifetime = MiddlewareLifetime.ConsumerOrProducer)
+            where T : class, IMessageMiddleware
+        {
+            return ((ConsumerMiddlewareConfigurationBuilder)builder).Add(factory, lifetime);
+        }
+
+        /// <summary>
+        /// Registers a middleware at the beginning
+        /// </summary>
+        /// <param name="builder">The middleware builder</param>
+        /// <param name="factory">A factory to create the instance</param>
+        /// <param name="lifetime">The middleware instance lifetime</param>
+        /// <typeparam name="T">A class that implements the <see cref="IMessageMiddleware"/></typeparam>
+        public static IConsumerMiddlewareConfigurationBuilder AddAtBeginning<T>(
+            this IConsumerMiddlewareConfigurationBuilder builder,
+            Func<IDependencyResolver, IConsumerConfiguration, T> factory,
+            MiddlewareLifetime lifetime = MiddlewareLifetime.ConsumerOrProducer)
+            where T : class, IMessageMiddleware
+        {
+            return ((ConsumerMiddlewareConfigurationBuilder)builder).AddAtBeginning(factory, lifetime);
         }
     }
 }

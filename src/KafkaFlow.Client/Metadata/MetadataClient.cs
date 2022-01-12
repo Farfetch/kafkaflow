@@ -60,7 +60,7 @@ namespace KafkaFlow.Client.Metadata
                     .ToList());
         }
 
-        public async Task<TopicLagInfo> GetTopicLag(string topic, IReadOnlyCollection<string> consumerGroups)
+        public async Task<TopicLagInfo> GetTopicLagAsync(string topic, IReadOnlyCollection<string> consumerGroups)
         {
             var broker = this.cluster.Brokers.Values.First();
 

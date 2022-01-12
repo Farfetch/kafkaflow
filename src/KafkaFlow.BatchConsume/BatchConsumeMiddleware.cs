@@ -53,10 +53,7 @@
 
             try
             {
-                var batchContext = new BatchConsumeMessageContext(
-                    context.ClusterName,
-                    context.ConsumerContext,
-                    localBatch);
+                var batchContext = new BatchConsumeMessageContext(context.ConsumerContext, localBatch);
 
                 await next(batchContext).ConfigureAwait(false);
             }

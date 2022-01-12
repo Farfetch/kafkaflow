@@ -7,6 +7,6 @@ namespace KafkaFlow.Client.Metadata
     {
         Task<ConsumerGroupLagInfo> GetConsumerGroupLagAsync(string consumerGroup, IEnumerable<string> topics);
 
-        Task<TopicLagInfo> GetTopicLag(string topic, IReadOnlyCollection<string> consumerGroups);
+        Task<TopicLagInfo> GetTopicLagAsync(string topic, IReadOnlyCollection<string> consumerGroups);
     }
 }

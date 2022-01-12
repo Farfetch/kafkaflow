@@ -29,14 +29,7 @@ namespace KafkaFlow.Configuration
 
             configuration.AddClusters(this.clusters.Select(x => x.Build(configuration)));
 
-            this.dependencyConfigurator.AddSingleton<IProducerAccessor>(
-                resolver => new ProducerAccessor(
-                    configuration.Clusters
-                        .SelectMany(x => x.Producers)
-                        .Select(
-                            producer => new MessageProducer(
-                                resolver,
-                                producer))));
+            this.BuildProducers(configuration);
 
             IClusterAccessor clusterAccessor = new ClusterAccessor();
 
@@ -60,6 +53,21 @@ namespace KafkaFlow.Configuration
                 .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory());
 
             return configuration;
+        }
+
+        private void BuildProducers(KafkaConfiguration configuration)
+        {
+            this.dependencyConfigurator.AddSingleton<IProducerAccessor>(
+                resolver => new ProducerAccessor(
+                    configuration.Clusters
+                        .SelectMany(x => x.Producers)
+                        .Select(
+                            producer => new MessageProducer(
+                                resolver,
+                                producer,
+                                resolver
+                                    .Resolve<IClusterAccessor>()
+                                    .GetCluster(producer.Cluster.Name)))));
         }
 
         public IKafkaConfigurationBuilder AddCluster(Action<IClusterConfigurationBuilder> cluster)

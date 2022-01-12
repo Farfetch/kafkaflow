@@ -4,6 +4,7 @@ namespace KafkaFlow
     using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
+    using KafkaFlow.Client;
 
     /// <summary>
     /// Provides access to the kafka message producer
@@ -22,6 +23,11 @@ namespace KafkaFlow
         /// Gets the unique producer's name defined in the configuration
         /// </summary>
         string ProducerName { get; }
+
+        /// <summary>
+        /// Gets the producer cluster
+        /// </summary>
+        IKafkaCluster Cluster { get; }
 
         /// <summary>
         /// Produces a new message

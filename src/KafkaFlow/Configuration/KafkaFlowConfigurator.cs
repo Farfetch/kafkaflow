@@ -9,8 +9,6 @@ namespace KafkaFlow.Configuration
     /// </summary>
     public class KafkaFlowConfigurator
     {
-        private readonly KafkaConfiguration configuration;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="KafkaFlowConfigurator"/> class.
         /// </summary>
@@ -24,7 +22,16 @@ namespace KafkaFlow.Configuration
 
             kafka(builder);
 
-            this.configuration = builder.Build();
+            var configuration = builder.Build();
+
+            dependencyConfigurator.AddSingleton<IKafkaBus>(
+                resolver => new KafkaBus(
+                    resolver,
+                    configuration,
+                    resolver.Resolve<IConsumerManagerFactory>(),
+                    resolver.Resolve<IClusterAccessor>(),
+                    resolver.Resolve<IConsumerAccessor>(),
+                    resolver.Resolve<IProducerAccessor>()));
         }
 
         /// <summary>
@@ -36,13 +43,7 @@ namespace KafkaFlow.Configuration
         {
             var scope = resolver.CreateScope();
 
-            return new KafkaBus(
-                scope.Resolver,
-                this.configuration,
-                scope.Resolver.Resolve<IConsumerManagerFactory>(),
-                scope.Resolver.Resolve<IClusterAccessor>(),
-                scope.Resolver.Resolve<IConsumerAccessor>(),
-                scope.Resolver.Resolve<IProducerAccessor>());
+            return scope.Resolver.Resolve<IKafkaBus>();
         }
     }
 }

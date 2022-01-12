@@ -4,6 +4,7 @@ namespace KafkaFlow.Producers
     using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
+    using KafkaFlow.Client;
 
     internal class MessageProducerWrapper<TProducer> : IMessageProducer<TProducer>
     {
@@ -15,6 +16,8 @@ namespace KafkaFlow.Producers
         }
 
         public string ProducerName => this.producer.ProducerName;
+
+        public IKafkaCluster Cluster => this.producer.Cluster;
 
         public Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
             string topic,

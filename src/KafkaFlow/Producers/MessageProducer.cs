@@ -5,13 +5,14 @@ namespace KafkaFlow.Producers
     using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
+    using KafkaFlow.Client;
     using KafkaFlow.Configuration;
 
     internal class MessageProducer : IMessageProducer, IDisposable
     {
         private readonly IDependencyResolver dependencyResolver;
         private readonly IProducerConfiguration configuration;
-        private readonly MiddlewareExecutor middlewareExecutor;
+        private readonly IMiddlewareExecutor middlewareExecutor;
 
         private readonly object producerCreationSync = new();
 
@@ -19,14 +20,20 @@ namespace KafkaFlow.Producers
 
         public MessageProducer(
             IDependencyResolver dependencyResolver,
-            IProducerConfiguration configuration)
+            IProducerConfiguration configuration,
+            IKafkaCluster cluster)
         {
+            this.Cluster = cluster;
             this.dependencyResolver = dependencyResolver;
             this.configuration = configuration;
-            this.middlewareExecutor = new MiddlewareExecutor(configuration.MiddlewaresConfigurations);
+            this.middlewareExecutor = new MiddlewareExecutor<IProducerConfiguration>(
+                configuration.MiddlewaresConfigurations,
+                configuration);
         }
 
         public string ProducerName => this.configuration.Name;
+
+        public IKafkaCluster Cluster { get; }
 
         public async Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
             string topic,
@@ -45,9 +52,8 @@ namespace KafkaFlow.Producers
                     new MessageContext(
                         new Message(messageKey, messageValue),
                         headers,
-                        this.configuration.Cluster.Name,
                         null,
-                        new ProducerContext(topic, cancellationToken)),
+                        new ProducerContext(this.ProducerName, topic, cancellationToken)),
                     async context =>
                     {
                         report = await this
@@ -95,9 +101,8 @@ namespace KafkaFlow.Producers
                     new MessageContext(
                         new Message(messageKey, messageValue),
                         headers,
-                        this.configuration.Cluster.Name,
                         null,
-                        new ProducerContext(topic, cancellationToken)),
+                        new ProducerContext(this.ProducerName, topic, cancellationToken)),
                     context =>
                     {
                         var completionSource = new TaskCompletionSource<byte>();
@@ -152,7 +157,7 @@ namespace KafkaFlow.Producers
 
         private static void FillContextWithResultMetadata(IMessageContext context, DeliveryResult<byte[], byte[]> result)
         {
-            var concreteProducerContext = (ProducerContext) context.ProducerContext;
+            var concreteProducerContext = (ProducerContext)context.ProducerContext;
 
             concreteProducerContext.Offset = result.Offset;
             concreteProducerContext.Partition = result.Partition;
@@ -180,7 +185,7 @@ namespace KafkaFlow.Producers
             {
                 Key = key,
                 Value = value,
-                Headers = ((MessageHeaders) context.Headers).GetKafkaHeaders(),
+                Headers = ((MessageHeaders)context.Headers).GetKafkaHeaders(),
                 Timestamp = Timestamp.Default,
             };
         }

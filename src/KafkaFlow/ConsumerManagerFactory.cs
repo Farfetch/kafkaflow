@@ -15,7 +15,7 @@ namespace KafkaFlow
             var consumerWorkerPool = new ConsumerWorkerPool(
                 consumer,
                 resolver,
-                new MiddlewareExecutor(configuration.MiddlewaresConfigurations),
+                new MiddlewareExecutor<IConsumerConfiguration>(configuration.MiddlewaresConfigurations, configuration),
                 configuration,
                 logHandler);
 

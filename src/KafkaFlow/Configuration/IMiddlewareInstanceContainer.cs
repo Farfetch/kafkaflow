@@ -2,10 +2,10 @@ namespace KafkaFlow.Configuration
 {
     using System;
 
-    internal interface IMiddlewareInstanceContainer
+    internal interface IMiddlewareInstanceContainer<in TConfiguration>
     {
         Guid Id { get; }
 
-        IMessageMiddleware GetInstance(IDependencyResolver resolver);
+        IMessageMiddleware GetInstance(IDependencyResolver resolver, TConfiguration configuration);
     }
 }
