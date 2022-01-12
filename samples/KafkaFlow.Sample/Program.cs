@@ -64,20 +64,18 @@
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .WithPendingOffsetsStatisticsHandler(
                                         (resolver, offsets) =>
-                                            resolver.Resolve<ILogHandler>()
-                                                .Info(
-                                                    "Offsets pending to be committed",
-                                                    new
-                                                    {
-                                                        Offsets = offsets.Select(
-                                                            o =>
-                                                                new
-                                                                {
-                                                                    Partition = o.Partition.Value,
-                                                                    Offset = o.Offset.Value,
-                                                                    o.Topic
-                                                                })
-                                                    }),
+                                            resolver.Resolve<ILogHandler>().Info(
+                                                "Offsets pending to be committed",
+                                                new
+                                                {
+                                                    Offsets = offsets.Select(o =>
+                                                        new
+                                                        {
+                                                            Partition = o.Partition.Value,
+                                                            Offset = o.Offset.Value,
+                                                            o.Topic
+                                                        })
+                                                }),
                                         new TimeSpan(0, 0, 1))
                                     .AddMiddlewares(
                                         middlewares => middlewares

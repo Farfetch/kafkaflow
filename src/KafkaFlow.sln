@@ -81,6 +81,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample.BatchOpera
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample.ProducerThrottling", "..\samples\KafkaFlow.Sample.ProducerThrottling\KafkaFlow.Sample.ProducerThrottling.csproj", "{BCC8B269-4365-4924-9E24-B670B8A71CE3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample.FlowControl", "..\samples\KafkaFlow.Sample.FlowControl\KafkaFlow.Sample.FlowControl.csproj", "{7B61C99E-3AEB-4497-8A38-F780CB309130}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deploy", "Deploy", "{4A6A390C-A63A-4371-86BB-28481AD6D4C0}"
+ProjectSection(SolutionItems) = preProject
+	..\.github\workflows\build.yml = ..\.github\workflows\build.yml
+	..\.github\workflows\publish.yml = ..\.github\workflows\publish.yml
+EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -207,6 +215,10 @@ Global
 		{BCC8B269-4365-4924-9E24-B670B8A71CE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCC8B269-4365-4924-9E24-B670B8A71CE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCC8B269-4365-4924-9E24-B670B8A71CE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B61C99E-3AEB-4497-8A38-F780CB309130}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B61C99E-3AEB-4497-8A38-F780CB309130}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B61C99E-3AEB-4497-8A38-F780CB309130}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B61C99E-3AEB-4497-8A38-F780CB309130}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -244,6 +256,7 @@ Global
 		{041A62E1-D7C4-4900-9253-7885B7EDC5DB} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 		{BCC8B269-4365-4924-9E24-B670B8A71CE3} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 		{D20C61A8-6B47-4768-B18B-5897F2DCAED9} = {068CB250-2804-4C7E-9490-17F432B9CE21}
+		{7B61C99E-3AEB-4497-8A38-F780CB309130} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AE955B5-16B0-41CF-9F12-66D15B3DD1AB}

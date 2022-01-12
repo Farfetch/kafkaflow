@@ -4,6 +4,7 @@ namespace KafkaFlow.Admin.Handlers
     using System.Linq;
     using System.Threading.Tasks;
     using Confluent.Kafka;
+    using KafkaFlow.Admin.Extensions;
     using KafkaFlow.Admin.Messages;
     using KafkaFlow.Consumers;
     using KafkaFlow.TypedHandler;
@@ -24,12 +25,14 @@ namespace KafkaFlow.Admin.Handlers
             }
 
             var offsets = consumer.GetOffsets(
-                consumer.Assignment.Select(
-                    partition =>
-                        new TopicPartitionTimestamp(partition, new Timestamp(new DateTime(1990, 1, 1)))),
-                TimeSpan.FromSeconds(30));
+                consumer
+                    .FilterAssigment(message.Topics)
+                    .Select(partition => new TopicPartitionTimestamp(partition, new Timestamp(new DateTime(1990, 1, 1)))),
+                TimeSpan.FromSeconds(10));
 
-            return consumer.OverrideOffsetsAndRestartAsync(offsets);
+            return offsets?.Any() == true ?
+                consumer.OverrideOffsetsAndRestartAsync(offsets) :
+                Task.CompletedTask;
         }
     }
 }

@@ -22,7 +22,7 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Gets the consumer configured topics
         /// </summary>
-        IEnumerable<string> Topics { get; }
+        IReadOnlyList<string> Topics { get; }
 
         /// <summary>
         /// Gets the consumer name
@@ -88,6 +88,11 @@ namespace KafkaFlow.Configuration
         /// Gets the custom factory used to create a new <see cref="KafkaFlow.Consumers.IConsumer"/>
         /// </summary>
         ConsumerCustomFactory CustomFactory { get; }
+
+        /// <summary>
+        /// Gets the consumer initial state
+        /// </summary>
+        ConsumerInitialState InitialState { get; }
 
         /// <summary>
         /// Parses KafkaFlow configuration to Confluent configuration

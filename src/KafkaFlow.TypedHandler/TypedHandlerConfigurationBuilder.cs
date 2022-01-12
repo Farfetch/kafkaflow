@@ -13,6 +13,7 @@ namespace KafkaFlow.TypedHandler
         private readonly IDependencyConfigurator dependencyConfigurator;
         private readonly List<Type> handlers = new();
 
+        private Action<IMessageContext> onNoHandlerFound = (_) => { };
         private InstanceLifetime serviceLifetime = InstanceLifetime.Singleton;
 
         /// <summary>
@@ -29,7 +30,8 @@ namespace KafkaFlow.TypedHandler
         /// </summary>
         /// <typeparam name="T">A type that implements the <see cref="IMessageHandler{TMessage}"/> interface</typeparam>
         /// <returns></returns>
-        public TypedHandlerConfigurationBuilder AddHandlersFromAssemblyOf<T>() => this.AddHandlersFromAssemblyOf(typeof(T));
+        public TypedHandlerConfigurationBuilder AddHandlersFromAssemblyOf<T>() =>
+            this.AddHandlersFromAssemblyOf(typeof(T));
 
         /// <summary>
         /// Adds all classes that implements the <see cref="IMessageHandler{TMessage}"/> interface from the assemblies of the provided types
@@ -71,6 +73,17 @@ namespace KafkaFlow.TypedHandler
         }
 
         /// <summary>
+        /// Register the action to be executed when no handler was found to process the message
+        /// </summary>
+        /// <param name="handler">The handler that will be executed</param>
+        /// <returns></returns>
+        public TypedHandlerConfigurationBuilder WhenNoHandlerFound(Action<IMessageContext> handler)
+        {
+            this.onNoHandlerFound = handler;
+            return this;
+        }
+
+        /// <summary>
         /// Set the handler lifetime. The default value is <see cref="InstanceLifetime.Singleton"/>
         /// </summary>
         /// <param name="lifetime">The <see cref="InstanceLifetime"/> enum value</param>
@@ -83,7 +96,10 @@ namespace KafkaFlow.TypedHandler
 
         internal TypedHandlerConfiguration Build()
         {
-            var configuration = new TypedHandlerConfiguration();
+            var configuration = new TypedHandlerConfiguration
+            {
+                OnNoHandlerFound = this.onNoHandlerFound,
+            };
 
             foreach (var handlerType in this.handlers)
             {

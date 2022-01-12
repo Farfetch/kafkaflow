@@ -1,6 +1,8 @@
 namespace KafkaFlow.Admin.Handlers
 {
+    using System.Linq;
     using System.Threading.Tasks;
+    using KafkaFlow.Admin.Extensions;
     using KafkaFlow.Admin.Messages;
     using KafkaFlow.Consumers;
     using KafkaFlow.TypedHandler;
@@ -15,7 +17,12 @@ namespace KafkaFlow.Admin.Handlers
         {
             var consumer = this.consumerAccessor[message.ConsumerName];
 
-            consumer?.Resume(consumer.Assignment);
+            var assignment = consumer.FilterAssigment(message.Topics);
+
+            if (assignment.Any())
+            {
+                consumer?.Resume(assignment);
+            }
 
             return Task.CompletedTask;
         }

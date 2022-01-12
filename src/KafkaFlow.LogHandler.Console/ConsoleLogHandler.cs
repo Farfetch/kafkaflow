@@ -20,13 +20,17 @@
                 ConsoleColor.Red);
         }
 
+        public void Warning(string message, object data) => Print(
+            $"\nKafkaFlow: {message} | Data: {JsonSerializer.Serialize(data)}",
+            ConsoleColor.Yellow);
+
         public void Info(string message, object data) => Print(
             $"\nKafkaFlow: {message} | Data: {JsonSerializer.Serialize(data)}",
             ConsoleColor.Green);
 
-        public void Warning(string message, object data) => Print(
+        public void Verbose(string message, object data) => Print(
             $"\nKafkaFlow: {message} | Data: {JsonSerializer.Serialize(data)}",
-            ConsoleColor.Yellow);
+            ConsoleColor.Blue);
 
         private static void Print(string message, ConsoleColor color)
         {

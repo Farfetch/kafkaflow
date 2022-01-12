@@ -1,5 +1,6 @@
 namespace KafkaFlow.Admin.WebApi.Controllers
 {
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using KafkaFlow.Admin.Messages;
@@ -55,16 +56,20 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// Pause all consumers from a specific group
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
+        /// <param name="topics">List of topics</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
         [Route("{groupId}/pause", Name=nameof(PauseGroup))]
         [ProducesResponseType(202)]
-        public async Task<IActionResult> PauseGroup([FromRoute] string groupId)
+        public async Task<IActionResult> PauseGroup(
+            [FromRoute] string groupId,
+            [FromQuery] IList<string> topics)
         {
             await this.adminProducer.ProduceAsync(
                 new PauseConsumersByGroup
                 {
                     GroupId = groupId,
+                    Topics = topics,
                 });
 
             return this.Accepted();
@@ -74,16 +79,20 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// Resume all consumers from a specific group
         /// </summary>
         /// <param name="groupId">Identifier of the group</param>
+        /// <param name="topics">List of topics</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
         [Route("{groupId}/resume", Name=nameof(ResumeGroup))]
         [ProducesResponseType(202)]
-        public async Task<IActionResult> ResumeGroup([FromRoute] string groupId)
+        public async Task<IActionResult> ResumeGroup(
+            [FromRoute] string groupId,
+            [FromQuery] IList<string> topics)
         {
             await this.adminProducer.ProduceAsync(
                 new ResumeConsumersByGroup
                 {
                     GroupId = groupId,
+                    Topics = topics,
                 });
 
             return this.Accepted();

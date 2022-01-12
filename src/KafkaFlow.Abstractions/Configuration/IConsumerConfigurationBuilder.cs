@@ -120,6 +120,13 @@ namespace KafkaFlow.Configuration
         IConsumerConfigurationBuilder WithManualStoreOffsets();
 
         /// <summary>
+        /// Configures the consumer initial state.The default is <see cref="ConsumerInitialState.Running"/>
+        /// </summary>
+        /// <param name="state">The consumer state</param>
+        /// <returns></returns>
+        IConsumerConfigurationBuilder WithInitialState(ConsumerInitialState state);
+
+        /// <summary>
         /// Adds middlewares to the consumer. The middlewares will be executed in the registration order
         /// </summary>
         /// <param name="middlewares">A handler to register middlewares</param>

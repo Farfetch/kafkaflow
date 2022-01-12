@@ -29,6 +29,8 @@ namespace KafkaFlow.Consumers
 
         public string GroupId => this.consumerManager.Consumer.Configuration.GroupId;
 
+        public IReadOnlyList<string> Topics => this.consumerManager.Consumer.Configuration.Topics;
+
         public IReadOnlyList<string> Subscription => this.consumerManager.Consumer.Subscription;
 
         public IReadOnlyList<TopicPartition> Assignment => this.consumerManager.Consumer.Assignment ?? EmptyTopicPartition;
@@ -47,10 +49,28 @@ namespace KafkaFlow.Consumers
 
         public IEnumerable<TopicPartition> RunningPartitions => this.Assignment.Except(this.PausedPartitions);
 
+        public async Task StartAsync()
+        {
+            await this.consumerManager.StartAsync().ConfigureAwait(false);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was manually started", null);
+        }
+
+        public async Task StopAsync()
+        {
+            await this.consumerManager.StopAsync().ConfigureAwait(false);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was manually stopped", null);
+        }
+
+        public async Task RestartAsync()
+        {
+            await this.InternalRestart().ConfigureAwait(false);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was manually restarted", null);
+        }
+
         public void Pause(IReadOnlyCollection<TopicPartition> topicPartitions)
         {
             this.consumerManager.Consumer.FlowManager.Pause(topicPartitions);
-            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was paused", null);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was paused", topicPartitions);
         }
 
         public void Pause()
@@ -62,7 +82,7 @@ namespace KafkaFlow.Consumers
         public void Resume(IReadOnlyCollection<TopicPartition> topicPartitions)
         {
             this.consumerManager.Consumer.FlowManager.Resume(topicPartitions);
-            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was resumed", null);
+            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was resumed", topicPartitions);
         }
 
         public void Resume()
@@ -90,11 +110,6 @@ namespace KafkaFlow.Consumers
 
         public async Task OverrideOffsetsAndRestartAsync(IReadOnlyCollection<TopicPartitionOffset> offsets)
         {
-            if (offsets is null)
-            {
-                throw new ArgumentNullException(nameof(offsets));
-            }
-
             try
             {
                 await this.consumerManager.Feeder.StopAsync().ConfigureAwait(false);
@@ -125,12 +140,6 @@ namespace KafkaFlow.Consumers
             this.logHandler.Info(
                 $"Total of workers in Kafkaflow consumer '{this.ConsumerName}' were updated",
                 new { workersCount });
-        }
-
-        public async Task RestartAsync()
-        {
-            await this.InternalRestart().ConfigureAwait(false);
-            this.logHandler.Info($"Kafka consumer '{this.ConsumerName}' was manually restarted", null);
         }
 
         private static object GetOffsetsLogData(IEnumerable<TopicPartitionOffset> offsets) => offsets

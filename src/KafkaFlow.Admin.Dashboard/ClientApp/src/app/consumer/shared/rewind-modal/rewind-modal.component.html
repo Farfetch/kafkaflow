@@ -7,7 +7,7 @@
 </div>
 <div class="modal-body">
     <div class="form-group">
-        <label for="rewindDate">Select the datetime to rewind all the partition-offsets of consumers <b>'{{consumerName}}'</b> from group id <b>'{{groupId}}</b>' </label>
+        <label for="rewindDate">Select the datetime to rewind all the partition-offsets of the topic <b>'{{topic}}'</b> from consumers <b>'{{consumerName}}'</b> with group id <b>'{{groupId}}</b>' </label>
         <div class="input-group">
         <input id="rewindDate" class="form-control" placeholder="yyyy-mm-dd hh:MM:ss" [(ngModel)]="rewindDate" type="datetime-local">
         </div>

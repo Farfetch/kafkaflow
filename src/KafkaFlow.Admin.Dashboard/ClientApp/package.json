@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "echo Starting... && ng serve",
-    "build": "ng build --base-href /kafka-flow/",
+    "build": "ng build --base-href /kafka-flow/ --source-map true --configuration development",
     "build:prod": "ng build --configuration=production --base-href /kafka-flow/",
     "test": "ng test",
     "lint": "ng lint"

@@ -36,6 +36,11 @@ namespace KafkaFlow.Consumers
         int WorkersCount { get; }
 
         /// <summary>
+        /// Gets the consumer configured topics
+        /// </summary>
+        IReadOnlyList<string> Topics { get; }
+
+        /// <summary>
         /// Gets the current topic subscription
         /// </summary>
         IReadOnlyList<string> Subscription { get; }
@@ -103,6 +108,18 @@ namespace KafkaFlow.Consumers
         /// </summary>
         /// <returns></returns>
         Task RestartAsync();
+
+        /// <summary>
+        /// Starts KafkaFlow consumer creating a new Confluent Consumer
+        /// </summary>
+        /// <returns></returns>
+        Task StartAsync();
+
+        /// <summary>
+        /// Stops KafkaFlow consumer destroying the Confluent Consumer
+        /// </summary>
+        /// <returns></returns>
+        Task StopAsync();
 
         /// <summary>
         ///     Pause consumption for the provided list
