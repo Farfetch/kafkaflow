@@ -2,7 +2,9 @@ namespace KafkaFlow.Producers.Middlewares.Throttling.Evaluations
 {
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
+    using KafkaFlow.Configuration;
     using KafkaFlow.Consumers;
     using KafkaFlow.Producers.Middlewares.Throttling.Actions;
 
@@ -19,12 +21,15 @@ namespace KafkaFlow.Producers.Middlewares.Throttling.Evaluations
             this.consumerGroups = consumerGroups;
         }
 
-        public async Task<IAction> EvaluateAsync(IMessageContext context, IReadOnlyList<IAction> actions)
+        public async Task<IAction> EvaluateAsync(
+            IProducerConfiguration producerConfiguration,
+            IReadOnlyList<IAction> actions,
+            CancellationToken cancellationToken)
         {
-            var cluster = this.clusterAccessor[context.ClusterName];
+            var cluster = this.clusterAccessor[producerConfiguration.Cluster.Name];
 
             var lags = await cluster.MetadataClient
-                .GetTopicLag(this.topic, this.consumerGroups)
+                .GetTopicLagAsync(this.topic, this.consumerGroups)
                 .ConfigureAwait(false);
 
             var maxLag = lags.ConsumerGroups

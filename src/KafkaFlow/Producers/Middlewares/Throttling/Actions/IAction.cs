@@ -1,6 +1,8 @@
 namespace KafkaFlow.Producers.Middlewares.Throttling.Actions
 {
+    using System.Threading;
     using System.Threading.Tasks;
+    using KafkaFlow.Configuration;
 
     /// <summary>
     /// An interface used to create actions to be executed when the threshold is reached
@@ -22,8 +24,9 @@ namespace KafkaFlow.Producers.Middlewares.Throttling.Actions
         /// <summary>
         /// The handler to be executed when the action is ended
         /// </summary>
-        /// <param name="context">The <see cref="IMessageContext"/> containing the message and metadata</param>
+        /// <param name="producerConfiguration">The producer configuration</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task OnEndAsync(IMessageContext context);
+        Task OnEndAsync(IProducerConfiguration producerConfiguration, CancellationToken cancellationToken);
     }
 }

@@ -1,7 +1,9 @@
 namespace KafkaFlow.Producers.Middlewares.Throttling.Actions
 {
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
+    using KafkaFlow.Configuration;
     using KafkaFlow.Consumers;
 
     internal class PauseConsumerAction : IAction
@@ -28,7 +30,7 @@ namespace KafkaFlow.Producers.Middlewares.Throttling.Actions
             return Task.CompletedTask;
         }
 
-        public Task OnEndAsync(IMessageContext context)
+        public Task OnEndAsync(IProducerConfiguration producerConfiguration, CancellationToken cancellationToken)
         {
             if (!this.consumer.PausedPartitions.Any())
             {

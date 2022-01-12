@@ -31,7 +31,12 @@
 
             foreach (var evalBuilder in throttlingBuilder.EvaluationBuilders)
             {
-                middlewares.Add(resolver => new ProducerThrottlingMiddleware(evalBuilder.Build(resolver)));
+                middlewares.Add(
+                    (resolver, configuration) =>
+                        new ProducerThrottlingMiddleware(
+                            resolver.Resolve<IKafkaBus>(),
+                            configuration,
+                            evalBuilder.Build(resolver)));
             }
 
             return middlewares;

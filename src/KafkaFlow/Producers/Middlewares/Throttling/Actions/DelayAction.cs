@@ -1,7 +1,9 @@
 namespace KafkaFlow.Producers.Middlewares.Throttling.Actions
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
+    using KafkaFlow.Configuration;
 
     internal class DelayAction : IAction
     {
@@ -17,6 +19,6 @@ namespace KafkaFlow.Producers.Middlewares.Throttling.Actions
 
         public Task HandleAsync(IMessageContext context) => Task.Delay(this.delay, context.ProducerContext.ClientStopped);
 
-        public Task OnEndAsync(IMessageContext context) => Task.CompletedTask;
+        public Task OnEndAsync(IProducerConfiguration producerConfiguration, CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }
