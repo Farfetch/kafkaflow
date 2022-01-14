@@ -1,18 +1,12 @@
 ﻿namespace KafkaFlow.Sample
 {
     using System;
-    using System.Linq;
+    using System.Runtime.Serialization;
     using System.Threading.Tasks;
-    using KafkaFlow.Admin;
-    using Confluent.Kafka;
     using global::Microsoft.Extensions.DependencyInjection;
-    using KafkaFlow.Admin.Messages;
-    using KafkaFlow.Consumers;
     using KafkaFlow.Producers;
     using KafkaFlow.Serializer;
     using KafkaFlow.TypedHandler;
-    using Acks = KafkaFlow.Acks;
-    using AutoOffsetReset = KafkaFlow.AutoOffsetReset;
 
     internal static class Program
     {
@@ -21,57 +15,30 @@
             var services = new ServiceCollection();
 
             const string producerName = "PrintConsole";
-
-            const string consumerName = "test";
+            const string topicName = "sample-topic";
 
             services.AddKafka(
                 kafka => kafka
                     .UseConsoleLog()
                     .AddCluster(
                         cluster => cluster
-                            .WithBrokers(new[] {"localhost:9092"})
-                            .EnableAdminMessages("kafka-flow.admin", Guid.NewGuid().ToString())
+                            .WithBrokers(new[] { "localhost:19092" })
                             .AddProducer(
                                 producerName,
                                 producer => producer
-                                    .DefaultTopic("test-topic")
-                                    .WithCompression(CompressionType.Gzip)
-                                    .AddMiddlewares(
-                                        middlewares => middlewares
-                                            .AddSerializer<ProtobufNetSerializer>()
-                                    )
-                                    .WithAcks(Acks.All)
+                                    .DefaultTopic(topicName)
+                                    .AddMiddlewares(m => m.AddSerializer<ProtobufNetSerializer>())
                             )
                             .AddConsumer(
                                 consumer => consumer
-                                    .Topic("test-topic")
+                                    .Topic(topicName)
                                     .WithGroupId("print-console-handler")
-                                    .WithName(consumerName)
                                     .WithBufferSize(100)
                                     .WithWorkersCount(20)
-                                    .WithAutoOffsetReset(AutoOffsetReset.Latest)
-                                    .WithPendingOffsetsStatisticsHandler(
-                                        (resolver, offsets) =>
-                                            resolver.Resolve<ILogHandler>().Verbose(
-                                                "Offsets pending to be committed",
-                                                new
-                                                {
-                                                    Offsets = offsets.Select(o =>
-                                                        new
-                                                        {
-                                                            Partition = o.Partition.Value,
-                                                            Offset = o.Offset.Value,
-                                                            o.Topic
-                                                        })
-                                                }),
-                                        new TimeSpan(0, 0, 1))
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSerializer<ProtobufNetSerializer>()
-                                            .AddTypedHandlers(
-                                                handlers => handlers
-                                                    .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                    .AddHandler<PrintConsoleHandler>())
+                                            .AddTypedHandlers(h => h.AddHandler<PrintConsoleHandler>())
                                     )
                             )
                     )
@@ -83,10 +50,9 @@
 
             await bus.StartAsync();
 
-            var consumers = provider.GetRequiredService<IConsumerAccessor>();
-            var producers = provider.GetRequiredService<IProducerAccessor>();
-
-            var adminProducer = provider.GetService<IAdminProducer>();
+            var producer = provider
+                .GetRequiredService<IProducerAccessor>()
+                .GetProducer(producerName);
 
             while (true)
             {
@@ -96,73 +62,12 @@
                 switch (input)
                 {
                     case var _ when int.TryParse(input, out var count):
-                        await producers[producerName]
-                            .BatchProduceAsync(
-                                Enumerable
-                                    .Range(0, count)
-                                    .Select(
-                                        x => new BatchProduceItem(
-                                            "test-topic",
-                                            Guid.NewGuid().ToString(),
-                                            new TestMessage {Text = $"Message: {Guid.NewGuid()}"},
-                                            null))
-                                    .ToList());
-
-                        break;
-
-                    case "pause":
-                        foreach (var consumer in consumers.All)
+                        for (var i = 0; i < count; i++)
                         {
-                            consumer.Pause(consumer.Assignment);
-                        }
-
-                        Console.WriteLine("Consumer paused");
-
-                        break;
-
-                    case "resume":
-                        foreach (var consumer in consumers.All)
-                        {
-                            consumer.Resume(consumer.Assignment);
-                        }
-
-                        Console.WriteLine("Consumer resumed");
-
-                        break;
-
-                    case "reset":
-                        await adminProducer.ProduceAsync(new ResetConsumerOffset {ConsumerName = consumerName});
-
-                        break;
-
-                    case "rewind":
-                        Console.Write("Input a time: ");
-                        var timeInput = Console.ReadLine();
-
-                        if (DateTime.TryParse(timeInput, out var time))
-                        {
-                            await adminProducer.ProduceAsync(
-                                new RewindConsumerOffsetToDateTime
-                                {
-                                    ConsumerName = consumerName,
-                                    DateTime = time
-                                });
-                        }
-
-                        break;
-
-                    case "workers":
-                        Console.Write("Input a new worker count: ");
-                        var workersInput = Console.ReadLine();
-
-                        if (int.TryParse(workersInput, out var workers))
-                        {
-                            await adminProducer.ProduceAsync(
-                                new ChangeConsumerWorkersCount
-                                {
-                                    ConsumerName = consumerName,
-                                    WorkersCount = workers
-                                });
+                            await producer.ProduceAsync(
+                                topicName,
+                                Guid.NewGuid().ToString(),
+                                new TestMessage { Text = $"Message: {Guid.NewGuid()}" });
                         }
 
                         break;
@@ -172,6 +77,27 @@
                         return;
                 }
             }
+        }
+    }
+
+    [DataContract]
+    public class TestMessage
+    {
+        [DataMember(Order = 1)]
+        public string Text { get; set; }
+    }
+
+    public class PrintConsoleHandler : IMessageHandler<TestMessage>
+    {
+        public Task Handle(IMessageContext context, TestMessage message)
+        {
+            Console.WriteLine(
+                "Partition: {0} | Offset: {1} | Message: {2}",
+                context.ConsumerContext.Partition,
+                context.ConsumerContext.Offset,
+                message.Text);
+
+            return Task.CompletedTask;
         }
     }
 }
