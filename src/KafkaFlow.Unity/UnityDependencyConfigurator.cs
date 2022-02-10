@@ -1,6 +1,7 @@
 ﻿namespace KafkaFlow.Unity
 {
     using System;
+    using System.Linq;
     using global::Unity;
     using global::Unity.Lifetime;
     using InstanceLifetime = KafkaFlow.InstanceLifetime;
@@ -30,7 +31,7 @@
             this.container.RegisterType(
                 serviceType,
                 implementationType,
-                (ITypeLifetimeManager) ParseLifetime(lifetime));
+                (ITypeLifetimeManager)ParseLifetime(lifetime));
             return this;
         }
 
@@ -39,7 +40,7 @@
             where TService : class
             where TImplementation : class, TService
         {
-            this.container.RegisterType<TService, TImplementation>((ITypeLifetimeManager) ParseLifetime(lifetime));
+            this.container.RegisterType<TService, TImplementation>((ITypeLifetimeManager)ParseLifetime(lifetime));
             return this;
         }
 
@@ -47,7 +48,7 @@
         public IDependencyConfigurator Add<TService>(InstanceLifetime lifetime)
             where TService : class
         {
-            this.container.RegisterType<TService>((ITypeLifetimeManager) ParseLifetime(lifetime));
+            this.container.RegisterType<TService>((ITypeLifetimeManager)ParseLifetime(lifetime));
             return this;
         }
 
@@ -65,12 +66,25 @@
             Func<IDependencyResolver, TImplementation> factory,
             InstanceLifetime lifetime)
         {
+            string name = null;
+
+            if (this.AlreadyRegistered(serviceType))
+            {
+                name = Guid.NewGuid().ToString();
+            }
+
             this.container.RegisterFactory(
                 serviceType,
+                name,
                 c => factory(new UnityDependencyResolver(c)),
-                (IFactoryLifetimeManager) ParseLifetime(lifetime));
+                (IFactoryLifetimeManager)ParseLifetime(lifetime));
 
             return this;
+        }
+
+        private bool AlreadyRegistered(Type registeredType)
+        {
+            return this.container.Registrations.Any(x => x.RegisteredType == registeredType);
         }
 
         private static object ParseLifetime(InstanceLifetime lifetime) =>
