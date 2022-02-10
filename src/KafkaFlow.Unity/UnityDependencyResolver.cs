@@ -2,7 +2,9 @@ namespace KafkaFlow.Unity
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using global::Unity;
+    using global::Unity.Resolution;
 
     /// <summary>
     /// Unity implementation of <see cref="IDependencyResolver"/>
@@ -25,6 +27,14 @@ namespace KafkaFlow.Unity
         public object Resolve(Type type) => this.container.Resolve(type);
 
         /// <inheritdoc cref="IDependencyResolver.ResolveAll"/>
-        public IEnumerable<object> ResolveAll(Type type) => this.container.ResolveAll(type);
+        public IEnumerable<object> ResolveAll(Type type)
+        {
+            yield return this.container.Resolve(type);
+
+            foreach (var instance in this.container.ResolveAll(type))
+            {
+                yield return instance;
+            }
+        }
     }
 }
