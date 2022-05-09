@@ -38,7 +38,7 @@ namespace KafkaFlow
         public static IProducerConfigurationBuilder WithCompression(
             this IProducerConfigurationBuilder builder,
             CompressionType compressionType,
-            int? compressionLevel = null)
+            int? compressionLevel = -1)
         {
             return ((ProducerConfigurationBuilder) builder).WithCompression(compressionType, compressionLevel);
         }
