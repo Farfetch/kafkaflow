@@ -98,5 +98,26 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             configuration.BaseProducerConfig.Should().BeSameAs(producerConfig);
             configuration.MiddlewaresConfigurations.Should().HaveCount(1);
         }
+
+        [TestMethod]
+        public void Build_UseCompressionWithoutCompressionLevel_ReturnDefaultValues()
+        {
+            // Arrange
+            var clusterConfiguration = this.fixture.Create<ClusterConfiguration>();
+
+            var compressionType = CompressionType.Gzip;
+
+            this.target
+                .WithCompression(compressionType);
+
+            // Act
+            var configuration = this.target.Build(clusterConfiguration);
+
+            // Assert
+            configuration.Cluster.Should().Be(clusterConfiguration);
+            configuration.Name.Should().Be(this.name);
+            configuration.BaseProducerConfig.CompressionType.Should().Be(compressionType);
+            configuration.BaseProducerConfig.CompressionLevel.Should().Be(-1);
+        }
     }
 }
