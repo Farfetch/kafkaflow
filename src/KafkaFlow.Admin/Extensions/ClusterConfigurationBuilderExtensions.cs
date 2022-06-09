@@ -80,19 +80,23 @@
         /// <param name="cluster">The cluster configuration builder</param>
         /// <param name="topicName">The topic to be used by the metric commands</param>
         /// <param name="consumerGroup">The consumer group prefix</param>
+        /// <param name="cleanRunInterval">How often run storage cleanup. Every 10 minutes by default</param>
+        /// <param name="expiryTime">Cleanup will remove metrics older than specified interval. 6 hours by default</param>
         /// <returns></returns>
         public static IClusterConfigurationBuilder EnableTelemetry(
             this IClusterConfigurationBuilder cluster,
             string topicName,
-            string consumerGroup)
+            string consumerGroup,
+            TimeSpan? cleanRunInterval = null,
+            TimeSpan? expiryTime = null)
         {
             cluster.DependencyConfigurator
                 .AddSingleton<ITelemetryScheduler, TelemetryScheduler>()
                 .AddSingleton<ITelemetryStorage>(
                     resolver =>
                         new MemoryTelemetryStorage(
-                            TimeSpan.FromMinutes(10),
-                            TimeSpan.FromHours(6),
+                            cleanRunInterval ?? TimeSpan.FromMinutes(10),
+                            expiryTime ?? TimeSpan.FromHours(6),
                             resolver.Resolve<IDateTimeProvider>()));
 
             var groupId = $"{consumerGroup}-{Environment.MachineName}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}";
