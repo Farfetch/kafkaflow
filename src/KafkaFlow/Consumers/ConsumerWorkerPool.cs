@@ -84,16 +84,17 @@ namespace KafkaFlow.Consumers
 
         public async Task EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken)
         {
+            var localOffsetManager = this.offsetManager;
             var worker = (IConsumerWorker) await this.distributionStrategy
                 .GetWorkerAsync(message.Message.Key, stopCancellationToken)
                 .ConfigureAwait(false);
 
-            if (worker == null)
+            if (worker is null || localOffsetManager is null)
             {
                 return;
             }
 
-            this.offsetManager.Enqueue(message.TopicPartitionOffset);
+            localOffsetManager.Enqueue(message.TopicPartitionOffset);
 
             await worker
                 .EnqueueAsync(message, stopCancellationToken)
