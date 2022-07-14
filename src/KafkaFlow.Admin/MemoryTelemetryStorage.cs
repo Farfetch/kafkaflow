@@ -60,11 +60,11 @@ namespace KafkaFlow.Admin
 
         private void CleanExpiredItems()
         {
-            foreach (var metricKey in this.metrics.Keys)
+            foreach (var (key, metric) in this.metrics.Select(x=> (x.Key, x.Value)))
             {
-                if (this.dateTimeProvider.Now - this.metrics[metricKey].SentAt > this.expiryTime)
+                if (this.dateTimeProvider.Now - metric.SentAt > this.expiryTime)
                 {
-                    this.metrics.TryRemove(metricKey, out _);
+                    this.metrics.TryRemove(key, out _);
                 }
             }
         }
