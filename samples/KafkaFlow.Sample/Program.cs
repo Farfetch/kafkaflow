@@ -22,7 +22,7 @@
                     .UseConsoleLog()
                     .AddCluster(
                         cluster => cluster
-                            .WithBrokers(new[] { "localhost:19092" })
+                            .WithBrokers(new[] { "localhost:9092" })
                             .AddProducer(
                                 producerName,
                                 producer => producer
