@@ -3,6 +3,7 @@ namespace KafkaFlow.Configuration
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using KafkaFlow.Administration;
     using KafkaFlow.Consumers;
     using KafkaFlow.Producers;
 
@@ -36,7 +37,8 @@ namespace KafkaFlow.Configuration
                 .AddTransient(typeof(ILogHandler), this.logHandlerType)
                 .AddSingleton<IDateTimeProvider, DateTimeProvider>()
                 .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
-                .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory());
+                .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
+                .AddSingleton<ITopicManager, TopicManager>();
 
             return configuration;
         }

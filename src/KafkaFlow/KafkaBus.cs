@@ -4,6 +4,7 @@ namespace KafkaFlow
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using KafkaFlow.Administration;
     using KafkaFlow.Configuration;
     using KafkaFlow.Consumers;
     using KafkaFlow.Producers;
@@ -13,6 +14,7 @@ namespace KafkaFlow
         private readonly IDependencyResolver dependencyResolver;
         private readonly KafkaConfiguration configuration;
         private readonly IConsumerManagerFactory consumerManagerFactory;
+        private readonly ITopicManager topicManager;
 
         private readonly List<IConsumerManager> consumerManagers = new();
 
@@ -21,11 +23,13 @@ namespace KafkaFlow
             KafkaConfiguration configuration,
             IConsumerManagerFactory consumerManagerFactory,
             IConsumerAccessor consumers,
-            IProducerAccessor producers)
+            IProducerAccessor producers,
+            ITopicManager topicManager)
         {
             this.dependencyResolver = dependencyResolver;
             this.configuration = configuration;
             this.consumerManagerFactory = consumerManagerFactory;
+            this.topicManager = topicManager;
             this.Consumers = consumers;
             this.Producers = producers;
         }
@@ -46,7 +50,8 @@ namespace KafkaFlow
                 {
                     var dependencyScope = this.dependencyResolver.CreateScope();
 
-                    var consumerManager = this.consumerManagerFactory.Create(consumerConfiguration, dependencyScope.Resolver);
+                    var consumerManager =
+                        this.consumerManagerFactory.Create(consumerConfiguration, dependencyScope.Resolver);
 
                     this.consumerManagers.Add(consumerManager);
                     this.Consumers.Add(
@@ -60,6 +65,8 @@ namespace KafkaFlow
                     }
                 }
 
+                await this.CreateMissingClusterTopics(cluster);
+
                 cluster.OnStartedHandler(this.dependencyResolver);
             }
         }
@@ -72,6 +79,18 @@ namespace KafkaFlow
             }
 
             return Task.WhenAll(this.consumerManagers.Select(x => x.StopAsync()));
+        }
+
+        private async Task CreateMissingClusterTopics(ClusterConfiguration cluster)
+        {
+            if (cluster.TopicsToCreateIfNotExist is { Count: 0 })
+            {
+                return;
+            }
+
+            await this.topicManager.CreateIfNotExistsAsync(
+                string.Join(",", cluster.Brokers),
+                cluster.TopicsToCreateIfNotExist);
         }
     }
 }

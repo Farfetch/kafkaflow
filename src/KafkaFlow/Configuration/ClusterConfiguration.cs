@@ -12,6 +12,7 @@ namespace KafkaFlow.Configuration
         private readonly Func<SecurityInformation> securityInformationHandler;
         private readonly List<IProducerConfiguration> producers = new();
         private readonly List<IConsumerConfiguration> consumers = new();
+        private readonly List<TopicConfiguration> topicsToCreateIfNotExist = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClusterConfiguration"/> class.
@@ -64,6 +65,12 @@ namespace KafkaFlow.Configuration
         public IReadOnlyCollection<IConsumerConfiguration> Consumers => this.consumers.AsReadOnly();
 
         /// <summary>
+        /// Gets the list of topics to create if they do not exist
+        /// </summary>
+        public IReadOnlyCollection<TopicConfiguration> TopicsToCreateIfNotExist =>
+            this.topicsToCreateIfNotExist.AsReadOnly();
+
+        /// <summary>
         /// Gets the handler to be executed when the cluster started
         /// </summary>
         public Action<IDependencyResolver> OnStartedHandler { get; }
@@ -86,6 +93,13 @@ namespace KafkaFlow.Configuration
         /// <param name="configurations">A list of producer configurations</param>
         public void AddProducers(IEnumerable<IProducerConfiguration> configurations) =>
             this.producers.AddRange(configurations);
+
+        /// <summary>
+        /// Adds a list of topics to create if they do not exist
+        /// </summary>
+        /// <param name="configurations">A list of topic configurations</param>
+        public void AddTopicsToCreateIfNotExists(IEnumerable<TopicConfiguration> configurations) =>
+            this.topicsToCreateIfNotExist.AddRange(configurations);
 
         /// <summary>
         /// Gets the kafka security information

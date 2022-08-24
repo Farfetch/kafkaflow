@@ -1,6 +1,7 @@
 namespace KafkaFlow.Configuration
 {
     using System;
+    using KafkaFlow.Administration;
     using KafkaFlow.Consumers;
     using KafkaFlow.Producers;
 
@@ -41,7 +42,8 @@ namespace KafkaFlow.Configuration
                 this.configuration,
                 scope.Resolver.Resolve<IConsumerManagerFactory>(),
                 scope.Resolver.Resolve<IConsumerAccessor>(),
-                scope.Resolver.Resolve<IProducerAccessor>());
+                scope.Resolver.Resolve<IProducerAccessor>(),
+                scope.Resolver.Resolve<ITopicManager>());
         }
     }
 }

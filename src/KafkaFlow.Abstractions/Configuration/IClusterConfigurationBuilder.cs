@@ -70,5 +70,17 @@ namespace KafkaFlow.Configuration
         /// <param name="handler">A handler to KafkaFlow cluster started event</param>
         /// <returns></returns>
         IClusterConfigurationBuilder OnStarted(Action<IDependencyResolver> handler);
+
+        /// <summary>
+        /// Adds a Topic to the Cluster
+        /// </summary>
+        /// <param name="topicName">The topic name</param>
+        /// <param name="numberOfPartitions">The number of Topic partitions</param>
+        /// <param name="replicationFactor">The Topic replication factor</param>
+        /// <returns></returns>
+        IClusterConfigurationBuilder CreateTopicIfNotExists(
+            string topicName,
+            int numberOfPartitions,
+            short replicationFactor);
     }
 }

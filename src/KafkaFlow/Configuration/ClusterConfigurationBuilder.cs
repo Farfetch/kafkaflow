@@ -9,6 +9,7 @@ namespace KafkaFlow.Configuration
     {
         private readonly List<ProducerConfigurationBuilder> producers = new();
         private readonly List<ConsumerConfigurationBuilder> consumers = new();
+        private readonly List<TopicConfiguration> topicsToCreateIfNotExist = new();
         private Action<IDependencyResolver> onStartedHandler = _ => { };
         private Action<IDependencyResolver> onStoppingHandler = _ => { };
         private IEnumerable<string> brokers;
@@ -34,6 +35,7 @@ namespace KafkaFlow.Configuration
 
             configuration.AddProducers(this.producers.Select(x => x.Build(configuration)));
             configuration.AddConsumers(this.consumers.Select(x => x.Build(configuration)));
+            configuration.AddTopicsToCreateIfNotExists(this.topicsToCreateIfNotExist);
 
             return configuration;
         }
@@ -103,6 +105,15 @@ namespace KafkaFlow.Configuration
         public IClusterConfigurationBuilder OnStarted(Action<IDependencyResolver> handler)
         {
             this.onStartedHandler = handler;
+            return this;
+        }
+
+        public IClusterConfigurationBuilder CreateTopicIfNotExists(
+            string topicName,
+            int numberOfPartitions,
+            short replicationFactor)
+        {
+            this.topicsToCreateIfNotExist.Add(new TopicConfiguration(topicName, numberOfPartitions, replicationFactor));
             return this;
         }
     }
