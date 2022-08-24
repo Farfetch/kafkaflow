@@ -24,7 +24,7 @@ namespace KafkaFlow.Administration
             try
             {
                 var topics = configurations.Select(
-                    configuration => new TopicSpecification()
+                    configuration => new TopicSpecification
                     {
                         Name = configuration.Name, ReplicationFactor = configuration.ReplicationFactor,
                         NumPartitions = configuration.NumberOfPartitions,
