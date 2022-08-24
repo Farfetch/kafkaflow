@@ -46,6 +46,8 @@ namespace KafkaFlow
 
             foreach (var cluster in this.configuration.Clusters)
             {
+                await this.CreateMissingClusterTopics(cluster);
+
                 foreach (var consumerConfiguration in cluster.Consumers)
                 {
                     var dependencyScope = this.dependencyResolver.CreateScope();
@@ -64,8 +66,6 @@ namespace KafkaFlow
                         await consumerManager.StartAsync().ConfigureAwait(false);
                     }
                 }
-
-                await this.CreateMissingClusterTopics(cluster);
 
                 cluster.OnStartedHandler(this.dependencyResolver);
             }
