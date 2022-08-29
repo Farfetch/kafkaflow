@@ -12,7 +12,7 @@ namespace KafkaFlow.Configuration
         private readonly Func<SecurityInformation> securityInformationHandler;
         private readonly List<IProducerConfiguration> producers = new();
         private readonly List<IConsumerConfiguration> consumers = new();
-        private readonly List<TopicConfiguration> topicsToCreateIfNotExist = new();
+        private readonly List<TopicConfiguration> topicsToCreateIfNotExist;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClusterConfiguration"/> class.
@@ -23,13 +23,15 @@ namespace KafkaFlow.Configuration
         /// <param name="securityInformationHandler">The security information handler</param>
         /// <param name="onStartedHandler">The handler to be executed when the cluster started</param>
         /// <param name="onStoppingHandler">The handler to be executed when the cluster is stopping</param>
+        /// <param name="topicsToCreateIfNotExist">Topics to create on startup if not exists</param>
         public ClusterConfiguration(
             KafkaConfiguration kafka,
             string name,
             IEnumerable<string> brokers,
             Func<SecurityInformation> securityInformationHandler,
             Action<IDependencyResolver> onStartedHandler,
-            Action<IDependencyResolver> onStoppingHandler)
+            Action<IDependencyResolver> onStoppingHandler,
+            IEnumerable<TopicConfiguration> topicsToCreateIfNotExist = null)
         {
             this.securityInformationHandler = securityInformationHandler;
             this.Name = name ?? Guid.NewGuid().ToString();
@@ -37,6 +39,7 @@ namespace KafkaFlow.Configuration
             this.Brokers = brokers.ToList();
             this.OnStoppingHandler = onStoppingHandler;
             this.OnStartedHandler = onStartedHandler;
+            this.topicsToCreateIfNotExist = topicsToCreateIfNotExist?.ToList() ?? new List<TopicConfiguration>();
         }
 
         /// <summary>
@@ -93,13 +96,6 @@ namespace KafkaFlow.Configuration
         /// <param name="configurations">A list of producer configurations</param>
         public void AddProducers(IEnumerable<IProducerConfiguration> configurations) =>
             this.producers.AddRange(configurations);
-
-        /// <summary>
-        /// Adds a list of topics to create if they do not exist
-        /// </summary>
-        /// <param name="configurations">A list of topic configurations</param>
-        public void AddTopicsToCreateIfNotExists(IEnumerable<TopicConfiguration> configurations) =>
-            this.topicsToCreateIfNotExist.AddRange(configurations);
 
         /// <summary>
         /// Gets the kafka security information

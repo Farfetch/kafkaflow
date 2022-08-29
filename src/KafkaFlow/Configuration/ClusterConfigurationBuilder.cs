@@ -31,11 +31,11 @@ namespace KafkaFlow.Configuration
                 this.brokers.ToList(),
                 this.securityInformationHandler,
                 this.onStartedHandler,
-                this.onStoppingHandler);
+                this.onStoppingHandler,
+                this.topicsToCreateIfNotExist);
 
             configuration.AddProducers(this.producers.Select(x => x.Build(configuration)));
             configuration.AddConsumers(this.consumers.Select(x => x.Build(configuration)));
-            configuration.AddTopicsToCreateIfNotExists(this.topicsToCreateIfNotExist);
 
             return configuration;
         }
