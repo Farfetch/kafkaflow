@@ -8,10 +8,10 @@
     <Authors>Farfetch</Authors>
     <Company>Farfetch</Company>
     <Product>KafkaFlow</Product>
-    <PackageProjectUrl>https://github.com/Farfetch/Kafka-flow</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Farfetch/Kafka-flow</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Farfetch/kafkaflow</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Farfetch/kafkaflow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <license>https://github.com/Farfetch/kafka-flow/blob/master/LICENSE</license>
+    <license>https://github.com/Farfetch/kafkaflow/blob/master/LICENSE</license>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIconUrl>https://raw.githubusercontent.com/Farfetch/.github/master/images/fuse-logo-128.png</PackageIconUrl>
     <CodeAnalysisRuleSet>..\StyleCopAnalyzersDefault.ruleset</CodeAnalysisRuleSet>
