@@ -164,12 +164,14 @@ namespace KafkaFlow.Producers
 
         private static Message<byte[], byte[]> CreateMessage(IMessageContext context)
         {
-            if (context.Message.Value is not byte[] value)
+            var value = context.Message.Value switch
             {
-                throw new InvalidOperationException(
-                    $"The message value must be a byte array to be produced, it is a {context.Message.Value.GetType().FullName}." +
-                    "You should serialize or encode your message object using a middleware");
-            }
+                byte[] bValue => bValue,
+                null => null,
+                _ => throw new InvalidOperationException(
+                    $"The message value must be a byte array or null to be produced, it is a {context.Message.Value.GetType().FullName}." +
+                    "You should serialize or encode your message object using a middleware")
+            };
 
             var key = context.Message.Key switch
             {
