@@ -21,9 +21,6 @@ import { ResetModalComponent } from './consumer/shared/reset-modal/reset-modal.c
 import { PauseModalComponent } from './consumer/shared/pause-modal/pause-modal.component';
 import { RestartModalComponent } from './consumer/shared/restart-modal/restart-modal.component';
 import { ResumeModalComponent } from './consumer/shared/resume-modal/resume-modal.component';
-import { ApiModule } from './api/api.module';
-import { ConsumersService } from './api/services/consumers.service';
-import { TelemetryService } from './api/services/telemetry.service';
 import { ApiConfiguration } from './api/api-configuration';
 import { Gateway } from './api/gateway';
 
@@ -55,7 +52,6 @@ const appRoutes: Routes = [
     RouterModule.forRoot(appRoutes),
     HttpClientModule,
     FormsModule,
-    ApiModule.forRoot({ rootUrl: '' }),
     NgbModule,
     NgxMaskModule.forRoot(maskConfig)
   ],
@@ -64,13 +60,6 @@ const appRoutes: Routes = [
     ApiConfiguration,
     CookieService,
     Gateway,
-    ConsumersService,
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: ApiInterceptor,
-      multi: true
-    },
-    TelemetryService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: ApiInterceptor,
