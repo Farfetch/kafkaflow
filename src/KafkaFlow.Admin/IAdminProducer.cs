@@ -6,7 +6,7 @@ namespace KafkaFlow.Admin
     /// <summary>
     /// A special producer to publish admin messages
     /// </summary>
-    public interface IAdminProducer
+    internal interface IAdminProducer
     {
         /// <summary>
         /// Produces admin messages to be listened by other application instances

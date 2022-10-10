@@ -26,7 +26,8 @@
             string adminConsumerGroup)
         {
             cluster.DependencyConfigurator
-                .AddSingleton<IAdminProducer, AdminProducer>();
+                .AddSingleton<IAdminProducer, AdminProducer>()
+                .AddSingleton<IConsumerAdmin, ConsumerAdmin>();
 
             return cluster
                 .AddProducer<AdminProducer>(

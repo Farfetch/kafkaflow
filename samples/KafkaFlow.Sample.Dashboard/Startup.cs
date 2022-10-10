@@ -31,6 +31,7 @@ namespace KafkaFlow.Sample.Dashboard
             );
 
             services
+                .AddCors()
                 .AddControllers();
         }
 
@@ -39,6 +40,7 @@ namespace KafkaFlow.Sample.Dashboard
         {
             app
                 .UseRouting()
+                .UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()) // TODO: remove before merge
                 .UseEndpoints(endpoints => { endpoints.MapControllers(); })
                 .UseKafkaFlowDashboard();
 

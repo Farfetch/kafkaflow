@@ -17,24 +17,24 @@ namespace KafkaFlow.Admin.WebApi.Controllers
     public class GroupsController : ControllerBase
     {
         private readonly IConsumerAccessor consumers;
-        private readonly IAdminProducer adminProducer;
+        private readonly IConsumerAdmin consumerAdmin;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupsController"/> class.
         /// </summary>
         /// <param name="consumers">The accessor class that provides access to the consumers</param>
         /// <param name="adminProducer">The producer to publish admin messages</param>
-        public GroupsController(IConsumerAccessor consumers, IAdminProducer adminProducer)
+        public GroupsController(IConsumerAccessor consumers, IConsumerAdmin consumerAdmin)
         {
             this.consumers = consumers;
-            this.adminProducer = adminProducer;
+            this.consumerAdmin = consumerAdmin;
         }
 
         /// <summary>
         /// Get all the consumer groups
         /// </summary>
         /// <returns>A list of consumer groups</returns>
-        [HttpGet(Name=nameof(GetAllGroups))]
+        [HttpGet(Name = nameof(GetAllGroups))]
         [ProducesResponseType(typeof(GroupsResponse), 200)]
         public IActionResult GetAllGroups()
         {
@@ -59,18 +59,13 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="topics">List of topics</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{groupId}/pause", Name=nameof(PauseGroup))]
+        [Route("{groupId}/pause", Name = nameof(PauseGroup))]
         [ProducesResponseType(202)]
         public async Task<IActionResult> PauseGroup(
             [FromRoute] string groupId,
             [FromQuery] IList<string> topics)
         {
-            await this.adminProducer.ProduceAsync(
-                new PauseConsumersByGroup
-                {
-                    GroupId = groupId,
-                    Topics = topics,
-                });
+            await this.consumerAdmin.PauseConsumerGroupAsync(groupId, topics);
 
             return this.Accepted();
         }
@@ -82,18 +77,13 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="topics">List of topics</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation</returns>
         [HttpPost]
-        [Route("{groupId}/resume", Name=nameof(ResumeGroup))]
+        [Route("{groupId}/resume", Name = nameof(ResumeGroup))]
         [ProducesResponseType(202)]
         public async Task<IActionResult> ResumeGroup(
             [FromRoute] string groupId,
             [FromQuery] IList<string> topics)
         {
-            await this.adminProducer.ProduceAsync(
-                new ResumeConsumersByGroup
-                {
-                    GroupId = groupId,
-                    Topics = topics,
-                });
+            await this.consumerAdmin.ResumeConsumerGroupAsync(groupId, topics);
 
             return this.Accepted();
         }
