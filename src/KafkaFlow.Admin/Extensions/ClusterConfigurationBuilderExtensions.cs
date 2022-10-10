@@ -72,7 +72,7 @@
             this IClusterConfigurationBuilder cluster,
             string adminTopic)
         {
-            return cluster.EnableAdminMessages(adminTopic, $"Admin-{Assembly.GetEntryAssembly().GetName().Name}");
+            return cluster.EnableAdminMessages(adminTopic, $"Admin-{Assembly.GetEntryAssembly()!.GetName().Name}");
         }
 
         /// <summary>
@@ -96,8 +96,8 @@
                 .AddSingleton<ITelemetryStorage>(
                     resolver =>
                         new MemoryTelemetryStorage(
-                            cleanRunInterval ?? TimeSpan.FromMinutes(10),
-                            expiryTime ?? TimeSpan.FromHours(6),
+                            cleanRunInterval ?? TimeSpan.FromSeconds(10),
+                            expiryTime ?? TimeSpan.FromMinutes(5),
                             resolver.Resolve<IDateTimeProvider>()));
 
             var groupId = $"{consumerGroup}-{Environment.MachineName}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}";

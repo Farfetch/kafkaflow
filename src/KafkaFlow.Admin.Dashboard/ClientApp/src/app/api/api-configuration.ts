@@ -12,10 +12,3 @@ import { environment } from 'src/environments/environment';
 export class ApiConfiguration {
   rootUrl: string = environment.apiUrl;
 }
-
-/**
- * Parameters for `ApiModule.forRoot()`
- */
-export interface ApiConfigurationParams {
-  rootUrl?: string;
-}

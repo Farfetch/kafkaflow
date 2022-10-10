@@ -49,8 +49,7 @@ namespace KafkaFlow.Admin.Dashboard
 
                     appBuilder
                         .UseStaticFiles(new StaticFileOptions { FileProvider = provider })
-                        .UseRouting()
-                        .UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()); // TODO: remove before merge
+                        .UseRouting();
 
                     configuration.RequestHandler?.Invoke(appBuilder);
 
