@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ApiConfiguration } from './api-configuration';
-import { TelemetryResponse } from './models';
+import { TelemetryResponse } from './models/telemetry-response';
 import * as moment from 'moment';
 
 @Injectable()
@@ -33,7 +33,7 @@ export class Gateway {
 
     async rewindConsumerTopic(consumerName: string, topicName: string, date: Date): Promise<void> {
 
-        let formatedDate = moment(date).format("YYYY-MM-DD HH:mm:ss");
+        const formatedDate = moment(date).format('YYYY-MM-DD HH:mm:ss');
 
         await this.http
             .put(this.config.rootUrl + `/consumers/${consumerName}/topics/${topicName}/rewind/${formatedDate}`, '')

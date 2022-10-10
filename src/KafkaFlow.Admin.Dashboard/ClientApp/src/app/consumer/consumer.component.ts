@@ -9,7 +9,6 @@ import { PauseModalComponent } from './shared/pause-modal/pause-modal.component'
 import { ResumeModalComponent } from './shared/resume-modal/resume-modal.component';
 import { RestartModalComponent } from './shared/restart-modal/restart-modal.component';
 import { TelemetryResponse } from '../api/models/telemetry-response';
-import { ResetOffsetsRequest } from '../api/models/reset-offsets-request';
 import { ConsumerGroup } from '../api/models/consumer-group';
 import { TopicPartitionAssignment } from '../api/models/topic-partition-assignment';
 import { StartModalComponent } from './shared/start-modal/start-modal.component';
@@ -85,10 +84,10 @@ export class ConsumerComponent implements OnInit {
     modalRef.componentInstance.consumerName = consumerName;
     modalRef.componentInstance.workersCount = workersCount;
 
-    modalRef.result.then((workersCount: number) => {
+    modalRef.result.then((newWorkersCount: number) => {
 
       this.gateway
-        .changeWorkers(consumerName, workersCount)
+        .changeWorkers(consumerName, newWorkersCount)
         .then(() => this.successSubject.next('The number of workers was updated successfully'));
     });
   }
@@ -101,7 +100,6 @@ export class ConsumerComponent implements OnInit {
     modalRef.componentInstance.topic = topic;
 
     modalRef.result.then(() => {
-      const body: ResetOffsetsRequest = { confirm: true };
       this.gateway
         .resetConsumerTopic(consumerName, topic)
         .then(() => this.successSubject.next('The partition-offsets of your consumer were reseted successfully'));
@@ -183,7 +181,7 @@ export class ConsumerComponent implements OnInit {
 
     modalRef.result.then((dateString: string) => {
 
-      let date = moment(dateString, "YYYY-MM-DDTHH:mm").toDate();
+      const date = moment(dateString, 'YYYY-MM-DDTHH:mm').toDate();
 
       this.gateway.rewindConsumerTopic(consumerName, topic, date)
         .then(() => this.successSubject.next('The partition-offset of your consumer were rewound successfully'));
