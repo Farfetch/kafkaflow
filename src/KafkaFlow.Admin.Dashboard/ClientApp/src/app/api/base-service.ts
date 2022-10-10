@@ -15,7 +15,7 @@ export class BaseService {
   ) {
   }
 
-  private _rootUrl: string = '';
+  private _rootUrl: string = 'http://localhost:5000';
 
   /**
    * Returns the root url for all operations in this service. If not set directly in this

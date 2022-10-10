@@ -1,9 +1,8 @@
-namespace KafkaFlow.Admin.WebApi.Adapters
+namespace KafkaFlow.Admin.Dashboard
 {
     using System.Collections.Generic;
     using System.Linq;
     using KafkaFlow.Admin.Messages;
-    using KafkaFlow.Admin.WebApi.Contracts;
 
     internal static class TelemetryResponseAdapter
     {

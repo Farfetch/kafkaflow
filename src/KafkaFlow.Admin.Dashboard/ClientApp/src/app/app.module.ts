@@ -13,7 +13,7 @@ import { ApiInterceptor } from './api-interceptor.service';
 import { GroupByPipe } from './group-by.pipe';
 import { SortPipe } from './sort.pipe';
 
-import { HttpClientModule, HTTP_INTERCEPTORS  } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { RewindModalComponent } from './consumer/shared/rewind-modal/rewind-modal.component';
 import { WorkersCountModalComponent } from './consumer/shared/workers-count-modal/workers-count-modal.component';
@@ -21,9 +21,11 @@ import { ResetModalComponent } from './consumer/shared/reset-modal/reset-modal.c
 import { PauseModalComponent } from './consumer/shared/pause-modal/pause-modal.component';
 import { RestartModalComponent } from './consumer/shared/restart-modal/restart-modal.component';
 import { ResumeModalComponent } from './consumer/shared/resume-modal/resume-modal.component';
-import {ApiModule} from './api/api.module';
-import {ConsumersService} from './api/services/consumers.service';
-import {TelemetryService} from './api/services/telemetry.service';
+import { ApiModule } from './api/api.module';
+import { ConsumersService } from './api/services/consumers.service';
+import { TelemetryService } from './api/services/telemetry.service';
+import { ApiConfiguration } from './api/api-configuration';
+import { Gateway } from './api/gateway';
 
 const maskConfig: Partial<IConfig> = {
   validation: false,
@@ -59,7 +61,9 @@ const appRoutes: Routes = [
   ],
   exports: [RouterModule],
   providers: [
+    ApiConfiguration,
     CookieService,
+    Gateway,
     ConsumersService,
     {
       provide: HTTP_INTERCEPTORS,

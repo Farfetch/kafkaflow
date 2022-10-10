@@ -17,17 +17,17 @@ namespace KafkaFlow.Admin.WebApi.Controllers
     public class ConsumersController : ControllerBase
     {
         private readonly IConsumerAccessor consumers;
-        private readonly IAdminProducer adminProducer;
+        private readonly IConsumerAdmin consumerAdmin;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsumersController"/> class.
         /// </summary>
         /// <param name="consumers">The accessor class that provides access to the consumers</param>
         /// <param name="adminProducer">The producer to publish admin messages</param>
-        public ConsumersController(IConsumerAccessor consumers, IAdminProducer adminProducer)
+        public ConsumersController(IConsumerAccessor consumers, IConsumerAdmin consumerAdmin)
         {
             this.consumers = consumers;
-            this.adminProducer = adminProducer;
+            this.consumerAdmin = consumerAdmin;
         }
 
         /// <summary>
@@ -98,12 +98,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            await this.adminProducer.ProduceAsync(
-                new PauseConsumerByName
-                {
-                    ConsumerName = consumerName,
-                    Topics = topics,
-                });
+            await this.consumerAdmin.PauseConsumerAsync(consumerName, topics);
 
             return this.Accepted();
         }
@@ -132,12 +127,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            await this.adminProducer.ProduceAsync(
-                new ResumeConsumerByName
-                {
-                    ConsumerName = consumerName,
-                    Topics = topics,
-                });
+            await this.consumerAdmin.ResumeConsumerAsync(consumerName, topics);
 
             return this.Accepted();
         }
@@ -163,7 +153,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            await this.adminProducer.ProduceAsync(new StartConsumerByName { ConsumerName = consumerName });
+            await this.consumerAdmin.StartConsumerAsync(consumerName);
 
             return this.Accepted();
         }
@@ -189,7 +179,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            await this.adminProducer.ProduceAsync(new StopConsumerByName { ConsumerName = consumerName });
+            await this.consumerAdmin.StopConsumerAsync(consumerName);
 
             return this.Accepted();
         }
@@ -216,11 +206,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            await this.adminProducer.ProduceAsync(
-                new RestartConsumerByName
-                {
-                    ConsumerName = consumerName,
-                });
+            await this.consumerAdmin.RestartConsumerAsync(consumerName);
 
             return this.Accepted();
         }
@@ -257,12 +243,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            await this.adminProducer.ProduceAsync(
-                new ResetConsumerOffset
-                {
-                    ConsumerName = consumerName,
-                    Topics = topics,
-                });
+            await this.consumerAdmin.ResetOffsetsAsync(consumerName, topics);
 
             return this.Accepted();
         }
@@ -299,13 +280,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            await this.adminProducer.ProduceAsync(
-                new RewindConsumerOffsetToDateTime
-                {
-                    ConsumerName = consumerName,
-                    DateTime = request.Date,
-                    Topics = topics,
-                });
+            await this.consumerAdmin.RewindOffsetsAsync(consumerName, request.Date, topics);
 
             return this.Accepted();
         }
@@ -340,12 +315,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            await this.adminProducer.ProduceAsync(
-                new ChangeConsumerWorkersCount
-                {
-                    ConsumerName = consumerName,
-                    WorkersCount = request.WorkersCount,
-                });
+            await this.consumerAdmin.ChangeWorkersCountAsync(consumerName, request.WorkersCount);
 
             return this.Accepted();
         }

@@ -119,13 +119,12 @@ namespace KafkaFlow.Consumers
             return this.Assignment.Select(
                 tp =>
                 {
-                    var offsetEnd = this.GetWatermarkOffsets(tp).High.Value;
                     if (!this.committedOffsets.TryGetValue(tp, out var offset))
                     {
-                        var lastCommittedOffset = this.GetPosition(tp);
-                        offset = lastCommittedOffset == Offset.Unset ? 0 : lastCommittedOffset.Value;
-                        this.committedOffsets[tp] = offset;
+                        return new TopicPartitionLag(tp.Topic, tp.Partition.Value, 0);
                     }
+
+                    var offsetEnd = this.GetWatermarkOffsets(tp).High.Value;
 
                     return new TopicPartitionLag(tp.Topic, tp.Partition.Value, offsetEnd - offset);
                 });
