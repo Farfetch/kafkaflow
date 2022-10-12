@@ -9,13 +9,13 @@ namespace KafkaFlow.Configuration
         /// Initializes a new instance of the <see cref="TopicConfiguration"/> class.
         /// </summary>
         /// <param name="name">The topic name</param>
-        /// <param name="numberOfPartitions">The number of partitions for the topic</param>
-        /// <param name="replicationFactor">Replication factor for the topic</param>
-        public TopicConfiguration(string name, int numberOfPartitions, short replicationFactor)
+        /// <param name="partitions">The number of partitions for the topic</param>
+        /// <param name="replicas">Replication factor for the topic</param>
+        public TopicConfiguration(string name, int partitions, short replicas)
         {
             this.Name = name;
-            this.NumberOfPartitions = numberOfPartitions;
-            this.ReplicationFactor = replicationFactor;
+            this.Partitions = partitions;
+            this.Replicas = replicas;
         }
 
         /// <summary>
@@ -24,13 +24,13 @@ namespace KafkaFlow.Configuration
         public string Name { get; }
 
         /// <summary>
-        /// Gets the number of Topic Partition
+        /// Gets the number of Topic Partitions
         /// </summary>
-        public int NumberOfPartitions { get; }
+        public int Partitions { get; }
 
         /// <summary>
         /// Gets the Topic Replication Factor
         /// </summary>
-        public short ReplicationFactor { get; }
+        public short Replicas { get; }
     }
 }

@@ -33,8 +33,8 @@ namespace KafkaFlow.Clusters
                     topicConfiguration => new TopicSpecification
                     {
                         Name = topicConfiguration.Name,
-                        ReplicationFactor = topicConfiguration.ReplicationFactor,
-                        NumPartitions = topicConfiguration.NumberOfPartitions,
+                        ReplicationFactor = topicConfiguration.Replicas,
+                        NumPartitions = topicConfiguration.Partitions,
                     }).ToArray();
 
                 using var client = this.lazyAdminClientBuilder.Value.Build();
