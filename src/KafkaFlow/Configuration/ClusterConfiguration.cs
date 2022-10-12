@@ -2,6 +2,7 @@ namespace KafkaFlow.Configuration
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
 
     /// <summary>
@@ -12,7 +13,7 @@ namespace KafkaFlow.Configuration
         private readonly Func<SecurityInformation> securityInformationHandler;
         private readonly List<IProducerConfiguration> producers = new();
         private readonly List<IConsumerConfiguration> consumers = new();
-        private readonly List<TopicConfiguration> topicsToCreateIfNotExist;
+        private readonly ReadOnlyCollection<TopicConfiguration> topicsToCreateIfNotExist;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClusterConfiguration"/> class.
@@ -39,7 +40,8 @@ namespace KafkaFlow.Configuration
             this.Brokers = brokers.ToList();
             this.OnStoppingHandler = onStoppingHandler;
             this.OnStartedHandler = onStartedHandler;
-            this.topicsToCreateIfNotExist = topicsToCreateIfNotExist?.ToList() ?? new List<TopicConfiguration>();
+            this.topicsToCreateIfNotExist = topicsToCreateIfNotExist?.ToList().AsReadOnly() ??
+                                            new List<TopicConfiguration>().AsReadOnly();
         }
 
         /// <summary>
@@ -71,7 +73,7 @@ namespace KafkaFlow.Configuration
         /// Gets the list of topics to create if they do not exist
         /// </summary>
         public IReadOnlyCollection<TopicConfiguration> TopicsToCreateIfNotExist =>
-            this.topicsToCreateIfNotExist.AsReadOnly();
+            this.topicsToCreateIfNotExist;
 
         /// <summary>
         /// Gets the handler to be executed when the cluster started
