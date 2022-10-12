@@ -8,19 +8,19 @@ namespace KafkaFlow.Clusters
     using Confluent.Kafka.Admin;
     using KafkaFlow.Configuration;
 
-    internal class ClusterManager : IClusterManager, IDisposable
+    internal class ClusterManager : IClusterManager
     {
         private readonly ILogHandler logHandler;
-        private readonly Lazy<IAdminClient> lazyAdminClient;
+        private readonly Lazy<AdminClientBuilder> lazyAdminClientBuilder;
         private readonly ClusterConfiguration configuration;
 
         public ClusterManager(ILogHandler logHandler, ClusterConfiguration configuration)
         {
             this.logHandler = logHandler;
             this.configuration = configuration;
-            this.lazyAdminClient = new Lazy<IAdminClient>(
+            this.lazyAdminClientBuilder = new Lazy<AdminClientBuilder>(
                 () => new AdminClientBuilder(new AdminClientConfig
-                    { BootstrapServers = string.Join(",", configuration.Brokers) }).Build());
+                    { BootstrapServers = string.Join(",", configuration.Brokers) }));
         }
 
         public string ClusterName => this.configuration.Name;
@@ -37,7 +37,8 @@ namespace KafkaFlow.Clusters
                         NumPartitions = topicConfiguration.NumberOfPartitions,
                     }).ToArray();
 
-                await this.lazyAdminClient.Value.CreateTopicsAsync(
+                using var client = this.lazyAdminClientBuilder.Value.Build();
+                await client.CreateTopicsAsync(
                     topics);
             }
             catch (CreateTopicsException exception)
@@ -72,8 +73,5 @@ namespace KafkaFlow.Clusters
                 }
             }
         }
-
-        public void Dispose()
-            => this.lazyAdminClient.Value.Dispose();
     }
 }
