@@ -4,7 +4,7 @@ namespace KafkaFlow
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using KafkaFlow.Administration;
+    using KafkaFlow.Clusters;
     using KafkaFlow.Configuration;
     using KafkaFlow.Consumers;
     using KafkaFlow.Producers;
@@ -14,7 +14,7 @@ namespace KafkaFlow
         private readonly IDependencyResolver dependencyResolver;
         private readonly KafkaConfiguration configuration;
         private readonly IConsumerManagerFactory consumerManagerFactory;
-        private readonly ITopicManager topicManager;
+        private readonly IClusterManagerAccessor clusterManagerAccessor;
 
         private readonly List<IConsumerManager> consumerManagers = new();
 
@@ -24,12 +24,12 @@ namespace KafkaFlow
             IConsumerManagerFactory consumerManagerFactory,
             IConsumerAccessor consumers,
             IProducerAccessor producers,
-            ITopicManager topicManager)
+            IClusterManagerAccessor clusterManagerAccessor)
         {
             this.dependencyResolver = dependencyResolver;
             this.configuration = configuration;
             this.consumerManagerFactory = consumerManagerFactory;
-            this.topicManager = topicManager;
+            this.clusterManagerAccessor = clusterManagerAccessor;
             this.Consumers = consumers;
             this.Producers = producers;
         }
@@ -88,8 +88,7 @@ namespace KafkaFlow
                 return;
             }
 
-            await this.topicManager.CreateIfNotExistsAsync(
-                string.Join(",", cluster.Brokers),
+            await this.clusterManagerAccessor[cluster.Name].CreateIfNotExistsAsync(
                 cluster.TopicsToCreateIfNotExist);
         }
     }

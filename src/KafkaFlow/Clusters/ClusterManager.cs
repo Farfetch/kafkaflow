@@ -1,5 +1,6 @@
-namespace KafkaFlow.Administration
+namespace KafkaFlow.Clusters
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
@@ -7,30 +8,36 @@ namespace KafkaFlow.Administration
     using Confluent.Kafka.Admin;
     using KafkaFlow.Configuration;
 
-    internal class TopicManager : ITopicManager
+    internal class ClusterManager : IClusterManager, IDisposable
     {
         private readonly ILogHandler logHandler;
+        private readonly Lazy<IAdminClient> lazyAdminClient;
+        private readonly ClusterConfiguration configuration;
 
-        public TopicManager(ILogHandler logHandler)
+        public ClusterManager(ILogHandler logHandler, ClusterConfiguration configuration)
         {
             this.logHandler = logHandler;
+            this.configuration = configuration;
+            this.lazyAdminClient = new Lazy<IAdminClient>(
+                () => new AdminClientBuilder(new AdminClientConfig
+                    { BootstrapServers = string.Join(",", configuration.Brokers) }).Build());
         }
 
-        public async Task CreateIfNotExistsAsync(string servers, IEnumerable<TopicConfiguration> configurations)
-        {
-            using var adminClient =
-                new AdminClientBuilder(new AdminClientConfig { BootstrapServers = servers }).Build();
+        public string ClusterName => this.configuration.Name;
 
+        public async Task CreateIfNotExistsAsync(IEnumerable<TopicConfiguration> configurations)
+        {
             try
             {
                 var topics = configurations.Select(
-                    configuration => new TopicSpecification
+                    topicConfiguration => new TopicSpecification
                     {
-                        Name = configuration.Name, ReplicationFactor = configuration.ReplicationFactor,
-                        NumPartitions = configuration.NumberOfPartitions,
+                        Name = topicConfiguration.Name,
+                        ReplicationFactor = topicConfiguration.ReplicationFactor,
+                        NumPartitions = topicConfiguration.NumberOfPartitions,
                     }).ToArray();
 
-                await adminClient.CreateTopicsAsync(
+                await this.lazyAdminClient.Value.CreateTopicsAsync(
                     topics);
             }
             catch (CreateTopicsException exception)
@@ -59,11 +66,14 @@ namespace KafkaFlow.Administration
                         exception,
                         new
                         {
-                            Servers = servers,
+                            Servers = this.configuration.Brokers,
                         });
                     throw;
                 }
             }
         }
+
+        public void Dispose()
+            => this.lazyAdminClient.Value.Dispose();
     }
 }
