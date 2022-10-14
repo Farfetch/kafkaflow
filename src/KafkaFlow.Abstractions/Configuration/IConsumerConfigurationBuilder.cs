@@ -91,6 +91,22 @@ namespace KafkaFlow.Configuration
         IConsumerConfigurationBuilder WithBufferSize(int size);
 
         /// <summary>
+        /// Sets the time that the worker will wait to process the buffered messages
+        /// before canceling the <see cref="IConsumerContext.WorkerStopped"/>
+        /// </summary>
+        /// <param name="seconds">The seconds to wait</param>
+        /// <returns></returns>
+        IConsumerConfigurationBuilder WithWorkerStopTimeout(int seconds);
+
+        /// <summary>
+        /// Sets the time that the worker will wait to process the buffered messages
+        /// before canceling the <see cref="IConsumerContext.WorkerStopped"/>
+        /// </summary>
+        /// <param name="timeout">The time to wait</param>
+        /// <returns></returns>
+        IConsumerConfigurationBuilder WithWorkerStopTimeout(TimeSpan timeout);
+
+        /// <summary>
         /// Sets the strategy to choose a worker when a message arrives
         /// </summary>
         /// <typeparam name="T">A class that implements the <see cref="IDistributionStrategy"/> interface</typeparam>

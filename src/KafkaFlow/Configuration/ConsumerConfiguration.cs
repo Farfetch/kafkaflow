@@ -17,6 +17,7 @@ namespace KafkaFlow.Configuration
             bool managementDisabled,
             int workersCount,
             int bufferSize,
+            TimeSpan workerStopTimeout,
             Factory<IDistributionStrategy> distributionStrategyFactory,
             IReadOnlyList<MiddlewareConfiguration> middlewaresConfigurations,
             bool autoStoreOffsets,
@@ -48,6 +49,7 @@ namespace KafkaFlow.Configuration
             this.ClusterConfiguration = clusterConfiguration;
             this.ManagementDisabled = managementDisabled;
             this.WorkersCount = workersCount;
+            this.WorkerStopTimeout = workerStopTimeout;
             this.StatisticsHandlers = statisticsHandlers;
             this.PartitionsAssignedHandlers = partitionsAssignedHandlers;
             this.PartitionsRevokedHandlers = partitionsRevokedHandlers;
@@ -89,6 +91,8 @@ namespace KafkaFlow.Configuration
         public string GroupId => this.consumerConfig.GroupId;
 
         public int BufferSize { get; }
+
+        public TimeSpan WorkerStopTimeout { get; }
 
         public bool AutoStoreOffsets { get; }
 

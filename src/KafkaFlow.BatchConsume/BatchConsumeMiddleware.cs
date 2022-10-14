@@ -57,6 +57,13 @@
 
                 await next(batchContext).ConfigureAwait(false);
             }
+            catch (OperationCanceledException)
+            {
+                if (context.ConsumerContext.WorkerStopped.IsCancellationRequested)
+                {
+                    return;
+                }
+            }
             catch (Exception ex)
             {
                 this.logHandler.Error(
@@ -69,12 +76,10 @@
                         context.ConsumerContext.WorkerId,
                     });
             }
-            finally
+
+            foreach (var messageContext in localBatch)
             {
-                foreach (var messageContext in localBatch)
-                {
-                    messageContext.ConsumerContext.StoreOffset();
-                }
+                messageContext.ConsumerContext.StoreOffset();
             }
         }
     }
