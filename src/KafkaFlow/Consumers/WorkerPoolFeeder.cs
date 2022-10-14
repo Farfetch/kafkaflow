@@ -39,6 +39,11 @@ namespace KafkaFlow.Consumers
                                 .ConsumeAsync(token)
                                 .ConfigureAwait(false);
 
+                            if (message is null)
+                            {
+                                continue;
+                            }
+
                             await this.workerPool
                                 .EnqueueAsync(message, token)
                                 .ConfigureAwait(false);

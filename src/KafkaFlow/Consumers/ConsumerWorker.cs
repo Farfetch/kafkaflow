@@ -53,64 +53,24 @@ namespace KafkaFlow.Consumers
             this.backgroundTask = Task.Run(
                 async () =>
                 {
-                    while (!this.stopCancellationTokenSource.IsCancellationRequested)
+                    var cancellationTokenSource = new CancellationTokenSource();
+
+                    this.stopCancellationTokenSource.Token.Register(
+                        () => cancellationTokenSource.CancelAfter(this.consumer.Configuration.WorkerStopTimeout));
+
+                    try
                     {
-                        try
+                        while (await this.messagesBuffer.Reader.WaitToReadAsync(CancellationToken.None).ConfigureAwait(false))
                         {
-                            var message = await this.messagesBuffer.Reader
-                                .ReadAsync(this.stopCancellationTokenSource.Token)
-                                .ConfigureAwait(false);
-
-                            var context = new MessageContext(
-                                new Message(message.Message.Key, message.Message.Value),
-                                new MessageHeaders(message.Message.Headers),
-                                new ConsumerContext(
-                                    this.consumer,
-                                    this.offsetManager,
-                                    message,
-                                    this.stopCancellationTokenSource.Token,
-                                    this.Id),
-                                null);
-
-                            try
+                            while (this.messagesBuffer.Reader.TryRead(out var message))
                             {
-                                var scope = this.dependencyResolver.CreateScope();
-
-                                this.offsetManager.OnOffsetProcessed(
-                                    message.TopicPartitionOffset,
-                                    () => scope.Dispose());
-
-                                await this.middlewareExecutor
-                                    .Execute(scope.Resolver, context, _ => Task.CompletedTask)
-                                    .ConfigureAwait(false);
-                            }
-                            catch (Exception ex)
-                            {
-                                this.logHandler.Error(
-                                    "Error executing consumer",
-                                    ex,
-                                    new
-                                    {
-                                        context.Message,
-                                        context.ConsumerContext.Topic,
-                                        MessageKey = context.Message.Key,
-                                        context.ConsumerContext.ConsumerName,
-                                    });
-                            }
-                            finally
-                            {
-                                if (this.consumer.Configuration.AutoStoreOffsets && context.ConsumerContext.ShouldStoreOffset)
-                                {
-                                    this.offsetManager.MarkAsProcessed(message.TopicPartitionOffset);
-                                }
-
-                                this.onMessageFinishedHandler?.Invoke();
+                                await this.ProcessMessageAsync(message, cancellationTokenSource.Token).ConfigureAwait(false);
                             }
                         }
-                        catch (OperationCanceledException)
-                        {
-                            // Ignores the exception
-                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Ignores the exception
                     }
                 });
 
@@ -119,6 +79,8 @@ namespace KafkaFlow.Consumers
 
         public async Task StopAsync()
         {
+            this.messagesBuffer.Writer.TryComplete();
+
             if (this.stopCancellationTokenSource.Token.CanBeCanceled)
             {
                 this.stopCancellationTokenSource.Cancel();
@@ -131,6 +93,60 @@ namespace KafkaFlow.Consumers
         public void OnTaskCompleted(Action handler)
         {
             this.onMessageFinishedHandler = handler;
+        }
+
+        private async Task ProcessMessageAsync(ConsumeResult<byte[], byte[]> message, CancellationToken cancellationToken)
+        {
+            var context = new MessageContext(
+                new Message(message.Message.Key, message.Message.Value),
+                new MessageHeaders(message.Message.Headers),
+                new ConsumerContext(
+                    this.consumer,
+                    this.offsetManager,
+                    message,
+                    cancellationToken,
+                    this.Id),
+                null);
+
+            try
+            {
+                var scope = this.dependencyResolver.CreateScope();
+
+                this.offsetManager.OnOffsetProcessed(
+                    message.TopicPartitionOffset,
+                    () => scope.Dispose());
+
+                await this.middlewareExecutor
+                    .Execute(scope.Resolver, context, _ => Task.CompletedTask)
+                    .ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                this.logHandler.Error(
+                    "Error processing message",
+                    ex,
+                    new
+                    {
+                        context.Message,
+                        context.ConsumerContext.Topic,
+                        MessageKey = context.Message.Key,
+                        context.ConsumerContext.ConsumerName,
+                    });
+            }
+
+            if (this.consumer.Configuration.AutoStoreOffsets && context.ConsumerContext.ShouldStoreOffset)
+            {
+                this.offsetManager.MarkAsProcessed(message.TopicPartitionOffset);
+            }
+
+            this.onMessageFinishedHandler?.Invoke();
         }
     }
 }

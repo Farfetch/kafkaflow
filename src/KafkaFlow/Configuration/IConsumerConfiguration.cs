@@ -55,6 +55,12 @@ namespace KafkaFlow.Configuration
         int BufferSize { get; }
 
         /// <summary>
+        /// Gets the time that the worker will wait to process the buffered messages
+        /// before canceling the <see cref="IConsumerContext.WorkerStopped"/>
+        /// </summary>
+        TimeSpan WorkerStopTimeout { get; }
+
+        /// <summary>
         /// Gets a value indicating whether if the application should store store at the end
         /// </summary>
         bool AutoStoreOffsets { get; }
@@ -82,7 +88,10 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Gets the handlers that will be called when there are pending offsets
         /// </summary>
-        IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)> PendingOffsetsHandlers { get; }
+        IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)> PendingOffsetsHandlers
+        {
+            get;
+        }
 
         /// <summary>
         /// Gets the custom factory used to create a new <see cref="KafkaFlow.Consumers.IConsumer"/>

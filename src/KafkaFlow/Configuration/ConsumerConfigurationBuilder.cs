@@ -28,6 +28,7 @@ namespace KafkaFlow.Configuration
         private int? maxPollIntervalMs;
         private int workersCount;
         private int bufferSize;
+        private TimeSpan workerStopTimeout = TimeSpan.FromSeconds(30);
         private bool autoStoreOffsets = true;
         private ConsumerInitialState initialState = ConsumerInitialState.Running;
         private int statisticsInterval;
@@ -119,6 +120,18 @@ namespace KafkaFlow.Configuration
         public IConsumerConfigurationBuilder WithBufferSize(int size)
         {
             this.bufferSize = size;
+            return this;
+        }
+
+        public IConsumerConfigurationBuilder WithWorkerStopTimeout(int seconds)
+        {
+            this.workerStopTimeout = TimeSpan.FromSeconds(seconds);
+            return this;
+        }
+
+        public IConsumerConfigurationBuilder WithWorkerStopTimeout(TimeSpan timeout)
+        {
+            this.workerStopTimeout = timeout;
             return this;
         }
 
@@ -226,6 +239,7 @@ namespace KafkaFlow.Configuration
                 this.disableManagement,
                 this.workersCount,
                 this.bufferSize,
+                this.workerStopTimeout,
                 this.distributionStrategyFactory,
                 middlewareConfiguration,
                 this.autoStoreOffsets,

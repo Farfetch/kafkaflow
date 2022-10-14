@@ -89,7 +89,7 @@ namespace KafkaFlow.Consumers
                 if (!this.consumer.Configuration.ManagementDisabled)
                 {
                     this.logHandler.Verbose(
-                        "Committed offsets",
+                        "Offsets committed",
                         new
                         {
                             Offsets = offsets.GroupBy(
