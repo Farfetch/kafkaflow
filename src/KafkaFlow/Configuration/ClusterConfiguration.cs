@@ -2,6 +2,7 @@ namespace KafkaFlow.Configuration
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
 
     /// <summary>
@@ -12,6 +13,7 @@ namespace KafkaFlow.Configuration
         private readonly Func<SecurityInformation> securityInformationHandler;
         private readonly List<IProducerConfiguration> producers = new();
         private readonly List<IConsumerConfiguration> consumers = new();
+        private readonly ReadOnlyCollection<TopicConfiguration> topicsToCreateIfNotExist;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClusterConfiguration"/> class.
@@ -22,13 +24,15 @@ namespace KafkaFlow.Configuration
         /// <param name="securityInformationHandler">The security information handler</param>
         /// <param name="onStartedHandler">The handler to be executed when the cluster started</param>
         /// <param name="onStoppingHandler">The handler to be executed when the cluster is stopping</param>
+        /// <param name="topicsToCreateIfNotExist">Topics to create on startup if not exists</param>
         public ClusterConfiguration(
             KafkaConfiguration kafka,
             string name,
             IEnumerable<string> brokers,
             Func<SecurityInformation> securityInformationHandler,
             Action<IDependencyResolver> onStartedHandler,
-            Action<IDependencyResolver> onStoppingHandler)
+            Action<IDependencyResolver> onStoppingHandler,
+            IEnumerable<TopicConfiguration> topicsToCreateIfNotExist = null)
         {
             this.securityInformationHandler = securityInformationHandler;
             this.Name = name ?? Guid.NewGuid().ToString();
@@ -36,6 +40,8 @@ namespace KafkaFlow.Configuration
             this.Brokers = brokers.ToList();
             this.OnStoppingHandler = onStoppingHandler;
             this.OnStartedHandler = onStartedHandler;
+            this.topicsToCreateIfNotExist = topicsToCreateIfNotExist?.ToList().AsReadOnly() ??
+                                            new List<TopicConfiguration>().AsReadOnly();
         }
 
         /// <summary>
@@ -62,6 +68,12 @@ namespace KafkaFlow.Configuration
         /// Gets the list of consumers
         /// </summary>
         public IReadOnlyCollection<IConsumerConfiguration> Consumers => this.consumers.AsReadOnly();
+
+        /// <summary>
+        /// Gets the list of topics to create if they do not exist
+        /// </summary>
+        public IReadOnlyCollection<TopicConfiguration> TopicsToCreateIfNotExist =>
+            this.topicsToCreateIfNotExist;
 
         /// <summary>
         /// Gets the handler to be executed when the cluster started

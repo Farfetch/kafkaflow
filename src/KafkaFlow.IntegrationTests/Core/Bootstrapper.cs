@@ -90,6 +90,9 @@ namespace KafkaFlow.IntegrationTests.Core
                         cluster => cluster
                             .WithBrokers(kafkaBrokers.Split(';'))
                             .WithSchemaRegistry(config => config.Url = schemaRegistryUrl)
+                            .CreateTopicIfNotExists(AvroTopicName, 1, 1)
+                            .CreateTopicIfNotExists(ProtobufSchemaRegistryTopicName, 2, 1)
+                            .CreateTopicIfNotExists(JsonSchemaRegistryTopicName, 2, 1)
                             .AddProducer<AvroProducer>(
                                 producer => producer
                                     .DefaultTopic(AvroTopicName)
@@ -174,6 +177,13 @@ namespace KafkaFlow.IntegrationTests.Core
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(kafkaBrokers.Split(';'))
+                            .CreateTopicIfNotExists(ProtobufTopicName, 2, 1)
+                            .CreateTopicIfNotExists(PauseResumeTopicName, 2, 1)
+                            .CreateTopicIfNotExists(JsonTopicName, 1, 1)
+                            .CreateTopicIfNotExists(GzipTopicName, 2, 1)
+                            .CreateTopicIfNotExists(JsonGzipTopicName, 2, 1)
+                            .CreateTopicIfNotExists(ProtobufGzipTopicName, 2, 1)
+                            .CreateTopicIfNotExists(ProtobufGzipTopicName2, 2, 1)
                             .AddConsumer(
                                 consumer => consumer
                                     .Topic(ProtobufTopicName)

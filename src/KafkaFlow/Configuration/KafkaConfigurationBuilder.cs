@@ -3,6 +3,7 @@ namespace KafkaFlow.Configuration
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using KafkaFlow.Clusters;
     using KafkaFlow.Consumers;
     using KafkaFlow.Producers;
 
@@ -32,11 +33,18 @@ namespace KafkaFlow.Configuration
                                 resolver,
                                 producer))));
 
+            foreach (var cluster in configuration.Clusters)
+            {
+                this.dependencyConfigurator.AddSingleton<IClusterManager>(resolver =>
+                     new ClusterManager(resolver.Resolve<ILogHandler>(), cluster));
+            }
+
             this.dependencyConfigurator
                 .AddTransient(typeof(ILogHandler), this.logHandlerType)
                 .AddSingleton<IDateTimeProvider, DateTimeProvider>()
                 .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
-                .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory());
+                .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
+                .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>();
 
             return configuration;
         }
