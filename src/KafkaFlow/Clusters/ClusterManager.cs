@@ -20,7 +20,7 @@ namespace KafkaFlow.Clusters
             this.configuration = configuration;
             this.lazyAdminClientBuilder = new Lazy<AdminClientBuilder>(
                 () => new AdminClientBuilder(new AdminClientConfig
-                    { BootstrapServers = string.Join(",", configuration.Brokers) }));
+                { BootstrapServers = string.Join(",", configuration.Brokers) }));
         }
 
         public string ClusterName => this.configuration.Name;
@@ -29,17 +29,18 @@ namespace KafkaFlow.Clusters
         {
             try
             {
-                var topics = configurations.Select(
-                    topicConfiguration => new TopicSpecification
-                    {
-                        Name = topicConfiguration.Name,
-                        ReplicationFactor = topicConfiguration.Replicas,
-                        NumPartitions = topicConfiguration.Partitions,
-                    }).ToArray();
+                var topics = configurations
+                    .Select(
+                        topicConfiguration => new TopicSpecification
+                        {
+                            Name = topicConfiguration.Name,
+                            ReplicationFactor = topicConfiguration.Replicas,
+                            NumPartitions = topicConfiguration.Partitions,
+                        })
+                    .ToArray();
 
                 using var client = this.lazyAdminClientBuilder.Value.Build();
-                await client.CreateTopicsAsync(
-                    topics);
+                await client.CreateTopicsAsync(topics);
             }
             catch (CreateTopicsException exception)
             {
@@ -52,7 +53,8 @@ namespace KafkaFlow.Clusters
                             "An error occurred creating topic {Topic}: {Reason}",
                             new
                             {
-                                exceptionResult.Topic, exceptionResult.Error.Reason,
+                                exceptionResult.Topic,
+                                exceptionResult.Error.Reason,
                             });
                         continue;
                     }
