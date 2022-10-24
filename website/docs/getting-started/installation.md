@@ -31,7 +31,7 @@ dotnet add package KafkaFlow.Microsoft.DependencyInjection
 dotnet add package KafkaFlow.LogHandler.Console
 ```
 
-You can find a complete list of the available packages [here](../guides/packages.md).
+You can find a complete list of the available packages [here](packages.md).
 
 
 ## Setup

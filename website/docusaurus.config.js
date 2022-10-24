@@ -9,7 +9,7 @@ const config = {
   title: 'KafkaFlow',
   tagline: 'A .NET framework to create Kafka-based applications, simple to use and extend.',
   url: 'https://farfetch.github.io/',
-  baseUrl: '/',
+  baseUrl: '/kafkaflow/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
