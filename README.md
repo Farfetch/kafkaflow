@@ -20,24 +20,22 @@ Want to give it a try? Check out our [Quickstart](https://farfetch.github.io/kaf
 
 Learn more about using KafkaFlow on the [site](https://farfetch.github.io/kafkaflow/docs/)!
 
-
 ## Contributing
 
 Read our [contributing guidelines](CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes.
 
 ## Authors
 
-- [filipeesch](https://github.com/filipeesch)
-- [dougolima](https://github.com/dougolima)
+-   [filipeesch](https://github.com/filipeesch)
+-   [dougolima](https://github.com/dougolima)
 
 ## Get in touch
 
 You can find us at:
 
- - [GitHub Issues](https://github.com/Farfetch/kafkaflow/issues)
- - [GitHub Discussions](https://github.com/Farfetch/kafkaflow/discussions)
- - [Slack](https://join.slack.com/t/kafkaflow/shared_invite/zt-puihrtcl-NnnylPZloAiVlQfsw~RD6Q)
-
+-   [GitHub Issues](https://github.com/Farfetch/kafkaflow/issues)
+-   [GitHub Discussions](https://github.com/Farfetch/kafkaflow/discussions)
+-   [Slack](https://join.slack.com/t/kafkaflow/shared_invite/zt-puihrtcl-NnnylPZloAiVlQfsw~RD6Q)
 
 ## License
 
