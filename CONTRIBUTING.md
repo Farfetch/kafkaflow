@@ -21,6 +21,19 @@ Here are a few things you can do that will increase the likelihood of your pull 
 -   Write [good commit messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html) following [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
 -   Open a pull request with a title following [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
 
+## Running Integration Tests
+
+You can find a Makefile with steps for running a Kafka Cluster using docker on the repository root.
+
+### To start cluster
+
+Run command `make init_broker`
+
+### To stop cluster
+
+Run command `make shutdown_broker`
+
+
 ## Resources
 
 -   [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
