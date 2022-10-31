@@ -1,0 +1,55 @@
+name: 🐞 Bug report
+description: Create a report to help us improve
+title: '[Bug Report]:'
+labels:
+  - needs triage
+  - bug
+body:
+- type: checkboxes
+  attributes:
+    label: Prerequisites
+    options:
+    - label: I have searched [issues](https://github.com/Farfetch/kafkaflow/issues) to ensure it has not already been reported
+      required: true
+
+- type: textarea
+  attributes:
+    label: Description
+    description: A clear and concise description of what the bug is.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Steps to reproduce
+    description: Write down the steps to reproduce the bug.
+    placeholder: |
+      1. Step 1...
+      2. Step 2...
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Expected behavior
+    description: |
+      Describe what you would expect. Write down what you thought would happen.
+    placeholder: Write what you thought would happen.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Actual behavior
+    description: |
+      Provide a description of the actual behavior observed. If applicable please include any error messages or exception stacktraces.
+    placeholder: Write what happened.
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: KafkaFlow version
+    placeholder: e.g., v2.1.0
+  validations:
+    required: true    
