@@ -5,16 +5,13 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   selector: 'app-rewind-modal',
   templateUrl: './rewind-modal.component.html'
 })
-export class RewindModalComponent implements OnInit {
+export class RewindModalComponent {
   public rewindDate: Date | undefined;
-  @Input() public groupId: string;
-  @Input() public consumerName: string;
-  @Input() public topic: string;
+  @Input() public groupId: string | undefined;
+  @Input() public consumerName: string | undefined;
+  @Input() public topic: string | undefined;
 
   constructor(public activeModal: NgbActiveModal) { }
-
-  ngOnInit(): void {
-  }
 
   save = () => {
     this.activeModal.close(this.rewindDate);

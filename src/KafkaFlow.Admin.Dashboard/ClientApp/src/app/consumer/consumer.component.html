@@ -8,17 +8,17 @@
       <div *ngFor="let consumer of group.consumers">
         <h4>Consumer: {{ consumer.name }}</h4>
         <h4>Status: <span [ngClass]="{
-                  'text-success': $any(consumer).status == 'Running',
-                  'text-warning': $any(consumer).status == 'Paused',
-                  'text-danger': $any(consumer).status == 'Not Running'
+                  'text-success': $any(consumer).status === 'Running',
+                  'text-warning': $any(consumer).status === 'Paused',
+                  'text-danger': $any(consumer).status === 'Not Running'
                   }">{{$any(consumer).status}}</span>
-          <button class="btn btn-sm btn-outline-success ml-2" type="button" (click)="openStartModal(group.groupId, consumer.name)" *ngIf="$any(consumer).status == 'Not Running'">Start</button>
-          <button class="btn btn-sm btn-outline-warning ml-2" type="button" (click)="openStopModal(group.groupId, consumer.name)" *ngIf="$any(consumer).status == 'Running'">Stop</button>
-          <button class="btn btn-sm btn-outline-warning ml-2" type="button" (click)="openRestartModal(group.groupId, consumer.name)" *ngIf="$any(consumer).status == 'Running'">Restart</button>
+          <button class="btn btn-sm btn-outline-success ml-2" type="button" (click)="openStartModal(group.groupId, consumer.name)" *ngIf="$any(consumer).status === 'Not Running'">Start</button>
+          <button class="btn btn-sm btn-outline-warning ml-2" type="button" (click)="openStopModal(group.groupId, consumer.name)" *ngIf="$any(consumer).status === 'Running'">Stop</button>
+          <button class="btn btn-sm btn-outline-warning ml-2" type="button" (click)="openRestartModal(group.groupId, consumer.name)" *ngIf="$any(consumer).status === 'Running'">Restart</button>
         </h4>
         <h4>Lag: {{$any(consumer).lag}}</h4>
         <h4>Workers: {{consumer.workersCount}}
-          <button class="btn btn-sm btn-outline-success ml-3" type="button" (click)="openWorkersCountModal(group.groupId, consumer.name, consumer.workersCount)" *ngIf="$any(consumer).status == 'Running'">Change number of workers</button>
+          <button class="btn btn-sm btn-outline-success ml-3" type="button" (click)="openWorkersCountModal(group.groupId, consumer.name, consumer.workersCount)" *ngIf="$any(consumer).status === 'Running'">Change number of workers</button>
         </h4>
         <ng-template let-assignment ngFor [ngForOf]="consumer.assignments || [] | groupBy:'topicName'">
           <hr/>
@@ -26,8 +26,8 @@
             Topic: {{assignment.key}}
             <button class="btn btn-sm btn-outline-success ml-2" type="button" (click)="openResumeModal(group.groupId, consumer.name, assignment.key)" *ngIf="assignment.value.some(hasPausedPartition)">Resume</button>
             <button class="btn btn-sm btn-outline-warning ml-2" type="button" (click)="openPauseModal(group.groupId, consumer.name, assignment.key)" *ngIf="assignment.value.some(hasRunningPartition)">Pause</button>
-            <button class="btn btn-sm btn-outline-info ml-2" type="button" (click)="openRewindModal(group.groupId, consumer.name, assignment.key)" *ngIf="$any(consumer).status == 'Running'">Rewind Offset</button>
-            <button class="btn btn-sm btn-outline-secondary ml-2" type="button" (click)="openResetModal(group.groupId, consumer.name, assignment.key)" *ngIf="$any(consumer).status == 'Running'">Reset Offset</button>
+            <button class="btn btn-sm btn-outline-info ml-2" type="button" (click)="openRewindModal(group.groupId, consumer.name, assignment.key)" *ngIf="$any(consumer).status === 'Running'">Rewind Offset</button>
+            <button class="btn btn-sm btn-outline-secondary ml-2" type="button" (click)="openResetModal(group.groupId, consumer.name, assignment.key)" *ngIf="$any(consumer).status === 'Running'">Reset Offset</button>
           </h5>
           <table class="table table-striped table-hover mt-1">
             <thead>

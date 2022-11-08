@@ -1,4 +1,4 @@
-/* tslint:disable */
+/* eslint-disable */
 /* eslint-disable */
 import { Consumer } from './consumer';
 export interface ConsumerGroup {

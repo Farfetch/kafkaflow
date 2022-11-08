@@ -21,7 +21,7 @@ import * as moment from 'moment';
   templateUrl: './consumer.component.html'
 })
 export class ConsumerComponent implements OnInit {
-  public telemetryResponse: TelemetryResponse;
+  public telemetryResponse: TelemetryResponse | undefined;
   @ViewChild('successAlert', { static: false }) successAlert: NgbAlert | undefined;
   private successSubject = new Subject<string>();
   private delayMs = 5000;

@@ -1,4 +1,4 @@
-/* tslint:disable */
+/* eslint-disable */
 /* eslint-disable */
 import { ConsumerGroup } from './consumer-group';
 export interface TelemetryResponse {

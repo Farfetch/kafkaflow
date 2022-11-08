@@ -5,13 +5,10 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   selector: 'app-pause-modal',
   templateUrl: './pause-modal.component.html'
 })
-export class PauseModalComponent implements OnInit {
-  @Input() public groupId: string;
-  @Input() public consumerName: string;
-  @Input() public topic: string;
+export class PauseModalComponent {
+  @Input() public groupId: string | undefined;
+  @Input() public consumerName: string | undefined;
+  @Input() public topic: string | undefined;
 
   constructor(public activeModal: NgbActiveModal) { }
-
-  ngOnInit(): void {
-  }
 }
