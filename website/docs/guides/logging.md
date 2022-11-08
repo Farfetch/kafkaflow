@@ -20,7 +20,7 @@ The default implementation is the `NullLogHandler`.
 
 ## Using Console Logger {#console-logger}
 
-The package [KafkaFlow.LogHandler.Console](https://www.nuget.org/packages/KafkaFlow.LogHandler.Console/) can be installed to log the framework messages to the console output after the installation, use the method `UseConsoleLog` in the [configuration](../getting-started/configuration).
+The package [KafkaFlow.LogHandler.Console](https://www.nuget.org/packages/KafkaFlow.LogHandler.Console/) can be installed to log the framework messages to the console output after the installation, use the method `UseConsoleLog` in the [configuration](configuration).
 
 ```csharp
 services.AddKafka(
@@ -31,7 +31,7 @@ services.AddKafka(
 
 ## Using Microsoft Logging Framework {#microsoft-logging-framework}
 
-The package [KafkaFlow.LogHandler.Microsoft](https://www.nuget.org/packages/KafkaFlow.LogHandler.Microsoft/) can be installed to log the framework messages to the console output after the installation, use the method `UseMicrosoftLog` in the [configuration](../getting-started/configuration).
+The package [KafkaFlow.LogHandler.Microsoft](https://www.nuget.org/packages/KafkaFlow.LogHandler.Microsoft/) can be installed to log the framework messages to the console output after the installation, use the method `UseMicrosoftLog` in the [configuration](configuration).
 
 ```csharp
 services.AddKafka(
@@ -42,7 +42,7 @@ services.AddKafka(
 
 ## Using your own Logger {#custom-logger}
 
-The framework has the `ILogHandler` interface that can be implemented to log the framework's messages. The log handler can be configured in the [configuration](../getting-started/configuration) process using the method `UseLogHandler`:
+The framework has the `ILogHandler` interface that can be implemented to log the framework's messages. The log handler can be configured in the [configuration](configuration) process using the method `UseLogHandler`:
 
 ```csharp
 services.AddKafka(
