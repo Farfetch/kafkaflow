@@ -17,6 +17,7 @@
     <Content Remove="ClientApp\**" />
     <None Include="ClientApp\**" />
     <None Remove="ClientApp\node_modules\**" />
+    <None Remove="ClientApp\.angular\**" />
     <EmbeddedResource Remove="ClientApp\node_modules\**" />
     <Content Remove="ClientApp\node_modules\**" />
   </ItemGroup>

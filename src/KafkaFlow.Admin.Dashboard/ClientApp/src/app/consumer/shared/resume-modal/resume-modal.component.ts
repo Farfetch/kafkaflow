@@ -5,14 +5,10 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   selector: 'app-resume-modal',
   templateUrl: './resume-modal.component.html'
 })
-export class ResumeModalComponent implements OnInit {
-  @Input() public groupId: string;
-  @Input() public consumerName: string;
-  @Input() public topic: string;
+export class ResumeModalComponent {
+  @Input() public groupId: string | undefined;
+  @Input() public consumerName: string | undefined;
+  @Input() public topic: string | undefined;
 
   constructor(public activeModal: NgbActiveModal) { }
-
-  ngOnInit(): void {
-  }
-
 }

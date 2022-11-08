@@ -5,12 +5,10 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   selector: 'app-start-modal',
   templateUrl: './start-modal.component.html'
 })
-export class StartModalComponent implements OnInit {
-  @Input() public groupId: string;
-  @Input() public consumerName: string;
+export class StartModalComponent {
+  @Input() public groupId: string | undefined;
+  @Input() public consumerName: string | undefined;
 
   constructor(public activeModal: NgbActiveModal) { }
 
-  ngOnInit(): void {
-  }
 }

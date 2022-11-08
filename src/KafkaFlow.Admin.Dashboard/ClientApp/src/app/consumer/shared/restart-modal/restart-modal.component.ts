@@ -5,13 +5,9 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   selector: 'app-restart-modal',
   templateUrl: './restart-modal.component.html'
 })
-export class RestartModalComponent implements OnInit {
-  @Input() public groupId: string;
-  @Input() public consumerName: string;
+export class RestartModalComponent {
+  @Input() public groupId: string | undefined;
+  @Input() public consumerName: string | undefined;
 
   constructor(public activeModal: NgbActiveModal) { }
-
-  ngOnInit(): void {
-  }
-
 }

@@ -5,12 +5,9 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   selector: 'app-stop-modal',
   templateUrl: './stop-modal.component.html'
 })
-export class StopModalComponent implements OnInit {
-  @Input() public groupId: string;
-  @Input() public consumerName: string;
+export class StopModalComponent {
+  @Input() public groupId: string | undefined;
+  @Input() public consumerName: string | undefined;
 
   constructor(public activeModal: NgbActiveModal) { }
-
-  ngOnInit(): void {
-  }
 }
