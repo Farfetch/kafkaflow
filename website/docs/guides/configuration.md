@@ -131,6 +131,12 @@ public void Configure(
 
 ## Using other DI Container (Unity or other) {#other-di-container}
 
+:::info
+
+If you want to use a DI container other than Unity, check [how to implement](dependency-injection.md) it first.
+
+:::
+
 Add the required package references:
 
 ```bash
