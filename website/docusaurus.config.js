@@ -64,6 +64,11 @@ const config = {
             label: 'Docs',
           },
           {
+            to: 'extensions', 
+            label: 'Extensions', 
+            position: 'right'
+          },
+          {
             href: 'https://github.com/farfetch/kafkaflow',
             label: 'GitHub',
             position: 'right',
