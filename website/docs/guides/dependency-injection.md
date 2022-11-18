@@ -1,25 +1,22 @@
 ---
-sidebar_position: 6
+sidebar_position: 20
 ---
 
 # Dependency Injection
 
-KafkaFlow can support any DI framework. We natively support [Microsoft DI](https://www.nuget.org/packages/KafkaFlow.Microsoft.DependencyInjection/) and [Unity 5](https://www.nuget.org/packages/KafkaFlow.Unity/).
+KafkaFlow Dependency Injection framework support is extensible.
 
-To support other DI frameworks you should implement the interfaces `IDependencyConfigurator`, `IDependencyResolver`, and `IDependencyResolverScope`.
+[Microsoft .NET DI](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/) and [Unity 5](http://unitycontainer.org/articles/quickstart.html) are natively supported. You can see [here](configuration) how to use them.
 
-### Unity or other DI framework
+## Add support for a new Dependency Injection container
 
-```csharp
-var container = new UnityContainer();
+Other DI frameworks can be supported by implementing a set of interfaces:
 
-var configurator = new KafkaFlowConfigurator(
-    // Install KafkaFlow.Unity package
-    new UnityDependencyConfigurator(container),
-    kafka => kafka
-        .AddCluster( ... )
-);
+- `IDependencyConfigurator`
+- `IDependencyResolver`
+- `IDependencyResolverScope`
 
-//Call bus.StartAsync() when your app starts and bus.StopAsync() when your app stops
-var bus = configurator.CreateBus(new UnityDependencyResolver(container));
-```
+
+You can find an example [here](https://github.com/Farfetch/kafkaflow/tree/master/src/KafkaFlow.Unity).
+
+Once the interfaces are implemented, use them the same way you use Unity ([see here](configuration)).
