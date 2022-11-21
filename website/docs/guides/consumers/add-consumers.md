@@ -11,9 +11,7 @@ To add a consumer, you need to configure the Topic that the consumer will be lis
 
 ```csharp
 using KafkaFlow;
-using KafkaFlow.Serializer;
 using Microsoft.Extensions.DependencyInjection;
-using KafkaFlow.TypedHandler;
 
 services.AddKafka(kafka => kafka
     .AddCluster(cluster => cluster
@@ -44,9 +42,7 @@ There are two options:
 
 ```csharp
 using KafkaFlow;
-using KafkaFlow.Serializer;
 using Microsoft.Extensions.DependencyInjection;
-using KafkaFlow.TypedHandler;
 
 services.AddKafka(kafka => kafka
     .AddCluster(cluster => cluster
@@ -71,9 +67,7 @@ To control Offset storing, it's possible to configure using `WithManualStoreOffs
 
 ```csharp
 using KafkaFlow;
-using KafkaFlow.Serializer;
 using Microsoft.Extensions.DependencyInjection;
-using KafkaFlow.TypedHandler;
 
 services.AddKafka(kafka => kafka
     .AddCluster(cluster => cluster
