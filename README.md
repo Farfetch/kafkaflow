@@ -1,6 +1,6 @@
 # KafkaFlow
 
-![Build Master](https://github.com/Farfetch/kafkaflow/workflows/Build%20Master/badge.svg?branch=master) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/49878b337fde46839c5f08051c2ba098)](https://app.codacy.com/gh/Farfetch/kafkaflow?utm_source=github.com&utm_medium=referral&utm_content=Farfetch/kafkaflow&utm_campaign=Badge_Grade_Dashboard) [![Slack](https://img.shields.io/badge/slack-@kafkaflow-green.svg?logo=slack)](https://join.slack.com/t/kafkaflow/shared_invite/zt-puihrtcl-NnnylPZloAiVlQfsw~RD6Q)
+![Build Master](https://github.com/Farfetch/kafkaflow/workflows/Build/badge.svg?branch=master) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/49878b337fde46839c5f08051c2ba098)](https://app.codacy.com/gh/Farfetch/kafkaflow?utm_source=github.com&utm_medium=referral&utm_content=Farfetch/kafkaflow&utm_campaign=Badge_Grade_Dashboard) [![Slack](https://img.shields.io/badge/slack-@kafkaflow-green.svg?logo=slack)](https://join.slack.com/t/kafkaflow/shared_invite/zt-puihrtcl-NnnylPZloAiVlQfsw~RD6Q)
 
 ## Introduction
 
