@@ -33,7 +33,7 @@ It’s an algorithm to choose a [Worker](#workers) to process the message. The F
  - The **BytesSum** maintains the message order with some performance and resource penalties, **it is the default strategy**. 
  - The **FreeWorker** is faster, but the message order is lost. A custom strategy can be implemented using the `IDistibutionStrategy` interface. 
 
-You can configure the consumer strategy on the [configuration](configuration) with the method `WithWorkDistributionStrategy`.
+You can configure the consumer strategy on the [configuration](../configuration) with the method `WithWorkDistributionStrategy`.
 
 ### Workers
 
@@ -47,7 +47,7 @@ The buffer size should be dimensioned depending on how many messages arrive with
 
 ### Middlewares
 
-It’s a customizable collection of middlewares. This collection is configurable per consumer. Middlewares can be created by implementing the `IMessageMiddleware` interface. Each consumer has its own instances of middlewares, so they are not shared between consumers but shared between [Workers](#workers) instead. You can see more information about middlewares [here](middlewares).
+It’s a customizable collection of middlewares. This collection is configurable per consumer. Middlewares can be created by implementing the `IMessageMiddleware` interface. Each consumer has its own instances of middlewares, so they are not shared between consumers but shared between [Workers](#workers) instead. You can see more information about middlewares [here](../middlewares).
 
 ### Offset Manager
 
