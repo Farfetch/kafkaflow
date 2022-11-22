@@ -20,7 +20,7 @@ The method receives a class that implements the `IMessageCompressor` interface a
 
 A class instance can be provided as an argument through a factory method too. 
 
-Install the [KafkaFlow.Compressor.Gzip](https://www.nuget.org/packages/KafkaFlow.Compressor.Gzip/) to use the `GzipMessageCompressor` that uses the GZIP algorithm.
+Install the [KafkaFlow.Compressor.Gzip](https://www.nuget.org/packages/KafkaFlow.Compressor.Gzip/) package to use the `GzipMessageCompressor` that uses the GZIP algorithm.
 
 ```csharp
 public class Startup
