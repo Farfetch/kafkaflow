@@ -23,7 +23,7 @@
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(new[] { "localhost:9092" })
-                            .CreateTopicIfNotExists(topicName, 1, 1)
+                            .CreateTopicIfNotExists(topicName, 6, 1)
                             .AddProducer(
                                 producerName,
                                 producer => producer
@@ -35,7 +35,7 @@
                                     .Topic(topicName)
                                     .WithGroupId("print-console-handler")
                                     .WithBufferSize(100)
-                                    .WithWorkersCount(20)
+                                    .WithWorkersCount(3)
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSerializer<ProtobufNetSerializer>()
@@ -55,29 +55,31 @@
                 .GetRequiredService<IProducerAccessor>()
                 .GetProducer(producerName);
 
+            Console.WriteLine("Type the number of messages to produce or 'exit' to quit:");
+
             while (true)
             {
-                Console.Write("Number of messages to produce, Pause, Resume, or Exit:");
-                var input = Console.ReadLine()?.ToLower();
+                var input = Console.ReadLine();
 
-                switch (input)
+                if (int.TryParse(input, out var count))
                 {
-                    case var _ when int.TryParse(input, out var count):
-                        for (var i = 0; i < count; i++)
-                        {
-                            await producer.ProduceAsync(
-                                topicName,
-                                Guid.NewGuid().ToString(),
-                                new TestMessage { Text = $"Message: {Guid.NewGuid()}" });
-                        }
+                    for (var i = 0; i < count; i++)
+                    {
+                        await producer.ProduceAsync(
+                            topicName,
+                            Guid.NewGuid().ToString(),
+                            new TestMessage { Text = $"Message: {Guid.NewGuid()}" });
+                    }
+                }
 
-                        break;
-
-                    case "exit":
-                        await bus.StopAsync();
-                        return;
+                if (input!.Equals("exit", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    await bus.StopAsync();
+                    break;
                 }
             }
+
+            await Task.Delay(3000);
         }
     }
 

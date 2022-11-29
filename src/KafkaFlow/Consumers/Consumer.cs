@@ -13,10 +13,10 @@ namespace KafkaFlow.Consumers
         private readonly IDependencyResolver dependencyResolver;
         private readonly ILogHandler logHandler;
 
-        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>>>
+        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, IReadOnlyList<TopicPartition>>>
             partitionsAssignedHandlers = new();
 
-        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>>>
+        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, IReadOnlyList<TopicPartitionOffset>>>
             partitionsRevokedHandlers = new();
 
         private readonly List<Action<IConsumer<byte[], byte[]>, Error>> errorsHandlers = new();
@@ -88,10 +88,11 @@ namespace KafkaFlow.Consumers
             }
         }
 
-        public void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler) =>
+        public void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, IReadOnlyList<TopicPartition>> handler) =>
             this.partitionsAssignedHandlers.Add(handler);
 
-        public void OnPartitionsRevoked(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler) =>
+        public void OnPartitionsRevoked(
+            Action<IDependencyResolver, IConsumer<byte[], byte[]>, IReadOnlyList<TopicPartitionOffset>> handler) =>
             this.partitionsRevokedHandlers.Add(handler);
 
         public void OnError(Action<IConsumer<byte[], byte[]>, Error> handler) =>
@@ -217,16 +218,7 @@ namespace KafkaFlow.Consumers
             this.consumer =
                 consumerBuilder
                     .SetPartitionsAssignedHandler(
-                        (consumer, partitions) =>
-                        {
-                            this.Assignment = partitions;
-                            this.Subscription = consumer.Subscription;
-                            this.flowManager.Start(consumer);
-
-                            this.partitionsAssignedHandlers.ForEach(
-                                x =>
-                                    x(this.dependencyResolver, consumer, partitions));
-                        })
+                        (consumer, partitions) => this.FirePartitionsAssignedHandlers(consumer, partitions))
                     .SetPartitionsRevokedHandler(
                         (consumer, partitions) =>
                         {
@@ -235,13 +227,40 @@ namespace KafkaFlow.Consumers
                             this.committedOffsets.Clear();
                             this.flowManager.Stop();
 
-                            this.partitionsRevokedHandlers.ForEach(x => x(this.dependencyResolver, consumer, partitions));
+                            this.partitionsRevokedHandlers.ForEach(handler => handler(this.dependencyResolver, consumer, partitions));
                         })
                     .SetErrorHandler((consumer, error) => this.errorsHandlers.ForEach(x => x(consumer, error)))
                     .SetStatisticsHandler((consumer, statistics) => this.statisticsHandlers.ForEach(x => x(consumer, statistics)))
                     .Build();
 
-            this.consumer.Subscribe(this.Configuration.Topics);
+            if (this.Configuration.Topics.Any())
+            {
+                this.consumer.Subscribe(this.Configuration.Topics);
+            }
+
+            if (this.Configuration.ManualAssignPartitions.Any())
+            {
+                this.ManualAssign(this.Configuration.ManualAssignPartitions);
+            }
+        }
+
+        private void ManualAssign(IEnumerable<TopicPartitions> topics)
+        {
+            var partitions = topics
+                .SelectMany(topic => topic.Partitions.Select(partition => new TopicPartition(topic.Name, new Partition(partition))))
+                .ToList();
+
+            this.consumer.Assign(partitions);
+            this.FirePartitionsAssignedHandlers(this.consumer, partitions);
+        }
+
+        private void FirePartitionsAssignedHandlers(IConsumer<byte[], byte[]> consumer, IReadOnlyList<TopicPartition> partitions)
+        {
+            this.Assignment = partitions;
+            this.Subscription = consumer.Subscription;
+            this.flowManager.Start(consumer);
+
+            this.partitionsAssignedHandlers.ForEach(handler => handler(this.dependencyResolver, consumer, partitions));
         }
 
         private void InvalidateConsumer()

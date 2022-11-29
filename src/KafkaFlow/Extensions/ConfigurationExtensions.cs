@@ -35,7 +35,7 @@ namespace KafkaFlow
                 _ => throw new ArgumentOutOfRangeException()
             };
 
-        public static void ReadSecurityInformation(this ClientConfig config, ClusterConfiguration cluster)
+        public static void ReadSecurityInformationFrom(this ClientConfig config, ClusterConfiguration cluster)
         {
             var securityInformation = cluster.GetSecurityInformation();
 

@@ -2,6 +2,7 @@ namespace KafkaFlow.Admin
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading;
     using KafkaFlow.Admin.Messages;
@@ -10,6 +11,7 @@ namespace KafkaFlow.Admin
 
     internal class TelemetryScheduler : ITelemetryScheduler
     {
+        private static readonly int ProcessId = Process.GetCurrentProcess().Id;
         private readonly Dictionary<string, Timer> timers = new();
         private readonly IDependencyResolver dependencyResolver;
 
@@ -18,7 +20,7 @@ namespace KafkaFlow.Admin
             this.dependencyResolver = dependencyResolver;
         }
 
-        public void Start(string telemetryId, string topicName)
+        public void Start(string telemetryId, string topicName, int topicPartition)
         {
             this.Stop(telemetryId);
 
@@ -36,7 +38,7 @@ namespace KafkaFlow.Admin
             var producer = this.dependencyResolver.Resolve<IProducerAccessor>().GetProducer(telemetryId);
 
             this.timers[telemetryId] = new Timer(
-                _ => ProduceTelemetry(topicName, consumers, producer),
+                _ => ProduceTelemetry(topicName, topicPartition, consumers, producer),
                 null,
                 TimeSpan.Zero,
                 TimeSpan.FromSeconds(5));
@@ -53,7 +55,8 @@ namespace KafkaFlow.Admin
 
         private static void ProduceTelemetry(
             string topicName,
-            IReadOnlyCollection<IMessageConsumer> consumers,
+            int partition,
+            IEnumerable<IMessageConsumer> consumers,
             IMessageProducer producer)
         {
             var items = consumers
@@ -68,7 +71,7 @@ namespace KafkaFlow.Admin
                                 ConsumerName = c.ConsumerName,
                                 Topic = topic,
                                 GroupId = c.GroupId,
-                                InstanceName = Environment.MachineName,
+                                InstanceName = $"{Environment.MachineName}-{ProcessId}",
                                 PausedPartitions = c.PausedPartitions
                                     .Where(p => p.Topic == topic)
                                     .Select(p => p.Partition.Value),
@@ -84,7 +87,7 @@ namespace KafkaFlow.Admin
 
             foreach (var item in items)
             {
-                producer.Produce(topicName, Guid.NewGuid().ToByteArray(), item);
+                producer.Produce(topicName, Guid.NewGuid().ToByteArray(), item, partition: partition);
             }
         }
     }

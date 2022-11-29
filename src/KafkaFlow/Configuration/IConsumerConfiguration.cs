@@ -25,6 +25,11 @@ namespace KafkaFlow.Configuration
         IReadOnlyList<string> Topics { get; }
 
         /// <summary>
+        /// Gets the topic partitions to manually assign
+        /// </summary>
+        IReadOnlyList<TopicPartitions> ManualAssignPartitions { get; }
+
+        /// <summary>
         /// Gets the consumer name
         /// </summary>
         string ConsumerName { get; }
@@ -66,6 +71,11 @@ namespace KafkaFlow.Configuration
         bool AutoStoreOffsets { get; }
 
         /// <summary>
+        /// Gets a value indicating that no offsets will be stored on Kafka
+        /// </summary>
+        bool NoStoreOffsets { get; }
+
+        /// <summary>
         /// Gets the interval between commits
         /// </summary>
         TimeSpan AutoCommitInterval { get; }
@@ -78,12 +88,12 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Gets the handlers that will be called when the partitions are assigned
         /// </summary>
-        IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> PartitionsAssignedHandlers { get; }
+        IReadOnlyList<Action<IDependencyResolver, IReadOnlyList<TopicPartition>>> PartitionsAssignedHandlers { get; }
 
         /// <summary>
         /// Gets the handlers that will be called when the partitions are revoked
         /// </summary>
-        IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
+        IReadOnlyList<Action<IDependencyResolver, IReadOnlyList<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
 
         /// <summary>
         /// Gets the handlers that will be called when there are pending offsets

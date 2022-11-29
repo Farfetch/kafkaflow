@@ -10,26 +10,28 @@ namespace KafkaFlow.Configuration
     internal sealed class ConsumerConfigurationBuilder : IConsumerConfigurationBuilder
     {
         private readonly List<string> topics = new();
+        private readonly List<TopicPartitions> topicsPartitions = new();
         private readonly List<Action<string>> statisticsHandlers = new();
 
         private readonly List<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>>, TimeSpan interval)>
             pendingOffsetsStatisticsHandlers = new();
 
-        private readonly List<Action<IDependencyResolver, List<TopicPartition>>> partitionAssignedHandlers = new();
-        private readonly List<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionRevokedHandlers = new();
+        private readonly List<Action<IDependencyResolver, IReadOnlyList<TopicPartition>>> partitionAssignedHandlers = new();
+        private readonly List<Action<IDependencyResolver, IReadOnlyList<TopicPartitionOffset>>> partitionRevokedHandlers = new();
         private readonly ConsumerMiddlewareConfigurationBuilder middlewareConfigurationBuilder;
 
         private ConsumerConfig consumerConfig;
 
         private string name;
         private bool disableManagement;
-        private string groupId;
+        private string groupId = string.Empty;
         private AutoOffsetReset? autoOffsetReset;
         private int? maxPollIntervalMs;
         private int workersCount;
         private int bufferSize;
         private TimeSpan workerStopTimeout = TimeSpan.FromSeconds(30);
         private bool autoStoreOffsets = true;
+        private bool noStoreOffsets;
         private ConsumerInitialState initialState = ConsumerInitialState.Running;
         private int statisticsInterval;
 
@@ -49,6 +51,12 @@ namespace KafkaFlow.Configuration
         public IConsumerConfigurationBuilder Topic(string topicName)
         {
             this.topics.Add(topicName);
+            return this;
+        }
+
+        public IConsumerConfigurationBuilder ManualAssignPartitions(string topicName, IEnumerable<int> partitions)
+        {
+            this.topicsPartitions.Add(new TopicPartitions(topicName, partitions));
             return this;
         }
 
@@ -163,6 +171,12 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
+        public IConsumerConfigurationBuilder WithoutStoringOffsets()
+        {
+            this.noStoreOffsets = true;
+            return this;
+        }
+
         public IConsumerConfigurationBuilder WithInitialState(ConsumerInitialState state)
         {
             this.initialState = state;
@@ -176,14 +190,14 @@ namespace KafkaFlow.Configuration
         }
 
         public IConsumerConfigurationBuilder WithPartitionsAssignedHandler(
-            Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler)
+            Action<IDependencyResolver, IReadOnlyList<TopicPartition>> partitionsAssignedHandler)
         {
             this.partitionAssignedHandlers.Add(partitionsAssignedHandler);
             return this;
         }
 
         public IConsumerConfigurationBuilder WithPartitionsRevokedHandler(
-            Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler)
+            Action<IDependencyResolver, IReadOnlyList<TopicPartitionOffset>> partitionsRevokedHandler)
         {
             this.partitionRevokedHandlers.Add(partitionsRevokedHandler);
             return this;
@@ -229,11 +243,12 @@ namespace KafkaFlow.Configuration
             this.consumerConfig.EnableAutoOffsetStore = false;
             this.consumerConfig.EnableAutoCommit = false;
 
-            this.consumerConfig.ReadSecurityInformation(clusterConfiguration);
+            this.consumerConfig.ReadSecurityInformationFrom(clusterConfiguration);
 
             return new ConsumerConfiguration(
                 this.consumerConfig,
                 this.topics,
+                this.topicsPartitions,
                 this.name,
                 clusterConfiguration,
                 this.disableManagement,
@@ -243,6 +258,7 @@ namespace KafkaFlow.Configuration
                 this.distributionStrategyFactory,
                 middlewareConfiguration,
                 this.autoStoreOffsets,
+                this.noStoreOffsets,
                 this.initialState,
                 this.autoCommitInterval,
                 this.statisticsHandlers,
