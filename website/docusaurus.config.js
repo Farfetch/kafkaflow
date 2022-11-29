@@ -55,7 +55,13 @@ const config = {
         disableSwitch: true,
       },
       navbar: {
-        title: 'KafkaFlow',
+        logo: {
+          alt: 'KafkaFlow',
+          src: 'img/logo.svg',
+          href: 'https://farfetch.github.io/kafkaflow/',
+          target: '_self',
+          height: 32,
+        },
         items: [
           {
             type: 'doc',
@@ -98,10 +104,10 @@ const config = {
           {
             title: 'Community',
             items: [
-              {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/kafkaflow',
-              },
+              // {
+              //   label: 'Stack Overflow',
+              //   href: 'https://stackoverflow.com/questions/tagged/kafkaflow',
+              // },
               {
                 label: 'Slack',
                 href: 'https://join.slack.com/t/kafkaflow/shared_invite/zt-puihrtcl-NnnylPZloAiVlQfsw~RD6Q',
