@@ -1,0 +1,11 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 320" width="1280" height="320">
+	<title>KafkaFlow-Logo</title>
+	<style>
+		tspan { white-space:pre } 
+		.t0 { font-size: 200px;fill: #000000;font-weight: 700;font-family: "NimbusSansExtdD-Bold", "Nimbus Sans Extd D" } 
+	</style>
+	<text id="KafkaFlow" style="transform: matrix(1,0,0,1,64.398,226.43)" >
+		<tspan x="0" y="0" class="t0">K</tspan><tspan  y="0" class="t0">a</tspan><tspan  y="0" class="t0">f</tspan><tspan  y="0" class="t0">k</tspan><tspan  y="0" class="t0">a</tspan><tspan  y="0" class="t0">F</tspan><tspan  y="0" class="t0">l</tspan><tspan  y="0" class="t0">o</tspan><tspan  y="0" class="t0">w
+</tspan>
+	</text>
+</svg>
