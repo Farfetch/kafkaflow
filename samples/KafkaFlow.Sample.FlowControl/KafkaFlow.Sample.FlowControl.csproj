@@ -6,6 +6,7 @@
         <IsPackable>false</IsPackable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <LangVersion>9</LangVersion>
+        <InvariantGlobalization>true</InvariantGlobalization>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

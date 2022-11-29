@@ -11,7 +11,7 @@ namespace KafkaFlow.Sample.Dashboard
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddKafka(
+            services.AddKafkaFlowHostedService(
                 kafka => kafka
                     .UseConsoleLog()
                     .AddCluster(
@@ -41,10 +41,6 @@ namespace KafkaFlow.Sample.Dashboard
                 .UseRouting()
                 .UseEndpoints(endpoints => { endpoints.MapControllers(); })
                 .UseKafkaFlowDashboard();
-
-            var kafkaBus = app.ApplicationServices.CreateKafkaBus();
-
-            lifetime.ApplicationStarted.Register(() => kafkaBus.StartAsync(lifetime.ApplicationStopped));
         }
     }
 }

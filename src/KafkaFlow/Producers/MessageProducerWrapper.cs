@@ -19,52 +19,60 @@ namespace KafkaFlow.Producers
             string topic,
             object messageKey,
             object message,
-            IMessageHeaders headers = null)
+            IMessageHeaders headers = null,
+            int? partition = null)
         {
             return this.producer.ProduceAsync(
                 topic,
                 messageKey,
                 message,
-                headers);
+                headers,
+                partition);
         }
 
         public Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
-            object partitionKey,
+            object messageKey,
             object message,
-            IMessageHeaders headers = null)
+            IMessageHeaders headers = null,
+            int? partition = null)
         {
             return this.producer.ProduceAsync(
-                partitionKey,
+                messageKey,
                 message,
-                headers);
+                headers,
+                partition);
         }
 
         public void Produce(
             string topic,
-            object partitionKey,
+            object messageKey,
             object message,
             IMessageHeaders headers = null,
-            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null)
+            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
+            int? partition = null)
         {
             this.producer.Produce(
                 topic,
-                partitionKey,
+                messageKey,
                 message,
                 headers,
-                deliveryHandler);
+                deliveryHandler,
+                partition);
         }
 
         public void Produce(
-            object partitionKey,
+            object messageKey,
             object message,
             IMessageHeaders headers = null,
-            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null)
+            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
+            int? partition = null)
         {
             this.producer.Produce(
-                partitionKey,
+                messageKey,
                 message,
                 headers,
-                deliveryHandler);
+                deliveryHandler,
+                partition);
         }
     }
 }

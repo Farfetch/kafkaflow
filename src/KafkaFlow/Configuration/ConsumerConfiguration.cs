@@ -12,6 +12,7 @@ namespace KafkaFlow.Configuration
         public ConsumerConfiguration(
             ConsumerConfig consumerConfig,
             IReadOnlyList<string> topics,
+            IReadOnlyList<TopicPartitions> manualAssignPartitions,
             string consumerName,
             ClusterConfiguration clusterConfiguration,
             bool managementDisabled,
@@ -21,11 +22,12 @@ namespace KafkaFlow.Configuration
             Factory<IDistributionStrategy> distributionStrategyFactory,
             IReadOnlyList<MiddlewareConfiguration> middlewaresConfigurations,
             bool autoStoreOffsets,
+            bool noStoreOffsets,
             ConsumerInitialState initialState,
             TimeSpan autoCommitInterval,
             IReadOnlyList<Action<string>> statisticsHandlers,
-            IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> partitionsAssignedHandlers,
-            IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionsRevokedHandlers,
+            IReadOnlyList<Action<IDependencyResolver, IReadOnlyList<TopicPartition>>> partitionsAssignedHandlers,
+            IReadOnlyList<Action<IDependencyResolver, IReadOnlyList<TopicPartitionOffset>>> partitionsRevokedHandlers,
             IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
                 pendingOffsetsHandlers,
             ConsumerCustomFactory customFactory)
@@ -42,9 +44,11 @@ namespace KafkaFlow.Configuration
             this.MiddlewaresConfigurations =
                 middlewaresConfigurations ?? throw new ArgumentNullException(nameof(middlewaresConfigurations));
             this.AutoStoreOffsets = autoStoreOffsets;
+            this.NoStoreOffsets = noStoreOffsets;
             this.InitialState = initialState;
             this.AutoCommitInterval = autoCommitInterval;
             this.Topics = topics ?? throw new ArgumentNullException(nameof(topics));
+            this.ManualAssignPartitions = manualAssignPartitions ?? throw new ArgumentNullException(nameof(manualAssignPartitions));
             this.ConsumerName = consumerName ?? Guid.NewGuid().ToString();
             this.ClusterConfiguration = clusterConfiguration;
             this.ManagementDisabled = managementDisabled;
@@ -69,6 +73,8 @@ namespace KafkaFlow.Configuration
         public IReadOnlyList<MiddlewareConfiguration> MiddlewaresConfigurations { get; }
 
         public IReadOnlyList<string> Topics { get; }
+
+        public IReadOnlyList<TopicPartitions> ManualAssignPartitions { get; }
 
         public string ConsumerName { get; }
 
@@ -96,15 +102,17 @@ namespace KafkaFlow.Configuration
 
         public bool AutoStoreOffsets { get; }
 
+        public bool NoStoreOffsets { get; }
+
         public ConsumerInitialState InitialState { get; }
 
         public TimeSpan AutoCommitInterval { get; }
 
         public IReadOnlyList<Action<string>> StatisticsHandlers { get; }
 
-        public IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> PartitionsAssignedHandlers { get; }
+        public IReadOnlyList<Action<IDependencyResolver, IReadOnlyList<TopicPartition>>> PartitionsAssignedHandlers { get; }
 
-        public IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
+        public IReadOnlyList<Action<IDependencyResolver, IReadOnlyList<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
 
         public IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
             PendingOffsetsHandlers { get; }

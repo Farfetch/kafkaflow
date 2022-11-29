@@ -15,8 +15,11 @@ namespace KafkaFlow.Consumers
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly ILogHandler logHandler;
         private readonly Factory<IDistributionStrategy> distributionStrategyFactory;
-        private readonly IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)> pendingOffsetsHandlers;
 
+        private readonly IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
+            pendingOffsetsHandlers;
+
+        private TaskCompletionSource<object> startedTaskSource = new();
         private List<IConsumerWorker> workers = new();
 
         private IDistributionStrategy distributionStrategy;
@@ -39,12 +42,17 @@ namespace KafkaFlow.Consumers
 
         public async Task StartAsync(IEnumerable<TopicPartition> partitions)
         {
+            IOffsetCommitter offsetCommitter =
+                this.consumer.Configuration.NoStoreOffsets ?
+                    new NullOffsetCommitter() :
+                    new OffsetCommitter(
+                        this.consumer,
+                        this.dependencyResolver,
+                        this.pendingOffsetsHandlers,
+                        this.logHandler);
+
             this.offsetManager = new OffsetManager(
-                new OffsetCommitter(
-                    this.consumer,
-                    this.dependencyResolver,
-                    this.pendingOffsetsHandlers,
-                    this.logHandler),
+                offsetCommitter,
                 partitions);
 
             await Task.WhenAll(
@@ -69,12 +77,15 @@ namespace KafkaFlow.Consumers
 
             this.distributionStrategy = this.distributionStrategyFactory(this.dependencyResolver);
             this.distributionStrategy.Init(this.workers.AsReadOnly());
+
+            this.startedTaskSource.TrySetResult(null);
         }
 
         public async Task StopAsync()
         {
             var currentWorkers = this.workers;
             this.workers = new List<IConsumerWorker>();
+            this.startedTaskSource = new();
 
             await Task.WhenAll(currentWorkers.Select(x => x.StopAsync())).ConfigureAwait(false);
 
@@ -84,17 +95,18 @@ namespace KafkaFlow.Consumers
 
         public async Task EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken)
         {
-            var localOffsetManager = this.offsetManager;
-            var worker = (IConsumerWorker) await this.distributionStrategy
+            await this.startedTaskSource.Task.ConfigureAwait(false);
+
+            var worker = (IConsumerWorker)await this.distributionStrategy
                 .GetWorkerAsync(message.Message.Key, stopCancellationToken)
                 .ConfigureAwait(false);
 
-            if (worker is null || localOffsetManager is null)
+            if (worker is null)
             {
                 return;
             }
 
-            localOffsetManager.Enqueue(message.TopicPartitionOffset);
+            this.offsetManager?.Enqueue(message.TopicPartitionOffset);
 
             await worker
                 .EnqueueAsync(message, stopCancellationToken)

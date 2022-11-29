@@ -90,7 +90,7 @@ namespace KafkaFlow.Configuration
             this.producerConfig.StatisticsIntervalMs = this.statisticsInterval;
             this.producerConfig.LingerMs = this.lingerMs;
 
-            this.producerConfig.ReadSecurityInformation(clusterConfiguration);
+            this.producerConfig.ReadSecurityInformationFrom(clusterConfiguration);
 
             var configuration = new ProducerConfiguration(
                 clusterConfiguration,

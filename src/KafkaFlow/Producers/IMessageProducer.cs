@@ -29,12 +29,14 @@ namespace KafkaFlow
         /// <param name="messageKey">The message key</param>
         /// <param name="messageValue">The message value</param>
         /// <param name="headers">The message headers</param>
+        /// <param name="partition">The partition where the message will be produced, if no partition is provided it will be calculated using the message key</param>
         /// <returns></returns>
         Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
             string topic,
             object messageKey,
             object messageValue,
-            IMessageHeaders headers = null);
+            IMessageHeaders headers = null,
+            int? partition = null);
 
         /// <summary>
         /// Produces a new message in the configured default topic
@@ -42,11 +44,13 @@ namespace KafkaFlow
         /// <param name="messageKey">The message key</param>
         /// <param name="messageValue">The message value</param>
         /// <param name="headers">The message headers</param>
+        /// <param name="partition">The partition where the message will be produced, if no partition is provided it will be calculated using the message key</param>
         /// <returns></returns>
         Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
             object messageKey,
             object messageValue,
-            IMessageHeaders headers = null);
+            IMessageHeaders headers = null,
+            int? partition = null);
 
         /// <summary>
         /// Produces a new message
@@ -57,12 +61,14 @@ namespace KafkaFlow
         /// <param name="messageValue">The message value</param>
         /// <param name="headers">The message headers</param>
         /// <param name="deliveryHandler">A handler with the operation result</param>
+        /// <param name="partition">The partition where the message will be produced, if no partition is provided it will be calculated using the message key</param>
         void Produce(
             string topic,
             object messageKey,
             object messageValue,
             IMessageHeaders headers = null,
-            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null);
+            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
+            int? partition = null);
 
         /// <summary>
         /// Produces a new message in the configured default topic
@@ -72,10 +78,12 @@ namespace KafkaFlow
         /// <param name="messageValue">The message value</param>
         /// <param name="headers">The message headers</param>
         /// <param name="deliveryHandler">A handler with the operation result</param>
+        /// <param name="partition">The partition where the message will be produced, if no partition is provided it will be calculated using the message key</param>
         void Produce(
             object messageKey,
             object messageValue,
             IMessageHeaders headers = null,
-            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null);
+            Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
+            int? partition = null);
     }
 }

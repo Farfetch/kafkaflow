@@ -14,21 +14,29 @@ namespace KafkaFlow.Configuration
         IDependencyConfigurator DependencyConfigurator { get; }
 
         /// <summary>
-        /// Sets the topic that will be used to read the messages
+        /// Sets the topic that will be used to read the messages, the partitions will be automatically assigned
         /// </summary>
         /// <param name="topicName">Topic name</param>
         /// <returns></returns>
         IConsumerConfigurationBuilder Topic(string topicName);
 
         /// <summary>
-        /// Sets the topics that will be used to read the messages
+        /// Explicitly defines the topic and partitions that will be used to read the messages
+        /// </summary>
+        /// <param name="topicName">Topic name</param>
+        /// <param name="partitions">The partitions IDs</param>
+        /// <returns></returns>
+        IConsumerConfigurationBuilder ManualAssignPartitions(string topicName, IEnumerable<int> partitions);
+
+        /// <summary>
+        /// Sets the topics that will be used to read the messages, the partitions will be automatically assigned
         /// </summary>
         /// <param name="topicNames">Topic names</param>
         /// <returns></returns>
         IConsumerConfigurationBuilder Topics(IEnumerable<string> topicNames);
 
         /// <summary>
-        /// Sets the topics that will be used to read the messages
+        /// Sets the topics that will be used to read the messages, the partitions will be automatically assigned
         /// </summary>
         /// <param name="topicNames">Topic names</param>
         /// <returns></returns>
@@ -134,6 +142,12 @@ namespace KafkaFlow.Configuration
         /// </summary>
         /// <returns></returns>
         IConsumerConfigurationBuilder WithManualStoreOffsets();
+
+        /// <summary>
+        /// No offsets will be stored on Kafka
+        /// </summary>
+        /// <returns></returns>
+        IConsumerConfigurationBuilder WithoutStoringOffsets();
 
         /// <summary>
         /// Configures the consumer initial state.The default is <see cref="ConsumerInitialState.Running"/>

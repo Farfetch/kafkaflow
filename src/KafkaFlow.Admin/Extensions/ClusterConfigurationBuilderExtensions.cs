@@ -17,30 +17,37 @@
         /// Creates the admin producer and consumer to manage the application consumers
         /// </summary>
         /// <param name="cluster">The cluster configuration builder</param>
-        /// <param name="adminTopic">The topic to be used by the admin commands</param>
-        /// <param name="adminConsumerGroup">The consumer group prefix</param>
+        /// <param name="topic">The topic to be used by the admin commands</param>
+        /// <param name="consumerGroup">The consumer group prefix</param>
+        /// <param name="topicPartition">The partition used to produce and consumer admin messages</param>
         /// <returns></returns>
         public static IClusterConfigurationBuilder EnableAdminMessages(
             this IClusterConfigurationBuilder cluster,
-            string adminTopic,
-            string adminConsumerGroup)
+            string topic,
+            string consumerGroup = null,
+            int topicPartition = 0)
         {
+            consumerGroup ??= $"Admin-{Assembly.GetEntryAssembly()!.GetName().Name}";
+
             cluster.DependencyConfigurator
-                .AddSingleton<IAdminProducer, AdminProducer>()
+                .AddSingleton<IAdminProducer>(
+                    resolver => new AdminProducer(
+                        resolver.Resolve<IMessageProducer<AdminProducer>>(),
+                        topicPartition))
                 .AddSingleton<IConsumerAdmin, ConsumerAdmin>();
 
             return cluster
                 .AddProducer<AdminProducer>(
                     producer => producer
-                        .DefaultTopic(adminTopic)
+                        .DefaultTopic(topic)
                         .AddMiddlewares(
                             middlewares => middlewares
                                 .AddSerializer<ProtobufNetSerializer>()))
                 .AddConsumer(
                     consumer => consumer
-                        .Topic(adminTopic)
-                        .WithGroupId(
-                            $"{adminConsumerGroup}-{Environment.MachineName}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}")
+                        .ManualAssignPartitions(topic, new[] { topicPartition })
+                        .WithGroupId(consumerGroup)
+                        .WithoutStoringOffsets()
                         .WithWorkersCount(1)
                         .WithBufferSize(1)
                         .WithAutoOffsetReset(AutoOffsetReset.Latest)
@@ -67,14 +74,6 @@
                                             }))));
         }
 
-        /// <inheritdoc cref="EnableAdminMessages(KafkaFlow.Configuration.IClusterConfigurationBuilder,string,string)"/>
-        public static IClusterConfigurationBuilder EnableAdminMessages(
-            this IClusterConfigurationBuilder cluster,
-            string adminTopic)
-        {
-            return cluster.EnableAdminMessages(adminTopic, $"Admin-{Assembly.GetEntryAssembly()!.GetName().Name}");
-        }
-
         /// <summary>
         /// Creates the telemetry producer and consumer to send and receive metric messages
         /// </summary>
@@ -83,13 +82,15 @@
         /// <param name="consumerGroup">The consumer group prefix</param>
         /// <param name="cleanRunInterval">How often run storage cleanup. Every 10 minutes by default</param>
         /// <param name="expiryTime">Cleanup will remove metrics older than specified interval. 6 hours by default</param>
+        /// <param name="topicPartition">The partition used to produce and consumer telemetry data</param>
         /// <returns></returns>
         public static IClusterConfigurationBuilder EnableTelemetry(
             this IClusterConfigurationBuilder cluster,
             string topicName,
             string consumerGroup,
             TimeSpan? cleanRunInterval = null,
-            TimeSpan? expiryTime = null)
+            TimeSpan? expiryTime = null,
+            int topicPartition = 0)
         {
             cluster.DependencyConfigurator
                 .AddSingleton<ITelemetryScheduler, TelemetryScheduler>()
@@ -100,7 +101,6 @@
                             expiryTime ?? TimeSpan.FromMinutes(5),
                             resolver.Resolve<IDateTimeProvider>()));
 
-            var groupId = $"{consumerGroup}-{Environment.MachineName}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}";
             var telemetryId = $"telemetry-{Convert.ToBase64String(Guid.NewGuid().ToByteArray())}";
 
             return cluster
@@ -113,9 +113,10 @@
                                 .AddSerializer<ProtobufNetSerializer>()))
                 .AddConsumer(
                     consumer => consumer
-                        .Topic(topicName)
+                        .ManualAssignPartitions(topicName, new[] { topicPartition })
                         .WithName(telemetryId)
-                        .WithGroupId(groupId)
+                        .WithGroupId(consumerGroup)
+                        .WithoutStoringOffsets()
                         .WithWorkersCount(1)
                         .DisableManagement()
                         .WithBufferSize(10)
@@ -127,7 +128,7 @@
                                     handlers => handlers
                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
                                         .AddHandler<ConsumerTelemetryMetricHandler>())))
-                .OnStarted(resolver => resolver.Resolve<ITelemetryScheduler>().Start(telemetryId, topicName))
+                .OnStarted(resolver => resolver.Resolve<ITelemetryScheduler>().Start(telemetryId, topicName, topicPartition))
                 .OnStopping(resolver => resolver.Resolve<ITelemetryScheduler>().Stop(telemetryId));
         }
 
