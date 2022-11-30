@@ -26,8 +26,8 @@ namespace KafkaFlow.Configuration
             ConsumerInitialState initialState,
             TimeSpan autoCommitInterval,
             IReadOnlyList<Action<string>> statisticsHandlers,
-            IReadOnlyList<Action<IDependencyResolver, IReadOnlyList<TopicPartition>>> partitionsAssignedHandlers,
-            IReadOnlyList<Action<IDependencyResolver, IReadOnlyList<TopicPartitionOffset>>> partitionsRevokedHandlers,
+            IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> partitionsAssignedHandlers,
+            IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionsRevokedHandlers,
             IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
                 pendingOffsetsHandlers,
             ConsumerCustomFactory customFactory)
@@ -110,9 +110,9 @@ namespace KafkaFlow.Configuration
 
         public IReadOnlyList<Action<string>> StatisticsHandlers { get; }
 
-        public IReadOnlyList<Action<IDependencyResolver, IReadOnlyList<TopicPartition>>> PartitionsAssignedHandlers { get; }
+        public IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> PartitionsAssignedHandlers { get; }
 
-        public IReadOnlyList<Action<IDependencyResolver, IReadOnlyList<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
+        public IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
 
         public IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
             PendingOffsetsHandlers { get; }

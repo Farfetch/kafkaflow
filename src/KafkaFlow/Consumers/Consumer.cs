@@ -13,10 +13,10 @@ namespace KafkaFlow.Consumers
         private readonly IDependencyResolver dependencyResolver;
         private readonly ILogHandler logHandler;
 
-        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, IReadOnlyList<TopicPartition>>>
+        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>>>
             partitionsAssignedHandlers = new();
 
-        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, IReadOnlyList<TopicPartitionOffset>>>
+        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>>>
             partitionsRevokedHandlers = new();
 
         private readonly List<Action<IConsumer<byte[], byte[]>, Error>> errorsHandlers = new();
@@ -88,11 +88,11 @@ namespace KafkaFlow.Consumers
             }
         }
 
-        public void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, IReadOnlyList<TopicPartition>> handler) =>
+        public void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler) =>
             this.partitionsAssignedHandlers.Add(handler);
 
         public void OnPartitionsRevoked(
-            Action<IDependencyResolver, IConsumer<byte[], byte[]>, IReadOnlyList<TopicPartitionOffset>> handler) =>
+            Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler) =>
             this.partitionsRevokedHandlers.Add(handler);
 
         public void OnError(Action<IConsumer<byte[], byte[]>, Error> handler) =>
@@ -254,7 +254,7 @@ namespace KafkaFlow.Consumers
             this.FirePartitionsAssignedHandlers(this.consumer, partitions);
         }
 
-        private void FirePartitionsAssignedHandlers(IConsumer<byte[], byte[]> consumer, IReadOnlyList<TopicPartition> partitions)
+        private void FirePartitionsAssignedHandlers(IConsumer<byte[], byte[]> consumer, List<TopicPartition> partitions)
         {
             this.Assignment = partitions;
             this.Subscription = consumer.Subscription;

@@ -19,7 +19,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '3.1.x'
+          dotnet-version: '6.0.x'
 
       - run: dotnet tool install --global gsferreira.XmlDocMarkdown.Docusaurus --version 0.0.1-beta1 # using this version while the Pull Request isn't accepted here: https://github.com/ejball/XmlDocMarkdown/pull/126
         shell: bash

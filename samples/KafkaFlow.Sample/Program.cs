@@ -72,7 +72,7 @@
                     }
                 }
 
-                if (input!.Equals("exit", StringComparison.InvariantCultureIgnoreCase))
+                if (input!.Equals("exit", StringComparison.OrdinalIgnoreCase))
                 {
                     await bus.StopAsync();
                     break;

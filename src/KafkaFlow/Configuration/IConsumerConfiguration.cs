@@ -88,12 +88,12 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Gets the handlers that will be called when the partitions are assigned
         /// </summary>
-        IReadOnlyList<Action<IDependencyResolver, IReadOnlyList<TopicPartition>>> PartitionsAssignedHandlers { get; }
+        IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> PartitionsAssignedHandlers { get; }
 
         /// <summary>
         /// Gets the handlers that will be called when the partitions are revoked
         /// </summary>
-        IReadOnlyList<Action<IDependencyResolver, IReadOnlyList<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
+        IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
 
         /// <summary>
         /// Gets the handlers that will be called when there are pending offsets
