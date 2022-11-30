@@ -16,8 +16,8 @@ namespace KafkaFlow.Configuration
         private readonly List<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>>, TimeSpan interval)>
             pendingOffsetsStatisticsHandlers = new();
 
-        private readonly List<Action<IDependencyResolver, IReadOnlyList<TopicPartition>>> partitionAssignedHandlers = new();
-        private readonly List<Action<IDependencyResolver, IReadOnlyList<TopicPartitionOffset>>> partitionRevokedHandlers = new();
+        private readonly List<Action<IDependencyResolver, List<TopicPartition>>> partitionAssignedHandlers = new();
+        private readonly List<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionRevokedHandlers = new();
         private readonly ConsumerMiddlewareConfigurationBuilder middlewareConfigurationBuilder;
 
         private ConsumerConfig consumerConfig;
@@ -190,14 +190,14 @@ namespace KafkaFlow.Configuration
         }
 
         public IConsumerConfigurationBuilder WithPartitionsAssignedHandler(
-            Action<IDependencyResolver, IReadOnlyList<TopicPartition>> partitionsAssignedHandler)
+            Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler)
         {
             this.partitionAssignedHandlers.Add(partitionsAssignedHandler);
             return this;
         }
 
         public IConsumerConfigurationBuilder WithPartitionsRevokedHandler(
-            Action<IDependencyResolver, IReadOnlyList<TopicPartitionOffset>> partitionsRevokedHandler)
+            Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler)
         {
             this.partitionRevokedHandlers.Add(partitionsRevokedHandler);
             return this;

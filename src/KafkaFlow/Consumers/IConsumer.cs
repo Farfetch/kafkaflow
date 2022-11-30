@@ -49,13 +49,13 @@ namespace KafkaFlow.Consumers
         /// Register a handler to be executed when the partitions are assigned
         /// </summary>
         /// <param name="handler">The handler that will be executed</param>
-        void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, IReadOnlyList<TopicPartition>> handler);
+        void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler);
 
         /// <summary>
         /// Register a handler to be executed when the partitions are revoked
         /// </summary>
         /// <param name="handler">The handler that will be executed</param>
-        void OnPartitionsRevoked(Action<IDependencyResolver, IConsumer<byte[], byte[]>, IReadOnlyList<TopicPartitionOffset>> handler);
+        void OnPartitionsRevoked(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler);
 
         /// <summary>
         /// Register a handler to be executed when an error occurs
