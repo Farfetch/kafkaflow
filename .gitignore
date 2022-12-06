@@ -433,3 +433,4 @@ healthchecksdb
 MigrationBackup/
 
 # End of https://www.gitignore.io/api/rider,linux,windows,visualstudio
+.DS_Store

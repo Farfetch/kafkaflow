@@ -4,7 +4,7 @@ namespace KafkaFlow.Producers
     using System.Collections.Generic;
 
     /// <summary>
-    /// Exception thrown by <see cref="BatchProduceExtension.BatchProduceAsync"/>
+    /// Exception thrown by <see cref="M:BatchProduceExtension.BatchProduceAsync"/>
     /// </summary>
     public class BatchProduceException : Exception
     {
@@ -18,7 +18,7 @@ namespace KafkaFlow.Producers
         }
 
         /// <summary>
-        /// Gets the requested items to produce with <see cref="BatchProduceItem.DeliveryReport"/> filled
+        /// Gets the requested items to produce with <see cref="P:BatchProduceItem.DeliveryReport"/> filled
         /// </summary>
         public IReadOnlyCollection<BatchProduceItem> Items { get; }
     }
