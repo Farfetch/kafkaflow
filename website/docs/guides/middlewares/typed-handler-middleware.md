@@ -14,6 +14,17 @@ Use it when the topic has different message types.
 
 When a message with a given type arrives, the middleware will call the appropriate message handler for that message type. 
 
+### How Message Type is discovered
+
+The Message Type discovery may vary depending on the implementation.
+
+#### With Schema Registry
+When using a Schema Registry, the schema is read from it, and the first 5 bytes of the message represent the `SchemaId` registered on the Schema Registry.
+
+#### Without Schema Registry
+Using other serializers with no Schema Registry, the `DefaultTypeResolver` is used by default. The `DefaultTypeResolver` uses the header `Message-Type` to identify the message type based on the Type fully qualified name. 
+
+It's also possible to write your own `TypeResolver` implementing the `IMessageTypeResolver` interface and using it in the `AddSerializer` method in the consumer/producer middleware. 
 
 ## Configure Typed Handler
 
