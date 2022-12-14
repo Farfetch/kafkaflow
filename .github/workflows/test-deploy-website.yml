@@ -7,11 +7,78 @@ jobs:
   test-deploy:
     name: Test deployment
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./website
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x'
+
+      - run: dotnet tool install --global gsferreira.XmlDocMarkdown.Docusaurus --version 0.0.1-beta1 # using this version while the Pull Request isn't accepted here: https://github.com/ejball/XmlDocMarkdown/pull/126
+        shell: bash
+
+      - name: .NET Publish
+        run: dotnet publish src/KafkaFlow.sln -c Release -o ./drop
+
+      - run: dotnet tool list --global
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.dll website/docs/reference/KafkaFlow --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.Admin.dll website/docs/reference/KafkaFlow.Admin --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.BatchConsume.dll website/docs/reference/KafkaFlow.BatchConsume --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.Compressor.dll website/docs/reference/KafkaFlow.Compressor --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.Extensions.Hosting.dll website/docs/reference/KafkaFlow.Extensions.Hosting --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.LogHandler.Console.dll website/docs/reference/KafkaFlow.LogHandler.Console --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.LogHandler.Microsoft.dll website/docs/reference/KafkaFlow.LogHandler.Microsoft --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.Microsoft.DependencyInjection.dll website/docs/reference/KafkaFlow.Microsoft.DependencyInjection --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.SchemaRegistry.dll website/docs/reference/KafkaFlow.SchemaRegistry --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.Serializer.dll website/docs/reference/KafkaFlow.Serializer --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.Serializer.JsonCore.dll website/docs/reference/KafkaFlow.Serializer.JsonCore --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.Serializer.NewtonsoftJson.dll website/docs/reference/KafkaFlow.Serializer.NewtonsoftJson --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.Serializer.ProtobufNet.dll website/docs/reference/KafkaFlow.Serializer.ProtobufNet --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro.dll website/docs/reference/KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.Serializer.SchemaRegistry.ConfluentJson.dll website/docs/reference/KafkaFlow.Serializer.SchemaRegistry.ConfluentJson --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf.dll website/docs/reference/KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.TypedHandler.dll website/docs/reference/KafkaFlow.TypedHandler --type-folders
+        shell: bash
+
+      - run: xmldocmd-docusaurus ./drop/KafkaFlow.Unity.dll website/docs/reference/KafkaFlow.Unity --type-folders
+        shell: bash
+
+
       - uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -19,6 +86,9 @@ jobs:
           cache-dependency-path: website/yarn.lock
 
       - name: Install dependencies
+        working-directory: ./website
         run: yarn install --frozen-lockfile
+      
       - name: Test build website
+        working-directory: ./website
         run: yarn build
