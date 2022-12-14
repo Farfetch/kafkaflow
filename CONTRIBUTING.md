@@ -6,6 +6,14 @@ Please note that this project is released with a [Contributor Code of Conduct][c
 
 ## Submitting a pull request
 
+### Before opening a Pull Request
+
+We recommend [opening an issue](https://github.com/Farfetch/kafkaflow/issues) before a substantial Pull Request if there isn’t [already an issue](https://github.com/Farfetch/kafkaflow/issues) for what you’d like to contribute. This helps facilitate a discussion before deciding on an implementation approach.
+
+For some changes, such as typo fixes, documentation enhancements, or broken links, it may be suitable to open a small Pull Request by itself.
+
+### How to open a Pull Request
+
 1.  Check the issues or open a new one
 2.  Fork this repository
 3.  Create your feature branch: `git checkout -b my-new-feature`
@@ -32,7 +40,6 @@ Run command `make init_broker`
 ### To stop cluster
 
 Run command `make shutdown_broker`
-
 
 ## Resources
 
