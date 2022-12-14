@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 # Compression
@@ -30,7 +30,7 @@ You can find the possible values [here](https://docs.confluent.io/platform/curre
 ```
 
 :::info
-The setup must be done only by the producers. The consumers will identify compressed messages and decompress them automatically.
+The configuration must be done only by the producers. The consumers will identify compressed messages and decompress them automatically.
 :::
 
 ```csharp
