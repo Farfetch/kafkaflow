@@ -31,9 +31,52 @@ services.AddKafka(kafka => kafka
 
 On a Consumer, you can configure the Middlewares that will be invoked. You can find more information on how to configure Middlewares [here](../middlewares).
 
+## Automatic Partitions Assignment
+
+Using the `Topic()` or `Topics()` methods, the consumer will trigger the automatic partition assignment that will distribute the topic partitions across the application instances.
+
+
+```csharp
+using KafkaFlow;
+using KafkaFlow.Serializer;
+using Microsoft.Extensions.DependencyInjection;
+using KafkaFlow.TypedHandler;
+
+services.AddKafka(kafka => kafka
+    .AddCluster(cluster => cluster
+        .WithBrokers(new[] { "localhost:9092" })
+        .AddConsumer(consumer => consumer
+            .Topic("topic-name")
+            .WithGroupId("sample-group")
+            ...
+        )
+    )
+);
+```
+
+## Manual Partitions Assignment
+
+The client application can specify the topic partitions manually using the `ManualAssignPartitions()` method instead of using the `Topic()` or `Topics()` methods.
+
+
+```csharp
+using KafkaFlow;
+using KafkaFlow.Serializer;
+using Microsoft.Extensions.DependencyInjection;
+using KafkaFlow.TypedHandler;
+
+services.AddKafka(kafka => kafka
+    .AddCluster(cluster => cluster
+        .WithBrokers(new[] { "localhost:9092" })
+        .AddConsumer(consumer => consumer
+            .ManualAssignPartitions("topic-name", new[] { 1, 2, 3 })
+            ...
+        )
+    )
+);
+```
 
 ## Offset Strategy
-
 
 You can configure the Offset Strategy for a consumer group in case the Consumer Group has no offset stored in Kafka. 
 There are two options:
@@ -76,6 +119,30 @@ services.AddKafka(kafka => kafka
             .Topic("topic-name")
             .WithGroupId("sample-group")
             .WithManualStoreOffsets()
+            ...
+        )
+    )
+);
+```
+
+## Disable Store Offsets
+
+In a scenario where storing offsets it's not needed,  you can disable it by calling the `WithoutStoringOffsets()` method in the consumer setup.
+
+
+```csharp
+using KafkaFlow;
+using KafkaFlow.Serializer;
+using Microsoft.Extensions.DependencyInjection;
+using KafkaFlow.TypedHandler;
+
+services.AddKafka(kafka => kafka
+    .AddCluster(cluster => cluster
+        .WithBrokers(new[] { "localhost:9092" })
+        .AddConsumer(consumer => consumer
+            .Topic("topic-name")
+            .WithGroupId("sample-group")
+            .WithoutStoringOffsets()
             ...
         )
     )
