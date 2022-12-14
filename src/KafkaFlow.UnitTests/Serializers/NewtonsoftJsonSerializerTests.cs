@@ -14,10 +14,10 @@ namespace KafkaFlow.UnitTests.Serializers
     [TestClass]
     public class NewtonsoftJsonSerializerTests
     {
-        private Mock<ISerializerContext> contextMock = new ();
-        private NewtonsoftJsonSerializer serializer = new ();
+        private readonly Mock<ISerializerContext> contextMock = new ();
+        private readonly NewtonsoftJsonSerializer serializer = new ();
 
-        private Fixture fixture = new();
+        private readonly Fixture fixture = new();
 
         [TestMethod]
         public async Task SerializeAsync_ValidPayload_JsonByteArrayGenerated()

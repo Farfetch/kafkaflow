@@ -124,7 +124,7 @@ namespace KafkaFlow.Producers
                         if (task.IsFaulted)
                         {
                             deliveryHandler?.Invoke(
-                                new DeliveryReport<byte[], byte[]>()
+                                new DeliveryReport<byte[], byte[]>
                                 {
                                     Error = new Error(ErrorCode.Local_Fail, task.Exception?.Message),
                                     Status = PersistenceStatus.NotPersisted,
