@@ -5,7 +5,7 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    internal class BatchConsumeMiddleware : IMessageMiddleware
+    internal class BatchConsumeMiddleware : IMessageMiddleware, IDisposable
     {
         private readonly int batchSize;
         private readonly TimeSpan batchTimeout;
@@ -45,6 +45,11 @@
                 this.cancelScheduleTokenSource.Cancel();
                 await (await this.dispatchTask.ConfigureAwait(false)).ConfigureAwait(false);
             }
+        }
+
+        public void Dispose()
+        {
+            this.cancelScheduleTokenSource?.Dispose();
         }
 
         private async Task Dispatch(IMessageContext context, MiddlewareDelegate next)
