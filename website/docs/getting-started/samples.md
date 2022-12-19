@@ -3,9 +3,7 @@ sidebar_position: 5
 ---
 
 # Samples
-
 We know that working code is a valuable learning tool for many, so here you can find a list of samples built to demonstrate KafkaFlow capabilities.
-
 
 ## Basic
 This is a simple sample that shows how to produce and consume messages.
