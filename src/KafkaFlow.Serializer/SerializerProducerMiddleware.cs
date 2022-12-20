@@ -11,7 +11,8 @@
         private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
 
         private readonly ISerializer serializer;
-        private readonly IMessageTypeResolver typeResolver;
+
+        private readonly IAsyncMessageTypeResolver typeResolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SerializerProducerMiddleware"/> class.
@@ -21,6 +22,18 @@
         public SerializerProducerMiddleware(
             ISerializer serializer,
             IMessageTypeResolver typeResolver)
+            : this(serializer, new AsyncMessageTypeResolverWrapper(typeResolver))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SerializerProducerMiddleware"/> class.
+        /// </summary>
+        /// <param name="serializer">Instance of <see cref="ISerializer"/></param>
+        /// <param name="typeResolver">Instance of <see cref="IAsyncMessageTypeResolver"/></param>
+        public SerializerProducerMiddleware(
+            ISerializer serializer,
+            IAsyncMessageTypeResolver typeResolver)
         {
             this.serializer = serializer;
             this.typeResolver = typeResolver;
@@ -34,7 +47,7 @@
         /// <returns></returns>
         public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
-            this.typeResolver.OnProduce(context);
+            await this.typeResolver.OnProduceAsync(context);
 
             byte[] messageValue;
 

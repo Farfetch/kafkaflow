@@ -26,7 +26,7 @@ namespace KafkaFlow
             Type messageType,
             Func<object> deserializerFactory)
         {
-            return Deserializers.GetOrAdd(
+            return Deserializers.SafeGetOrAdd(
                 messageType,
                 _ => (ConfluentDeserializerWrapper) Activator.CreateInstance(
                     typeof(InnerConfluentDeserializerWrapper<>).MakeGenericType(messageType),

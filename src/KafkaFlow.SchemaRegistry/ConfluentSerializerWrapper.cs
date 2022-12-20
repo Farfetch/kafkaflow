@@ -23,7 +23,7 @@ namespace KafkaFlow
             Type messageType,
             Func<object> serializerFactory)
         {
-            return Serializers.GetOrAdd(
+            return Serializers.SafeGetOrAdd(
                 messageType,
                 _ => (ConfluentSerializerWrapper) Activator.CreateInstance(
                     typeof(InnerConfluentSerializerWrapper<>).MakeGenericType(messageType),

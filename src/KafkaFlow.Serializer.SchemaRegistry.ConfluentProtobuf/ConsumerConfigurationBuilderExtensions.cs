@@ -17,9 +17,10 @@
         public static IConsumerMiddlewareConfigurationBuilder AddSchemaRegistryProtobufSerializer(
             this IConsumerMiddlewareConfigurationBuilder middlewares)
         {
-            return middlewares.AddSerializer(
-                resolver => new ConfluentProtobufSerializer(resolver),
-                resolver => new SchemaRegistryTypeResolver(new ConfluentProtobufTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>())));
+            return middlewares.Add(
+                resolver => new SerializerConsumerMiddleware(
+                    new ConfluentProtobufSerializer(resolver),
+                    new SchemaRegistryTypeResolver(new ConfluentProtobufTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>()))));
         }
     }
 }

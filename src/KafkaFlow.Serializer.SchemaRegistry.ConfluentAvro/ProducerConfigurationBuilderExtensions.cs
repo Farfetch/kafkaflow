@@ -20,9 +20,10 @@
             this IProducerMiddlewareConfigurationBuilder middlewares,
             AvroSerializerConfig config = null)
         {
-            return middlewares.AddSerializer(
-                resolver => new ConfluentAvroSerializer(resolver, config),
-                resolver => new SchemaRegistryTypeResolver(new ConfluentAvroTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>())));
+            return middlewares.Add(
+                resolver => new SerializerProducerMiddleware(
+                    new ConfluentAvroSerializer(resolver, config),
+                    new SchemaRegistryTypeResolver(new ConfluentAvroTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>()))));
         }
     }
 }

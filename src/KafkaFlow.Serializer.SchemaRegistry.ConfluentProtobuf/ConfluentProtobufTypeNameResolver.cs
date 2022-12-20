@@ -1,11 +1,12 @@
 namespace KafkaFlow
 {
     using System.Linq;
+    using System.Threading.Tasks;
     using Confluent.SchemaRegistry;
     using Google.Protobuf;
     using Google.Protobuf.Reflection;
 
-    internal class ConfluentProtobufTypeNameResolver : ISchemaRegistryTypeNameResolver
+    internal class ConfluentProtobufTypeNameResolver : IAsyncSchemaRegistryTypeNameResolver
     {
         private readonly ISchemaRegistryClient client;
 
@@ -14,13 +15,9 @@ namespace KafkaFlow
             this.client = client;
         }
 
-        public string Resolve(int id)
+        public async Task<string> ResolveAsync(int id)
         {
-            var schemaString = this.client
-                .GetSchemaAsync(id, "serialized")
-                .GetAwaiter()
-                .GetResult()
-                .SchemaString;
+            var schemaString = (await this.client.GetSchemaAsync(id, "serialized")).SchemaString;
 
             var protoFields = FileDescriptorProto.Parser.ParseFrom(ByteString.FromBase64(schemaString));
 

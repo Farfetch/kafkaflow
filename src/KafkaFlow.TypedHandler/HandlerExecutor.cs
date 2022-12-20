@@ -10,7 +10,7 @@ namespace KafkaFlow.TypedHandler
 
         public static HandlerExecutor GetExecutor(Type messageType)
         {
-            return Executors.GetOrAdd(
+            return Executors.SafeGetOrAdd(
                 messageType,
                 _ => (HandlerExecutor) Activator.CreateInstance(typeof(InnerHandlerExecutor<>).MakeGenericType(messageType)));
         }

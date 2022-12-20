@@ -20,9 +20,10 @@
             this IProducerMiddlewareConfigurationBuilder middlewares,
             ProtobufSerializerConfig config = null)
         {
-            return middlewares.AddSerializer(
-                resolver => new ConfluentProtobufSerializer(resolver, config),
-                resolver => new SchemaRegistryTypeResolver(new ConfluentProtobufTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>())));
+            return middlewares.Add(
+                resolver => new SerializerProducerMiddleware(
+                    new ConfluentProtobufSerializer(resolver, config),
+                    new SchemaRegistryTypeResolver(new ConfluentProtobufTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>()))));
         }
     }
 }

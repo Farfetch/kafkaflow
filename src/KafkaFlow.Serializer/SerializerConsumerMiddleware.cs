@@ -10,7 +10,8 @@
     public class SerializerConsumerMiddleware : IMessageMiddleware
     {
         private readonly ISerializer serializer;
-        private readonly IMessageTypeResolver typeResolver;
+
+        private readonly IAsyncMessageTypeResolver typeResolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SerializerConsumerMiddleware"/> class.
@@ -20,6 +21,18 @@
         public SerializerConsumerMiddleware(
             ISerializer serializer,
             IMessageTypeResolver typeResolver)
+            : this(serializer, new AsyncMessageTypeResolverWrapper(typeResolver))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SerializerConsumerMiddleware"/> class.
+        /// </summary>
+        /// <param name="serializer">Instance of <see cref="ISerializer"/></param>
+        /// <param name="typeResolver">Instance of <see cref="IAsyncMessageTypeResolver"/></param>
+        public SerializerConsumerMiddleware(
+            ISerializer serializer,
+            IAsyncMessageTypeResolver typeResolver)
         {
             this.serializer = serializer;
             this.typeResolver = typeResolver;
@@ -34,7 +47,7 @@
         /// <exception cref="InvalidOperationException">Throw if message is not byte[]</exception>
         public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
-            var messageType = this.typeResolver.OnConsume(context);
+            var messageType = await this.typeResolver.OnConsumeAsync(context);
 
             if (messageType is null)
             {

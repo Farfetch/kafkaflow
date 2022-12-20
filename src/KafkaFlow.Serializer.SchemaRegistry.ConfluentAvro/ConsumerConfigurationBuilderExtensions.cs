@@ -17,9 +17,10 @@
         public static IConsumerMiddlewareConfigurationBuilder AddSchemaRegistryAvroSerializer(
             this IConsumerMiddlewareConfigurationBuilder middlewares)
         {
-            return middlewares.AddSerializer(
-                resolver => new ConfluentAvroSerializer(resolver),
-                resolver => new SchemaRegistryTypeResolver(new ConfluentAvroTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>())));
+            return middlewares.Add(
+                resolver => new SerializerConsumerMiddleware(
+                    new ConfluentAvroSerializer(resolver),
+                    new SchemaRegistryTypeResolver(new ConfluentAvroTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>()))));
         }
     }
 }
