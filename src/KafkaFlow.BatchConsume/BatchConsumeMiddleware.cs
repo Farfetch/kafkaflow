@@ -2,18 +2,20 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
     internal class BatchConsumeMiddleware : IMessageMiddleware, IDisposable
     {
+        private readonly SemaphoreSlim dispatchSemaphore = new(1, 1);
+
         private readonly int batchSize;
         private readonly TimeSpan batchTimeout;
         private readonly ILogHandler logHandler;
 
-        private List<IMessageContext> batch;
-        private Task<Task> dispatchTask;
-        private CancellationTokenSource cancelScheduleTokenSource;
+        private readonly List<IMessageContext> batch;
+        private CancellationTokenSource dispatchTokenSource;
 
         public BatchConsumeMiddleware(
             int batchSize,
@@ -28,46 +30,64 @@
 
         public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
-            context.ConsumerContext.ShouldStoreOffset = false;
-            this.batch.Add(context);
+            await this.dispatchSemaphore.WaitAsync();
 
-            if (this.batch.Count == 1)
+            try
             {
-                this.cancelScheduleTokenSource = new CancellationTokenSource();
+                context.ConsumerContext.ShouldStoreOffset = false;
+                context.ConsumerContext.WorkerStopped.ThrowIfCancellationRequested();
 
-                this.dispatchTask = Task
-                    .Delay(this.batchTimeout, this.cancelScheduleTokenSource.Token)
-                    .ContinueWith(_ => this.Dispatch(context, next));
+                this.batch.Add(context);
+
+                if (this.batch.Count == 1)
+                {
+                    this.dispatchTokenSource = CancellationTokenSource.CreateLinkedTokenSource(context.ConsumerContext.WorkerStopped);
+
+                    this.dispatchTokenSource.CancelAfter(this.batchTimeout);
+
+                    this.dispatchTokenSource.Token.Register(
+                        async _ =>
+                        {
+                            this.dispatchTokenSource.Dispose();
+                            await this.DispatchAsync(context, next);
+                        },
+                        null);
+                }
+
+                if (this.batch.Count >= this.batchSize)
+                {
+                    this.dispatchTokenSource.Cancel();
+                }
             }
-
-            if (this.batch.Count == this.batch.Capacity)
+            finally
             {
-                this.cancelScheduleTokenSource.Cancel();
-                await (await this.dispatchTask.ConfigureAwait(false)).ConfigureAwait(false);
+                this.dispatchSemaphore.Release();
             }
         }
 
         public void Dispose()
         {
-            this.cancelScheduleTokenSource?.Dispose();
+            this.dispatchTokenSource?.Dispose();
         }
 
-        private async Task Dispatch(IMessageContext context, MiddlewareDelegate next)
+        private async Task DispatchAsync(IMessageContext context, MiddlewareDelegate next)
         {
-            var localBatch = Interlocked.Exchange(ref this.batch, new(this.batchSize));
+            await this.dispatchSemaphore.WaitAsync();
 
             try
             {
-                var batchContext = new BatchConsumeMessageContext(context.ConsumerContext, localBatch);
+                var batchContext = new BatchConsumeMessageContext(context.ConsumerContext, this.batch.ToList());
 
                 await next(batchContext).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                if (context.ConsumerContext.WorkerStopped.IsCancellationRequested)
+
+                foreach (var messageContext in this.batch)
                 {
-                    return;
+                    messageContext.ConsumerContext.StoreOffset();
                 }
+            }
+            catch (OperationCanceledException) when (context.ConsumerContext.WorkerStopped.IsCancellationRequested)
+            {
+                // Do nothing
             }
             catch (Exception ex)
             {
@@ -81,10 +101,10 @@
                         context.ConsumerContext.WorkerId,
                     });
             }
-
-            foreach (var messageContext in localBatch)
+            finally
             {
-                messageContext.ConsumerContext.StoreOffset();
+                this.batch.Clear();
+                this.dispatchSemaphore.Release();
             }
         }
     }

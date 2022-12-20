@@ -28,7 +28,7 @@ namespace KafkaFlow.UnitTests.BatchConsume
             this.nextContext = null;
             this.timesNextWasCalled = 0;
 
-            this.logHandlerMock = new Mock<ILogHandler>(MockBehavior.Strict);
+            this.logHandlerMock = new Mock<ILogHandler>();
 
             this.target = new BatchConsumeMiddleware(
                 BatchSize,
@@ -74,6 +74,8 @@ namespace KafkaFlow.UnitTests.BatchConsume
                 await this.target.Invoke(contextMock.Object, this.NextCallback);
             }
 
+            await Task.Delay(this.waitForTaskExecution);
+
             // Assert
             this.timesNextWasCalled.Should().Be(1);
             this.nextContext.GetMessagesBatch().Should().HaveCount(BatchSize);
@@ -97,6 +99,8 @@ namespace KafkaFlow.UnitTests.BatchConsume
                 await this.target.Invoke(contextMock.Object, this.NextCallback);
             }
 
+            await Task.Delay(this.waitForTaskExecution);
+
             // Assert
             this.timesNextWasCalled.Should().Be(1);
             this.nextContext.GetMessagesBatch().Should().HaveCount(BatchSize);
@@ -118,14 +122,12 @@ namespace KafkaFlow.UnitTests.BatchConsume
                 .Setup(x => x.ConsumerContext)
                 .Returns(consumerContext.Object);
 
-            var ex = new Exception();
-
             // Act
-            await this.target.Invoke(contextMock.Object, _ => throw ex);
+            await this.target.Invoke(contextMock.Object, _ => throw new Exception());
 
             // Assert
             await this.WaitBatchTimeoutAsync();
-            this.logHandlerMock.Verify(x => x.Error(It.IsAny<string>(), ex, It.IsAny<object>()), Times.Once);
+            this.logHandlerMock.Verify(x => x.Error(It.IsAny<string>(), It.IsAny<Exception>(), It.IsAny<object>()), Times.Once);
         }
 
         private Task WaitBatchTimeoutAsync() => Task.Delay(this.batchTimeout + this.waitForTaskExecution);
