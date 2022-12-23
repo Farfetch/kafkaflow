@@ -28,9 +28,10 @@ namespace KafkaFlow.Consumers.DistributionStrategies
                 return Task.FromResult(this.workers[0]);
             }
 
-            return cancellationToken.IsCancellationRequested ?
-                null :
-                Task.FromResult(this.workers.ElementAtOrDefault(partitionKey.Sum(x => x) % this.workers.Count));
+            return Task.FromResult(
+                cancellationToken.IsCancellationRequested
+                    ? null
+                    : this.workers.ElementAtOrDefault(partitionKey.Sum(x => x) % this.workers.Count));
         }
     }
 }
