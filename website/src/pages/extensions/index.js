@@ -36,6 +36,15 @@ export default function Extensions() {
       ),
       link:'https://github.com/Farfetch/kafkaflow-retry-extensions'
     },
+    {
+      title: 'KafkaFlow MessagePack Serializer',
+      description: (
+        <>
+          KafkaFlow MessagePack Serializer is an extension of KafkaFlow that use the MessagePack-CSharp library to optimize message sizes.
+        </>
+      ),
+      link:'https://github.com/JotaDobleEse/kafkaflow-messagepack-serializer'
+    },
   ];
 
   const { siteConfig } = useDocusaurusContext();
