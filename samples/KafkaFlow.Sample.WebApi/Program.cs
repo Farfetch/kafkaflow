@@ -1,17 +1,47 @@
-namespace KafkaFlow.Sample.WebApi
-{
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Hosting;
+using KafkaFlow;
+using Microsoft.OpenApi.Models;
 
-    public static class Program
-    {
-        public static void Main(string[] args)
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services
+    .AddKafka(
+    kafka => kafka
+        .UseConsoleLog()
+        .AddCluster(
+            cluster => cluster
+                .WithBrokers(new[] { "localhost:9092" })
+                .EnableAdminMessages("kafka-flow.admin")
+        )
+);
+
+builder.Services
+    .AddSwaggerGen(
+        c =>
         {
-            CreateHostBuilder(args).Build().Run();
-        }
+            c.SwaggerDoc(
+                "kafka-flow",
+                new OpenApiInfo
+                {
+                    Title = "KafkaFlow Admin",
+                    Version = "kafka-flow",
+                });
+        })
+    .AddControllers();
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
-    }
-}
+var app = builder.Build();
+
+app.MapGet("/", () => "Hello World!");
+
+app.MapControllers();
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/kafka-flow/swagger.json", "KafkaFlow Admin");
+});
+
+var kafkaBus = app.Services.CreateKafkaBus();
+await kafkaBus.StartAsync();
+
+await app.RunAsync();
+        
