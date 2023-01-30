@@ -73,21 +73,17 @@
         private async Task DispatchAsync(IMessageContext context, MiddlewareDelegate next)
         {
             await this.dispatchSemaphore.WaitAsync();
+            var localBatch = this.batch.ToList();
 
             try
             {
-                var batchContext = new BatchConsumeMessageContext(context.ConsumerContext, this.batch.ToList());
+                var batchContext = new BatchConsumeMessageContext(context.ConsumerContext, localBatch);
 
                 await next(batchContext).ConfigureAwait(false);
-
-                foreach (var messageContext in this.batch)
-                {
-                    messageContext.ConsumerContext.StoreOffset();
-                }
             }
             catch (OperationCanceledException) when (context.ConsumerContext.WorkerStopped.IsCancellationRequested)
             {
-                // Do nothing
+                return;
             }
             catch (Exception ex)
             {
@@ -105,6 +101,11 @@
             {
                 this.batch.Clear();
                 this.dispatchSemaphore.Release();
+            }
+
+            foreach (var messageContext in localBatch)
+            {
+                messageContext.ConsumerContext.StoreOffset();
             }
         }
     }

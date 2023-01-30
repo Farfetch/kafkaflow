@@ -74,16 +74,19 @@ namespace KafkaFlow.Consumers
 
         private void CommitHandler()
         {
-            if (!this.offsetsToCommit.Any())
-            {
-                return;
-            }
-
-            var offsets = this.offsetsToCommit;
-            this.offsetsToCommit = new ConcurrentDictionary<(string, int), TopicPartitionOffset>();
+            ConcurrentDictionary<(string, int), TopicPartitionOffset> offsets = null;
 
             try
             {
+                if (!this.offsetsToCommit.Any())
+                {
+                    return;
+                }
+
+                offsets = Interlocked.Exchange(
+                    ref this.offsetsToCommit,
+                    new ConcurrentDictionary<(string, int), TopicPartitionOffset>());
+
                 this.consumer.Commit(offsets.Values);
 
                 if (!this.consumer.Configuration.ManagementDisabled)
@@ -113,7 +116,10 @@ namespace KafkaFlow.Consumers
                     "Error Commiting Offsets",
                     new { ErrorMessage = e.Message });
 
-                this.RequeueFailedOffsets(offsets.Values);
+                if (offsets is not null)
+                {
+                    this.RequeueFailedOffsets(offsets.Values);
+                }
             }
         }
 
