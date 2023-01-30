@@ -53,24 +53,31 @@ namespace KafkaFlow.Consumers
             this.backgroundTask = Task.Run(
                 async () =>
                 {
-                    var cancellationTokenSource = new CancellationTokenSource();
-
-                    this.stopCancellationTokenSource.Token.Register(
-                        () => cancellationTokenSource.CancelAfter(this.consumer.Configuration.WorkerStopTimeout));
-
                     try
                     {
-                        while (await this.messagesBuffer.Reader.WaitToReadAsync(CancellationToken.None).ConfigureAwait(false))
+                        var cancellationTokenSource = new CancellationTokenSource();
+
+                        this.stopCancellationTokenSource.Token.Register(
+                            () => cancellationTokenSource.CancelAfter(this.consumer.Configuration.WorkerStopTimeout));
+
+                        try
                         {
-                            while (this.messagesBuffer.Reader.TryRead(out var message))
+                            while (await this.messagesBuffer.Reader.WaitToReadAsync(CancellationToken.None).ConfigureAwait(false))
                             {
-                                await this.ProcessMessageAsync(message, cancellationTokenSource.Token).ConfigureAwait(false);
+                                while (this.messagesBuffer.Reader.TryRead(out var message))
+                                {
+                                    await this.ProcessMessageAsync(message, cancellationTokenSource.Token).ConfigureAwait(false);
+                                }
                             }
                         }
+                        catch (OperationCanceledException)
+                        {
+                            // Ignores the exception
+                        }
                     }
-                    catch (OperationCanceledException)
+                    catch (Exception ex)
                     {
-                        // Ignores the exception
+                        this.logHandler.Error("KafkaFlow consumer worker fatal error", ex, null);
                     }
                 });
 
@@ -97,56 +104,60 @@ namespace KafkaFlow.Consumers
 
         private async Task ProcessMessageAsync(ConsumeResult<byte[], byte[]> message, CancellationToken cancellationToken)
         {
-            var context = new MessageContext(
-                new Message(message.Message.Key, message.Message.Value),
-                new MessageHeaders(message.Message.Headers),
-                new ConsumerContext(
-                    this.consumer,
-                    this.offsetManager,
-                    message,
-                    cancellationToken,
-                    this.Id),
-                null);
-
             try
             {
-                var scope = this.dependencyResolver.CreateScope();
+                var context = new MessageContext(
+                    new Message(message.Message.Key, message.Message.Value),
+                    new MessageHeaders(message.Message.Headers),
+                    new ConsumerContext(
+                        this.consumer,
+                        this.offsetManager,
+                        message,
+                        cancellationToken,
+                        this.Id),
+                    null);
 
-                this.offsetManager.OnOffsetProcessed(
-                    message.TopicPartitionOffset,
-                    () => scope.Dispose());
+                try
+                {
+                    var scope = this.dependencyResolver.CreateScope();
 
-                await this.middlewareExecutor
-                    .Execute(scope.Resolver, context, _ => Task.CompletedTask)
-                    .ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                if (cancellationToken.IsCancellationRequested)
+                    this.offsetManager.OnOffsetProcessed(
+                        message.TopicPartitionOffset,
+                        () => scope.Dispose());
+
+                    await this.middlewareExecutor
+                        .Execute(scope.Resolver, context, _ => Task.CompletedTask)
+                        .ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
                     return;
                 }
+                catch (Exception ex)
+                {
+                    this.logHandler.Error(
+                        "Error processing message",
+                        ex,
+                        new
+                        {
+                            context.Message,
+                            context.ConsumerContext.Topic,
+                            MessageKey = context.Message.Key,
+                            context.ConsumerContext.ConsumerName,
+                        });
+                }
+
+                if (this.consumer.Configuration.AutoStoreOffsets && context.ConsumerContext.ShouldStoreOffset)
+                {
+                    this.offsetManager.MarkAsProcessed(message.TopicPartitionOffset);
+                }
+
+                this.onMessageFinishedHandler?.Invoke();
             }
             catch (Exception ex)
             {
-                this.logHandler.Error(
-                    "Error processing message",
-                    ex,
-                    new
-                    {
-                        context.Message,
-                        context.ConsumerContext.Topic,
-                        MessageKey = context.Message.Key,
-                        context.ConsumerContext.ConsumerName,
-                    });
+                this.logHandler.Error("KafkaFlow internal message error", ex, null);
             }
-
-            if (this.consumer.Configuration.AutoStoreOffsets && context.ConsumerContext.ShouldStoreOffset)
-            {
-                this.offsetManager.MarkAsProcessed(message.TopicPartitionOffset);
-            }
-
-            this.onMessageFinishedHandler?.Invoke();
         }
     }
 }

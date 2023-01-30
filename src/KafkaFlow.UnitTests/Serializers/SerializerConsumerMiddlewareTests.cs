@@ -34,9 +34,13 @@ namespace KafkaFlow.UnitTests.Serializers
         public async Task Invoke_NullMessageType_ReturnWithoutCallingNext()
         {
             // Arrange
+            this.contextMock
+                .SetupGet(x => x.Message)
+                .Returns(new Message(new byte[1], new byte[1]));
+
             this.typeResolverMock
                 .Setup(x => x.OnConsume(this.contextMock.Object))
-                .Returns((Type) null);
+                .Returns((Type)null);
 
             // Act
             await this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
@@ -54,15 +58,9 @@ namespace KafkaFlow.UnitTests.Serializers
         public async Task Invoke_NullMessage_CallNext()
         {
             // Arrange
-            var messageType = typeof(TestMessage);
-
             this.contextMock
                 .SetupGet(x => x.Message)
                 .Returns(new Message(null, null));
-
-            this.typeResolverMock
-                .Setup(x => x.OnConsume(this.contextMock.Object))
-                .Returns(messageType);
 
             // Act
             await this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
@@ -72,22 +70,16 @@ namespace KafkaFlow.UnitTests.Serializers
             this.serializerMock.Verify(
                 x => x.DeserializeAsync(It.IsAny<Stream>(), It.IsAny<Type>(), It.IsAny<ISerializerContext>()),
                 Times.Never);
-            this.typeResolverMock.VerifyAll();
+            this.typeResolverMock.Verify(x => x.OnConsume(It.IsAny<IMessageContext>()), Times.Never);
         }
 
         [TestMethod]
         public void Invoke_NotByteArrayMessage_ThrowsInvalidOperationException()
         {
             // Arrange
-            var messageType = typeof(TestMessage);
-
             this.contextMock
                 .SetupGet(x => x.Message)
                 .Returns(new Message(null, new TestMessage()));
-
-            this.typeResolverMock
-                .Setup(x => x.OnConsume(this.contextMock.Object))
-                .Returns(messageType);
 
             // Act
             Func<Task> act = () => this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
@@ -99,7 +91,7 @@ namespace KafkaFlow.UnitTests.Serializers
             this.serializerMock.Verify(
                 x => x.DeserializeAsync(It.IsAny<Stream>(), It.IsAny<Type>(), It.IsAny<ISerializerContext>()),
                 Times.Never);
-            this.typeResolverMock.VerifyAll();
+            this.typeResolverMock.Verify(x => x.OnConsume(It.IsAny<IMessageContext>()), Times.Never);
         }
 
         [TestMethod]
