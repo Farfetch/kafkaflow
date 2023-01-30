@@ -20,7 +20,7 @@ namespace KafkaFlow.TypedHandler
         {
             var handlers = this.configuration
                 .HandlerMapping
-                .GetHandlersTypes(context.Message.Value.GetType());
+                .GetHandlersTypes(context.Message.Value?.GetType());
 
             if (!handlers.Any())
             {

@@ -2,10 +2,11 @@ namespace KafkaFlow.TypedHandler
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
     internal class HandlerTypeMapping
     {
+        private static readonly IReadOnlyList<Type> EmptyList = new List<Type>().AsReadOnly();
+
         private readonly Dictionary<Type, List<Type>> mapping = new();
 
         public void AddMapping(Type messageType, Type handlerType)
@@ -19,11 +20,16 @@ namespace KafkaFlow.TypedHandler
             handlers.Add(handlerType);
         }
 
-        public IEnumerable<Type> GetHandlersTypes(Type messageType)
+        public IReadOnlyList<Type> GetHandlersTypes(Type messageType)
         {
+            if (messageType is null)
+            {
+                return EmptyList;
+            }
+
             return this.mapping.TryGetValue(messageType, out var handlerType) ?
                 handlerType :
-                Enumerable.Empty<Type>();
+                EmptyList;
         }
     }
 }

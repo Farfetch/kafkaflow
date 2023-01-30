@@ -10,7 +10,9 @@ namespace KafkaFlow
         {
             var typeName = context.Headers.GetString(MessageType);
 
-            return Type.GetType(typeName);
+            return typeName is null ?
+                null :
+                Type.GetType(typeName);
         }
 
         public void OnProduce(IMessageContext context)
