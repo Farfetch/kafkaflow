@@ -47,13 +47,6 @@
         /// <exception cref="InvalidOperationException">Throw if message is not byte[]</exception>
         public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
-            var messageType = await this.typeResolver.OnConsumeAsync(context);
-
-            if (messageType is null)
-            {
-                return;
-            }
-
             if (context.Message.Value is null)
             {
                 await next(context).ConfigureAwait(false);
@@ -64,6 +57,19 @@
             {
                 throw new InvalidOperationException(
                     $"{nameof(context.Message)} must be a byte array to be deserialized and it is '{context.Message.GetType().FullName}'");
+            }
+
+            if (rawData.Length == 0)
+            {
+                await next(context.SetMessage(context.Message.Key, null)).ConfigureAwait(false);
+                return;
+            }
+
+            var messageType = await this.typeResolver.OnConsumeAsync(context);
+
+            if (messageType is null)
+            {
+                return;
             }
 
             using var stream = new MemoryStream(rawData);
