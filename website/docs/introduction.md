@@ -22,19 +22,19 @@ Our goal is to empower you to build event-driven applications on top of Apache K
 To do that, KafkaFlow gives you access to features like:
 
 - Multi-threaded consumer with message order guarantee.
-- [Middlewares](https://github.com/Farfetch/kafkaflow/wiki/middlewares) support for producing and consuming messages.
+- [Middlewares](guides/middlewares/) support for producing and consuming messages.
 - Support topics with different message types.
 - Consumers with many topics.
-- [Serializer middleware](https://github.com/Farfetch/kafkaflow/wiki/serializer-middleware) with **ApacheAvro**, **ProtoBuf** and **Json** algorithms.
-- [Schema Registry](https://github.com/Farfetch/kafkaflow/wiki/serializer-middleware#schema-registry-support) support.
-- [Compression](https://github.com/Farfetch/kafkaflow/wiki/Compressor) using native Confluent Kafka client compression or compressor middleware.
+- [Serializer middleware](guides/middlewares/serializer-middleware.md) with **ApacheAvro**, **ProtoBuf** and **Json** algorithms.
+- [Schema Registry](guides/middlewares/serializer-middleware.md#adding-schema-registry-support) support.
+- [Compression](guides/compression.md) using native Confluent Kafka client compression or compressor middleware.
 - Graceful shutdown (wait to finish processing to shutdown).
 - Store offset when processing ends, avoiding message loss.
 - Supports .NET Core and .NET Framework.
-- Can be used with any dependency injection framework (see [here](https://github.com/Farfetch/kafkaflow/wiki/Dependency-Injection)).
+- Can be used with any dependency injection framework (see [here](guides/dependency-injection.md)).
 - Fluent configuration.
-- [Admin Web API](https://github.com/Farfetch/kafkaflow/wiki/admin) that allows pause, resume and restart consumers, change workers count, and rewind offsets, **all at runtime**.
-- [Dashboard UI](https://github.com/Farfetch/kafkaflow/wiki/dashboard) that allows to visualize of relevant information about all consumers and managing them.
+- [Admin Web API](guides/admin/web-api.md) that allows pause, resume and restart consumers, change workers count, and rewind offsets, **all at runtime**.
+- [Dashboard UI](guides/admin/dashboard.md) that allows to visualize of relevant information about all consumers and managing them.
 
 
 ## Join the community {#join-the-community}
