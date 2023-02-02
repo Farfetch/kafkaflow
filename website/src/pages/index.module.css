@@ -21,3 +21,11 @@
   align-items: center;
   justify-content: center;
 }
+
+.videoContainer {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+}
