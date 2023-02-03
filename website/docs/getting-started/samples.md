@@ -47,3 +47,9 @@ You can find the code here: [/samples/KafkaFlow.Sample.FlowControl](https://gith
 This is a sample that shows how to stop the consumer when an exception is raised.
 
 You can find the code here: [/samples/KafkaFlow.Sample.PauseConsumerOnError](https://github.com/Farfetch/kafkaflow/tree/master/samples/KafkaFlow.Sample.PauseConsumerOnError)
+
+## Consumer Throttling
+
+This is a sample that shows how to throttle a consumer based on others consumers lag
+
+You can find the code here: [/samples/KafkaFlow.Sample.ConsumerThrottling](https://github.com/Farfetch/kafkaflow/tree/master/samples/KafkaFlow.Sample.ConsumerThrottling)
