@@ -35,6 +35,8 @@ KafkaFlow provides the following middlewares out of the box:
 -   [Serializer](serializer-middleware)
 -   [Compressor](compressor-middleware)
 -   [Typed Handler](typed-handler-middleware)
+-   [Batch Consume](batch-consume-middleware)
+-   [Consumer Throttling](consumer-throttling-middleware)
 
 ## When Consuming​
 

@@ -89,6 +89,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.LogHandler.Micros
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample.PauseConsumerOnError", "..\samples\KafkaFlow.Sample.PauseConsumerOnError\KafkaFlow.Sample.PauseConsumerOnError.csproj", "{B4A9E7CE-7A37-411E-967E-D9B5FD1A3992}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample.ConsumerThrottling", "..\samples\KafkaFlow.Sample.ConsumerThrottling\KafkaFlow.Sample.ConsumerThrottling.csproj", "{4A16F519-FAF8-432C-AD0A-CC44F7BD392D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -219,6 +221,10 @@ Global
 		{B4A9E7CE-7A37-411E-967E-D9B5FD1A3992}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B4A9E7CE-7A37-411E-967E-D9B5FD1A3992}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B4A9E7CE-7A37-411E-967E-D9B5FD1A3992}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A16F519-FAF8-432C-AD0A-CC44F7BD392D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A16F519-FAF8-432C-AD0A-CC44F7BD392D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A16F519-FAF8-432C-AD0A-CC44F7BD392D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A16F519-FAF8-432C-AD0A-CC44F7BD392D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -257,6 +263,7 @@ Global
 		{7B61C99E-3AEB-4497-8A38-F780CB309130} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 		{8EAF0D96-F760-4FEF-9237-92779F66482D} = {EF626895-FDAE-4B28-9110-BA85671CBBF2}
 		{B4A9E7CE-7A37-411E-967E-D9B5FD1A3992} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
+		{4A16F519-FAF8-432C-AD0A-CC44F7BD392D} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AE955B5-16B0-41CF-9F12-66D15B3DD1AB}
