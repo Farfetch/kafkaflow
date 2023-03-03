@@ -119,6 +119,24 @@ Swagger UI will be accessed on `/swagger/`.
 
 ### Consumers
 
+#### Start
+Start a consumer based on his name.
+
+Command
+```csharp
+var consumerAdmin = provider.GetService<IConsumerAdmin>();
+await consumerAdmin.StartConsumerAsync(consumerName);
+```
+
+#### Stop
+Stop a consumer based on his name.
+
+Command
+```csharp
+var consumerAdmin = provider.GetService<IConsumerAdmin>();
+await consumerAdmin.StopConsumerAsync(consumerName);
+```
+
 #### Pause
 Pause all Kafka consumers based on their name and groupId.
 
@@ -128,8 +146,8 @@ Endpoint
 
 Command
 ```csharp
-var adminProducer = provider.GetService<IAdminProducer>();
-adminProducer.ProduceAsync(new PauseConsumerByName { ConsumerName = consumerName });
+var consumerAdmin = provider.GetService<IConsumerAdmin>();
+await consumerAdmin.PauseConsumerAsync(consumerName, new []{ topicName });
 ```
 
 #### Resume
@@ -141,12 +159,12 @@ Endpoint
 
 Command
 ```csharp
-var adminProducer = provider.GetService<IAdminProducer>();
-adminProducer.ProduceAsync(new ResumeConsumerByName{ ConsumerName = consumerName });
+var consumerAdmin = provider.GetService<IConsumerAdmin>();
+await consumerAdmin.ResumeConsumerAsync(consumerName, new []{ topicName });
 ```
 
 #### Restart
-Restart all Kafka consumers based on their name and groupId. This operation will not change any offsets, it's a simple restart. The internal Confluent Consumer will be recreated. This operation causes a partition rebalanced between the consumers.
+Restart all Kafka consumers based on their. This operation will not change any offsets, it's a simple restart. The internal Confluent Consumer will be recreated. This operation causes a partition rebalanced between the consumers.
 
 Endpoint
 
@@ -154,8 +172,8 @@ Endpoint
 
 Command
 ```csharp
-var adminProducer = provider.GetService<IAdminProducer>();
-adminProducer.ProduceAsync(new RestartConsumerByName{ ConsumerName = "consumerName" });
+var consumerAdmin = provider.GetService<IConsumerAdmin>();
+await consumerAdmin.RestartConsumerAsync(consumerName);
 ```
 
 #### Reset Offsets
@@ -167,8 +185,8 @@ Endpoint
 
 Command
 ```csharp
-var adminProducer = provider.GetService<IAdminProducer>();
-adminProducer.ProduceAsync(new ResetConsumerOffset{ ConsumerName = "consumerName" });
+var consumerAdmin = provider.GetService<IConsumerAdmin>();
+await consumerAdmin.ResetOffsetsAsync(consumerName, new []{ topicName });
 ```
 
 #### Rewind Offsets
@@ -188,12 +206,8 @@ BODY
 
 Command
 ```csharp
-var adminProducer = provider.GetService<IAdminProducer>();
-adminProducer.ProduceAsync(new RewindConsumerOffsetToDateTime
-{ 
-   ConsumerName = "consumerName",
-   DateTime = DateTime.Now
-});
+var consumerAdmin = provider.GetService<IConsumerAdmin>();
+await consumerAdmin.RewindOffsetsAsync(consumerName, DateTime.Today.AddDays(-1), new []{ topicName });
 ```
 #### Change the Number of Workers​
 Change the numbers of workers (degree of parallelism) for the KafkaFlow consumer with the name and groupId informed. This operation causes a rebalance between the consumers.
@@ -212,12 +226,8 @@ BODY
 
 Command
 ```csharp
-var adminProducer = provider.GetService<IAdminProducer>();
-adminProducer.ProduceAsync(new ChangeConsumerWorkerCount
-{ 
-   ConsumerName = "consumerName",
-   WorkerCount = 100
-});
+var consumerAdmin = provider.GetService<IConsumerAdmin>();
+await consumerAdmin.ChangeWorkersCountAsync(consumerName, 100);
 ```
 
 ### Consumer Group
@@ -231,8 +241,8 @@ Endpoint
 
 Command
 ```csharp
-var adminProducer = provider.GetService<IAdminProducer>();
-adminProducer.ProduceAsync(new PauseConsumersByGroup{ GroupId = "groupId"});
+var consumerAdmin = provider.GetService<IConsumerAdmin>();
+await consumerAdmin.PauseConsumerGroupAsync(groupId, new []{ topicName });
 ```
 
 #### Resume
@@ -244,7 +254,6 @@ Endpoint
 
 Command
 ```csharp
-var adminProducer = provider.GetService<IAdminProducer>();
-adminProducer.ProduceAsync(new ResumeConsumersByGroup{ GroupId = "groupId"});
-
-
+var consumerAdmin = provider.GetService<IConsumerAdmin>();
+await consumerAdmin.ResumeConsumerGroupAsync(groupId, new []{ topicName });
+```
