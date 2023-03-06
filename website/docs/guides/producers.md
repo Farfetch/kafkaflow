@@ -125,6 +125,14 @@ services.AddKafka(kafka => kafka
 );
 ```
 
+## How to produce a message without Message Key
+
+You can send the message key argument as `null` when the Produce method is invoked, as shown in the following example:
+
+```csharp
+await producer.ProduceAsync(null, product);
+```      
+
 ## How to configure ACKS when publishing a message
 
 An Ack is an acknowledgment that the producer receives from the broker to ensure that the message has been successfully committed.

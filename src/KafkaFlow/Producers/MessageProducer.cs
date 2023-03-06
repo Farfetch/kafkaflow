@@ -186,6 +186,7 @@ namespace KafkaFlow.Producers
             {
                 string stringKey => Encoding.UTF8.GetBytes(stringKey),
                 byte[] bytesKey => bytesKey,
+                null => null,
                 _ => throw new InvalidOperationException(
                     $"The message key must be a byte array or a string to be produced, it is a {context.Message.Key.GetType().FullName}." +
                     "You should serialize or encode your message object using a middleware")
