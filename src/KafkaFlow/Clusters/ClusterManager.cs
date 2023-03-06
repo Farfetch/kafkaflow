@@ -45,7 +45,7 @@ namespace KafkaFlow.Clusters
             catch (CreateTopicsException exception)
             {
                 var hasNonExpectedErrors = false;
-                foreach (var exceptionResult in exception.Results)
+                foreach (var exceptionResult in exception.Results.Where(report => report.Error.IsError))
                 {
                     if (exceptionResult.Error.Code == ErrorCode.TopicAlreadyExists)
                     {
