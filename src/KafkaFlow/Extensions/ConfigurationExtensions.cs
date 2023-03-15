@@ -46,6 +46,7 @@ namespace KafkaFlow
 
             config.SecurityProtocol = securityInformation.SecurityProtocol?.ToConfluent();
             config.SslCaLocation = securityInformation.SslCaLocation;
+            config.SslCaPem = securityInformation.SslCaPem;
             config.SslCertificateLocation = securityInformation.SslCertificateLocation;
             config.SslCertificatePem = securityInformation.SslCertificatePem;
             config.SslCipherSuites = securityInformation.SslCipherSuites;
