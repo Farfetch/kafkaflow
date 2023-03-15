@@ -70,5 +70,42 @@ namespace KafkaFlow
             config.SaslUsername = securityInformation.SaslUsername;
             config.SaslPassword = securityInformation.SaslPassword;
         }
+
+        public static void ReadSecurityInformationFrom(this AdminClientConfig config, ClusterConfiguration cluster)
+        {
+            var securityInformation = cluster.GetSecurityInformation();
+
+            if (securityInformation is null)
+            {
+                return;
+            }
+
+            config.SecurityProtocol = securityInformation.SecurityProtocol?.ToConfluent();
+            config.SslCaLocation = securityInformation.SslCaLocation;
+            config.SslCaPem = securityInformation.SslCaPem;
+            config.SslCertificateLocation = securityInformation.SslCertificateLocation;
+            config.SslCertificatePem = securityInformation.SslCertificatePem;
+            config.SslCipherSuites = securityInformation.SslCipherSuites;
+            config.SslCrlLocation = securityInformation.SslCrlLocation;
+            config.SslCurvesList = securityInformation.SslCurvesList;
+            config.SslKeyLocation = securityInformation.SslKeyLocation;
+            config.SslKeyPassword = securityInformation.SslKeyPassword;
+            config.SslKeyPem = securityInformation.SslKeyPem;
+            config.SslKeystoreLocation = securityInformation.SslKeystoreLocation;
+            config.SslKeystorePassword = securityInformation.SslKeystorePassword;
+            config.SslSigalgsList = securityInformation.SslSigalgsList;
+            config.SslEndpointIdentificationAlgorithm = securityInformation.SslEndpointIdentificationAlgorithm?.ToConfluent();
+            config.EnableSslCertificateVerification = securityInformation.EnableSslCertificateVerification;
+            config.SaslKerberosKeytab = securityInformation.SaslKerberosKeytab;
+            config.SaslKerberosPrincipal = securityInformation.SaslKerberosPrincipal;
+            config.SaslOauthbearerConfig = securityInformation.SaslOauthbearerConfig;
+            config.SaslKerberosKinitCmd = securityInformation.SaslKerberosKinitCmd;
+            config.SaslKerberosServiceName = securityInformation.SaslKerberosServiceName;
+            config.SaslKerberosMinTimeBeforeRelogin = securityInformation.SaslKerberosMinTimeBeforeRelogin;
+            config.EnableSaslOauthbearerUnsecureJwt = securityInformation.EnableSaslOauthbearerUnsecureJwt;
+            config.SaslMechanism = securityInformation.SaslMechanism?.ToConfluent();
+            config.SaslUsername = securityInformation.SaslUsername;
+            config.SaslPassword = securityInformation.SaslPassword;
+        }
     }
 }
