@@ -91,6 +91,14 @@ namespace KafkaFlow.Configuration
         public string SslCaLocation { get; set; }
 
         /// <summary>
+        ///     Gets or sets the CA certificate(s) value for verifying the broker's key.
+        ///
+        ///     default: ''
+        ///     importance: low
+        /// </summary>
+        public string SslCaPem { get; set; }
+
+        /// <summary>
         ///     Gets or sets the path to CRL for verifying broker's certificate validity.
         ///
         ///     default: ''
