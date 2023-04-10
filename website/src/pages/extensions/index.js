@@ -45,6 +45,15 @@ export default function Extensions() {
       ),
       link:'https://github.com/JotaDobleEse/kafkaflow-messagepack-serializer'
     },
+    {
+      title: 'KafkaFlow.MediatR',
+      description: (
+        <>
+          An Extension that adds MediatR as a Middleware.
+        </>
+      ),
+      link:'https://github.com/gsferreira/kafkaflow-mediatr'
+    },
   ];
 
   const { siteConfig } = useDocusaurusContext();
