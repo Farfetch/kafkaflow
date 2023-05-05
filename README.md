@@ -1,6 +1,5 @@
 # KafkaFlow &middot; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/farfetch/kafkaflow/blob/main/LICENSE) [![nuget version](https://img.shields.io/nuget/v/KafkaFlow.svg?style=flat)](https://www.nuget.org/packages/KafkaFlow/) ![Build Master](https://github.com/Farfetch/kafkaflow/workflows/Build/badge.svg?branch=master) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/49878b337fde46839c5f08051c2ba098)](https://app.codacy.com/gh/Farfetch/kafkaflow?utm_source=github.com&utm_medium=referral&utm_content=Farfetch/kafkaflow&utm_campaign=Badge_Grade_Dashboard) [![Slack](https://img.shields.io/badge/slack-@kafkaflow-green.svg?logo=slack)](https://join.slack.com/t/kafkaflow/shared_invite/zt-puihrtcl-NnnylPZloAiVlQfsw~RD6Q)
 
-
 ## Introduction
 
 ⚡️ KafkaFlow was designed to build .NET applications on top of Apache Kafka in a simple and maintainable way.
@@ -35,6 +34,7 @@ You can find us at:
 -   [GitHub Issues](https://github.com/Farfetch/kafkaflow/issues)
 -   [GitHub Discussions](https://github.com/Farfetch/kafkaflow/discussions)
 -   [Slack](https://join.slack.com/t/kafkaflow/shared_invite/zt-puihrtcl-NnnylPZloAiVlQfsw~RD6Q)
+-   [Stack Overflow](https://stackoverflow.com/questions/tagged/kafkaflow)
 
 ## License
 
