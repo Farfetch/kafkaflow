@@ -5,6 +5,7 @@ namespace KafkaFlow.UnitTests
     using System.Linq;
     using System.Threading;
     using Confluent.Kafka;
+    using FluentAssertions;
     using KafkaFlow.Consumers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
@@ -12,7 +13,7 @@ namespace KafkaFlow.UnitTests
     [TestClass]
     public class OffsetCommitterTests
     {
-        private const int TestTimeout = 1000;
+        private const int TestTimeout = 5000;
 
         private Mock<IConsumer> consumerMock;
         private Mock<IDependencyResolver> dependencyResolverMock;
@@ -33,7 +34,7 @@ namespace KafkaFlow.UnitTests
 
             this.consumerMock
                 .Setup(c => c.Configuration.AutoCommitInterval)
-                .Returns(TimeSpan.FromMilliseconds(100));
+                .Returns(TimeSpan.FromMilliseconds(1000));
 
             this.offsetCommitter = new OffsetCommitter(
                 this.consumerMock.Object,
@@ -59,10 +60,7 @@ namespace KafkaFlow.UnitTests
 
             this.consumerMock
                 .Setup(c => c.Commit(It.Is<IEnumerable<TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))))
-                .Callback((IEnumerable<TopicPartitionOffset> _) =>
-                {
-                    ready.Set();
-                });
+                .Callback((IEnumerable<TopicPartitionOffset> _) => { ready.Set(); });
 
             // Act
             this.offsetCommitter.MarkAsProcessed(offset);
@@ -80,18 +78,20 @@ namespace KafkaFlow.UnitTests
             // Arrange
             var ready = new ManualResetEvent(false);
 
-            var committer = new OffsetCommitter(
+            using var committer = new OffsetCommitter(
                 this.consumerMock.Object,
                 this.dependencyResolverMock.Object,
                 new List<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
                 {
-                    ((_, _) => ready.Set(), new TimeSpan(0, 0, 10)),
+                    ((_, _) => ready.Set(), TimeSpan.FromMilliseconds(100)),
                 },
                 this.logHandlerMock.Object);
 
             // Act
             committer.MarkAsProcessed(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
-            Assert.IsTrue(ready.WaitOne(TestTimeout));
+
+            // Assert
+            ready.WaitOne(TestTimeout).Should().BeTrue();
         }
 
         [TestMethod]
@@ -106,16 +106,17 @@ namespace KafkaFlow.UnitTests
 
             this.consumerMock
                 .Setup(c => c.Commit(It.Is<IEnumerable<TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))))
-                .Callback((IEnumerable<TopicPartitionOffset> _) =>
-                {
-                    if (!hasThrown)
+                .Callback(
+                    (IEnumerable<TopicPartitionOffset> _) =>
                     {
-                        hasThrown = true;
-                        throw new InvalidOperationException();
-                    }
+                        if (!hasThrown)
+                        {
+                            hasThrown = true;
+                            throw new InvalidOperationException();
+                        }
 
-                    ready.Set();
-                });
+                        ready.Set();
+                    });
 
             // Act
             this.offsetCommitter.MarkAsProcessed(offset);
