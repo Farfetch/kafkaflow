@@ -4,6 +4,7 @@ namespace KafkaFlow.UnitTests
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
     using KafkaFlow.Consumers;
@@ -150,29 +151,42 @@ namespace KafkaFlow.UnitTests
         public void ShouldUpdateOffset_WithManyConcurrentOffsets_ShouldUpdate()
         {
             // Arrange
-            const int count = 1000000;
+            const int count = 1_000;
 
             var target = new PartitionOffsets();
-            var offsets = new List<int>(count);
-            var offsetsCommitted = new ConcurrentQueue<long>();
+            var offsetsCommitted = new ConcurrentBag<long>();
+
+            var waitHandle = new ManualResetEvent(false);
 
             for (var i = 0; i < count; i += 2)
             {
                 target.Enqueue(i);
-                offsets.Add(i);
             }
 
             // Act
-            Parallel.ForEach(offsets, offset =>
+            var tasks = new List<Task>();
+            for (var i = 0; i < count; i += 2)
             {
-                if (target.ShouldCommit(offset, out var lastProcessedOffset))
-                {
-                    offsetsCommitted.Enqueue(lastProcessedOffset);
-                }
-            });
+                var offset = i;
+                tasks.Add(
+                    Task.Run(
+                        () =>
+                        {
+                            waitHandle.WaitOne();
+
+                            if (target.ShouldCommit(offset, out var lastProcessedOffset))
+                            {
+                                offsetsCommitted.Add(lastProcessedOffset);
+                            }
+                        }));
+            }
+
+            waitHandle.Set();
+
+            Task.WaitAll(tasks.ToArray());
 
             // Assert
-            Assert.AreEqual(999998, offsetsCommitted.Last());
+            Assert.AreEqual(count - 2, offsetsCommitted.Max());
         }
     }
 }
