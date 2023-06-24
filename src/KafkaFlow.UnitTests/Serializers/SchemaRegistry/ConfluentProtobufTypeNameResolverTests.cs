@@ -1,4 +1,4 @@
-namespace KafkaFlow.UnitTests.Serializers
+namespace KafkaFlow.UnitTests.Serializers.SchemaRegistry
 {
     using System;
     using System.Threading.Tasks;
