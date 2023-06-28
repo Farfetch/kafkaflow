@@ -59,6 +59,14 @@ Even when you choose to use the manual offset store option, you will store the o
 When the application stops, there is a big chance to have processed messages already stored in OffsetManager but not stored in Kafka. In this scenario, when the application starts again, these messages will be processed again. Your application must be prepared to deal with it.
 :::
 
+### Max Poll Intervals
+
+This is the value that Kafka uses to determine the maximum amount of time allowed between calls to the consumers' poll method before the process is considered as failed. By default, this has a value of 300 seconds, but it may be adjusted with the `WithMaxPollInterval` configuration.
+
+If the maximum time is exceeded, the consumer will go offline, but the workers will continue to run in the background, leading to an increasing read lag until the application goes down.
+
+Further information can be found in the official [documentation](https://docs.confluent.io/platform/current/clients/consumer.html#message-handling).
+
 ## How it works
 
 The following animation shows a consumer listening to one topic with two [Workers](#workers) having a buffer size of 2 using the **BytesSum** distribution strategy.

@@ -43,6 +43,10 @@ services.AddKafka(kafka => kafka
 
 To access the batch from the next middleware, use the `GetMessagesBatch` method accessible through the `context` argument.
 
+:::warning
+When using the `Batch Consume` middleware, the `IServiceScopeFactory` should be used to create scopes instead of the `IServiceProvider`, as the latter may dispose the scope.
+:::
+
 ```csharp
 using KafkaFlow.BatchConsume;
 
