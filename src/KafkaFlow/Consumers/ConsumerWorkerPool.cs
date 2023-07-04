@@ -40,24 +40,19 @@ namespace KafkaFlow.Consumers
             this.distributionStrategyFactory = consumerConfiguration.DistributionStrategyFactory;
         }
 
-        public async Task StartAsync(IEnumerable<TopicPartition> partitions)
-        {
-            IOffsetCommitter offsetCommitter =
-                this.consumer.Configuration.NoStoreOffsets ?
-                    new NullOffsetCommitter() :
-                    new OffsetCommitter(
-                        this.consumer,
-                        this.dependencyResolver,
-                        this.pendingOffsetsHandlers,
-                        this.logHandler);
+        public int CurrentWorkersCount { get; private set; }
 
-            this.offsetManager = new OffsetManager(
-                offsetCommitter,
-                partitions);
+        public async Task StartAsync(IReadOnlyCollection<TopicPartition> partitions)
+        {
+            var offsetCommitter = this.CreateOffsetCommitter();
+
+            this.offsetManager = new OffsetManager(offsetCommitter, partitions);
+
+            this.CurrentWorkersCount = this.CalculateNumberOfWorkers(partitions);
 
             await Task.WhenAll(
                     Enumerable
-                        .Range(0, this.consumer.Configuration.WorkersCount)
+                        .Range(0, this.CurrentWorkersCount)
                         .Select(
                             workerId =>
                             {
@@ -111,6 +106,32 @@ namespace KafkaFlow.Consumers
             await worker
                 .EnqueueAsync(message, stopCancellationToken)
                 .ConfigureAwait(false);
+        }
+
+        private IOffsetCommitter CreateOffsetCommitter()
+        {
+            return this.consumer.Configuration.NoStoreOffsets ?
+                new NullOffsetCommitter() :
+                new OffsetCommitter(
+                    this.consumer,
+                    this.dependencyResolver,
+                    this.pendingOffsetsHandlers,
+                    this.logHandler);
+        }
+
+        private int CalculateNumberOfWorkers(IReadOnlyCollection<TopicPartition> partitions)
+        {
+            return this.consumer.Configuration.WorkersCountCalculator(
+                new WorkersCountContext(
+                    partitions
+                        .GroupBy(
+                            x => x.Topic,
+                            (topic, grouped) => new TopicPartitions(
+                                topic,
+                                grouped
+                                    .Select(x => x.Partition.Value)
+                                    .ToList()))
+                        .ToList()));
         }
     }
 }

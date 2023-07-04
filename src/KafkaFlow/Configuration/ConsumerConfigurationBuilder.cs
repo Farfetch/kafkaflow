@@ -27,7 +27,7 @@ namespace KafkaFlow.Configuration
         private string groupId = string.Empty;
         private AutoOffsetReset? autoOffsetReset;
         private int? maxPollIntervalMs;
-        private int workersCount;
+        private Func<WorkersCountContext, int> workersCountCalculator;
         private int bufferSize;
         private TimeSpan workerStopTimeout = TimeSpan.FromSeconds(30);
         private bool autoStoreOffsets = true;
@@ -121,7 +121,13 @@ namespace KafkaFlow.Configuration
 
         public IConsumerConfigurationBuilder WithWorkersCount(int workersCount)
         {
-            this.workersCount = workersCount;
+            this.workersCountCalculator = _ => workersCount;
+            return this;
+        }
+
+        public IConsumerConfigurationBuilder WithWorkersCount(Func<WorkersCountContext, int> calculator)
+        {
+            this.workersCountCalculator = calculator;
             return this;
         }
 
@@ -252,7 +258,7 @@ namespace KafkaFlow.Configuration
                 this.name,
                 clusterConfiguration,
                 this.disableManagement,
-                this.workersCount,
+                this.workersCountCalculator,
                 this.bufferSize,
                 this.workerStopTimeout,
                 this.distributionStrategyFactory,

@@ -92,6 +92,13 @@ namespace KafkaFlow.Configuration
         IConsumerConfigurationBuilder WithWorkersCount(int workersCount);
 
         /// <summary>
+        /// Sets the number of threads that will be used to consume the messages dynamically based on a provided function
+        /// </summary>
+        /// <param name="calculator">A function that takes the current context of the consumer and returns the desired number of workers</param>
+        /// <returns></returns>
+        IConsumerConfigurationBuilder WithWorkersCount(Func<WorkersCountContext, int> calculator);
+
+        /// <summary>
         /// Sets how many messages will be buffered for each worker
         /// </summary>
         /// <param name="size">The buffer size</param>
