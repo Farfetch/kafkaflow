@@ -1,6 +1,7 @@
 namespace KafkaFlow.Consumers
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
@@ -21,7 +22,7 @@ namespace KafkaFlow.Consumers
 
         private readonly List<Action<IConsumer<byte[], byte[]>, Error>> errorsHandlers = new();
         private readonly List<Action<IConsumer<byte[], byte[]>, string>> statisticsHandlers = new();
-        private readonly Dictionary<TopicPartition, long> committedOffsets = new();
+        private readonly ConcurrentDictionary<TopicPartition, long> currentPartitionsOffsets = new();
         private readonly ConsumerFlowManager flowManager;
 
         private IConsumer<byte[], byte[]> consumer;
@@ -91,8 +92,7 @@ namespace KafkaFlow.Consumers
         public void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler) =>
             this.partitionsAssignedHandlers.Add(handler);
 
-        public void OnPartitionsRevoked(
-            Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler) =>
+        public void OnPartitionsRevoked(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler) =>
             this.partitionsRevokedHandlers.Add(handler);
 
         public void OnError(Action<IConsumer<byte[], byte[]>, Error> handler) =>
@@ -120,14 +120,10 @@ namespace KafkaFlow.Consumers
             return this.Assignment.Select(
                 tp =>
                 {
-                    if (!this.committedOffsets.TryGetValue(tp, out var offset))
-                    {
-                        return new TopicPartitionLag(tp.Topic, tp.Partition.Value, 0);
-                    }
+                    var offset = Math.Max(0, this.currentPartitionsOffsets.GetOrAdd(tp, _ => this.GetPosition(tp)));
+                    var offsetEnd = Math.Max(0, this.GetWatermarkOffsets(tp).High.Value);
 
-                    var offsetEnd = this.GetWatermarkOffsets(tp).High.Value;
-
-                    return new TopicPartitionLag(tp.Topic, tp.Partition.Value, offsetEnd - offset);
+                    return new TopicPartitionLag(tp.Topic, tp.Partition.Value, offset == 0 ? 0 : offsetEnd - offset);
                 });
         }
 
@@ -137,7 +133,7 @@ namespace KafkaFlow.Consumers
 
             foreach (var offset in offsetsValues)
             {
-                this.committedOffsets[offset.TopicPartition] = offset.Offset.Value;
+                this.currentPartitionsOffsets[offset.TopicPartition] = offset.Offset.Value;
             }
         }
 
@@ -224,7 +220,7 @@ namespace KafkaFlow.Consumers
                         {
                             this.Assignment = new List<TopicPartition>();
                             this.Subscription = new List<string>();
-                            this.committedOffsets.Clear();
+                            this.currentPartitionsOffsets.Clear();
                             this.flowManager.Stop();
 
                             this.partitionsRevokedHandlers.ForEach(handler => handler(this.dependencyResolver, consumer, partitions));

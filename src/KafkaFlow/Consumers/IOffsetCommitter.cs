@@ -6,5 +6,7 @@ namespace KafkaFlow.Consumers
     internal interface IOffsetCommitter : IDisposable
     {
         void MarkAsProcessed(TopicPartitionOffset tpo);
+
+        void CommitProcessedOffsets();
     }
 }

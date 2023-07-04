@@ -6,7 +6,7 @@ namespace KafkaFlow.Consumers
     using System.Linq;
     using Confluent.Kafka;
 
-    internal class OffsetManager : IOffsetManager, IDisposable
+    internal class OffsetManager : IOffsetManager
     {
         private readonly ConcurrentDictionary<TopicPartitionOffset, ConcurrentBag<Action>> onProcessedActions = new();
 
@@ -54,16 +54,11 @@ namespace KafkaFlow.Consumers
         public void Enqueue(TopicPartitionOffset offset)
         {
             if (this.partitionsOffsets.TryGetValue(
-                (offset.Topic, offset.Partition.Value),
-                out var offsets))
+                    (offset.Topic, offset.Partition.Value),
+                    out var offsets))
             {
                 offsets.Enqueue(offset.Offset.Value);
             }
-        }
-
-        public void Dispose()
-        {
-            this.committer.Dispose();
         }
 
         private void ExecuteOffsetActions(TopicPartitionOffset offset)
