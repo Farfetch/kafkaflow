@@ -40,14 +40,14 @@ namespace KafkaFlow.Admin
 
         private void TryCleanItems()
         {
-            if (!this.NeedsClean())
+            if (!this.NeedsCleaning())
             {
                 return;
             }
 
             lock (this.cleanSyncRoot)
             {
-                if (!this.NeedsClean())
+                if (!this.NeedsCleaning())
                 {
                     return;
                 }
@@ -62,7 +62,7 @@ namespace KafkaFlow.Admin
         {
             foreach (var (key, metric) in this.metrics.Select(x=> (x.Key, x.Value)))
             {
-                if (this.dateTimeProvider.Now - metric.SentAt > this.expiryTime)
+                if (this.dateTimeProvider.UtcNow - metric.SentAt > this.expiryTime)
                 {
                     this.metrics.TryRemove(key, out _);
                 }
@@ -70,6 +70,6 @@ namespace KafkaFlow.Admin
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool NeedsClean() => this.dateTimeProvider.Now - this.lastCleanDate > this.cleanRunInterval;
+        private bool NeedsCleaning() => this.dateTimeProvider.Now - this.lastCleanDate > this.cleanRunInterval;
     }
 }
