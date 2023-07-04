@@ -101,6 +101,11 @@ namespace KafkaFlow.Admin.Dashboard
             /// Gets or sets the consumer lag
             /// </summary>
             public long Lag { get; set; }
+
+            /// <summary>
+            /// Gets or sets the workers count
+            /// </summary>
+            public int Workers { get; set; }
         }
     }
 }

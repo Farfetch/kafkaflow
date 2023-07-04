@@ -45,9 +45,9 @@ namespace KafkaFlow.Configuration
         bool ManagementDisabled { get; }
 
         /// <summary>
-        /// Gets or sets the number of workers
+        /// Gets or sets the number of workers calculator
         /// </summary>
-        int WorkersCount { get; set; }
+        Func<WorkersCountContext, int> WorkersCountCalculator { get; set; }
 
         /// <summary>
         /// Gets the consumer group

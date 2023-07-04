@@ -40,7 +40,9 @@ namespace KafkaFlow.Consumers
             this.distributionStrategyFactory = consumerConfiguration.DistributionStrategyFactory;
         }
 
-        public async Task StartAsync(IEnumerable<TopicPartition> partitions)
+        public int CurrentWorkersCount { get; private set; }
+
+        public async Task StartAsync(IReadOnlyCollection<TopicPartition> partitions)
         {
             IOffsetCommitter offsetCommitter =
                 this.consumer.Configuration.NoStoreOffsets ?
@@ -51,13 +53,13 @@ namespace KafkaFlow.Consumers
                         this.pendingOffsetsHandlers,
                         this.logHandler);
 
-            this.offsetManager = new OffsetManager(
-                offsetCommitter,
-                partitions);
+            this.offsetManager = new OffsetManager(offsetCommitter, partitions);
+
+            this.CurrentWorkersCount = this.consumer.Configuration.WorkersCountCalculator(new WorkersCountContext(partitions.Count));
 
             await Task.WhenAll(
                     Enumerable
-                        .Range(0, this.consumer.Configuration.WorkersCount)
+                        .Range(0, this.CurrentWorkersCount)
                         .Select(
                             workerId =>
                             {
