@@ -15,11 +15,9 @@
           <button class="btn btn-sm btn-outline-success ml-2" type="button" (click)="openStartModal(group.groupId, consumer.name)" *ngIf="$any(consumer).status === 'Not Running'">Start</button>
           <button class="btn btn-sm btn-outline-warning ml-2" type="button" (click)="openStopModal(group.groupId, consumer.name)" *ngIf="$any(consumer).status === 'Running'">Stop</button>
           <button class="btn btn-sm btn-outline-warning ml-2" type="button" (click)="openRestartModal(group.groupId, consumer.name)" *ngIf="$any(consumer).status === 'Running'">Restart</button>
+          <button class="btn btn-sm btn-outline-success ml-3" type="button" (click)="openWorkersCountModal(group.groupId, consumer.name)" *ngIf="$any(consumer).status === 'Running'">Force number of workers</button>
         </h4>
         <h4>Lag: {{$any(consumer).lag}}</h4>
-        <h4>Workers: {{consumer.workersCount}}
-          <button class="btn btn-sm btn-outline-success ml-3" type="button" (click)="openWorkersCountModal(group.groupId, consumer.name, consumer.workersCount)" *ngIf="$any(consumer).status === 'Running'">Change number of workers</button>
-        </h4>
         <ng-template let-assignment ngFor [ngForOf]="consumer.assignments || [] | groupBy:'topicName'">
           <hr/>
           <h5>
@@ -33,6 +31,7 @@
             <thead>
             <tr>
               <th>Consumer instance</th>
+              <th>Workers</th>
               <th>Partitions</th>
               <th>Lag</th>
               <th>Status</th>
@@ -43,6 +42,7 @@
               <ng-template let-partitionAssignment ngFor [ngForOf]="assignment.value | sort:'instanceName'">
                 <tr>
                   <td class="text-left">{{partitionAssignment.instanceName}}</td>
+                  <td class="text-left">{{partitionAssignment.workers}}</td>
                   <td class="text-left">{{hasRunningPartition(partitionAssignment) ? partitionAssignment.runningPartitions : partitionAssignment.pausedPartitions}}</td>
                   <td class="text-left">{{partitionAssignment.lag}}</td>
                   <td class="text-left">

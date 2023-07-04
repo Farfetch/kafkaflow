@@ -6,6 +6,8 @@ namespace KafkaFlow
     {
         public DateTime Now => DateTime.Now;
 
+        public DateTime UtcNow => DateTime.UtcNow;
+
         public DateTime MinValue => DateTime.MinValue;
     }
 }

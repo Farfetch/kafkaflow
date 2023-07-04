@@ -1,6 +1,5 @@
 namespace KafkaFlow
 {
-    using System.Linq;
     using KafkaFlow.Configuration;
     using KafkaFlow.Consumers;
 
@@ -28,6 +27,7 @@ namespace KafkaFlow
                 consumer,
                 consumerWorkerPool,
                 feeder,
+                resolver,
                 logHandler);
 
             return consumerManager;
