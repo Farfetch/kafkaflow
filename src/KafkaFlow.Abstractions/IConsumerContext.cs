@@ -54,6 +54,21 @@ namespace KafkaFlow
         bool ShouldStoreOffset { get; set; }
 
         /// <summary>
+        /// Gets an instance of IDependencyResolver which provides methods to resolve dependencies.
+        /// This instance is tied to the consumer scope, meaning it is capable of resolving dependencies
+        /// that are scoped to the lifecycle of a single consumer.
+        /// </summary>
+        IDependencyResolver ConsumerDependencyResolver { get; }
+
+        /// <summary>
+        /// Gets an instance of IDependencyResolver which provides methods to resolve dependencies.
+        /// This instance is tied to the worker scope, meaning it is capable of resolving dependencies
+        /// that are scoped to the lifecycle of a single worker.
+        /// </summary>
+        IDependencyResolver WorkerDependencyResolver { get; }
+
+
+        /// <summary>
         /// Store the message offset when manual store option is used
         /// </summary>
         void StoreOffset();
