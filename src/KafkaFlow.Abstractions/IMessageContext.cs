@@ -28,6 +28,14 @@ namespace KafkaFlow
         IProducerContext ProducerContext { get; }
 
         /// <summary>
+        /// Gets an instance of IDependencyResolver which provides methods to resolve dependencies.
+        /// This instance is tied to the message scope, meaning it is capable of resolving dependencies
+        /// that are scoped to the lifecycle of a single processed message.
+        /// </summary>
+        IDependencyResolver DependencyResolver { get; }
+
+
+        /// <summary>
         /// Creates a new <see cref="IMessageContext"/> with the new message
         /// </summary>
         /// <param name="key">The new message key</param>

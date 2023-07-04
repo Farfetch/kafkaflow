@@ -8,16 +8,14 @@ namespace KafkaFlow.Consumers
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
 
-    internal class ConsumerWorkerPool : IConsumerWorkerPool
+    internal class ConsumerWorkerPool : IConsumerWorkerPool, IDisposable
     {
         private readonly IConsumer consumer;
-        private readonly IDependencyResolver dependencyResolver;
+        private readonly IDependencyResolver consumerDependencyResolver;
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly ILogHandler logHandler;
         private readonly Factory<IDistributionStrategy> distributionStrategyFactory;
-
-        private readonly IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
-            pendingOffsetsHandlers;
+        private readonly IOffsetCommitter offsetCommitter;
 
         private TaskCompletionSource<object> startedTaskSource = new();
         private List<IConsumerWorker> workers = new();
@@ -27,43 +25,43 @@ namespace KafkaFlow.Consumers
 
         public ConsumerWorkerPool(
             IConsumer consumer,
-            IDependencyResolver dependencyResolver,
+            IDependencyResolver consumerDependencyResolver,
             IMiddlewareExecutor middlewareExecutor,
             IConsumerConfiguration consumerConfiguration,
             ILogHandler logHandler)
         {
             this.consumer = consumer;
-            this.dependencyResolver = dependencyResolver;
+            this.consumerDependencyResolver = consumerDependencyResolver;
             this.middlewareExecutor = middlewareExecutor;
             this.logHandler = logHandler;
-            this.pendingOffsetsHandlers = consumerConfiguration.PendingOffsetsHandlers;
             this.distributionStrategyFactory = consumerConfiguration.DistributionStrategyFactory;
+
+            this.offsetCommitter = this.consumer.Configuration.NoStoreOffsets ?
+                new NullOffsetCommitter() :
+                new OffsetCommitter(
+                    this.consumer,
+                    this.consumerDependencyResolver,
+                    consumerConfiguration.PendingOffsetsHandlers,
+                    this.logHandler);
         }
 
-        public async Task StartAsync(IEnumerable<TopicPartition> partitions)
-        {
-            IOffsetCommitter offsetCommitter =
-                this.consumer.Configuration.NoStoreOffsets ?
-                    new NullOffsetCommitter() :
-                    new OffsetCommitter(
-                        this.consumer,
-                        this.dependencyResolver,
-                        this.pendingOffsetsHandlers,
-                        this.logHandler);
+        public int CurrentWorkersCount { get; private set; }
 
-            this.offsetManager = new OffsetManager(
-                offsetCommitter,
-                partitions);
+        public async Task StartAsync(IReadOnlyCollection<TopicPartition> partitions, int workersCount)
+        {
+            this.offsetManager = new OffsetManager(this.offsetCommitter, partitions);
+
+            this.CurrentWorkersCount = workersCount;
 
             await Task.WhenAll(
                     Enumerable
-                        .Range(0, this.consumer.Configuration.WorkersCount)
+                        .Range(0, this.CurrentWorkersCount)
                         .Select(
                             workerId =>
                             {
                                 var worker = new ConsumerWorker(
                                     this.consumer,
-                                    this.dependencyResolver,
+                                    this.consumerDependencyResolver,
                                     workerId,
                                     this.offsetManager,
                                     this.middlewareExecutor,
@@ -75,7 +73,7 @@ namespace KafkaFlow.Consumers
                             }))
                 .ConfigureAwait(false);
 
-            this.distributionStrategy = this.distributionStrategyFactory(this.dependencyResolver);
+            this.distributionStrategy = this.distributionStrategyFactory(this.consumerDependencyResolver);
             this.distributionStrategy.Init(this.workers.AsReadOnly());
 
             this.startedTaskSource.TrySetResult(null);
@@ -89,7 +87,8 @@ namespace KafkaFlow.Consumers
 
             await Task.WhenAll(currentWorkers.Select(x => x.StopAsync())).ConfigureAwait(false);
 
-            this.offsetManager?.Dispose();
+            this.offsetCommitter.CommitProcessedOffsets();
+
             this.offsetManager = null;
         }
 
@@ -111,6 +110,11 @@ namespace KafkaFlow.Consumers
             await worker
                 .EnqueueAsync(message, stopCancellationToken)
                 .ConfigureAwait(false);
+        }
+
+        public void Dispose()
+        {
+            this.offsetCommitter.Dispose();
         }
     }
 }

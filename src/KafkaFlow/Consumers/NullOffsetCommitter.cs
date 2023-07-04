@@ -13,5 +13,10 @@ namespace KafkaFlow.Consumers
         {
             // Do nothing
         }
+
+        public void CommitProcessedOffsets()
+        {
+            // Do nothing
+        }
     }
 }

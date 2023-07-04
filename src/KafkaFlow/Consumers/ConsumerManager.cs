@@ -1,24 +1,37 @@
 ﻿namespace KafkaFlow.Consumers
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
+    using KafkaFlow.Configuration;
 
-    internal class ConsumerManager : IConsumerManager
+    internal class ConsumerManager : IConsumerManager, IDisposable
     {
+        private readonly IDependencyResolver dependencyResolver;
         private readonly ILogHandler logHandler;
+        private readonly Timer evaluateWorkersCountTimer;
 
         public ConsumerManager(
             IConsumer consumer,
             IConsumerWorkerPool consumerWorkerPool,
             IWorkerPoolFeeder feeder,
+            IDependencyResolver dependencyResolver,
             ILogHandler logHandler)
         {
+            this.dependencyResolver = dependencyResolver;
             this.logHandler = logHandler;
             this.Consumer = consumer;
             this.WorkerPool = consumerWorkerPool;
             this.Feeder = feeder;
+
+            this.evaluateWorkersCountTimer = new Timer(
+                state => _ = this.EvaluateWorkersCountAsync(),
+                null,
+                Timeout.Infinite,
+                Timeout.Infinite);
 
             this.Consumer.OnPartitionsAssigned((_, _, partitions) => this.OnPartitionAssigned(partitions));
             this.Consumer.OnPartitionsRevoked((_, _, partitions) => this.OnPartitionRevoked(partitions));
@@ -34,15 +47,62 @@
         {
             this.Feeder.Start();
 
+            this.StartEvaluateWorkerCountTimer();
+
             return Task.CompletedTask;
         }
 
         public async Task StopAsync()
         {
+            this.StopEvaluateWorkerCountTimer();
+
             await this.Feeder.StopAsync().ConfigureAwait(false);
             await this.WorkerPool.StopAsync().ConfigureAwait(false);
 
             this.Consumer.Dispose();
+        }
+
+        public void Dispose()
+        {
+            this.evaluateWorkersCountTimer.Dispose();
+        }
+
+        private void StopEvaluateWorkerCountTimer() => this.evaluateWorkersCountTimer.Change(Timeout.Infinite, Timeout.Infinite);
+
+        private void StartEvaluateWorkerCountTimer() => this.evaluateWorkersCountTimer.Change(
+            this.Consumer.Configuration.WorkersCountEvaluationInterval,
+            this.Consumer.Configuration.WorkersCountEvaluationInterval);
+
+        private async Task EvaluateWorkersCountAsync()
+        {
+            try
+            {
+                var newWorkersCount = await this.CalculateWorkersCount(this.Consumer.Assignment);
+
+                if (newWorkersCount == this.WorkerPool.CurrentWorkersCount)
+                {
+                    return;
+                }
+
+                await this.ChangeWorkersCountAsync(newWorkersCount);
+            }
+            catch (Exception e)
+            {
+                this.logHandler.Error("Error evaluating new number of workers", e, null);
+            }
+        }
+
+        private async Task ChangeWorkersCountAsync(int workersCount)
+        {
+            this.StopEvaluateWorkerCountTimer();
+
+            await this.Feeder.StopAsync();
+            await this.WorkerPool.StopAsync();
+
+            await this.WorkerPool.StartAsync(this.Consumer.Assignment, workersCount);
+            this.Feeder.Start();
+
+            this.StartEvaluateWorkerCountTimer();
         }
 
         private void OnPartitionRevoked(IEnumerable<TopicPartitionOffset> topicPartitions)
@@ -60,8 +120,10 @@
                 "Partitions assigned",
                 this.GetConsumerLogInfo(partitions));
 
+            var workersCount = this.CalculateWorkersCount(partitions).GetAwaiter().GetResult();
+
             this.WorkerPool
-                .StartAsync(partitions)
+                .StartAsync(partitions, workersCount)
                 .GetAwaiter()
                 .GetResult();
         }
@@ -80,5 +142,23 @@
                         Partitions = x.Select(y => y.Partition.Value),
                     }),
         };
+
+        private async Task<int> CalculateWorkersCount(IEnumerable<TopicPartition> partitions)
+        {
+            return await this.Consumer.Configuration.WorkersCountCalculator(
+                new WorkersCountContext(
+                    this.Consumer.Configuration.ConsumerName,
+                    this.Consumer.Configuration.GroupId,
+                    partitions
+                        .GroupBy(
+                            x => x.Topic,
+                            (topic, grouped) => new TopicPartitions(
+                                topic,
+                                grouped
+                                    .Select(x => x.Partition.Value)
+                                    .ToList()))
+                        .ToList()),
+                this.dependencyResolver);
+        }
     }
 }
