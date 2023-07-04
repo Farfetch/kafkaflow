@@ -75,7 +75,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IConsumerConfigurationBuilder WithPartitionsRevokedHandler(
             this IConsumerConfigurationBuilder builder,
-            Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler)
+            Action<IDependencyResolver, List<Confluent.Kafka.TopicPartitionOffset>> partitionsRevokedHandler)
         {
             return ((ConsumerConfigurationBuilder)builder).WithPartitionsRevokedHandler(partitionsRevokedHandler);
         }
@@ -89,7 +89,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IConsumerConfigurationBuilder WithPendingOffsetsStatisticsHandler(
             this IConsumerConfigurationBuilder builder,
-            Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> pendingOffsetsHandler,
+            Action<IDependencyResolver, IEnumerable<Confluent.Kafka.TopicPartitionOffset>> pendingOffsetsHandler,
             TimeSpan interval)
         {
             return ((ConsumerConfigurationBuilder)builder).WithPendingOffsetsStatisticsHandler(pendingOffsetsHandler, interval);

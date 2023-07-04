@@ -50,7 +50,7 @@ namespace KafkaFlow.Configuration
         {
             return lifetime switch
             {
-                MiddlewareLifetime.Scoped => InstanceLifetime.Scoped,
+                MiddlewareLifetime.Scoped or MiddlewareLifetime.Message => InstanceLifetime.Scoped,
                 MiddlewareLifetime.Singleton => InstanceLifetime.Singleton,
                 MiddlewareLifetime.Transient or
                     MiddlewareLifetime.Worker or

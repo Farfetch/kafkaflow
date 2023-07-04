@@ -8,7 +8,8 @@ namespace KafkaFlow.Producers
 
     internal class MessageProducer : IMessageProducer, IDisposable
     {
-        private readonly IDependencyResolver dependencyResolver;
+        private readonly IDependencyResolverScope producerDependencyScope;
+        private readonly ILogHandler logHandler;
         private readonly IProducerConfiguration configuration;
         private readonly MiddlewareExecutor middlewareExecutor;
         private readonly GlobalEvents globalEvents;
@@ -21,10 +22,11 @@ namespace KafkaFlow.Producers
             IDependencyResolver dependencyResolver,
             IProducerConfiguration configuration)
         {
-            this.dependencyResolver = dependencyResolver;
+            this.producerDependencyScope = dependencyResolver.CreateScope();
+            this.logHandler = dependencyResolver.Resolve<ILogHandler>();
             this.configuration = configuration;
             this.middlewareExecutor = new MiddlewareExecutor(configuration.MiddlewaresConfigurations);
-            this.globalEvents = this.dependencyResolver.Resolve<GlobalEvents>();
+            this.globalEvents = dependencyResolver.Resolve<GlobalEvents>();
         }
 
         public string ProducerName => this.configuration.Name;
@@ -38,29 +40,33 @@ namespace KafkaFlow.Producers
         {
             DeliveryResult<byte[], byte[]> report = null;
 
-            using var scope = this.dependencyResolver.CreateScope();
+            using var messageScope = this.producerDependencyScope.Resolver.CreateScope();
 
-            var messageContext = this.CreateMessageContext(topic, messageKey, messageValue, headers);
+            var messageContext = this.CreateMessageContext(
+                topic,
+                messageKey,
+                messageValue,
+                headers,
+                messageScope.Resolver);
 
             await this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext));
 
             try
             {
                 await this.middlewareExecutor
-                .Execute(
-                    scope.Resolver,
-                    messageContext,
-                    async context =>
-                    {
-                        report = await this
-                            .InternalProduceAsync(context, partition)
-                            .ConfigureAwait(false);
-                    })
-                .ConfigureAwait(false);
+                    .Execute(
+                        messageContext,
+                        async context =>
+                        {
+                            report = await this
+                                .InternalProduceAsync(context, partition)
+                                .ConfigureAwait(false);
+                        })
+                    .ConfigureAwait(false);
 
                 await this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext));
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 await this.globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(messageContext, e));
                 throw;
@@ -97,15 +103,19 @@ namespace KafkaFlow.Producers
             Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
             int? partition = null)
         {
-            var scope = this.dependencyResolver.CreateScope();
+            var messageScope = this.producerDependencyScope.Resolver.CreateScope();
 
-            var messageContext = this.CreateMessageContext(topic, messageKey, messageValue, headers);
+            var messageContext = this.CreateMessageContext(
+                topic,
+                messageKey,
+                messageValue,
+                headers,
+                messageScope.Resolver);
 
             this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext));
 
             this.middlewareExecutor
                 .Execute(
-                    scope.Resolver,
                     messageContext,
                     context =>
                     {
@@ -144,7 +154,7 @@ namespace KafkaFlow.Producers
                                 });
                         }
 
-                        scope.Dispose();
+                        messageScope.Dispose();
                     });
 
             this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext));
@@ -239,9 +249,7 @@ namespace KafkaFlow.Producers
                             }
                             else
                             {
-                                this.dependencyResolver
-                                    .Resolve<ILogHandler>()
-                                    .Warning("Kafka Producer Error", new { Error = error });
+                                this.logHandler.Warning("Kafka Producer Error", new { Error = error });
                             }
                         })
                     .SetStatisticsHandler(
@@ -255,7 +263,7 @@ namespace KafkaFlow.Producers
 
                 return this.producer = this.configuration.CustomFactory(
                     producerBuilder.Build(),
-                    this.dependencyResolver);
+                    this.producerDependencyScope.Resolver);
             }
         }
 
@@ -266,12 +274,10 @@ namespace KafkaFlow.Producers
                 this.producer = null;
             }
 
-            this.dependencyResolver
-                .Resolve<ILogHandler>()
-                .Error(
-                    "Kafka produce fatal error occurred. The producer will be recreated",
-                    result is null ? new KafkaException(error) : new ProduceException<byte[], byte[]>(error, result),
-                    new { Error = error });
+            this.logHandler.Error(
+                "Kafka produce fatal error occurred. The producer will be recreated",
+                result is null ? new KafkaException(error) : new ProduceException<byte[], byte[]>(error, result),
+                new { Error = error });
         }
 
         private async Task<DeliveryResult<byte[], byte[]>> InternalProduceAsync(IMessageContext context, int? partition)
@@ -346,13 +352,15 @@ namespace KafkaFlow.Producers
             string topic,
             object messageKey,
             object messageValue,
-            IMessageHeaders headers = null)
+            IMessageHeaders headers,
+            IDependencyResolver messageScopedResolver)
         {
             return new(
                 new Message(messageKey, messageValue),
                 headers,
+                messageScopedResolver,
                 null,
-                new ProducerContext(topic));
+                new ProducerContext(topic, this.producerDependencyScope.Resolver));
         }
     }
 }

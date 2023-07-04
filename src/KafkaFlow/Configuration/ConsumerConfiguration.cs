@@ -2,12 +2,12 @@ namespace KafkaFlow.Configuration
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using Confluent.Kafka;
 
     internal class ConsumerConfiguration : IConsumerConfiguration
     {
         private readonly ConsumerConfig consumerConfig;
-        private int workersCount;
 
         public ConsumerConfiguration(
             ConsumerConfig consumerConfig,
@@ -16,7 +16,8 @@ namespace KafkaFlow.Configuration
             string consumerName,
             ClusterConfiguration clusterConfiguration,
             bool managementDisabled,
-            int workersCount,
+            Func<WorkersCountContext, IDependencyResolver, Task<int>> workersCountCalculator,
+            TimeSpan workersCountEvaluationInterval,
             int bufferSize,
             TimeSpan workerStopTimeout,
             Factory<IDistributionStrategy> distributionStrategyFactory,
@@ -52,7 +53,8 @@ namespace KafkaFlow.Configuration
             this.ConsumerName = consumerName ?? Guid.NewGuid().ToString();
             this.ClusterConfiguration = clusterConfiguration;
             this.ManagementDisabled = managementDisabled;
-            this.WorkersCount = workersCount;
+            this.WorkersCountCalculator = workersCountCalculator;
+            this.WorkersCountEvaluationInterval = workersCountEvaluationInterval;
             this.WorkerStopTimeout = workerStopTimeout;
             this.StatisticsHandlers = statisticsHandlers;
             this.PartitionsAssignedHandlers = partitionsAssignedHandlers;
@@ -82,17 +84,9 @@ namespace KafkaFlow.Configuration
 
         public bool ManagementDisabled { get; }
 
-        public int WorkersCount
-        {
-            get => this.workersCount;
-            set =>
-                this.workersCount = value > 0 ?
-                    value :
-                    throw new ArgumentOutOfRangeException(
-                        nameof(this.WorkersCount),
-                        this.WorkersCount,
-                        $"The {nameof(this.WorkersCount)} value must be greater than 0");
-        }
+        public Func<WorkersCountContext, IDependencyResolver, Task<int>> WorkersCountCalculator { get; set; }
+
+        public TimeSpan WorkersCountEvaluationInterval { get; }
 
         public string GroupId => this.consumerConfig.GroupId;
 

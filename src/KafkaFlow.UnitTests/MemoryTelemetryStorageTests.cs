@@ -47,7 +47,7 @@ namespace KafkaFlow.UnitTests
             var now = DateTime.Now;
 
             this.dateTimeProviderMock
-                .SetupGet(x => x.Now)
+                .SetupGet(x => x.UtcNow)
                 .Returns(now);
 
             // Act
@@ -64,7 +64,7 @@ namespace KafkaFlow.UnitTests
             var now = DateTime.Now;
 
             this.dateTimeProviderMock
-                .SetupGet(x => x.Now)
+                .SetupGet(x => x.UtcNow)
                 .Returns(now);
 
             var metric1 = new ConsumerTelemetryMetric
@@ -99,7 +99,7 @@ namespace KafkaFlow.UnitTests
             var now = DateTime.Now;
 
             this.dateTimeProviderMock
-                .SetupGet(x => x.Now)
+                .SetupGet(x => x.UtcNow)
                 .Returns(now);
 
             var metric1 = new ConsumerTelemetryMetric

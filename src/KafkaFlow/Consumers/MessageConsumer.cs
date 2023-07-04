@@ -41,7 +41,7 @@ namespace KafkaFlow.Consumers
 
         public string ClientInstanceName => this.consumerManager.Consumer.ClientInstanceName;
 
-        public int WorkersCount => this.consumerManager.Consumer.Configuration.WorkersCount;
+        public int WorkersCount => this.consumerManager.WorkerPool.CurrentWorkersCount;
 
         public IReadOnlyList<TopicPartition> PausedPartitions =>
             this.consumerManager.Consumer.FlowManager?.PausedPartitions ??
@@ -121,12 +121,12 @@ namespace KafkaFlow.Consumers
 
         public async Task ChangeWorkersCountAndRestartAsync(int workersCount)
         {
-            this.consumerManager.Consumer.Configuration.WorkersCount = workersCount;
+            this.consumerManager.Consumer.Configuration.WorkersCountCalculator = (_, _) => Task.FromResult(workersCount);
 
             await this.InternalRestart().ConfigureAwait(false);
 
             this.logHandler.Info(
-                $"Total of workers in Kafkaflow consumer '{this.ConsumerName}' were updated",
+                $"Total of workers in KafkaFlow consumer '{this.ConsumerName}' were updated",
                 new { workersCount });
         }
 
