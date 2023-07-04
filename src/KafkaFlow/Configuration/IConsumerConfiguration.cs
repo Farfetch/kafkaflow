@@ -2,6 +2,7 @@ namespace KafkaFlow.Configuration
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using Confluent.Kafka;
 
     /// <summary>
@@ -45,9 +46,14 @@ namespace KafkaFlow.Configuration
         bool ManagementDisabled { get; }
 
         /// <summary>
-        /// Gets or sets the number of workers
+        /// Gets or sets the workers count calculator
         /// </summary>
-        int WorkersCount { get; set; }
+        Func<WorkersCountContext, Task<int>> WorkersCountCalculator { get; set; }
+
+        /// <summary>
+        /// Gets the time interval at which the workers count calculation is re-evaluated.
+        /// </summary>
+        TimeSpan WorkersCountEvaluationInterval { get; }
 
         /// <summary>
         /// Gets the consumer group

@@ -1,24 +1,37 @@
 ﻿namespace KafkaFlow.Consumers
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
+    using KafkaFlow.Configuration;
 
-    internal class ConsumerManager : IConsumerManager
+    internal class ConsumerManager : IConsumerManager, IDisposable
     {
+        private readonly IDependencyResolver dependencyResolver;
         private readonly ILogHandler logHandler;
+        private readonly Timer evaluateWorkersCountTimer;
 
         public ConsumerManager(
             IConsumer consumer,
             IConsumerWorkerPool consumerWorkerPool,
             IWorkerPoolFeeder feeder,
+            IDependencyResolver dependencyResolver,
             ILogHandler logHandler)
         {
+            this.dependencyResolver = dependencyResolver;
             this.logHandler = logHandler;
             this.Consumer = consumer;
             this.WorkerPool = consumerWorkerPool;
             this.Feeder = feeder;
+
+            this.evaluateWorkersCountTimer = new Timer(
+                state => _ = this.EvaluateWorkersCountAsync(),
+                null,
+                consumer.Configuration.WorkersCountEvaluationInterval,
+                consumer.Configuration.WorkersCountEvaluationInterval);
 
             this.Consumer.OnPartitionsAssigned((_, _, partitions) => this.OnPartitionAssigned(partitions));
             this.Consumer.OnPartitionsRevoked((_, _, partitions) => this.OnPartitionRevoked(partitions));
@@ -45,6 +58,39 @@
             this.Consumer.Dispose();
         }
 
+        public void Dispose()
+        {
+            this.evaluateWorkersCountTimer.Dispose();
+        }
+
+        private async Task EvaluateWorkersCountAsync()
+        {
+            try
+            {
+                var newWorkersCount = await this.CalculateNumberOfWorkers(this.Consumer.Assignment);
+
+                if (newWorkersCount == this.WorkerPool.CurrentWorkersCount)
+                {
+                    return;
+                }
+
+                await this.ChangeWorkersCountAsync(newWorkersCount);
+            }
+            catch (Exception e)
+            {
+                this.logHandler.Error("Error evaluating new number of workers", e, null);
+            }
+        }
+
+        private async Task ChangeWorkersCountAsync(int workersCount)
+        {
+            await this.Feeder.StopAsync();
+            await this.WorkerPool.StopAsync();
+
+            await this.WorkerPool.StartAsync(this.Consumer.Assignment, workersCount);
+            this.Feeder.Start();
+        }
+
         private void OnPartitionRevoked(IEnumerable<TopicPartitionOffset> topicPartitions)
         {
             this.logHandler.Warning(
@@ -60,8 +106,10 @@
                 "Partitions assigned",
                 this.GetConsumerLogInfo(partitions));
 
+            var workersCount = this.CalculateNumberOfWorkers(partitions).GetAwaiter().GetResult();
+
             this.WorkerPool
-                .StartAsync(partitions)
+                .StartAsync(partitions, workersCount)
                 .GetAwaiter()
                 .GetResult();
         }
@@ -80,5 +128,23 @@
                         Partitions = x.Select(y => y.Partition.Value),
                     }),
         };
+
+        private async Task<int> CalculateNumberOfWorkers(IEnumerable<TopicPartition> partitions)
+        {
+            return await this.Consumer.Configuration.WorkersCountCalculator(
+                new WorkersCountContext(
+                    this.dependencyResolver,
+                    this.Consumer.Configuration.ConsumerName,
+                    this.Consumer.Configuration.GroupId,
+                    partitions
+                        .GroupBy(
+                            x => x.Topic,
+                            (topic, grouped) => new TopicPartitions(
+                                topic,
+                                grouped
+                                    .Select(x => x.Partition.Value)
+                                    .ToList()))
+                        .ToList()));
+        }
     }
 }

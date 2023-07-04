@@ -40,24 +40,19 @@ namespace KafkaFlow.Consumers
             this.distributionStrategyFactory = consumerConfiguration.DistributionStrategyFactory;
         }
 
-        public async Task StartAsync(IEnumerable<TopicPartition> partitions)
-        {
-            IOffsetCommitter offsetCommitter =
-                this.consumer.Configuration.NoStoreOffsets ?
-                    new NullOffsetCommitter() :
-                    new OffsetCommitter(
-                        this.consumer,
-                        this.dependencyResolver,
-                        this.pendingOffsetsHandlers,
-                        this.logHandler);
+        public int CurrentWorkersCount { get; private set; }
 
-            this.offsetManager = new OffsetManager(
-                offsetCommitter,
-                partitions);
+        public async Task StartAsync(IReadOnlyCollection<TopicPartition> partitions, int workersCount)
+        {
+            var offsetCommitter = this.CreateOffsetCommitter();
+
+            this.offsetManager = new OffsetManager(offsetCommitter, partitions);
+
+            this.CurrentWorkersCount = workersCount;
 
             await Task.WhenAll(
                     Enumerable
-                        .Range(0, this.consumer.Configuration.WorkersCount)
+                        .Range(0, this.CurrentWorkersCount)
                         .Select(
                             workerId =>
                             {
@@ -111,6 +106,17 @@ namespace KafkaFlow.Consumers
             await worker
                 .EnqueueAsync(message, stopCancellationToken)
                 .ConfigureAwait(false);
+        }
+
+        private IOffsetCommitter CreateOffsetCommitter()
+        {
+            return this.consumer.Configuration.NoStoreOffsets ?
+                new NullOffsetCommitter() :
+                new OffsetCommitter(
+                    this.consumer,
+                    this.dependencyResolver,
+                    this.pendingOffsetsHandlers,
+                    this.logHandler);
         }
     }
 }

@@ -28,6 +28,7 @@ namespace KafkaFlow
                 consumer,
                 consumerWorkerPool,
                 feeder,
+                resolver,
                 logHandler);
 
             return consumerManager;
