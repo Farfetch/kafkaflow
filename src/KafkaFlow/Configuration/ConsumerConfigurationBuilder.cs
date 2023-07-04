@@ -4,6 +4,7 @@ namespace KafkaFlow.Configuration
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
+    using System.Threading.Tasks;
     using Confluent.Kafka;
     using KafkaFlow.Consumers.DistributionStrategies;
 
@@ -27,7 +28,8 @@ namespace KafkaFlow.Configuration
         private string groupId = string.Empty;
         private AutoOffsetReset? autoOffsetReset;
         private int? maxPollIntervalMs;
-        private int workersCount;
+        private Func<WorkersCountContext, IDependencyResolver, Task<int>> workersCountCalculator;
+        private TimeSpan workersCountEvaluationInterval = TimeSpan.FromMinutes(5);
         private int bufferSize;
         private TimeSpan workerStopTimeout = TimeSpan.FromSeconds(30);
         private bool autoStoreOffsets = true;
@@ -119,10 +121,23 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
+        public IConsumerConfigurationBuilder WithWorkersCount(
+            Func<WorkersCountContext, IDependencyResolver, Task<int>> calculator,
+            TimeSpan evaluationInterval)
+        {
+            this.workersCountCalculator = calculator;
+            this.workersCountEvaluationInterval = evaluationInterval;
+            return this;
+        }
+
+        public IConsumerConfigurationBuilder WithWorkersCount(Func<WorkersCountContext, IDependencyResolver, Task<int>> calculator)
+        {
+            return this.WithWorkersCount(calculator, TimeSpan.FromMinutes(5));
+        }
+
         public IConsumerConfigurationBuilder WithWorkersCount(int workersCount)
         {
-            this.workersCount = workersCount;
-            return this;
+            return this.WithWorkersCount((_, _) => Task.FromResult(workersCount));
         }
 
         public IConsumerConfigurationBuilder WithBufferSize(int size)
@@ -255,7 +270,8 @@ namespace KafkaFlow.Configuration
                 this.name,
                 clusterConfiguration,
                 this.disableManagement,
-                this.workersCount,
+                this.workersCountCalculator,
+                this.workersCountEvaluationInterval,
                 this.bufferSize,
                 this.workerStopTimeout,
                 this.distributionStrategyFactory,
