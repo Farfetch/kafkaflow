@@ -7,7 +7,9 @@ namespace KafkaFlow.Consumers
 
     internal interface IConsumerWorkerPool
     {
-        Task StartAsync(IEnumerable<TopicPartition> partitions);
+        int CurrentWorkersCount { get; }
+
+        Task StartAsync(IReadOnlyCollection<TopicPartition> partitions, int workersCount);
 
         Task StopAsync();
 
