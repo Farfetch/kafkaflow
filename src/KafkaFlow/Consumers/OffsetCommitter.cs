@@ -17,6 +17,8 @@ namespace KafkaFlow.Consumers
 
         private ConcurrentDictionary<(string, int), TopicPartitionOffset> offsetsToCommit = new();
 
+        private readonly object commitSyncRoot = new();
+
         public OffsetCommitter(
             IConsumer consumer,
             IDependencyResolver resolver,
@@ -62,6 +64,8 @@ namespace KafkaFlow.Consumers
                 (_, _) => tpo);
         }
 
+        public void CommitProcessedOffsets() => this.CommitHandler();
+
         private void PendingOffsetsHandler(
             IDependencyResolver resolver,
             Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler)
@@ -74,53 +78,61 @@ namespace KafkaFlow.Consumers
 
         private void CommitHandler()
         {
-            ConcurrentDictionary<(string, int), TopicPartitionOffset> offsets = null;
-
-            try
+            lock (this.commitSyncRoot)
             {
-                if (!this.offsetsToCommit.Any())
+                ConcurrentDictionary<(string, int), TopicPartitionOffset> offsets = null;
+
+                try
                 {
-                    return;
+                    if (!this.offsetsToCommit.Any())
+                    {
+                        return;
+                    }
+
+                    offsets = Interlocked.Exchange(
+                        ref this.offsetsToCommit,
+                        new ConcurrentDictionary<(string, int), TopicPartitionOffset>());
+
+                    this.consumer.Commit(offsets.Values);
+
+                    if (!this.consumer.Configuration.ManagementDisabled)
+                    {
+                        this.LogOffsetsCommitted(offsets);
+                    }
                 }
-
-                offsets = Interlocked.Exchange(
-                    ref this.offsetsToCommit,
-                    new ConcurrentDictionary<(string, int), TopicPartitionOffset>());
-
-                this.consumer.Commit(offsets.Values);
-
-                if (!this.consumer.Configuration.ManagementDisabled)
+                catch (Exception e)
                 {
-                    this.logHandler.Verbose(
-                        "Offsets committed",
-                        new
+                    this.logHandler.Warning(
+                        "Error Commiting Offsets",
+                        new { ErrorMessage = e.Message });
+
+                    if (offsets is not null)
+                    {
+                        this.RequeueFailedOffsets(offsets.Values);
+                    }
+                }
+            }
+        }
+
+        private void LogOffsetsCommitted(ConcurrentDictionary<(string, int), TopicPartitionOffset> offsets)
+        {
+            this.logHandler.Verbose(
+                "Offsets committed",
+                new
+                {
+                    Offsets = offsets.GroupBy(
+                        x => x.Key.Item1,
+                        (topic, groupedOffsets) => new
                         {
-                            Offsets = offsets.GroupBy(
-                                x => x.Key.Item1,
-                                (topic, groupedOffsets) => new
+                            Topic = topic,
+                            Partitions = groupedOffsets.Select(
+                                offset => new
                                 {
-                                    Topic = topic,
-                                    Partitions = groupedOffsets.Select(
-                                        offset => new
-                                        {
-                                            Partition = offset.Value.Partition.Value,
-                                            Offset = offset.Value.Offset.Value,
-                                        }),
+                                    Partition = offset.Value.Partition.Value,
+                                    Offset = offset.Value.Offset.Value,
                                 }),
-                        });
-                }
-            }
-            catch (Exception e)
-            {
-                this.logHandler.Warning(
-                    "Error Commiting Offsets",
-                    new { ErrorMessage = e.Message });
-
-                if (offsets is not null)
-                {
-                    this.RequeueFailedOffsets(offsets.Values);
-                }
-            }
+                        }),
+                });
         }
 
         private void RequeueFailedOffsets(IEnumerable<TopicPartitionOffset> offsets)

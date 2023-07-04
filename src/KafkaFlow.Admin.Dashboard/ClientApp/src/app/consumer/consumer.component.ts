@@ -77,12 +77,11 @@ export class ConsumerComponent implements OnInit {
 
   isActive = (date: string) => Math.abs((new Date().getTime() - new Date(date + 'Z').getTime()) / 1000) < 30;
 
-  openWorkersCountModal = (groupId: string, consumerName: string, workersCount?: number) => {
+  openWorkersCountModal = (groupId: string, consumerName: string) => {
     const modalRef = this.modalService.open(WorkersCountModalComponent);
 
     modalRef.componentInstance.groupId = groupId;
     modalRef.componentInstance.consumerName = consumerName;
-    modalRef.componentInstance.workersCount = workersCount;
 
     modalRef.result.then((newWorkersCount: number) => {
 
