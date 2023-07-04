@@ -15,8 +15,8 @@
 
     <ItemGroup>
         <PackageReference Include="Apache.Avro" Version="1.11.0" />
-        <PackageReference Include="Confluent.Kafka" Version="1.9.3" />
-        <PackageReference Include="Confluent.SchemaRegistry" Version="1.9.3" />
+        <PackageReference Include="Confluent.Kafka" Version="2.1.1" />
+        <PackageReference Include="Confluent.SchemaRegistry" Version="2.1.1" />
         <PackageReference Include="Confluent.SchemaRegistry.Serdes.Avro" Version="1.9.3" />
     </ItemGroup>
 
