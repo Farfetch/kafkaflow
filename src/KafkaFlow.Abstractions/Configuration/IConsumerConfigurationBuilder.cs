@@ -2,6 +2,7 @@ namespace KafkaFlow.Configuration
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Used to build the consumer configuration
@@ -90,6 +91,30 @@ namespace KafkaFlow.Configuration
         /// <param name="workersCount">The number of workers</param>
         /// <returns></returns>
         IConsumerConfigurationBuilder WithWorkersCount(int workersCount);
+
+        /// <summary>
+        /// Configures a custom function to dynamically calculate the number of workers.
+        /// This function is called at intervals specified by the WithWorkersCountEvaluationInterval method.
+        /// </summary>
+        /// <param name="calculator">A function that takes a WorkersCountContext object and returns a Task yielding the new workers count</param>
+        /// <returns>The IConsumerConfigurationBuilder instance for method chaining</returns>
+        IConsumerConfigurationBuilder WithWorkersCount(Func<WorkersCountContext, IDependencyResolver, Task<int>> calculator);
+
+        /// <summary>
+        /// Configures the interval at which the workers count should be evaluated using a TimeSpan.
+        /// This enables dynamic adjustment of workers count based on changing conditions.
+        /// </summary>
+        /// <param name="interval">The time interval for re-evaluating the workers count</param>
+        /// <returns>The IConsumerConfigurationBuilder instance for method chaining</returns>
+        IConsumerConfigurationBuilder WithWorkersCountEvaluationInterval(TimeSpan interval);
+
+        /// <summary>
+        /// Configures the interval at which the workers count should be evaluated using minutes.
+        /// This enables dynamic adjustment of workers count based on changing conditions.
+        /// </summary>
+        /// <param name="minutes">The time interval in minutes for re-evaluating the workers count</param>
+        /// <returns>The IConsumerConfigurationBuilder instance for method chaining</returns>
+        IConsumerConfigurationBuilder WithWorkersCountEvaluationInterval(int minutes);
 
         /// <summary>
         /// Sets how many messages will be buffered for each worker

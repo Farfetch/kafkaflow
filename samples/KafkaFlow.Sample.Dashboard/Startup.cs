@@ -1,5 +1,7 @@
 namespace KafkaFlow.Sample.Dashboard;
 
+using System;
+using System.Threading.Tasks;
 using KafkaFlow.Admin.Dashboard;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,31 +13,40 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddKafkaFlowHostedService(
-            kafka => kafka
-                .UseConsoleLog()
-                .AddCluster(
-                    cluster =>
-                    {
-                        const string topicName = "topic-dashboard";
-                        cluster
-                            .WithBrokers(new[] { "localhost:9092" })
-                            .EnableAdminMessages("kafka-flow.admin", "kafka-flow.admin.group.id")
-                            .EnableTelemetry("kafka-flow.admin", "kafka-flow.telemetry.group.id")
-                            .CreateTopicIfNotExists(topicName, 3, 1)
-                            .AddConsumer(
-                                consumer =>
-                                {
-                                    consumer
-                                        .Topics(topicName)
-                                        .WithGroupId("groupid-dashboard")
-                                        .WithName("consumer-dashboard")
-                                        .WithBufferSize(100)
-                                        .WithWorkersCount(20)
-                                        .WithAutoOffsetReset(AutoOffsetReset.Latest);
-                                });
-                    })
-        );
+        services
+            .AddSingleton<ConsumerLagWorkersCountCalculator>()
+            .AddKafkaFlowHostedService(
+                kafka => kafka
+                    .UseConsoleLog()
+                    .AddCluster(
+                        cluster =>
+                        {
+                            const string topicName = "topic-dashboard";
+                            cluster
+                                .WithBrokers(new[] { "localhost:9092" })
+                                .EnableAdminMessages("kafka-flow.admin", "kafka-flow.admin.group.id")
+                                .EnableTelemetry("kafka-flow.admin", "kafka-flow.telemetry.group.id")
+                                .CreateTopicIfNotExists(topicName, 3, 1)
+                                .AddConsumer(
+                                    consumer =>
+                                    {
+                                        consumer
+                                            .Topics(topicName)
+                                            .WithGroupId("groupid-dashboard")
+                                            .WithName("consumer-dashboard")
+                                            .WithBufferSize(1)
+                                            .WithWorkersCount(
+                                                (context, resolver) =>
+                                                    resolver.Resolve<ConsumerLagWorkersCountCalculator>().CalculateAsync(context))
+                                            .WithWorkersCountEvaluationInterval(TimeSpan.FromSeconds(60))
+                                            .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                            .AddMiddlewares(
+                                                m =>
+                                                    m.Add<DelayMiddleware>());
+                                    })
+                                .AddProducer("producer", producer => producer.DefaultTopic(topicName));
+                        })
+            );
 
         services
             .AddControllers();
@@ -48,5 +59,13 @@ public class Startup
             .UseRouting()
             .UseEndpoints(endpoints => { endpoints.MapControllers(); })
             .UseKafkaFlowDashboard();
+    }
+}
+
+public class DelayMiddleware : IMessageMiddleware
+{
+    public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
+    {
+        await Task.Delay(1000);
     }
 }
