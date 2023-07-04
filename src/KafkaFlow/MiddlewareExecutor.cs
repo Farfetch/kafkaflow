@@ -18,16 +18,9 @@ namespace KafkaFlow
             this.configurations = configurations;
         }
 
-        public Task Execute(
-            IDependencyResolver dependencyResolver,
-            IMessageContext context,
-            Func<IMessageContext, Task> nextOperation)
+        public Task Execute(IMessageContext context, Func<IMessageContext, Task> nextOperation)
         {
-            return this.ExecuteDefinition(
-                0,
-                dependencyResolver,
-                context,
-                nextOperation);
+            return this.ExecuteDefinition(0, context, nextOperation);
         }
 
         private static IMessageMiddleware CreateInstance(
@@ -36,7 +29,7 @@ namespace KafkaFlow
         {
             if (configuration.InstanceContainerId is null)
             {
-                return (IMessageMiddleware) dependencyResolver.Resolve(configuration.Type);
+                return (IMessageMiddleware)dependencyResolver.Resolve(configuration.Type);
             }
 
             var instanceContainer = dependencyResolver
@@ -55,11 +48,7 @@ namespace KafkaFlow
             return instanceContainer.GetInstance(dependencyResolver);
         }
 
-        private Task ExecuteDefinition(
-            int index,
-            IDependencyResolver dependencyResolver,
-            IMessageContext context,
-            Func<IMessageContext, Task> nextOperation)
+        private Task ExecuteDefinition(int index, IMessageContext context, Func<IMessageContext, Task> nextOperation)
         {
             if (this.configurations.Count == index)
             {
@@ -69,27 +58,25 @@ namespace KafkaFlow
             var configuration = this.configurations[index];
 
             return this
-                .ResolveInstance(dependencyResolver, index, context, configuration)
+                .ResolveInstance(index, context, configuration)
                 .Invoke(
                     context,
-                    nextContext => this.ExecuteDefinition(
-                        index + 1,
-                        dependencyResolver,
-                        nextContext,
-                        nextOperation));
+                    nextContext => this.ExecuteDefinition(index + 1, nextContext, nextOperation));
         }
 
-        private IMessageMiddleware ResolveInstance(
-            IDependencyResolver dependencyResolver,
-            int index,
-            IMessageContext context,
-            MiddlewareConfiguration configuration)
+        private IMessageMiddleware ResolveInstance(int index, IMessageContext context, MiddlewareConfiguration configuration)
         {
             return configuration.Lifetime switch
             {
-                MiddlewareLifetime.Worker => this.GetWorkerInstance(dependencyResolver, index, context, configuration),
-                MiddlewareLifetime.ConsumerOrProducer => this.GetConsumerOrProducerInstance(dependencyResolver, index, configuration),
-                _ => CreateInstance(dependencyResolver, configuration)
+                MiddlewareLifetime.Worker => this.GetWorkerInstance(
+                    index,
+                    context,
+                    configuration),
+                MiddlewareLifetime.ConsumerOrProducer => this.GetConsumerOrProducerInstance(
+                    context.ConsumerContext?.ConsumerDependencyResolver ?? context.ProducerContext?.ProducerDependencyResolver,
+                    index,
+                    configuration),
+                _ => CreateInstance(context.DependencyResolver, configuration)
             };
         }
 
@@ -104,14 +91,13 @@ namespace KafkaFlow
         }
 
         private IMessageMiddleware GetWorkerInstance(
-            IDependencyResolver dependencyResolver,
             int index,
             IMessageContext context,
             MiddlewareConfiguration configuration)
         {
             return this.workersMiddlewares.SafeGetOrAdd(
                 (index, context.ConsumerContext?.WorkerId ?? 0),
-                _ => CreateInstance(dependencyResolver, configuration));
+                _ => CreateInstance(context.ConsumerContext.WorkerDependencyResolver, configuration));
         }
     }
 }
