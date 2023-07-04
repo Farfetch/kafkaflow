@@ -2,6 +2,7 @@ namespace KafkaFlow.Configuration
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Used to build the consumer configuration
@@ -91,6 +92,24 @@ namespace KafkaFlow.Configuration
         /// <param name="workersCount">The number of workers</param>
         /// <returns></returns>
         IConsumerConfigurationBuilder WithWorkersCount(int workersCount);
+
+        /// <summary>
+        /// Configures a custom function to dynamically calculate the number of workers.
+        /// </summary>
+        /// <param name="calculator">A function that takes a WorkersCountContext object and returns a Task yielding the new workers count</param>
+        /// <param name="evaluationInterval">The interval that the calculator will be called</param>
+        /// <returns>The IConsumerConfigurationBuilder instance for method chaining</returns>
+        IConsumerConfigurationBuilder WithWorkersCount(
+            Func<WorkersCountContext, IDependencyResolver, Task<int>> calculator,
+            TimeSpan evaluationInterval);
+
+        /// <summary>
+        /// Configures a custom function to dynamically calculate the number of workers.
+        /// By default, this function is called every 5 minutes.
+        /// </summary>
+        /// <param name="calculator">A function that takes a WorkersCountContext object and returns a Task yielding the new workers count</param>
+        /// <returns>The IConsumerConfigurationBuilder instance for method chaining</returns>
+        IConsumerConfigurationBuilder WithWorkersCount(Func<WorkersCountContext, IDependencyResolver, Task<int>> calculator);
 
         /// <summary>
         /// Sets how many messages will be buffered for each worker

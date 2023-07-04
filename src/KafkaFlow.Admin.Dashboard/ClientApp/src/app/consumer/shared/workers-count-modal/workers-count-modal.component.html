@@ -8,10 +8,6 @@
 <div class="modal-body">
     <div class="form-group">
         <label>Update the number of workers in consumers <b>'{{consumerName}}'</b> from group id <b>'{{groupId}}'</b> </label>
-        <label for="oldWorkersCount">Current Value</label>
-        <div class="input-group mb-2">
-        <input id="oldWorkersCount" class="form-control" [(ngModel)]="oldWorkersCount" type="number" readonly>
-        </div>
         <label for="workersCount">New Value</label>
         <div class="input-group">
         <input id="workersCount" class="form-control" [(ngModel)]="workersCount" type="number">

@@ -26,7 +26,7 @@ namespace KafkaFlow.TypedHandler
 
             builder.Add(
                 resolver => new TypedHandlerMiddleware(resolver, configuration),
-                MiddlewareLifetime.Scoped);
+                MiddlewareLifetime.Message);
 
             return builder;
         }
