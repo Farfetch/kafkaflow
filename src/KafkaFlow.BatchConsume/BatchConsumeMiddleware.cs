@@ -6,7 +6,7 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    internal class BatchConsumeMiddleware : IMessageMiddleware, IDisposable
+    internal class BatchConsumeMiddleware : IMessageMiddleware, IDisposable, IAsyncDisposable
     {
         private readonly SemaphoreSlim dispatchSemaphore = new(1, 1);
 
@@ -65,10 +65,15 @@
             }
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            this.dispatchTokenSource?.Dispose();
+            this.dispatchTokenSource.Dispose();
+
+            await this.dispatchSemaphore.WaitAsync();
+            this.dispatchSemaphore.Dispose();
         }
+
+        public void Dispose() => this.DisposeAsync().GetAwaiter().GetResult();
 
         private async Task DispatchAsync(IMessageContext context, MiddlewareDelegate next)
         {
@@ -77,6 +82,11 @@
 
             try
             {
+                if (!localBatch.Any())
+                {
+                    return;
+                }
+
                 var batchContext = new BatchConsumeMessageContext(context.ConsumerContext, localBatch);
 
                 await next(batchContext).ConfigureAwait(false);

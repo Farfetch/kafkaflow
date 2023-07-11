@@ -4,17 +4,15 @@ namespace KafkaFlow.Consumers
     using System.Threading;
     using System.Threading.Channels;
     using System.Threading.Tasks;
-    using Confluent.Kafka;
 
     internal class ConsumerWorker : IConsumerWorker
     {
         private readonly IConsumer consumer;
         private readonly IDependencyResolver consumerDependencyResolver;
-        private readonly IOffsetManager offsetManager;
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly ILogHandler logHandler;
 
-        private readonly Channel<ConsumeResult<byte[], byte[]>> messagesBuffer;
+        private readonly Channel<IMessageContext> messagesBuffer;
 
         private CancellationTokenSource stopCancellationTokenSource;
         private IDependencyResolverScope workerDependencyResolverScope;
@@ -25,26 +23,28 @@ namespace KafkaFlow.Consumers
             IConsumer consumer,
             IDependencyResolver consumerDependencyResolver,
             int workerId,
-            IOffsetManager offsetManager,
             IMiddlewareExecutor middlewareExecutor,
             ILogHandler logHandler)
         {
             this.Id = workerId;
             this.consumer = consumer;
             this.consumerDependencyResolver = consumerDependencyResolver;
-            this.offsetManager = offsetManager;
             this.middlewareExecutor = middlewareExecutor;
             this.logHandler = logHandler;
-            this.messagesBuffer = Channel.CreateBounded<ConsumeResult<byte[], byte[]>>(consumer.Configuration.BufferSize);
+            this.messagesBuffer = Channel.CreateBounded<IMessageContext>(consumer.Configuration.BufferSize);
         }
 
         public int Id { get; }
 
+        public CancellationToken StopCancellationToken => this.stopCancellationTokenSource?.Token ?? default;
+
+        public IDependencyResolver WorkerDependencyResolver => this.workerDependencyResolverScope.Resolver;
+
         public ValueTask EnqueueAsync(
-            ConsumeResult<byte[], byte[]> message,
-            CancellationToken stopCancellationToken = default)
+            IMessageContext context,
+            CancellationToken stopCancellationToken)
         {
-            return this.messagesBuffer.Writer.WriteAsync(message, stopCancellationToken);
+            return this.messagesBuffer.Writer.WriteAsync(context, stopCancellationToken);
         }
 
         public Task StartAsync()
@@ -57,18 +57,13 @@ namespace KafkaFlow.Consumers
                 {
                     try
                     {
-                        var cancellationTokenSource = new CancellationTokenSource();
-
-                        this.stopCancellationTokenSource.Token.Register(
-                            () => cancellationTokenSource.CancelAfter(this.consumer.Configuration.WorkerStopTimeout));
-
                         try
                         {
                             while (await this.messagesBuffer.Reader.WaitToReadAsync(CancellationToken.None).ConfigureAwait(false))
                             {
                                 while (this.messagesBuffer.Reader.TryRead(out var message))
                                 {
-                                    await this.ProcessMessageAsync(message, cancellationTokenSource.Token).ConfigureAwait(false);
+                                    await this.ProcessMessageAsync(message, this.stopCancellationTokenSource.Token).ConfigureAwait(false);
                                 }
                             }
                         }
@@ -81,7 +76,8 @@ namespace KafkaFlow.Consumers
                     {
                         this.logHandler.Error("KafkaFlow consumer worker fatal error", ex, null);
                     }
-                });
+                },
+                CancellationToken.None);
 
             return Task.CompletedTask;
         }
@@ -92,13 +88,17 @@ namespace KafkaFlow.Consumers
 
             if (this.stopCancellationTokenSource.Token.CanBeCanceled)
             {
-                this.stopCancellationTokenSource.Cancel();
-                this.stopCancellationTokenSource.Dispose();
+                this.stopCancellationTokenSource.CancelAfter(this.consumer.Configuration.WorkerStopTimeout);
             }
 
             await this.backgroundTask.ConfigureAwait(false);
+        }
+
+        public void Dispose()
+        {
             this.backgroundTask.Dispose();
             this.workerDependencyResolverScope.Dispose();
+            this.stopCancellationTokenSource.Dispose();
         }
 
         public void OnTaskCompleted(Action handler)
@@ -106,32 +106,12 @@ namespace KafkaFlow.Consumers
             this.onMessageFinishedHandler = handler;
         }
 
-        private async Task ProcessMessageAsync(ConsumeResult<byte[], byte[]> message, CancellationToken cancellationToken)
+        private async Task ProcessMessageAsync(IMessageContext context, CancellationToken cancellationToken)
         {
             try
             {
-                var messageScope = this.consumerDependencyResolver.CreateScope();
-
-                var context = new MessageContext(
-                    new Message(message.Message.Key, message.Message.Value),
-                    new MessageHeaders(message.Message.Headers),
-                    messageScope.Resolver,
-                    new ConsumerContext(
-                        this.consumer,
-                        this.offsetManager,
-                        message,
-                        cancellationToken,
-                        this.Id,
-                        this.workerDependencyResolverScope.Resolver,
-                        this.consumerDependencyResolver),
-                    null);
-
                 try
                 {
-                    this.offsetManager.OnOffsetProcessed(
-                        message.TopicPartitionOffset,
-                        () => messageScope.Dispose());
-
                     await this.middlewareExecutor
                         .Execute(context, _ => Task.CompletedTask)
                         .ConfigureAwait(false);
@@ -156,7 +136,7 @@ namespace KafkaFlow.Consumers
 
                 if (this.consumer.Configuration.AutoStoreOffsets && context.ConsumerContext.ShouldStoreOffset)
                 {
-                    this.offsetManager.MarkAsProcessed(message.TopicPartitionOffset);
+                    context.ConsumerContext.StoreOffset();
                 }
 
                 this.onMessageFinishedHandler?.Invoke();

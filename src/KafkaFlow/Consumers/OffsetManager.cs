@@ -1,15 +1,12 @@
 namespace KafkaFlow.Consumers
 {
-    using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
     using Confluent.Kafka;
 
     internal class OffsetManager : IOffsetManager
     {
-        private readonly ConcurrentDictionary<TopicPartitionOffset, ConcurrentBag<Action>> onProcessedActions = new();
-
         private readonly IOffsetCommitter committer;
         private readonly Dictionary<(string, int), PartitionOffsets> partitionsOffsets;
 
@@ -23,57 +20,33 @@ namespace KafkaFlow.Consumers
                 _ => new PartitionOffsets());
         }
 
-        public void MarkAsProcessed(TopicPartitionOffset offset)
+        public void MarkAsProcessed(IConsumerContext context)
         {
-            if (!this.partitionsOffsets.TryGetValue((offset.Topic, offset.Partition.Value), out var offsets))
+            if (!this.partitionsOffsets.TryGetValue((context.Topic, context.Partition), out var offsets))
             {
                 return;
             }
 
             lock (offsets)
             {
-                if (offsets.ShouldCommit(offset.Offset.Value, out var lastProcessedOffset))
+                if (offsets.ShouldCommit(context, out var lastProcessedContext))
                 {
-                    this.committer.MarkAsProcessed(
-                        new TopicPartitionOffset(
-                            offset.TopicPartition,
-                            new Offset(lastProcessedOffset + 1)));
+                    this.committer.MarkAsProcessed(lastProcessedContext.TopicPartitionOffset);
                 }
             }
-
-            this.ExecuteOffsetActions(offset);
         }
 
-        public void OnOffsetProcessed(TopicPartitionOffset offset, Action action)
-        {
-            this.onProcessedActions
-                .SafeGetOrAdd(offset, _ => new())
-                .Add(action);
-        }
-
-        public void Enqueue(TopicPartitionOffset offset)
+        public void Enqueue(IConsumerContext context)
         {
             if (this.partitionsOffsets.TryGetValue(
-                    (offset.Topic, offset.Partition.Value),
+                    (context.Topic, context.Partition),
                     out var offsets))
             {
-                offsets.Enqueue(offset.Offset.Value);
+                offsets.Enqueue(context);
             }
         }
 
-        private void ExecuteOffsetActions(TopicPartitionOffset offset)
-        {
-            if (!this.onProcessedActions.TryGetValue(offset, out var actions))
-            {
-                return;
-            }
-
-            this.onProcessedActions.TryRemove(offset, out _);
-
-            foreach (var action in actions)
-            {
-                action();
-            }
-        }
+        public Task WaitOffsetsCompletionAsync() =>
+            Task.WhenAll(this.partitionsOffsets.Select(x => x.Value.WaitContextsCompletionAsync()));
     }
 }

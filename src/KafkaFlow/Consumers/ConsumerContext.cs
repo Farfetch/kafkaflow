@@ -2,48 +2,55 @@ namespace KafkaFlow.Consumers
 {
     using System;
     using System.Threading;
+    using System.Threading.Tasks;
     using Confluent.Kafka;
+    using TopicPartitionOffset = KafkaFlow.TopicPartitionOffset;
 
     internal class ConsumerContext : IConsumerContext
     {
+        private readonly TaskCompletionSource<TopicPartitionOffset> completionSource = new();
         private readonly IConsumer consumer;
         private readonly IOffsetManager offsetManager;
-        private readonly TopicPartitionOffset topicPartitionOffset;
+        private readonly IConsumerWorker worker;
+        private readonly IDependencyResolverScope messageDependencyScope;
 
         public ConsumerContext(
             IConsumer consumer,
             IOffsetManager offsetManager,
             ConsumeResult<byte[], byte[]> kafkaResult,
-            CancellationToken workerStopped,
-            int workerId,
-            IDependencyResolver workerDependencyResolver,
+            IConsumerWorker worker,
+            IDependencyResolverScope messageDependencyScope,
             IDependencyResolver consumerDependencyResolver)
         {
-            this.WorkerStopped = workerStopped;
-            this.WorkerId = workerId;
-            this.WorkerDependencyResolver = workerDependencyResolver;
             this.ConsumerDependencyResolver = consumerDependencyResolver;
             this.consumer = consumer;
             this.offsetManager = offsetManager;
-            this.topicPartitionOffset = kafkaResult.TopicPartitionOffset;
+            this.worker = worker;
+            this.messageDependencyScope = messageDependencyScope;
+            this.TopicPartitionOffset = new TopicPartitionOffset(
+                kafkaResult.Topic,
+                kafkaResult.Partition.Value,
+                kafkaResult.Offset.Value);
             this.MessageTimestamp = kafkaResult.Message.Timestamp.UtcDateTime;
         }
 
         public string ConsumerName => this.consumer.Configuration.ConsumerName;
 
-        public CancellationToken WorkerStopped { get; }
+        public CancellationToken WorkerStopped => this.worker.StopCancellationToken;
 
-        public int WorkerId { get; }
+        public int WorkerId => this.worker.Id;
 
-        public IDependencyResolver WorkerDependencyResolver { get; }
+        public IDependencyResolver WorkerDependencyResolver => this.worker.WorkerDependencyResolver;
 
         public IDependencyResolver ConsumerDependencyResolver { get; }
 
-        public string Topic => this.topicPartitionOffset.Topic;
+        public string Topic => this.TopicPartitionOffset.Topic;
 
-        public int Partition => this.topicPartitionOffset.Partition.Value;
+        public int Partition => this.TopicPartitionOffset.Partition;
 
-        public long Offset => this.topicPartitionOffset.Offset.Value;
+        public long Offset => this.TopicPartitionOffset.Offset;
+
+        public TopicPartitionOffset TopicPartitionOffset { get; }
 
         public string GroupId => this.consumer.Configuration.GroupId;
 
@@ -51,10 +58,21 @@ namespace KafkaFlow.Consumers
 
         public DateTime MessageTimestamp { get; }
 
-        public void StoreOffset() => this.offsetManager.MarkAsProcessed(this.topicPartitionOffset);
+        public Task<TopicPartitionOffset> Completion => this.completionSource.Task;
+
+        public void StoreOffset()
+        {
+            this.offsetManager.MarkAsProcessed(this);
+            this.messageDependencyScope.Dispose();
+            this.completionSource.TrySetResult(this.TopicPartitionOffset);
+        }
 
         public IOffsetsWatermark GetOffsetsWatermark() =>
-            new OffsetsWatermark(this.consumer.GetWatermarkOffsets(this.topicPartitionOffset.TopicPartition));
+            new OffsetsWatermark(
+                this.consumer.GetWatermarkOffsets(
+                    new TopicPartition(
+                        this.TopicPartitionOffset.Topic,
+                        this.TopicPartitionOffset.Partition)));
 
         public void Pause() => this.consumer.FlowManager.Pause(this.consumer.Assignment);
 

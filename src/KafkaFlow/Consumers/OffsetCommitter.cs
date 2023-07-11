@@ -5,7 +5,6 @@ namespace KafkaFlow.Consumers
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
-    using Confluent.Kafka;
 
     internal class OffsetCommitter : IOffsetCommitter
     {
@@ -15,14 +14,14 @@ namespace KafkaFlow.Consumers
         private readonly Timer commitTimer;
         private readonly IReadOnlyList<Timer> statisticsTimers;
 
-        private ConcurrentDictionary<(string, int), TopicPartitionOffset> offsetsToCommit = new();
-
         private readonly object commitSyncRoot = new();
+
+        private ConcurrentDictionary<(string, int), TopicPartitionOffset> offsetsToCommit = new();
 
         public OffsetCommitter(
             IConsumer consumer,
             IDependencyResolver resolver,
-            IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
+            IReadOnlyList<(Action<IDependencyResolver, IEnumerable<Confluent.Kafka.TopicPartitionOffset>> handler, TimeSpan interval)>
                 pendingOffsetsHandlers,
             ILogHandler logHandler)
         {
@@ -59,20 +58,22 @@ namespace KafkaFlow.Consumers
         public void MarkAsProcessed(TopicPartitionOffset tpo)
         {
             this.offsetsToCommit.AddOrUpdate(
-                (tpo.Topic, tpo.Partition.Value),
+                (tpo.Topic, tpo.Partition),
                 tpo,
                 (_, _) => tpo);
         }
 
-        public void CommitProcessedOffsets() => this.CommitHandler();
-
         private void PendingOffsetsHandler(
             IDependencyResolver resolver,
-            Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler)
+            Action<IDependencyResolver, IEnumerable<Confluent.Kafka.TopicPartitionOffset>> handler)
         {
             if (!this.offsetsToCommit.IsEmpty)
             {
-                handler(resolver, this.offsetsToCommit.Values);
+                handler(
+                    resolver,
+                    this.offsetsToCommit.Values.Select(
+                        x =>
+                            new Confluent.Kafka.TopicPartitionOffset(x.Topic, x.Partition, x.Offset)));
             }
         }
 
@@ -93,11 +94,14 @@ namespace KafkaFlow.Consumers
                         ref this.offsetsToCommit,
                         new ConcurrentDictionary<(string, int), TopicPartitionOffset>());
 
-                    this.consumer.Commit(offsets.Values);
+                    this.consumer.Commit(
+                        offsets.Values
+                            .Select(x => new Confluent.Kafka.TopicPartitionOffset(x.Topic, x.Partition, x.Offset + 1))
+                            .ToList());
 
                     if (!this.consumer.Configuration.ManagementDisabled)
                     {
-                        this.LogOffsetsCommitted(offsets);
+                        this.LogOffsetsCommitted(offsets.Values);
                     }
                 }
                 catch (Exception e)
@@ -114,22 +118,22 @@ namespace KafkaFlow.Consumers
             }
         }
 
-        private void LogOffsetsCommitted(ConcurrentDictionary<(string, int), TopicPartitionOffset> offsets)
+        private void LogOffsetsCommitted(IEnumerable<TopicPartitionOffset> offsets)
         {
             this.logHandler.Verbose(
                 "Offsets committed",
                 new
                 {
                     Offsets = offsets.GroupBy(
-                        x => x.Key.Item1,
+                        x => x.Topic,
                         (topic, groupedOffsets) => new
                         {
                             Topic = topic,
                             Partitions = groupedOffsets.Select(
                                 offset => new
                                 {
-                                    Partition = offset.Value.Partition.Value,
-                                    Offset = offset.Value.Offset.Value,
+                                    offset.Partition,
+                                    offset.Offset,
                                 }),
                         }),
                 });
@@ -139,7 +143,7 @@ namespace KafkaFlow.Consumers
         {
             foreach (var tpo in offsets)
             {
-                this.offsetsToCommit.TryAdd((tpo.Topic, tpo.Partition.Value), tpo);
+                this.offsetsToCommit.TryAdd((tpo.Topic, tpo.Partition), tpo);
             }
         }
     }
