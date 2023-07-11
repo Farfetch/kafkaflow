@@ -1,6 +1,5 @@
 namespace KafkaFlow.Consumers
 {
-    using System;
     using System.Collections.Generic;
     using Confluent.Kafka;
 

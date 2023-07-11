@@ -2,6 +2,7 @@ namespace KafkaFlow
 {
     using System;
     using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Represents the message consumer
@@ -39,6 +40,11 @@ namespace KafkaFlow
         long Offset { get; }
 
         /// <summary>
+        /// Gets the <see cref="TopicPartitionOffset"/> object associated with the message
+        /// </summary>
+        TopicPartitionOffset TopicPartitionOffset { get; }
+
+        /// <summary>
         /// Gets the consumer group id from kafka consumer that received the message
         /// </summary>
         string GroupId { get; }
@@ -67,9 +73,11 @@ namespace KafkaFlow
         /// </summary>
         IDependencyResolver WorkerDependencyResolver { get; }
 
-
         /// <summary>
-        /// Store the message offset when manual store option is used
+        /// Stores the message offset to eventually be committed. After this call, the framework considers the
+        /// message processing as finished and releases resources associated with the message.
+        /// By default, this method is automatically called when the message processing ends, unless
+        /// the consumer is set to manual store offsets or the <see cref="ShouldStoreOffset"/> flag is set to false.
         /// </summary>
         void StoreOffset();
 
@@ -88,5 +96,12 @@ namespace KafkaFlow
         /// Resume Kafka's message fetch
         /// </summary>
         void Resume();
+
+        /// <summary>
+        /// Gets a Task that completes when the <see cref="StoreOffset"/> method is invoked,
+        /// indicating the end of message processing. This allows async operations
+        /// to wait for the message to be fully processed and its offset stored.
+        /// </summary>
+        Task<TopicPartitionOffset> Completion { get; }
     }
 }
