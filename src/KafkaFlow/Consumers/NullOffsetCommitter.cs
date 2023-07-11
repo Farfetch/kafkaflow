@@ -1,6 +1,6 @@
 namespace KafkaFlow.Consumers
 {
-    using Confluent.Kafka;
+    using KafkaFlow;
 
     internal class NullOffsetCommitter : IOffsetCommitter
     {
