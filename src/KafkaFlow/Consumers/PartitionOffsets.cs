@@ -3,47 +3,49 @@ namespace KafkaFlow.Consumers
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.CompilerServices;
+    using System.Threading.Tasks;
 
     internal class PartitionOffsets
     {
-        private readonly SortedSet<long> processedOffsets = new();
-        private readonly LinkedList<long> receivedOffsets = new();
+        private readonly SortedDictionary<long, IConsumerContext> processedContexts = new();
+        private readonly LinkedList<IConsumerContext> receivedContexts = new();
 
-        public void Enqueue(long offset)
+        public void Enqueue(IConsumerContext context)
         {
-            lock (this.receivedOffsets)
+            lock (this.receivedContexts)
             {
-                this.receivedOffsets.AddLast(offset);
+                this.receivedContexts.AddLast(context);
             }
         }
 
-        public bool ShouldCommit(long offset, out long lastProcessedOffset)
+        public bool ShouldCommit(IConsumerContext context, out IConsumerContext lastProcessedContext)
         {
-            lastProcessedOffset = -1;
-            lock (this.receivedOffsets)
+            lastProcessedContext = null;
+
+            lock (this.receivedContexts)
             {
-                if (!this.receivedOffsets.Any())
+                if (!this.receivedContexts.Any())
                 {
                     throw new InvalidOperationException(
                         $"There is no offsets in the received queue. Call {nameof(this.Enqueue)} first");
                 }
 
-                if (offset != this.receivedOffsets.First.Value)
+                if (context.Offset != this.receivedContexts.First.Value.Offset)
                 {
-                    this.processedOffsets.Add(offset);
+                    this.processedContexts.Add(context.Offset, context);
                     return false;
                 }
 
                 do
                 {
-                    lastProcessedOffset = this.receivedOffsets.First.Value;
-                    this.receivedOffsets.RemoveFirst();
-                }
-                while (this.receivedOffsets.Count > 0 && this.processedOffsets.Remove(this.receivedOffsets.First.Value));
+                    lastProcessedContext = this.receivedContexts.First.Value;
+                    this.receivedContexts.RemoveFirst();
+                } while (this.receivedContexts.Count > 0 && this.processedContexts.Remove(this.receivedContexts.First.Value.Offset));
             }
 
             return true;
         }
+
+        public Task WaitContextsCompletionAsync() => Task.WhenAll(this.receivedContexts.Select(x => x.Completion));
     }
 }

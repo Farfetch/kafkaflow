@@ -6,7 +6,5 @@ namespace KafkaFlow
     internal interface IMiddlewareExecutor
     {
         Task Execute(IMessageContext context, Func<IMessageContext, Task> nextOperation);
-
-        void ClearWorkersMiddlewaresInstances();
     }
 }

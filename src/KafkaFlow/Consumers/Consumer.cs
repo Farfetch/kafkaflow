@@ -127,7 +127,7 @@ namespace KafkaFlow.Consumers
                 });
         }
 
-        public void Commit(IEnumerable<TopicPartitionOffset> offsetsValues)
+        public void Commit(IReadOnlyCollection<TopicPartitionOffset> offsetsValues)
         {
             this.consumer.Commit(offsetsValues);
 
