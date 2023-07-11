@@ -5,8 +5,12 @@ namespace KafkaFlow
     using System.Linq;
     using System.Threading.Tasks;
     using KafkaFlow.Configuration;
+    using KafkaFlow.Consumers;
+    using KafkaFlow.Core.Observer;
 
-    internal class MiddlewareExecutor : IMiddlewareExecutor
+    internal class MiddlewareExecutor
+        : IMiddlewareExecutor,
+            ISubjectObserver<WorkerPoolStoppedSubject>
     {
         private readonly IReadOnlyList<MiddlewareConfiguration> configurations;
 
@@ -23,7 +27,10 @@ namespace KafkaFlow
             return this.ExecuteDefinition(0, context, nextOperation);
         }
 
-        public void ClearWorkersMiddlewaresInstances() => this.workersMiddlewares.Clear();
+        void ISubjectObserver<WorkerPoolStoppedSubject>.OnNotification()
+        {
+            this.workersMiddlewares.Clear();
+        }
 
         private static IMessageMiddleware CreateInstance(
             IDependencyResolver dependencyResolver,
