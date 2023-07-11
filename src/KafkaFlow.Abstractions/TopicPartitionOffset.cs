@@ -3,10 +3,10 @@ namespace KafkaFlow
     /// <summary>
     /// Represents a Kafka topic along with its partition and offset information.
     /// </summary>
-    public class TopicPartitionOffset
+    public readonly struct TopicPartitionOffset
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="TopicPartitionOffset"/> class with the specified topic name, partition number, and offset value.
+        /// Initializes a new instance of the <see cref="TopicPartitionOffset"/> struct with the specified topic name, partition number, and offset value.
         /// </summary>
         /// <param name="topic">The name of the topic.</param>
         /// <param name="partition">The id of the partition.</param>

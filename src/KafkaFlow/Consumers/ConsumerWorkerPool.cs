@@ -7,6 +7,7 @@ namespace KafkaFlow.Consumers
     using System.Threading.Tasks;
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
+    using KafkaFlow.Core.Observer;
 
     internal class ConsumerWorkerPool : IConsumerWorkerPool, IDisposable
     {
@@ -17,6 +18,8 @@ namespace KafkaFlow.Consumers
         private readonly Factory<IDistributionStrategy> distributionStrategyFactory;
         private readonly IOffsetCommitter offsetCommitter;
 
+        private readonly WorkerPoolStoppedSubject workerPoolStoppedSubject = new();
+
         private TaskCompletionSource<object> startedTaskSource = new();
         private List<IConsumerWorker> workers = new();
 
@@ -25,27 +28,23 @@ namespace KafkaFlow.Consumers
 
         public ConsumerWorkerPool(
             IConsumer consumer,
+            IOffsetCommitter offsetCommitter,
             IDependencyResolver consumerDependencyResolver,
             IMiddlewareExecutor middlewareExecutor,
             IConsumerConfiguration consumerConfiguration,
             ILogHandler logHandler)
         {
             this.consumer = consumer;
+            this.offsetCommitter = offsetCommitter;
             this.consumerDependencyResolver = consumerDependencyResolver;
             this.middlewareExecutor = middlewareExecutor;
             this.logHandler = logHandler;
             this.distributionStrategyFactory = consumerConfiguration.DistributionStrategyFactory;
-
-            this.offsetCommitter = this.consumer.Configuration.NoStoreOffsets ?
-                new NullOffsetCommitter() :
-                new OffsetCommitter(
-                    this.consumer,
-                    this.consumerDependencyResolver,
-                    consumerConfiguration.PendingOffsetsHandlers,
-                    this.logHandler);
         }
 
         public int CurrentWorkersCount { get; private set; }
+
+        public ISubject<WorkerPoolStoppedSubject> WorkerPoolStopped => this.workerPoolStoppedSubject;
 
         public async Task StartAsync(IReadOnlyCollection<TopicPartition> partitions, int workersCount)
         {
@@ -65,7 +64,6 @@ namespace KafkaFlow.Consumers
                                         this.consumer,
                                         this.consumerDependencyResolver,
                                         workerId,
-                                        this.offsetManager,
                                         this.middlewareExecutor,
                                         this.logHandler);
 
@@ -94,17 +92,24 @@ namespace KafkaFlow.Consumers
 
         public async Task StopAsync()
         {
+            if (this.workers.Count == 0)
+            {
+                return;
+            }
+
             var currentWorkers = this.workers;
             this.workers = new List<IConsumerWorker>();
             this.startedTaskSource = new();
 
             await Task.WhenAll(currentWorkers.Select(x => x.StopAsync())).ConfigureAwait(false);
 
-            this.middlewareExecutor.ClearWorkersMiddlewaresInstances();
+            await this.offsetManager.WaitOffsetsCompletionAsync();
 
-            this.offsetCommitter.CommitProcessedOffsets();
+            currentWorkers.ForEach(worker => worker.Dispose());
 
             this.offsetManager = null;
+
+            this.workerPoolStoppedSubject.Notify();
         }
 
         public async Task EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken)
@@ -120,16 +125,37 @@ namespace KafkaFlow.Consumers
                 return;
             }
 
-            this.offsetManager?.Enqueue(message.TopicPartitionOffset);
+            var context = this.CreateMessageContext(message, worker);
 
             await worker
-                .EnqueueAsync(message, stopCancellationToken)
+                .EnqueueAsync(context, stopCancellationToken)
                 .ConfigureAwait(false);
+
+            this.offsetManager.Enqueue(context.ConsumerContext);
         }
 
         public void Dispose()
         {
             this.offsetCommitter.Dispose();
+        }
+
+        private MessageContext CreateMessageContext(ConsumeResult<byte[], byte[]> message, IConsumerWorker worker)
+        {
+            var messageDependencyScope = this.consumerDependencyResolver.CreateScope();
+
+            var context = new MessageContext(
+                new Message(message.Message.Key, message.Message.Value),
+                new MessageHeaders(message.Message.Headers),
+                messageDependencyScope.Resolver,
+                new ConsumerContext(
+                    this.consumer,
+                    this.offsetManager,
+                    message,
+                    worker,
+                    messageDependencyScope,
+                    this.consumerDependencyResolver),
+                null);
+            return context;
         }
     }
 }

@@ -10,6 +10,7 @@
 
     internal class ConsumerManager : IConsumerManager, IDisposable
     {
+        private readonly IOffsetCommitter offsetCommitter;
         private readonly IDependencyResolver dependencyResolver;
         private readonly ILogHandler logHandler;
         private readonly Timer evaluateWorkersCountTimer;
@@ -18,9 +19,11 @@
             IConsumer consumer,
             IConsumerWorkerPool consumerWorkerPool,
             IWorkerPoolFeeder feeder,
+            IOffsetCommitter offsetCommitter,
             IDependencyResolver dependencyResolver,
             ILogHandler logHandler)
         {
+            this.offsetCommitter = offsetCommitter;
             this.dependencyResolver = dependencyResolver;
             this.logHandler = logHandler;
             this.Consumer = consumer;
@@ -58,6 +61,8 @@
 
             await this.Feeder.StopAsync().ConfigureAwait(false);
             await this.WorkerPool.StopAsync().ConfigureAwait(false);
+
+            this.offsetCommitter.Dispose();
 
             this.Consumer.Dispose();
         }
