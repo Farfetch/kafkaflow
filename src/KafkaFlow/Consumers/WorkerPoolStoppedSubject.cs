@@ -1,6 +1,6 @@
 namespace KafkaFlow.Consumers
 {
-    using KafkaFlow.Core.Observer;
+    using KafkaFlow.Observer;
 
     internal class WorkerPoolStoppedSubject : Subject<WorkerPoolStoppedSubject>
     {

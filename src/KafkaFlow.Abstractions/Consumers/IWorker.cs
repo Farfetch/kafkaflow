@@ -1,6 +1,7 @@
 namespace KafkaFlow
 {
     using System;
+    using KafkaFlow.Observer;
 
     /// <summary>
     /// Represents the interface of a internal worker
@@ -17,5 +18,15 @@ namespace KafkaFlow
         /// </summary>
         /// <param name="handler"><see cref="Action"/> to be executed</param>
         void OnTaskCompleted(Action handler);
+
+        /// <summary>
+        /// Gets the subject for worker stopping events where observers can subscribe to receive notifications.
+        /// </summary>
+        ISubject<WorkerStoppingSubject> WorkerStopping { get; }
+
+        /// <summary>
+        /// Gets the subject for worker stopped events where observers can subscribe to receive notifications.
+        /// </summary>
+        ISubject<WorkerStoppedSubject> WorkerStopped { get; }
     }
 }

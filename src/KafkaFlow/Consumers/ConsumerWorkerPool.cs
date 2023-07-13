@@ -7,7 +7,7 @@ namespace KafkaFlow.Consumers
     using System.Threading.Tasks;
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
-    using KafkaFlow.Core.Observer;
+    using KafkaFlow.Observer;
 
     internal class ConsumerWorkerPool : IConsumerWorkerPool, IDisposable
     {
@@ -109,7 +109,7 @@ namespace KafkaFlow.Consumers
 
             this.offsetManager = null;
 
-            this.workerPoolStoppedSubject.Notify();
+            await this.workerPoolStoppedSubject.NotifyAsync();
         }
 
         public async Task EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken)
