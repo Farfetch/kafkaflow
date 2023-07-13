@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using KafkaFlow;
+using KafkaFlow.Admin;
 using KafkaFlow.BatchConsume;
 using KafkaFlow.Producers;
 using KafkaFlow.Sample.BatchOperations;
@@ -19,6 +20,9 @@ services.AddKafka(
             cluster => cluster
                 .WithBrokers(new[] { "localhost:9092" })
                 .CreateTopicIfNotExists(batchTestTopic, 1, 1)
+                .CreateTopicIfNotExists("kafka-flow.admin", 1, 1)
+                .EnableAdminMessages("kafka-flow.admin")
+                .EnableTelemetry("kafka-flow.admin")
                 .AddProducer(
                     producerName,
                     producerBuilder => producerBuilder
@@ -31,13 +35,15 @@ services.AddKafka(
                     consumerBuilder => consumerBuilder
                         .Topic(batchTestTopic)
                         .WithGroupId("kafka-flow-sample")
-                        .WithBufferSize(10000)
+                        .WithName("my-consumer")
+                        .WithBufferSize(100)
                         .WithWorkersCount(1)
+                        .WithManualStoreOffsets()
                         .AddMiddlewares(
                             middlewares => middlewares
                                 .AddSerializer<JsonCoreSerializer>()
                                 .BatchConsume(10, TimeSpan.FromSeconds(10))
-                                .Add<PrintConsoleMiddleware>()
+                                .Add<PrintConsoleMiddleware>(MiddlewareLifetime.Worker)
                         )
                 )
         )
@@ -53,30 +59,41 @@ var producer = provider
     .GetRequiredService<IProducerAccessor>()
     .GetProducer(producerName);
 
+var consumerAdmin = provider.GetRequiredService<IConsumerAdmin>();
+
 while (true)
 {
     Console.Write("Number of messages to produce: ");
     var input = Console.ReadLine()!.ToLower();
 
-    switch (input)
+    if (int.TryParse(input, out var count))
     {
-        case var _ when int.TryParse(input, out var count):
-            await producer
-                .BatchProduceAsync(
-                    Enumerable
-                        .Range(0, count)
-                        .Select(
-                            _ => new BatchProduceItem(
-                                batchTestTopic,
-                                Guid.NewGuid().ToString(),
-                                new SampleBatchMessage { Text = Guid.NewGuid().ToString() },
-                                null))
-                        .ToList());
+        await producer
+            .BatchProduceAsync(
+                Enumerable
+                    .Range(0, count)
+                    .Select(
+                        _ => new BatchProduceItem(
+                            batchTestTopic,
+                            Guid.NewGuid().ToString(),
+                            new SampleBatchMessage { Text = Guid.NewGuid().ToString() },
+                            null))
+                    .ToList());
+    }
 
-            break;
+    if (input!.Equals("reset", StringComparison.OrdinalIgnoreCase))
+    {
+        await consumerAdmin.ResetOffsetsAsync("my-consumer", new[] { batchTestTopic });
+    }
 
-        case "exit":
-            await bus.StopAsync();
-            return;
+    if (input!.Equals("rewind", StringComparison.OrdinalIgnoreCase))
+    {
+        await consumerAdmin.RewindOffsetsAsync("my-consumer", DateTime.UtcNow.AddMinutes(-5), new[] { batchTestTopic });
+    }
+
+    if (input!.Equals("exit", StringComparison.OrdinalIgnoreCase))
+    {
+        await bus.StopAsync();
+        break;
     }
 }
