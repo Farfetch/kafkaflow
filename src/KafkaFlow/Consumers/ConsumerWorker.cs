@@ -4,19 +4,22 @@ namespace KafkaFlow.Consumers
     using System.Threading;
     using System.Threading.Channels;
     using System.Threading.Tasks;
+    using KafkaFlow.Observer;
 
     internal class ConsumerWorker : IConsumerWorker
     {
         private readonly IConsumer consumer;
-        private readonly IDependencyResolver consumerDependencyResolver;
+        private readonly IDependencyResolverScope workerDependencyResolverScope;
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly ILogHandler logHandler;
         private readonly GlobalEvents globalEvents;
 
         private readonly Channel<IMessageContext> messagesBuffer;
 
+        private readonly WorkerStoppingSubject workerStoppingSubject;
+        private readonly WorkerStoppedSubject workerStoppedSubject;
+
         private CancellationTokenSource stopCancellationTokenSource;
-        private IDependencyResolverScope workerDependencyResolverScope;
         private Task backgroundTask;
         private Action onMessageFinishedHandler;
 
@@ -29,11 +32,19 @@ namespace KafkaFlow.Consumers
         {
             this.Id = workerId;
             this.consumer = consumer;
-            this.consumerDependencyResolver = consumerDependencyResolver;
+            this.workerDependencyResolverScope = consumerDependencyResolver.CreateScope();
             this.middlewareExecutor = middlewareExecutor;
             this.logHandler = logHandler;
             this.messagesBuffer = Channel.CreateBounded<IMessageContext>(consumer.Configuration.BufferSize);
             this.globalEvents = consumerDependencyResolver.Resolve<GlobalEvents>();
+
+            this.workerStoppingSubject = new(logHandler);
+            this.workerStoppedSubject = new(logHandler);
+
+            var workerContext = this.workerDependencyResolverScope.Resolver.Resolve<WorkerLifetimeContext>();
+
+            workerContext.Worker = this;
+            workerContext.Consumer = consumer;
         }
 
         public int Id { get; }
@@ -41,6 +52,10 @@ namespace KafkaFlow.Consumers
         public CancellationToken StopCancellationToken => this.stopCancellationTokenSource?.Token ?? default;
 
         public IDependencyResolver WorkerDependencyResolver => this.workerDependencyResolverScope.Resolver;
+
+        public ISubject<WorkerStoppingSubject, VoidObject> WorkerStopping => this.workerStoppingSubject;
+
+        public ISubject<WorkerStoppedSubject, VoidObject> WorkerStopped => this.workerStoppedSubject;
 
         public ValueTask EnqueueAsync(
             IMessageContext context,
@@ -52,7 +67,6 @@ namespace KafkaFlow.Consumers
         public Task StartAsync()
         {
             this.stopCancellationTokenSource = new CancellationTokenSource();
-            this.workerDependencyResolverScope = this.consumerDependencyResolver.CreateScope();
 
             this.backgroundTask = Task.Run(
                 async () =>
@@ -86,6 +100,8 @@ namespace KafkaFlow.Consumers
 
         public async Task StopAsync()
         {
+            await this.workerStoppingSubject.NotifyAsync(VoidObject.Value);
+
             this.messagesBuffer.Writer.TryComplete();
 
             if (this.stopCancellationTokenSource.Token.CanBeCanceled)
@@ -94,6 +110,8 @@ namespace KafkaFlow.Consumers
             }
 
             await this.backgroundTask.ConfigureAwait(false);
+
+            await this.workerStoppedSubject.NotifyAsync(VoidObject.Value);
         }
 
         public void Dispose()

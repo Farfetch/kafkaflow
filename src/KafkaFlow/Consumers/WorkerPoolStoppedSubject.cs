@@ -1,8 +1,12 @@
 namespace KafkaFlow.Consumers
 {
-    using KafkaFlow.Core.Observer;
+    using KafkaFlow.Observer;
 
-    internal class WorkerPoolStoppedSubject : Subject<WorkerPoolStoppedSubject>
+    internal class WorkerPoolStoppedSubject : Subject<WorkerPoolStoppedSubject, VoidObject>
     {
+        public WorkerPoolStoppedSubject(ILogHandler logHandler)
+            : base(logHandler)
+        {
+        }
     }
 }

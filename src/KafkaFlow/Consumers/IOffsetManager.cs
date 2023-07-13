@@ -4,8 +4,10 @@ namespace KafkaFlow.Consumers
 
     internal interface IOffsetManager
     {
+        void Enqueue(IConsumerContext context);
+
         void MarkAsProcessed(IConsumerContext offset);
 
-        Task WaitOffsetsCompletionAsync();
+        Task WaitContextsCompletionAsync();
     }
 }
