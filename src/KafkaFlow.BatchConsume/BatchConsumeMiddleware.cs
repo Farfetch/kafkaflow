@@ -5,8 +5,12 @@
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using KafkaFlow.Observer;
 
-    internal class BatchConsumeMiddleware : IMessageMiddleware, IDisposable, IAsyncDisposable
+    internal class BatchConsumeMiddleware
+        : IMessageMiddleware,
+            ISubjectObserver<WorkerStoppedSubject>,
+            IDisposable
     {
         private readonly SemaphoreSlim dispatchSemaphore = new(1, 1);
 
@@ -16,8 +20,10 @@
 
         private readonly List<IMessageContext> batch;
         private CancellationTokenSource dispatchTokenSource;
+        private Task<Task> dispatchTask;
 
         public BatchConsumeMiddleware(
+            IWorkerLifetimeContext workerContext,
             int batchSize,
             TimeSpan batchTimeout,
             ILogHandler logHandler)
@@ -26,6 +32,8 @@
             this.batchTimeout = batchTimeout;
             this.logHandler = logHandler;
             this.batch = new(batchSize);
+
+            workerContext.Worker.WorkerStopped.Subscribe(this);
         }
 
         public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
@@ -45,13 +53,14 @@
 
                     this.dispatchTokenSource.CancelAfter(this.batchTimeout);
 
-                    this.dispatchTokenSource.Token.Register(
-                        async _ =>
-                        {
-                            this.dispatchTokenSource.Dispose();
-                            await this.DispatchAsync(context, next);
-                        },
-                        null);
+                    this.dispatchTask = Task
+                        .Delay(Timeout.Infinite, this.dispatchTokenSource.Token)
+                        .ContinueWith(
+                            async _ =>
+                            {
+                                this.dispatchTokenSource.Dispose();
+                                await this.DispatchAsync(context, next);
+                            });
                 }
 
                 if (this.batch.Count >= this.batchSize)
@@ -65,15 +74,18 @@
             }
         }
 
-        public async ValueTask DisposeAsync()
+        async Task ISubjectObserver<WorkerStoppedSubject>.OnNotification()
         {
-            this.dispatchTokenSource.Dispose();
-
-            await this.dispatchSemaphore.WaitAsync();
-            this.dispatchSemaphore.Dispose();
+            this.dispatchTokenSource?.Cancel();
+            await (this.dispatchTask ?? Task.CompletedTask);
         }
 
-        public void Dispose() => this.DisposeAsync().GetAwaiter().GetResult();
+        public void Dispose()
+        {
+            this.dispatchTask?.Dispose();
+            this.dispatchTokenSource?.Dispose();
+            this.dispatchSemaphore.Dispose();
+        }
 
         private async Task DispatchAsync(IMessageContext context, MiddlewareDelegate next)
         {

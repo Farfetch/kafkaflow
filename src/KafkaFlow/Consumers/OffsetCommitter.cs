@@ -5,16 +5,23 @@ namespace KafkaFlow.Consumers
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
+    using System.Threading.Tasks;
 
     internal class OffsetCommitter : IOffsetCommitter
     {
         private readonly IConsumer consumer;
+        private readonly IDependencyResolver resolver;
+
+        private readonly
+            IReadOnlyList<(Action<IDependencyResolver, IEnumerable<Confluent.Kafka.TopicPartitionOffset>> handler, TimeSpan interval)>
+            pendingOffsetsHandlers;
+
         private readonly ILogHandler logHandler;
 
-        private readonly Timer commitTimer;
-        private readonly IReadOnlyList<Timer> statisticsTimers;
-
         private readonly object commitSyncRoot = new();
+
+        private Timer commitTimer;
+        private IReadOnlyList<Timer> statisticsTimers;
 
         private ConcurrentDictionary<(string, int), TopicPartitionOffset> offsetsToCommit = new();
 
@@ -26,25 +33,42 @@ namespace KafkaFlow.Consumers
             ILogHandler logHandler)
         {
             this.consumer = consumer;
+            this.resolver = resolver;
+            this.pendingOffsetsHandlers = pendingOffsetsHandlers;
             this.logHandler = logHandler;
+        }
 
+        public void FlushOffsets() => this.CommitHandler();
+
+        public void MarkAsProcessed(TopicPartitionOffset tpo)
+        {
+            this.offsetsToCommit.AddOrUpdate(
+                (tpo.Topic, tpo.Partition),
+                tpo,
+                (_, _) => tpo);
+        }
+
+        public Task StartAsync()
+        {
             this.commitTimer = new Timer(
                 _ => this.CommitHandler(),
                 null,
-                consumer.Configuration.AutoCommitInterval,
-                consumer.Configuration.AutoCommitInterval);
+                this.consumer.Configuration.AutoCommitInterval,
+                this.consumer.Configuration.AutoCommitInterval);
 
-            this.statisticsTimers = pendingOffsetsHandlers
+            this.statisticsTimers = this.pendingOffsetsHandlers
                 .Select(
                     s => new Timer(
-                        _ => this.PendingOffsetsHandler(resolver, s.handler),
+                        _ => this.PendingOffsetsHandler(this.resolver, s.handler),
                         null,
                         TimeSpan.Zero,
                         s.interval))
                 .ToList();
+
+            return Task.CompletedTask;
         }
 
-        public void Dispose()
+        public Task StopAsync()
         {
             this.commitTimer.Dispose();
             this.CommitHandler();
@@ -53,14 +77,8 @@ namespace KafkaFlow.Consumers
             {
                 timer.Dispose();
             }
-        }
 
-        public void MarkAsProcessed(TopicPartitionOffset tpo)
-        {
-            this.offsetsToCommit.AddOrUpdate(
-                (tpo.Topic, tpo.Partition),
-                tpo,
-                (_, _) => tpo);
+            return Task.CompletedTask;
         }
 
         private void PendingOffsetsHandler(

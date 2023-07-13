@@ -46,6 +46,9 @@ namespace KafkaFlow.Consumers
             return true;
         }
 
-        public Task WaitContextsCompletionAsync() => Task.WhenAll(this.receivedContexts.Select(x => x.Completion));
+        public Task WaitContextsCompletionAsync() => Task.WhenAll(
+            this.receivedContexts
+                .Select(x => x.Completion)
+                .ToList());
     }
 }

@@ -46,7 +46,10 @@ namespace KafkaFlow.Consumers
             }
         }
 
-        public Task WaitOffsetsCompletionAsync() =>
-            Task.WhenAll(this.partitionsOffsets.Select(x => x.Value.WaitContextsCompletionAsync()));
+        public Task WaitContextsCompletionAsync() =>
+            Task.WhenAll(
+                this.partitionsOffsets
+                    .Select(x => x.Value.WaitContextsCompletionAsync())
+                    .ToList());
     }
 }
