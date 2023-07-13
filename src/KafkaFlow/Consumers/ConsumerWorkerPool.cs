@@ -7,9 +7,9 @@ namespace KafkaFlow.Consumers
     using System.Threading.Tasks;
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
-    using KafkaFlow.Core.Observer;
+    using KafkaFlow.Observer;
 
-    internal class ConsumerWorkerPool : IConsumerWorkerPool, IDisposable
+    internal class ConsumerWorkerPool : IConsumerWorkerPool
     {
         private readonly IConsumer consumer;
         private readonly IDependencyResolver consumerDependencyResolver;
@@ -18,13 +18,13 @@ namespace KafkaFlow.Consumers
         private readonly Factory<IDistributionStrategy> distributionStrategyFactory;
         private readonly IOffsetCommitter offsetCommitter;
 
-        private readonly WorkerPoolStoppedSubject workerPoolStoppedSubject = new();
+        private readonly WorkerPoolStoppedSubject workerPoolStoppedSubject;
 
         private TaskCompletionSource<object> startedTaskSource = new();
         private List<IConsumerWorker> workers = new();
 
         private IDistributionStrategy distributionStrategy;
-        private OffsetManager offsetManager;
+        private IOffsetManager offsetManager;
 
         public ConsumerWorkerPool(
             IConsumer consumer,
@@ -40,6 +40,7 @@ namespace KafkaFlow.Consumers
             this.middlewareExecutor = middlewareExecutor;
             this.logHandler = logHandler;
             this.distributionStrategyFactory = consumerConfiguration.DistributionStrategyFactory;
+            this.workerPoolStoppedSubject = new(logHandler);
         }
 
         public int CurrentWorkersCount { get; private set; }
@@ -50,7 +51,9 @@ namespace KafkaFlow.Consumers
         {
             try
             {
-                this.offsetManager = new OffsetManager(this.offsetCommitter, partitions);
+                this.offsetManager = this.consumer.Configuration.NoStoreOffsets ?
+                    new NullOffsetManager() :
+                    new OffsetManager(this.offsetCommitter, partitions);
 
                 this.CurrentWorkersCount = workersCount;
 
@@ -103,13 +106,13 @@ namespace KafkaFlow.Consumers
 
             await Task.WhenAll(currentWorkers.Select(x => x.StopAsync())).ConfigureAwait(false);
 
-            await this.offsetManager.WaitOffsetsCompletionAsync();
+            await this.offsetManager.WaitContextsCompletionAsync();
 
             currentWorkers.ForEach(worker => worker.Dispose());
 
             this.offsetManager = null;
 
-            this.workerPoolStoppedSubject.Notify();
+            await this.workerPoolStoppedSubject.NotifyAsync();
         }
 
         public async Task EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken)
@@ -132,11 +135,6 @@ namespace KafkaFlow.Consumers
                 .ConfigureAwait(false);
 
             this.offsetManager.Enqueue(context.ConsumerContext);
-        }
-
-        public void Dispose()
-        {
-            this.offsetCommitter.Dispose();
         }
 
         private MessageContext CreateMessageContext(ConsumeResult<byte[], byte[]> message, IConsumerWorker worker)
