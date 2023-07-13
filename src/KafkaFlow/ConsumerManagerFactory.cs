@@ -11,19 +11,10 @@ namespace KafkaFlow
 
             var consumer = configuration.CustomFactory(new Consumer(configuration, resolver, logHandler), resolver);
 
-            IOffsetCommitter offsetCommitter = configuration.NoStoreOffsets ?
-                new NullOffsetCommitter() :
-                new OffsetCommitter(
-                    consumer,
-                    resolver,
-                    configuration.PendingOffsetsHandlers,
-                    logHandler);
-
             var middlewareExecutor = new MiddlewareExecutor(configuration.MiddlewaresConfigurations);
 
             var consumerWorkerPool = new ConsumerWorkerPool(
                 consumer,
-                offsetCommitter,
                 resolver,
                 middlewareExecutor,
                 configuration,
@@ -40,7 +31,6 @@ namespace KafkaFlow
                 consumer,
                 consumerWorkerPool,
                 feeder,
-                offsetCommitter,
                 resolver,
                 logHandler);
 

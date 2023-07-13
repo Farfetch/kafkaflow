@@ -3,6 +3,7 @@ namespace KafkaFlow.BatchConsume
     using System;
     using System.Collections.Generic;
     using KafkaFlow.Configuration;
+    using KafkaFlow.Consumers;
 
     /// <summary>
     /// no needed
@@ -23,6 +24,7 @@ namespace KafkaFlow.BatchConsume
         {
             return builder.Add(
                 resolver => new BatchConsumeMiddleware(
+                    resolver.Resolve<IWorkerLifetimeContext>(),
                     batchSize,
                     batchTimeout,
                     resolver.Resolve<ILogHandler>()),
@@ -38,7 +40,7 @@ namespace KafkaFlow.BatchConsume
         {
             if (context is BatchConsumeMessageContext ctx)
             {
-                return (IReadOnlyCollection<IMessageContext>) ctx.Message.Value;
+                return (IReadOnlyCollection<IMessageContext>)ctx.Message.Value;
             }
 
             throw new InvalidOperationException($"This method can only be used on {nameof(BatchConsumeMessageContext)}");
