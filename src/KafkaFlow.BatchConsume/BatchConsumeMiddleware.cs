@@ -5,19 +5,28 @@
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using KafkaFlow.Configuration;
+    using KafkaFlow.Consumers;
+    using KafkaFlow.Observer;
 
-    internal class BatchConsumeMiddleware : IMessageMiddleware, IDisposable, IAsyncDisposable
+    internal class BatchConsumeMiddleware
+        : IMessageMiddleware,
+            ISubjectObserver<WorkerStoppedSubject, VoidObject>,
+            IDisposable
     {
         private readonly SemaphoreSlim dispatchSemaphore = new(1, 1);
 
         private readonly int batchSize;
         private readonly TimeSpan batchTimeout;
         private readonly ILogHandler logHandler;
+        private readonly IConsumerConfiguration consumerConfiguration;
 
         private readonly List<IMessageContext> batch;
         private CancellationTokenSource dispatchTokenSource;
+        private Task<Task> dispatchTask;
 
         public BatchConsumeMiddleware(
+            IWorkerLifetimeContext workerContext,
             int batchSize,
             TimeSpan batchTimeout,
             ILogHandler logHandler)
@@ -26,6 +35,9 @@
             this.batchTimeout = batchTimeout;
             this.logHandler = logHandler;
             this.batch = new(batchSize);
+            this.consumerConfiguration = workerContext.Consumer.Configuration;
+
+            workerContext.Worker.WorkerStopped.Subscribe(this);
         }
 
         public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
@@ -35,49 +47,62 @@
             try
             {
                 context.ConsumerContext.ShouldStoreOffset = false;
-                context.ConsumerContext.WorkerStopped.ThrowIfCancellationRequested();
 
                 this.batch.Add(context);
 
                 if (this.batch.Count == 1)
                 {
-                    this.dispatchTokenSource = CancellationTokenSource.CreateLinkedTokenSource(context.ConsumerContext.WorkerStopped);
-
-                    this.dispatchTokenSource.CancelAfter(this.batchTimeout);
-
-                    this.dispatchTokenSource.Token.Register(
-                        async _ =>
-                        {
-                            this.dispatchTokenSource.Dispose();
-                            await this.DispatchAsync(context, next);
-                        },
-                        null);
-                }
-
-                if (this.batch.Count >= this.batchSize)
-                {
-                    this.dispatchTokenSource.Cancel();
+                    this.ScheduleExecution(context, next);
+                    return;
                 }
             }
             finally
             {
                 this.dispatchSemaphore.Release();
             }
+
+            if (this.batch.Count >= this.batchSize)
+            {
+                await this.TriggerDispatchAndWaitAsync();
+            }
         }
 
-        public async ValueTask DisposeAsync()
-        {
-            this.dispatchTokenSource.Dispose();
+        public async Task OnNotification(WorkerStoppedSubject subject, VoidObject arg) => await this.TriggerDispatchAndWaitAsync();
 
-            await this.dispatchSemaphore.WaitAsync();
+        public void Dispose()
+        {
+            this.dispatchTask?.Dispose();
+            this.dispatchTokenSource?.Dispose();
             this.dispatchSemaphore.Dispose();
         }
 
-        public void Dispose() => this.DisposeAsync().GetAwaiter().GetResult();
+        private async Task TriggerDispatchAndWaitAsync()
+        {
+            await this.dispatchSemaphore.WaitAsync();
+            this.dispatchTokenSource?.Cancel();
+            this.dispatchSemaphore.Release();
+
+            await (this.dispatchTask ?? Task.CompletedTask);
+        }
+
+        private void ScheduleExecution(IMessageContext context, MiddlewareDelegate next)
+        {
+            this.dispatchTokenSource = CancellationTokenSource.CreateLinkedTokenSource(context.ConsumerContext.WorkerStopped);
+
+            this.dispatchTask = Task
+                .Delay(this.batchTimeout, this.dispatchTokenSource.Token)
+                .ContinueWith(
+                    _ => this.DispatchAsync(context, next),
+                    CancellationToken.None);
+        }
 
         private async Task DispatchAsync(IMessageContext context, MiddlewareDelegate next)
         {
             await this.dispatchSemaphore.WaitAsync();
+
+            this.dispatchTokenSource.Dispose();
+            this.dispatchTokenSource = null;
+
             var localBatch = this.batch.ToList();
 
             try
@@ -113,9 +138,12 @@
                 this.dispatchSemaphore.Release();
             }
 
-            foreach (var messageContext in localBatch)
+            if (this.consumerConfiguration.AutoStoreOffsets)
             {
-                messageContext.ConsumerContext.StoreOffset();
+                foreach (var messageContext in localBatch)
+                {
+                    messageContext.ConsumerContext.StoreOffset();
+                }
             }
         }
     }

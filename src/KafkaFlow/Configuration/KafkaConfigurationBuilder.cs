@@ -36,8 +36,9 @@ namespace KafkaFlow.Configuration
 
             foreach (var cluster in configuration.Clusters)
             {
-                this.dependencyConfigurator.AddSingleton<IClusterManager>(resolver =>
-                     new ClusterManager(resolver.Resolve<ILogHandler>(), cluster));
+                this.dependencyConfigurator.AddSingleton<IClusterManager>(
+                    resolver =>
+                        new ClusterManager(resolver.Resolve<ILogHandler>(), cluster));
             }
 
             this.dependencyConfigurator
@@ -46,19 +47,23 @@ namespace KafkaFlow.Configuration
                 .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
                 .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
                 .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
-                .AddSingleton(r =>
-                {
-                    var logHandler = r.Resolve<ILogHandler>();
-
-                    var globalEvents = new GlobalEvents(logHandler);
-
-                    foreach (var del in this.globalEventsConfigurators)
+                .AddScoped<WorkerLifetimeContext>()
+                .AddScoped<IWorkerLifetimeContext>(r => r.Resolve<WorkerLifetimeContext>())
+                .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
+                .AddSingleton(
+                    r =>
                     {
-                        del.Invoke(globalEvents);
-                    }
+                        var logHandler = r.Resolve<ILogHandler>();
 
-                    return globalEvents;
-                });
+                        var globalEvents = new GlobalEvents(logHandler);
+
+                        foreach (var del in this.globalEventsConfigurators)
+                        {
+                            del.Invoke(globalEvents);
+                        }
+
+                        return globalEvents;
+                    });
 
             return configuration;
         }
