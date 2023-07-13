@@ -6,7 +6,7 @@ namespace KafkaFlow
     using System.Threading.Tasks;
     using KafkaFlow.Configuration;
     using KafkaFlow.Consumers;
-    using KafkaFlow.Core.Observer;
+    using KafkaFlow.Observer;
 
     internal class MiddlewareExecutor
         : IMiddlewareExecutor,
@@ -27,9 +27,10 @@ namespace KafkaFlow
             return this.ExecuteDefinition(0, context, nextOperation);
         }
 
-        void ISubjectObserver<WorkerPoolStoppedSubject>.OnNotification()
+        Task ISubjectObserver<WorkerPoolStoppedSubject>.OnNotification()
         {
-            this.workersMiddlewares.Clear();
+             this.workersMiddlewares.Clear();
+             return Task.CompletedTask;
         }
 
         private static IMessageMiddleware CreateInstance(

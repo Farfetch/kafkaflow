@@ -127,11 +127,20 @@ namespace KafkaFlow.Consumers
                 });
         }
 
-        public void Commit(IReadOnlyCollection<TopicPartitionOffset> offsetsValues)
+        public void Commit(IReadOnlyCollection<TopicPartitionOffset> offsets)
         {
-            this.consumer.Commit(offsetsValues);
+            var validOffsets = offsets
+                .Where(x => x.Offset.Value >= 0)
+                .ToList();
 
-            foreach (var offset in offsetsValues)
+            if (!validOffsets.Any())
+            {
+                return;
+            }
+
+            this.consumer.Commit(validOffsets);
+
+            foreach (var offset in validOffsets)
             {
                 this.currentPartitionsOffsets[offset.TopicPartition] = offset.Offset.Value;
             }
