@@ -66,6 +66,35 @@ namespace KafkaFlow
         }
 
         /// <summary>
+        /// Registers a scoped type mapping where the returned instance will be given by the provided factory
+        /// </summary>
+        /// <param name="configurator">The <see cref="IDependencyConfigurator"/> object that this method was called on</param>
+        /// <typeparam name="TService">Type that will be created</typeparam>
+        /// <returns></returns>
+        public static IDependencyConfigurator AddScoped<TService>(this IDependencyConfigurator configurator)
+            where TService : class
+        {
+            return configurator.Add<TService>(InstanceLifetime.Scoped);
+        }
+
+        /// <summary>
+        /// Registers a scoped type mapping where the returned instance will be given by the provided factory
+        /// </summary>
+        /// <param name="configurator">The <see cref="IDependencyConfigurator"/> object that this method was called on</param>
+        /// <param name="factory">A factory to create new instances of the service implementation</param>
+        /// <typeparam name="TService">Type that will be created</typeparam>
+        /// <returns></returns>
+        public static IDependencyConfigurator AddScoped<TService>(
+            this IDependencyConfigurator configurator,
+            Func<IDependencyResolver, TService> factory)
+        {
+            return configurator.Add(
+                typeof(TService),
+                factory,
+                InstanceLifetime.Scoped);
+        }
+
+        /// <summary>
         /// Registers a transient type mapping
         /// </summary>
         /// <param name="configurator">The <see cref="IDependencyConfigurator"/> object that this method was called on</param>
