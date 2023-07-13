@@ -35,8 +35,9 @@ namespace KafkaFlow.Configuration
 
             foreach (var cluster in configuration.Clusters)
             {
-                this.dependencyConfigurator.AddSingleton<IClusterManager>(resolver =>
-                     new ClusterManager(resolver.Resolve<ILogHandler>(), cluster));
+                this.dependencyConfigurator.AddSingleton<IClusterManager>(
+                    resolver =>
+                        new ClusterManager(resolver.Resolve<ILogHandler>(), cluster));
             }
 
             this.dependencyConfigurator
@@ -44,7 +45,9 @@ namespace KafkaFlow.Configuration
                 .AddSingleton<IDateTimeProvider, DateTimeProvider>()
                 .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
                 .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
-                .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>();
+                .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
+                .AddScoped<WorkerLifetimeContext>()
+                .AddScoped<IWorkerLifetimeContext>(r => r.Resolve<WorkerLifetimeContext>());
 
             return configuration;
         }

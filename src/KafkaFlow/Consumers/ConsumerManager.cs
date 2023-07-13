@@ -8,12 +8,13 @@
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
 
-    internal class ConsumerManager : IConsumerManager, IDisposable
+    internal class ConsumerManager : IConsumerManager
     {
         private readonly IOffsetCommitter offsetCommitter;
         private readonly IDependencyResolver dependencyResolver;
         private readonly ILogHandler logHandler;
-        private readonly Timer evaluateWorkersCountTimer;
+
+        private Timer evaluateWorkersCountTimer;
 
         public ConsumerManager(
             IConsumer consumer,
@@ -30,12 +31,6 @@
             this.WorkerPool = consumerWorkerPool;
             this.Feeder = feeder;
 
-            this.evaluateWorkersCountTimer = new Timer(
-                state => _ = this.EvaluateWorkersCountAsync(),
-                null,
-                Timeout.Infinite,
-                Timeout.Infinite);
-
             this.Consumer.OnPartitionsAssigned((_, _, partitions) => this.OnPartitionAssigned(partitions));
             this.Consumer.OnPartitionsRevoked((_, _, partitions) => this.OnPartitionRevoked(partitions));
         }
@@ -46,13 +41,16 @@
 
         public IConsumer Consumer { get; }
 
-        public Task StartAsync()
+        public async Task StartAsync()
         {
             this.Feeder.Start();
+            await this.offsetCommitter.StartAsync();
 
-            this.StartEvaluateWorkerCountTimer();
-
-            return Task.CompletedTask;
+            this.evaluateWorkersCountTimer = new Timer(
+                state => _ = this.EvaluateWorkersCountAsync(),
+                null,
+                Timeout.Infinite,
+                Timeout.Infinite);
         }
 
         public async Task StopAsync()
@@ -62,14 +60,14 @@
             await this.Feeder.StopAsync().ConfigureAwait(false);
             await this.WorkerPool.StopAsync().ConfigureAwait(false);
 
-            this.offsetCommitter.Dispose();
+            await this.offsetCommitter.StopAsync();
 
+            this.evaluateWorkersCountTimer.Dispose();
             this.Consumer.Dispose();
         }
 
         public void Dispose()
         {
-            this.evaluateWorkersCountTimer.Dispose();
         }
 
         private void StopEvaluateWorkerCountTimer() => this.evaluateWorkersCountTimer.Change(Timeout.Infinite, Timeout.Infinite);

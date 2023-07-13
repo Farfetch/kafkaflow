@@ -1,9 +1,13 @@
 namespace KafkaFlow.Consumers
 {
-    using System;
+    using System.Threading.Tasks;
 
-    internal interface IOffsetCommitter : IDisposable
+    internal interface IOffsetCommitter
     {
         void MarkAsProcessed(TopicPartitionOffset tpo);
+
+        Task StartAsync();
+
+        Task StopAsync();
     }
 }

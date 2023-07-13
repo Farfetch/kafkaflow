@@ -1,5 +1,6 @@
 namespace KafkaFlow.Consumers
 {
+    using System.Threading.Tasks;
     using KafkaFlow;
 
     internal class NullOffsetCommitter : IOffsetCommitter
@@ -14,9 +15,8 @@ namespace KafkaFlow.Consumers
             // Do nothing
         }
 
-        public void CommitProcessedOffsets()
-        {
-            // Do nothing
-        }
+        public Task StartAsync() => Task.CompletedTask;
+
+        public Task StopAsync() => Task.CompletedTask;
     }
 }
