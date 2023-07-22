@@ -82,7 +82,8 @@
             return this;
         }
 
-        private bool AlreadyRegistered(Type registeredType)
+        /// <inheritdoc />
+        public bool AlreadyRegistered(Type registeredType)
         {
             return this.container.Registrations.Any(x => x.RegisteredType == registeredType);
         }

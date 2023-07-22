@@ -6,7 +6,7 @@ namespace KafkaFlow
     using Google.Protobuf;
     using Google.Protobuf.Reflection;
 
-    internal class ConfluentProtobufTypeNameResolver : IAsyncSchemaRegistryTypeNameResolver
+    internal sealed class ConfluentProtobufTypeNameResolver : IConfluentProtobufTypeNameResolver
     {
         private readonly ISchemaRegistryClient client;
 
@@ -21,7 +21,18 @@ namespace KafkaFlow
 
             var protoFields = FileDescriptorProto.Parser.ParseFrom(ByteString.FromBase64(schemaString));
 
-            return $"{protoFields.Package}.{protoFields.MessageType.FirstOrDefault()?.Name}";
+            return BuildTypeName(protoFields);
+        }
+
+        private static string BuildTypeName(FileDescriptorProto protoFields)
+        {
+            var package = protoFields.Package;
+            if (string.IsNullOrEmpty(package))
+            {
+                package = protoFields.Options.CsharpNamespace;
+            }
+
+            return $"{package}.{protoFields.MessageType.FirstOrDefault()?.Name}";
         }
     }
 }

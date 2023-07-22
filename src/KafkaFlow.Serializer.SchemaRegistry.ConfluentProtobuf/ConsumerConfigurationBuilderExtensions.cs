@@ -17,10 +17,12 @@
         public static IConsumerMiddlewareConfigurationBuilder AddSchemaRegistryProtobufSerializer(
             this IConsumerMiddlewareConfigurationBuilder middlewares)
         {
+            middlewares.DependencyConfigurator.TryAddTransient<IConfluentProtobufTypeNameResolver, ConfluentProtobufTypeNameResolver>();
+
             return middlewares.Add(
                 resolver => new SerializerConsumerMiddleware(
                     new ConfluentProtobufSerializer(resolver),
-                    new SchemaRegistryTypeResolver(new ConfluentProtobufTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>()))));
+                    new SchemaRegistryTypeResolver(resolver.Resolve<IConfluentProtobufTypeNameResolver>())));
         }
     }
 }

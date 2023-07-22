@@ -73,6 +73,19 @@ namespace KafkaFlow
             return this;
         }
 
+        public bool AlreadyRegistered(Type registeredType)
+        {
+            foreach (var s in this.services)
+            {
+                if (s.ServiceType == registeredType)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private static ServiceLifetime ParseLifetime(InstanceLifetime lifetime)
         {
             switch (lifetime)

@@ -4,7 +4,7 @@ namespace KafkaFlow
     using Confluent.SchemaRegistry;
     using Newtonsoft.Json;
 
-    internal class ConfluentAvroTypeNameResolver : IAsyncSchemaRegistryTypeNameResolver
+    internal class ConfluentAvroTypeNameResolver : IConfluentAvroTypeNameResolver
     {
         private readonly ISchemaRegistryClient client;
 
