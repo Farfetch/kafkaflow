@@ -20,8 +20,8 @@ public class Startup
                         const string topicName = "topic-dashboard";
                         cluster
                             .WithBrokers(new[] { "localhost:9092" })
-                            .EnableAdminMessages("kafka-flow.admin", "kafka-flow.admin.group.id")
-                            .EnableTelemetry("kafka-flow.admin", "kafka-flow.telemetry.group.id")
+                            .EnableAdminMessages("kafkaflow.admin", "kafkaflow.admin.group.id")
+                            .EnableTelemetry("kafkaflow.admin", "kafkaflow.telemetry.group.id")
                             .CreateTopicIfNotExists(topicName, 3, 1)
                             .AddConsumer(
                                 consumer =>

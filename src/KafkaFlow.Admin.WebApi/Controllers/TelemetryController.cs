@@ -7,7 +7,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
     /// <summary>
     /// Telemetry controller
     /// </summary>
-    [Route("kafka-flow/telemetry")]
+    [Route("kafkaflow/telemetry")]
     [ApiController]
     public class TelemetryController : ControllerBase
     {

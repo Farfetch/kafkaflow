@@ -30,7 +30,7 @@ services.AddKafka(
                 .AddConsumer(
                     consumerBuilder => consumerBuilder
                         .Topic(batchTestTopic)
-                        .WithGroupId("kafka-flow-sample")
+                        .WithGroupId("kafkaflow-sample")
                         .WithBufferSize(10000)
                         .WithWorkersCount(1)
                         .AddMiddlewares(

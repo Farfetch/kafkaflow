@@ -27,4 +27,4 @@ Using your terminal of choice, start the sample for the sample folder.
 dotnet run
 ```
 
-The dashboard UI will be available at `/kafka-flow`. 
+The dashboard UI will be available at `/kafkaflow`. 

@@ -15,7 +15,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AutoFixture" Version="4.17.0" />
+        <PackageReference Include="AutoFixture" Version="4.18.0" />
+        <PackageReference Include="AutoFixture.AutoMoq" Version="4.18.0" />
         <PackageReference Include="coverlet.collector" Version="3.1.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -28,6 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\KafkaFlow.Admin.WebApi\KafkaFlow.Admin.WebApi.csproj" />
         <ProjectReference Include="..\KafkaFlow.Admin\KafkaFlow.Admin.csproj" />
         <ProjectReference Include="..\KafkaFlow.BatchConsume\KafkaFlow.BatchConsume.csproj" />
         <ProjectReference Include="..\KafkaFlow.Compressor\KafkaFlow.Compressor.csproj" />
