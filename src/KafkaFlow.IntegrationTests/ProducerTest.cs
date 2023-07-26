@@ -23,7 +23,6 @@ namespace KafkaFlow.IntegrationTests
             MessageStorage.Clear();
         }
 
-
         [TestMethod]
         public async Task ProduceNullKeyTest()
         {
