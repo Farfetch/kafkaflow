@@ -12,7 +12,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
     /// <summary>
     /// Consumers controller
     /// </summary>
-    [Route("kafka-flow/groups/{groupId}/consumers")]
+    [Route("kafkaflow/groups/{groupId}/consumers")]
     [ApiController]
     public class ConsumersController : ControllerBase
     {
@@ -23,7 +23,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// Initializes a new instance of the <see cref="ConsumersController"/> class.
         /// </summary>
         /// <param name="consumers">The accessor class that provides access to the consumers</param>
-        /// <param name="adminProducer">The producer to publish admin messages</param>
+        /// <param name="consumerAdmin">The admin messages consumer</param>
         public ConsumersController(IConsumerAccessor consumers, IConsumerAdmin consumerAdmin)
         {
             this.consumers = consumers;
