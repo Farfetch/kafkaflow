@@ -16,7 +16,7 @@ namespace KafkaFlow.Admin.Dashboard
     public static class ApplicationBuilderExtensions
     {
         /// <summary>
-        /// Enable the KafkaFlow dashboard. The path will be `/kafka-flow`
+        /// Enable the KafkaFlow dashboard. The path will be `/kafkaflow`
         /// </summary>
         /// <param name="app">Instance of <see cref="IApplicationBuilder"/></param>
         /// <returns></returns>

@@ -6,7 +6,7 @@ namespace KafkaFlow.Admin.Dashboard
 
     internal class DashboardConfigurationBuilder : IDashboardConfigurationBuilder
     {
-        private readonly PathString basePath = "/kafka-flow";
+        private readonly PathString basePath = "/kafkaflow";
 
         private Action<IApplicationBuilder> requestHandler = _ => { };
         private Action<IEndpointConventionBuilder> endpointHandler = _ => { };
