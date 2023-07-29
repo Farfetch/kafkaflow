@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <OutputType>Library</OutputType>
         <PackageId>KafkaFlow.Admin.WebApi</PackageId>
         <Description>Allows KafkaFlow to use the Admin Web API</Description>
@@ -9,12 +9,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+        <ProjectReference Include="..\KafkaFlow.Admin\KafkaFlow.Admin.csproj" />
+        <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\KafkaFlow.Admin\KafkaFlow.Admin.csproj" />
-        <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
 </Project>
