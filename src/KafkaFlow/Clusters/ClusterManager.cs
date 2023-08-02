@@ -13,13 +13,15 @@ namespace KafkaFlow.Clusters
         private readonly ILogHandler logHandler;
         private readonly Lazy<AdminClientBuilder> lazyAdminClientBuilder;
         private readonly ClusterConfiguration configuration;
+        private readonly ClientConfig clientConfig = new();
 
         public ClusterManager(ILogHandler logHandler, ClusterConfiguration configuration)
         {
             this.logHandler = logHandler;
             this.configuration = configuration;
+            this.clientConfig.ReadSecurityInformationFrom(this.configuration);
             this.lazyAdminClientBuilder = new Lazy<AdminClientBuilder>(
-                () => new AdminClientBuilder(new AdminClientConfig
+                () => new AdminClientBuilder(new AdminClientConfig(this.clientConfig)
                 { BootstrapServers = string.Join(",", configuration.Brokers) }));
         }
 
