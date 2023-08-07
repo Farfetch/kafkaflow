@@ -21,7 +21,7 @@ namespace KafkaFlow.Clusters
             this.lazyAdminClientBuilder = new Lazy<AdminClientBuilder>(
                 () =>
                 {
-                    var adminConfig = new AdminClientConfig()
+                    var adminConfig = new AdminClientConfig
                     {
                         BootstrapServers = string.Join(",", configuration.Brokers),
                     };
