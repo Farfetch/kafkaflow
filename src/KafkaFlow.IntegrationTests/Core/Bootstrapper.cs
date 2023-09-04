@@ -25,6 +25,14 @@ namespace KafkaFlow.IntegrationTests.Core
         public const string PauseResumeTopicName = "test-pause-resume";
         public const int MaxPollIntervalMs = 7000;
 
+        internal const string ProtobufGroupId = "consumer-protobuf";
+        internal const string GzipGroupId = "consumer-gzip";
+        internal const string JsonGzipGroupId = "consumer-json-gzip";
+        internal const string ProtobufGzipGroupId = "consumer-protobuf-gzip";
+        internal const string PauseResumeGroupId = "consumer-pause-resume";
+        internal const string AvroGroupId = "consumer-avro";
+        internal const string JsonGroupId = "consumer-json";
+
         private const string ProtobufTopicName = "test-protobuf";
         private const string ProtobufSchemaRegistryTopicName = "test-protobuf-sr";
         private const string JsonSchemaRegistryTopicName = "test-json-sr";
@@ -34,12 +42,6 @@ namespace KafkaFlow.IntegrationTests.Core
         private const string ProtobufGzipTopicName = "test-protobuf-gzip";
         private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
         private const string AvroTopicName = "test-avro";
-
-        private const string ProtobufGroupId = "consumer-protobuf";
-        private const string GzipGroupId = "consumer-gzip";
-        private const string JsonGzipGroupId = "consumer-json-gzip";
-        private const string ProtobufGzipGroupId = "consumer-protobuf-gzip";
-        private const string PauseResumeGroupId = "consumer-pause-resume";
 
         private static readonly Lazy<IServiceProvider> LazyProvider = new(SetupProvider);
 
@@ -83,6 +85,17 @@ namespace KafkaFlow.IntegrationTests.Core
             var kafkaBrokers = context.Configuration.GetValue<string>("Kafka:Brokers");
             var schemaRegistryUrl = context.Configuration.GetValue<string>("SchemaRegistry:Url");
 
+            ConsumerConfig defaultConfig = new()
+            {
+                Acks = Confluent.Kafka.Acks.All,
+                AllowAutoCreateTopics = false,
+                AutoCommitIntervalMs = 5000,
+                AutoOffsetReset = Confluent.Kafka.AutoOffsetReset.Latest,
+                LogConnectionClose = false,
+                ReconnectBackoffMs = 1000,
+                ReconnectBackoffMaxMs = 6000
+            };
+
             services.AddKafka(
                 kafka => kafka
                     .UseLogHandler<TraceLogHandler>()
@@ -109,10 +122,11 @@ namespace KafkaFlow.IntegrationTests.Core
                             .AddConsumer(
                                 consumer => consumer
                                     .Topic(AvroTopicName)
-                                    .WithGroupId("consumer-avro")
+                                    .WithGroupId(AvroGroupId)
                                     .WithBufferSize(100)
                                     .WithWorkersCount(10)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                    .WithConsumerConfig(defaultConfig)
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSerializer<ConfluentAvroSerializer>()
@@ -136,10 +150,11 @@ namespace KafkaFlow.IntegrationTests.Core
                             .AddConsumer(
                                 consumer => consumer
                                     .Topic(ProtobufSchemaRegistryTopicName)
-                                    .WithGroupId("consumer-protobuf")
+                                    .WithGroupId(ProtobufGroupId)
                                     .WithBufferSize(100)
                                     .WithWorkersCount(10)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                    .WithConsumerConfig(defaultConfig)
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSerializer<ConfluentProtobufSerializer>()
@@ -163,10 +178,11 @@ namespace KafkaFlow.IntegrationTests.Core
                             .AddConsumer(
                                 consumer => consumer
                                     .Topic(JsonSchemaRegistryTopicName)
-                                    .WithGroupId("consumer-json")
+                                    .WithGroupId(JsonGroupId)
                                     .WithBufferSize(100)
                                     .WithWorkersCount(10)
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                    .WithConsumerConfig(defaultConfig)
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                             .AddSerializer<ConfluentJsonSerializer>()

@@ -88,7 +88,10 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler = (_, _) => { };
             Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler = (_, _) => { };
             const int statisticsIntervalMs = 100;
-            var consumerConfig = new ConsumerConfig();
+            var consumerConfig = new ConsumerConfig
+            {
+                ClientId = "testeclient"
+            };
 
             this.target
                 .Topics(topic1)
@@ -128,7 +131,7 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             configuration.StatisticsHandlers.Should().HaveElementAt(0, statisticsHandler);
             configuration.PartitionsAssignedHandlers.Should().HaveElementAt(0, partitionsAssignedHandler);
             configuration.PartitionsRevokedHandlers.Should().HaveElementAt(0, partitionsRevokedHandler);
-            configuration.GetKafkaConfig().Should().BeSameAs(consumerConfig);
+            configuration.GetKafkaConfig().ClientId.Should().Be(consumerConfig.ClientId);
             configuration.MiddlewaresConfigurations.Should().HaveCount(1);
         }
     }
