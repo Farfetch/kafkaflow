@@ -1,6 +1,7 @@
 namespace KafkaFlow
 {
     using System;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// The message type resolver to be used when all messages are the same type
@@ -19,12 +20,13 @@ namespace KafkaFlow
         }
 
         /// <inheritdoc/>
-        public Type OnConsume(IMessageContext context) => this.messageType;
+        public ValueTask<Type> OnConsumeAsync(IMessageContext context) => new ValueTask<Type>(this.messageType);
 
         /// <inheritdoc/>
-        public void OnProduce(IMessageContext context)
+        public ValueTask OnProduceAsync(IMessageContext context)
         {
             // Do nothing
+            return default(ValueTask);
         }
     }
 }

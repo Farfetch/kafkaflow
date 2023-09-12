@@ -1,5 +1,7 @@
 namespace KafkaFlow
 {
+    using System.Threading.Tasks;
+
     /// <summary>
     /// An interface to implement a type name resolver to messages serialized with schema registry serializers
     /// </summary>
@@ -10,6 +12,6 @@ namespace KafkaFlow
         /// </summary>
         /// <param name="schemaId">Identifier of the schema</param>
         /// <returns></returns>
-        string Resolve(int schemaId);
+        Task<string> ResolveAsync(int schemaId);
     }
 }
