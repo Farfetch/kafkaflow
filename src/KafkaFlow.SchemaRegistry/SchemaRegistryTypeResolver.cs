@@ -10,34 +10,25 @@ namespace KafkaFlow
     /// <summary>
     ///  The message type resolver to be used with schema registry serializers
     /// </summary>
-    public class SchemaRegistryTypeResolver : IAsyncMessageTypeResolver
+    public class SchemaRegistryTypeResolver : IMessageTypeResolver
     {
         private static readonly ConcurrentDictionary<int, Type> Types = new();
 
         private static readonly SemaphoreSlim Semaphore = new(1, 1);
 
-        private readonly IAsyncSchemaRegistryTypeNameResolver typeNameResolver;
+        private readonly ISchemaRegistryTypeNameResolver typeNameResolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SchemaRegistryTypeResolver"/> class.
         /// </summary>
         /// <param name="typeNameResolver">A instance of the <see cref="ISchemaRegistryTypeNameResolver"/> interface.</param>
         public SchemaRegistryTypeResolver(ISchemaRegistryTypeNameResolver typeNameResolver)
-            : this(new AsyncSchemaRegistryTypeNameResolverWrapper(typeNameResolver))
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SchemaRegistryTypeResolver"/> class.
-        /// </summary>
-        /// <param name="typeNameResolver">A instance of the <see cref="ISchemaRegistryTypeNameResolver"/> interface.</param>
-        public SchemaRegistryTypeResolver(IAsyncSchemaRegistryTypeNameResolver typeNameResolver)
         {
             this.typeNameResolver = typeNameResolver;
         }
 
         /// <inheritdoc />
-        public async Task<Type> OnConsumeAsync(IMessageContext context)
+        public async ValueTask<Type> OnConsumeAsync(IMessageContext context)
         {
             var schemaId = BinaryPrimitives.ReadInt32BigEndian(
                 ((byte[]) context.Message.Value).AsSpan().Slice(1, 4));
@@ -70,6 +61,6 @@ namespace KafkaFlow
         }
 
         /// <inheritdoc />
-        public Task OnProduceAsync(IMessageContext context) => Task.CompletedTask;
+        public ValueTask OnProduceAsync(IMessageContext context) => default(ValueTask);
     }
 }

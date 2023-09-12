@@ -39,8 +39,8 @@ namespace KafkaFlow.UnitTests.Serializers
                 .Returns(new Message(new byte[1], new byte[1]));
 
             this.typeResolverMock
-                .Setup(x => x.OnConsume(this.contextMock.Object))
-                .Returns((Type)null);
+                .Setup(x => x.OnConsumeAsync(this.contextMock.Object))
+                .ReturnsAsync((Type)null);
 
             // Act
             await this.target.Invoke(this.contextMock.Object, _ => this.SetNextCalled());
@@ -70,7 +70,7 @@ namespace KafkaFlow.UnitTests.Serializers
             this.serializerMock.Verify(
                 x => x.DeserializeAsync(It.IsAny<Stream>(), It.IsAny<Type>(), It.IsAny<ISerializerContext>()),
                 Times.Never);
-            this.typeResolverMock.Verify(x => x.OnConsume(It.IsAny<IMessageContext>()), Times.Never);
+            this.typeResolverMock.Verify(x => x.OnConsumeAsync(It.IsAny<IMessageContext>()), Times.Never);
         }
 
         [TestMethod]
@@ -91,7 +91,7 @@ namespace KafkaFlow.UnitTests.Serializers
             this.serializerMock.Verify(
                 x => x.DeserializeAsync(It.IsAny<Stream>(), It.IsAny<Type>(), It.IsAny<ISerializerContext>()),
                 Times.Never);
-            this.typeResolverMock.Verify(x => x.OnConsume(It.IsAny<IMessageContext>()), Times.Never);
+            this.typeResolverMock.Verify(x => x.OnConsumeAsync(It.IsAny<IMessageContext>()), Times.Never);
         }
 
         [TestMethod]
@@ -119,8 +119,8 @@ namespace KafkaFlow.UnitTests.Serializers
                 .Returns(transformedContextMock.Object);
 
             this.typeResolverMock
-                .Setup(x => x.OnConsume(this.contextMock.Object))
-                .Returns(messageType);
+                .Setup(x => x.OnConsumeAsync(this.contextMock.Object))
+                .ReturnsAsync(messageType);
 
             this.serializerMock
                 .Setup(x => x.DeserializeAsync(It.IsAny<Stream>(), messageType, It.IsAny<ISerializerContext>()))
