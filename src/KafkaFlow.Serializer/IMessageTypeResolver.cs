@@ -1,6 +1,7 @@
 ﻿namespace KafkaFlow
 {
     using System;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Used by the serializer middleware to resolve the type when consuming and store it when producing
@@ -12,12 +13,12 @@
         /// </summary>
         /// <param name="context">The <see cref="IMessageContext"/> containing the message and the metadata</param>
         /// <returns></returns>
-        Type OnConsume(IMessageContext context);
+        ValueTask<Type> OnConsumeAsync(IMessageContext context);
 
         /// <summary>
         /// Stores the message type somewhere when producing
         /// </summary>
         /// <param name="context">The <see cref="IMessageContext"/> containing the message and the metadata</param>
-        void OnProduce(IMessageContext context);
+        ValueTask OnProduceAsync(IMessageContext context);
     }
 }

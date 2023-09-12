@@ -12,7 +12,7 @@
 
         private readonly ISerializer serializer;
 
-        private readonly IAsyncMessageTypeResolver typeResolver;
+        private readonly IMessageTypeResolver typeResolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SerializerProducerMiddleware"/> class.
@@ -22,18 +22,6 @@
         public SerializerProducerMiddleware(
             ISerializer serializer,
             IMessageTypeResolver typeResolver)
-            : this(serializer, new AsyncMessageTypeResolverWrapper(typeResolver))
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SerializerProducerMiddleware"/> class.
-        /// </summary>
-        /// <param name="serializer">Instance of <see cref="ISerializer"/></param>
-        /// <param name="typeResolver">Instance of <see cref="IAsyncMessageTypeResolver"/></param>
-        public SerializerProducerMiddleware(
-            ISerializer serializer,
-            IAsyncMessageTypeResolver typeResolver)
         {
             this.serializer = serializer;
             this.typeResolver = typeResolver;

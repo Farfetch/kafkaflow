@@ -48,7 +48,7 @@ namespace KafkaFlow.UnitTests.Serializers
                 .SetupGet(x => x.Message)
                 .Returns(deserializedMessage);
 
-            this.typeResolverMock.Setup(x => x.OnProduce(this.contextMock.Object));
+            this.typeResolverMock.Setup(x => x.OnProduceAsync(this.contextMock.Object));
 
             this.serializerMock
                 .Setup(
