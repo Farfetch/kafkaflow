@@ -2,9 +2,7 @@ namespace KafkaFlow.Unity
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using global::Unity;
-    using global::Unity.Resolution;
 
     /// <summary>
     /// Unity implementation of <see cref="IDependencyResolver"/>
