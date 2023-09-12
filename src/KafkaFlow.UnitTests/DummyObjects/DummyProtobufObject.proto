@@ -1,0 +1,11 @@
+// can be generated using  
+// protoc --csharp_out=. DummyProtobufObject.proto
+
+syntax = "proto3";
+
+package KafkaFlow.UnitTests;
+
+message DummyProtobufObject {
+  string field1 = 1;
+  int32 field2 = 2;
+}

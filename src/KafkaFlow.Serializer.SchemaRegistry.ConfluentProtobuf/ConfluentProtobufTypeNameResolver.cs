@@ -6,7 +6,7 @@ namespace KafkaFlow
     using Google.Protobuf;
     using Google.Protobuf.Reflection;
 
-    internal class ConfluentProtobufTypeNameResolver : IAsyncSchemaRegistryTypeNameResolver
+    internal class ConfluentProtobufTypeNameResolver : ISchemaRegistryTypeNameResolver
     {
         private readonly ISchemaRegistryClient client;
 

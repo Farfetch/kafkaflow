@@ -1,25 +1,26 @@
 namespace KafkaFlow
 {
     using System;
+    using System.Threading.Tasks;
 
     internal class DefaultTypeResolver : IMessageTypeResolver
     {
         private const string MessageType = "Message-Type";
 
-        public Type OnConsume(IMessageContext context)
+        public ValueTask<Type> OnConsumeAsync(IMessageContext context)
         {
             var typeName = context.Headers.GetString(MessageType);
 
             return typeName is null ?
-                null :
-                Type.GetType(typeName);
+                new ValueTask<Type>((Type) null) :
+                new ValueTask<Type>(Type.GetType(typeName));
         }
 
-        public void OnProduce(IMessageContext context)
+        public ValueTask OnProduceAsync(IMessageContext context)
         {
             if (context.Message.Value is null)
             {
-                return;
+                return default(ValueTask);
             }
 
             var messageType = context.Message.Value.GetType();
@@ -27,6 +28,8 @@ namespace KafkaFlow
             context.Headers.SetString(
                 MessageType,
                 $"{messageType.FullName}, {messageType.Assembly.GetName().Name}");
+
+            return default(ValueTask);
         }
     }
 }

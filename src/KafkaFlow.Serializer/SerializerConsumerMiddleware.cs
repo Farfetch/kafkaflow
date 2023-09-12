@@ -10,8 +10,7 @@
     public class SerializerConsumerMiddleware : IMessageMiddleware
     {
         private readonly ISerializer serializer;
-
-        private readonly IAsyncMessageTypeResolver typeResolver;
+        private readonly IMessageTypeResolver typeResolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SerializerConsumerMiddleware"/> class.
@@ -21,18 +20,6 @@
         public SerializerConsumerMiddleware(
             ISerializer serializer,
             IMessageTypeResolver typeResolver)
-            : this(serializer, new AsyncMessageTypeResolverWrapper(typeResolver))
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SerializerConsumerMiddleware"/> class.
-        /// </summary>
-        /// <param name="serializer">Instance of <see cref="ISerializer"/></param>
-        /// <param name="typeResolver">Instance of <see cref="IAsyncMessageTypeResolver"/></param>
-        public SerializerConsumerMiddleware(
-            ISerializer serializer,
-            IAsyncMessageTypeResolver typeResolver)
         {
             this.serializer = serializer;
             this.typeResolver = typeResolver;
