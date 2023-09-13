@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29709.97
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33717.318
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow", "KafkaFlow\KafkaFlow.csproj", "{E1055352-9F5B-4980-80A3-50C335B79A16}"
 EndProject
@@ -73,11 +73,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Serializer.Schema
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Admin.Dashboard", "KafkaFlow.Admin.Dashboard\KafkaFlow.Admin.Dashboard.csproj", "{4072F646-9393-4BF3-A479-0550AC1BB6C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample.Dashboard", "..\samples\KafkaFlow.Sample.Dashboard\KafkaFlow.Sample.Dashboard.csproj", "{F32DC7DA-36EA-4199-91F5-81960FD9C650}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Sample.Dashboard", "..\samples\KafkaFlow.Sample.Dashboard\KafkaFlow.Sample.Dashboard.csproj", "{F32DC7DA-36EA-4199-91F5-81960FD9C650}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample.SchemaRegistry", "..\samples\KafkaFlow.Sample.SchemaRegistry\KafkaFlow.Sample.SchemaRegistry.csproj", "{2BD49C06-7A88-4B98-91B0-659282D2A45E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Sample.SchemaRegistry", "..\samples\KafkaFlow.Sample.SchemaRegistry\KafkaFlow.Sample.SchemaRegistry.csproj", "{2BD49C06-7A88-4B98-91B0-659282D2A45E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample.FlowControl", "..\samples\KafkaFlow.Sample.FlowControl\KafkaFlow.Sample.FlowControl.csproj", "{7B61C99E-3AEB-4497-8A38-F780CB309130}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Sample.FlowControl", "..\samples\KafkaFlow.Sample.FlowControl\KafkaFlow.Sample.FlowControl.csproj", "{7B61C99E-3AEB-4497-8A38-F780CB309130}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deploy", "Deploy", "{4A6A390C-A63A-4371-86BB-28481AD6D4C0}"
 	ProjectSection(SolutionItems) = preProject
@@ -85,11 +85,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deploy", "Deploy", "{4A6A39
 		..\.github\workflows\publish.yml = ..\.github\workflows\publish.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.LogHandler.Microsoft", "KafkaFlow.LogHandler.Microsoft\KafkaFlow.LogHandler.Microsoft.csproj", "{8EAF0D96-F760-4FEF-9237-92779F66482D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.LogHandler.Microsoft", "KafkaFlow.LogHandler.Microsoft\KafkaFlow.LogHandler.Microsoft.csproj", "{8EAF0D96-F760-4FEF-9237-92779F66482D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample.PauseConsumerOnError", "..\samples\KafkaFlow.Sample.PauseConsumerOnError\KafkaFlow.Sample.PauseConsumerOnError.csproj", "{B4A9E7CE-7A37-411E-967E-D9B5FD1A3992}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Sample.PauseConsumerOnError", "..\samples\KafkaFlow.Sample.PauseConsumerOnError\KafkaFlow.Sample.PauseConsumerOnError.csproj", "{B4A9E7CE-7A37-411E-967E-D9B5FD1A3992}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.Sample.ConsumerThrottling", "..\samples\KafkaFlow.Sample.ConsumerThrottling\KafkaFlow.Sample.ConsumerThrottling.csproj", "{4A16F519-FAF8-432C-AD0A-CC44F7BD392D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaFlow.Sample.ConsumerThrottling", "..\samples\KafkaFlow.Sample.ConsumerThrottling\KafkaFlow.Sample.ConsumerThrottling.csproj", "{4A16F519-FAF8-432C-AD0A-CC44F7BD392D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaFlow.OpenTelemetry", "KafkaFlow.OpenTelemetry\KafkaFlow.OpenTelemetry.csproj", "{17040462-7CCC-40C0-A07C-40685F34B984}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -225,6 +227,10 @@ Global
 		{4A16F519-FAF8-432C-AD0A-CC44F7BD392D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A16F519-FAF8-432C-AD0A-CC44F7BD392D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A16F519-FAF8-432C-AD0A-CC44F7BD392D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17040462-7CCC-40C0-A07C-40685F34B984}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17040462-7CCC-40C0-A07C-40685F34B984}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17040462-7CCC-40C0-A07C-40685F34B984}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17040462-7CCC-40C0-A07C-40685F34B984}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -264,6 +270,7 @@ Global
 		{8EAF0D96-F760-4FEF-9237-92779F66482D} = {EF626895-FDAE-4B28-9110-BA85671CBBF2}
 		{B4A9E7CE-7A37-411E-967E-D9B5FD1A3992} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
 		{4A16F519-FAF8-432C-AD0A-CC44F7BD392D} = {303AE78F-6C96-4DF4-AC89-5C4FD53AFF0B}
+		{17040462-7CCC-40C0-A07C-40685F34B984} = {ED24B548-6F37-4283-A35B-F6015BFB7A34}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AE955B5-16B0-41CF-9F12-66D15B3DD1AB}
