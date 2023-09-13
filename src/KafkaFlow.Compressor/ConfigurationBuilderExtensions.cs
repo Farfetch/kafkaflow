@@ -14,7 +14,6 @@
         /// <param name="middlewares">The middleware configuration builder</param>
         /// <typeparam name="T">The compressor type</typeparam>
         /// <returns></returns>
-        [Obsolete("Compressors should only be used in backward compatibility scenarios, in the vast majority of cases native compression (producer.WithCompression()) should be used instead")]
         public static IConsumerMiddlewareConfigurationBuilder AddCompressor<T>(this IConsumerMiddlewareConfigurationBuilder middlewares)
             where T : class, IMessageCompressor
         {
@@ -29,7 +28,6 @@
         /// <typeparam name="T">The compressor type that implements <see cref="IMessageCompressor"/></typeparam>
         /// <param name="factory">A factory to create the <see cref="IMessageCompressor"/> instance</param>
         /// <returns></returns>
-        [Obsolete("Compressors should only be used in backward compatibility scenarios, in the vast majority of cases native compression (producer.WithCompression()) should be used instead")]
         public static IConsumerMiddlewareConfigurationBuilder AddCompressor<T>(
             this IConsumerMiddlewareConfigurationBuilder middlewares,
             Factory<T> factory)
@@ -45,7 +43,6 @@
         /// <param name="middlewares">The middleware configuration builder</param>
         /// <typeparam name="T">The compressor type that implements <see cref="IMessageCompressor"/></typeparam>
         /// <returns></returns>
-        [Obsolete("Compressors should only be used in backward compatibility scenarios, in the vast majority of cases native compression (producer.WithCompression()) should be used instead")]
         public static IProducerMiddlewareConfigurationBuilder AddCompressor<T>(this IProducerMiddlewareConfigurationBuilder middlewares)
             where T : class, IMessageCompressor
         {
@@ -61,7 +58,6 @@
         /// <typeparam name="T">The compressor type that implements <see cref="IMessageCompressor"/></typeparam>
         /// <param name="factory">A factory to create the <see cref="IMessageCompressor"/> instance</param>
         /// <returns></returns>
-        [Obsolete("Compressors should only be used in backward compatibility scenarios, in the vast majority of cases native compression (producer.WithCompression()) should be used instead")]
         public static IProducerMiddlewareConfigurationBuilder AddCompressor<T>(
             this IProducerMiddlewareConfigurationBuilder middlewares,
             Factory<T> factory)

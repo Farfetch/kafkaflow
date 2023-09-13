@@ -14,8 +14,7 @@ namespace KafkaFlow.Configuration
         private readonly List<TopicPartitions> topicsPartitions = new();
         private readonly List<Action<string>> statisticsHandlers = new();
 
-        private readonly List<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>>, TimeSpan interval)>
-            pendingOffsetsStatisticsHandlers = new();
+        private readonly List<PendingOffsetsStatisticsHandler> pendingOffsetsStatisticsHandlers = new();
 
         private readonly List<Action<IDependencyResolver, List<TopicPartition>>> partitionAssignedHandlers = new();
         private readonly List<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionRevokedHandlers = new();
@@ -32,7 +31,7 @@ namespace KafkaFlow.Configuration
         private TimeSpan workersCountEvaluationInterval = TimeSpan.FromMinutes(5);
         private int bufferSize;
         private TimeSpan workerStopTimeout = TimeSpan.FromSeconds(30);
-        private bool autoStoreOffsets = true;
+        private bool autoMessageCompletion = true;
         private bool noStoreOffsets;
         private ConsumerInitialState initialState = ConsumerInitialState.Running;
         private int statisticsInterval;
@@ -174,15 +173,9 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public IConsumerConfigurationBuilder WithAutoStoreOffsets()
+        public IConsumerConfigurationBuilder WithManualMessageCompletion()
         {
-            this.autoStoreOffsets = true;
-            return this;
-        }
-
-        public IConsumerConfigurationBuilder WithManualStoreOffsets()
-        {
-            this.autoStoreOffsets = false;
+            this.autoMessageCompletion = false;
             return this;
         }
 
@@ -234,7 +227,7 @@ namespace KafkaFlow.Configuration
             Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> pendingOffsetsHandler,
             TimeSpan interval)
         {
-            this.pendingOffsetsStatisticsHandlers.Add((pendingOffsetsHandler, interval));
+            this.pendingOffsetsStatisticsHandlers.Add(new(pendingOffsetsHandler, interval));
             return this;
         }
 
@@ -276,7 +269,7 @@ namespace KafkaFlow.Configuration
                 this.workerStopTimeout,
                 this.distributionStrategyFactory,
                 middlewareConfiguration,
-                this.autoStoreOffsets,
+                this.autoMessageCompletion,
                 this.noStoreOffsets,
                 this.initialState,
                 this.autoCommitInterval,

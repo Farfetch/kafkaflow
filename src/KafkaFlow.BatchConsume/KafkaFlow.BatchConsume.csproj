@@ -11,8 +11,5 @@
       <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.1" />
-    </ItemGroup>
 
 </Project>

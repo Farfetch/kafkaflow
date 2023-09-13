@@ -151,16 +151,11 @@ namespace KafkaFlow.Configuration
             where T : class, IDistributionStrategy;
 
         /// <summary>
-        /// Offsets will be stored after the execution of the handler and middlewares automatically, this is the default behaviour
+        /// Configures the consumer for manual message completion.
+        /// The client should call the <see cref="IConsumerContext.Complete"/> to mark the message processing as finished
         /// </summary>
         /// <returns></returns>
-        IConsumerConfigurationBuilder WithAutoStoreOffsets();
-
-        /// <summary>
-        /// The client should call the <see cref="IConsumerContext.StoreOffset()"/>
-        /// </summary>
-        /// <returns></returns>
-        IConsumerConfigurationBuilder WithManualStoreOffsets();
+        IConsumerConfigurationBuilder WithManualMessageCompletion();
 
         /// <summary>
         /// No offsets will be stored on Kafka

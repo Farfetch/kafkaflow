@@ -32,7 +32,5 @@ namespace KafkaFlow
             this.DependencyResolver,
             this.ConsumerContext,
             this.ProducerContext);
-
-        public IMessageContext TransformMessage(object message) => throw new System.NotImplementedException();
     }
 }

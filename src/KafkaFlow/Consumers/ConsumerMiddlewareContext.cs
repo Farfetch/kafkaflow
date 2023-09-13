@@ -1,6 +1,6 @@
 namespace KafkaFlow.Consumers
 {
-    internal class WorkerLifetimeContext : IWorkerLifetimeContext
+    internal class ConsumerMiddlewareContext : IConsumerMiddlewareContext
     {
         public IWorker Worker { get; set; }
 
