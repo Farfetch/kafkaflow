@@ -72,9 +72,9 @@ namespace KafkaFlow.Configuration
         TimeSpan WorkerStopTimeout { get; }
 
         /// <summary>
-        /// Gets a value indicating whether if the application should store store at the end
+        /// Gets a value indicating whether if the application should manual complete the message at the end
         /// </summary>
-        bool AutoStoreOffsets { get; }
+        bool AutoMessageCompletion { get; }
 
         /// <summary>
         /// Gets a value indicating that no offsets will be stored on Kafka
@@ -104,10 +104,7 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Gets the handlers that will be called when there are pending offsets
         /// </summary>
-        IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)> PendingOffsetsHandlers
-        {
-            get;
-        }
+        IReadOnlyList<PendingOffsetsStatisticsHandler> PendingOffsetsStatisticsHandlers { get; }
 
         /// <summary>
         /// Gets the custom factory used to create a new <see cref="KafkaFlow.Consumers.IConsumer"/>

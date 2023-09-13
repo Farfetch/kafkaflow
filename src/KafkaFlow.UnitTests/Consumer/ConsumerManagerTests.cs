@@ -55,7 +55,7 @@ namespace KafkaFlow.UnitTests.Consumer
 
             configurationMock
                 .SetupGet(x => x.WorkersCountCalculator)
-                .Returns(_ => Task.FromResult(10));
+                .Returns((_, _) => Task.FromResult(10));
 
             configurationMock
                 .SetupGet(x => x.WorkersCountEvaluationInterval)

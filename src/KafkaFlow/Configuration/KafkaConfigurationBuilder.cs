@@ -46,8 +46,8 @@ namespace KafkaFlow.Configuration
                 .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
                 .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
                 .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
-                .AddScoped<WorkerLifetimeContext>()
-                .AddScoped<IWorkerLifetimeContext>(r => r.Resolve<WorkerLifetimeContext>());
+                .AddScoped<ConsumerMiddlewareContext>()
+                .AddScoped<IConsumerMiddlewareContext>(r => r.Resolve<ConsumerMiddlewareContext>());
 
             return configuration;
         }

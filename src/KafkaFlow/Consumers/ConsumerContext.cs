@@ -27,6 +27,7 @@ namespace KafkaFlow.Consumers
             this.offsetManager = offsetManager;
             this.worker = worker;
             this.messageDependencyScope = messageDependencyScope;
+            this.AutoMessageCompletion = this.consumer.Configuration.AutoMessageCompletion;
             this.TopicPartitionOffset = new TopicPartitionOffset(
                 kafkaResult.Topic,
                 kafkaResult.Partition.Value,
@@ -54,15 +55,21 @@ namespace KafkaFlow.Consumers
 
         public string GroupId => this.consumer.Configuration.GroupId;
 
+        public bool AutoMessageCompletion { get; set; }
+
         public bool ShouldStoreOffset { get; set; } = true;
 
         public DateTime MessageTimestamp { get; }
 
         public Task<TopicPartitionOffset> Completion => this.completionSource.Task;
 
-        public void StoreOffset()
+        public void Complete()
         {
-            this.offsetManager.MarkAsProcessed(this);
+            if (this.ShouldStoreOffset)
+            {
+                this.offsetManager.MarkAsProcessed(this);
+            }
+
             this.messageDependencyScope.Dispose();
             this.completionSource.TrySetResult(this.TopicPartitionOffset);
         }
