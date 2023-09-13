@@ -4,6 +4,7 @@ namespace KafkaFlow.UnitTests
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
+    using System.Threading.Tasks;
     using Confluent.Kafka;
     using FluentAssertions;
     using KafkaFlow.Consumers;
@@ -16,20 +17,15 @@ namespace KafkaFlow.UnitTests
         private const int TestTimeout = 5000;
 
         private Mock<IConsumer> consumerMock;
-        private Mock<IDependencyResolver> dependencyResolverMock;
-
-        private Mock<ILogHandler> logHandlerMock;
 
         private TopicPartition topicPartition;
 
         private OffsetCommitter offsetCommitter;
 
         [TestInitialize]
-        public void Setup()
+        public async Task Setup()
         {
             this.consumerMock = new Mock<IConsumer>();
-            this.logHandlerMock = new Mock<ILogHandler>();
-            this.dependencyResolverMock = new Mock<IDependencyResolver>();
             this.topicPartition = new TopicPartition("topic-A", new Partition(1));
 
             this.consumerMock
@@ -38,74 +34,83 @@ namespace KafkaFlow.UnitTests
 
             this.offsetCommitter = new OffsetCommitter(
                 this.consumerMock.Object,
-                this.dependencyResolverMock.Object,
-                new List<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>>, TimeSpan)>(),
-                this.logHandlerMock.Object);
+                Mock.Of<IDependencyResolver>(),
+                Mock.Of<ILogHandler>());
+
+            await this.offsetCommitter.StartAsync();
         }
 
         [TestCleanup]
-        public void Cleanup()
+        public async Task Cleanup()
         {
-            this.offsetCommitter.Dispose();
+            await this.offsetCommitter.StopAsync();
         }
 
         [TestMethod]
-        public void MarkAsProcessed_ShouldCommit()
+        public async Task MarkAsProcessed_ShouldCommit()
         {
             // Arrange
-            var offset = new TopicPartitionOffset(this.topicPartition, new Offset(1));
-            var expectedOffsets = new[] { offset };
+            var expectedOffsets = new[] { new TopicPartitionOffset(this.topicPartition, new Offset(2)) };
 
-            var ready = new ManualResetEvent(false);
+            var ready = new TaskCompletionSource().WithTimeout(TestTimeout);
 
             this.consumerMock
-                .Setup(c => c.Commit(It.Is<IEnumerable<TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))))
-                .Callback((IEnumerable<TopicPartitionOffset> _) => { ready.Set(); });
+                .Setup(c => c.Commit(It.Is<IReadOnlyCollection<TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))))
+                .Callback((IEnumerable<TopicPartitionOffset> _) => ready.SetResult());
 
             // Act
-            this.offsetCommitter.MarkAsProcessed(offset);
-            ready.WaitOne(TestTimeout);
+            this.offsetCommitter.MarkAsProcessed(
+                new KafkaFlow.TopicPartitionOffset(
+                    this.topicPartition.Topic,
+                    this.topicPartition.Partition,
+                    1));
+
+            await ready.Task;
 
             // Assert
-            this.consumerMock.Verify(
-                c => c.Commit(It.Is<IEnumerable<TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))),
-                Times.Once);
+            this.consumerMock.VerifyAll();
         }
 
         [TestMethod]
-        public void PendingOffsetsState_ShouldExecuteHandlers()
+        public async Task PendingOffsetsState_ShouldExecuteHandlers()
         {
             // Arrange
-            var ready = new ManualResetEvent(false);
+            var ready = new TaskCompletionSource().WithTimeout(TestTimeout);
 
-            using var committer = new OffsetCommitter(
+            var committer = new OffsetCommitter(
                 this.consumerMock.Object,
-                this.dependencyResolverMock.Object,
-                new List<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
-                {
-                    ((_, _) => ready.Set(), TimeSpan.FromMilliseconds(100)),
-                },
-                this.logHandlerMock.Object);
+                Mock.Of<IDependencyResolver>(),
+                Mock.Of<ILogHandler>());
+
+            committer.PendingOffsetsStatisticsHandlers.Add(new((_, _) => ready.TrySetResult(), TimeSpan.FromMilliseconds(100)));
+
+            await committer.StartAsync();
 
             // Act
-            committer.MarkAsProcessed(new TopicPartitionOffset(this.topicPartition, new Offset(1)));
+            committer.MarkAsProcessed(
+                new KafkaFlow.TopicPartitionOffset(
+                    this.topicPartition.Topic,
+                    this.topicPartition.Partition,
+                    1));
 
             // Assert
-            ready.WaitOne(TestTimeout).Should().BeTrue();
+            await ready.Task;
+
+            // Cleanup
+            await committer.StopAsync();
         }
 
         [TestMethod]
-        public void MarkAsProcessed_WithFailure_ShouldRequeueFailedOffsetAndCommit()
+        public async Task MarkAsProcessed_WithFailure_ShouldRequeueFailedOffsetAndCommit()
         {
             // Arrange
-            var offset = new TopicPartitionOffset(this.topicPartition, new Offset(2));
-            var expectedOffsets = new[] { offset };
+            var expectedOffsets = new[] { new TopicPartitionOffset(this.topicPartition, new Offset(2)) };
 
-            var ready = new ManualResetEvent(false);
+            var ready = new TaskCompletionSource().WithTimeout(TestTimeout);
             var hasThrown = false;
 
             this.consumerMock
-                .Setup(c => c.Commit(It.Is<IEnumerable<TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))))
+                .Setup(c => c.Commit(It.Is<IReadOnlyCollection<TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))))
                 .Callback(
                     (IEnumerable<TopicPartitionOffset> _) =>
                     {
@@ -115,16 +120,21 @@ namespace KafkaFlow.UnitTests
                             throw new InvalidOperationException();
                         }
 
-                        ready.Set();
+                        ready.TrySetResult();
                     });
 
             // Act
-            this.offsetCommitter.MarkAsProcessed(offset);
-            ready.WaitOne(TestTimeout);
+            this.offsetCommitter.MarkAsProcessed(
+                new KafkaFlow.TopicPartitionOffset(
+                    this.topicPartition.Topic,
+                    this.topicPartition.Partition,
+                    1));
+
+            await ready.Task;
 
             // Assert
             this.consumerMock.Verify(
-                c => c.Commit(It.Is<IEnumerable<TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))),
+                c => c.Commit(It.Is<IReadOnlyCollection<TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))),
                 Times.Exactly(2));
         }
     }

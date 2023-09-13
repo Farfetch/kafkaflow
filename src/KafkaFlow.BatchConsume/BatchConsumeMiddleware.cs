@@ -26,7 +26,7 @@
         private Task<Task> dispatchTask;
 
         public BatchConsumeMiddleware(
-            IWorkerLifetimeContext workerContext,
+            IConsumerMiddlewareContext workerContext,
             int batchSize,
             TimeSpan batchTimeout,
             ILogHandler logHandler)
@@ -46,7 +46,7 @@
 
             try
             {
-                context.ConsumerContext.ShouldStoreOffset = false;
+                context.ConsumerContext.AutoMessageCompletion = false;
 
                 this.batch.Add(context);
 
@@ -118,7 +118,10 @@
             }
             catch (OperationCanceledException) when (context.ConsumerContext.WorkerStopped.IsCancellationRequested)
             {
-                return;
+                foreach (var messageContext in localBatch)
+                {
+                    messageContext.ConsumerContext.StoreOffsetOnCompletion = false;
+                }
             }
             catch (Exception ex)
             {
@@ -136,13 +139,13 @@
             {
                 this.batch.Clear();
                 this.dispatchSemaphore.Release();
-            }
 
-            if (this.consumerConfiguration.AutoStoreOffsets)
-            {
-                foreach (var messageContext in localBatch)
+                if (this.consumerConfiguration.AutoMessageCompletion)
                 {
-                    messageContext.ConsumerContext.StoreOffset();
+                    foreach (var messageContext in localBatch)
+                    {
+                        messageContext.ConsumerContext.Complete();
+                    }
                 }
             }
         }

@@ -14,13 +14,6 @@ namespace KafkaFlow
         Singleton,
 
         /// <summary>
-        /// Obsolete. Please use Message instead. Indicates a new middleware instance is instantiated for each message scope.
-        /// This instance will be disposed when the message scope ends.
-        /// </summary>
-        [Obsolete("Use Message lifetime instead")]
-        Scoped,
-
-        /// <summary>
         /// Indicates a new middleware instance is instantiated for each individual message scope, ensuring isolated processing.
         /// This instance will be disposed when the message scope ends.
         /// </summary>

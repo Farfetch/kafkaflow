@@ -63,10 +63,6 @@
             this.Consumer.Dispose();
         }
 
-        public void Dispose()
-        {
-        }
-
         private void StopEvaluateWorkerCountTimer() => this.evaluateWorkersCountTimer?.Change(Timeout.Infinite, Timeout.Infinite);
 
         private void StartEvaluateWorkerCountTimer() => this.evaluateWorkersCountTimer?.Change(
