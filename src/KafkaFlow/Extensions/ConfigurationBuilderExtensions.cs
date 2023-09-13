@@ -3,7 +3,10 @@ namespace KafkaFlow
     using System;
     using System.Collections.Generic;
     using Confluent.Kafka;
+    using KafkaFlow.Clusters;
     using KafkaFlow.Configuration;
+    using KafkaFlow.Consumers;
+    using KafkaFlow.Consumers.WorkersBalancers;
 
     /// <summary>
     /// Provides extension methods over <see cref="IConsumerConfigurationBuilder"/> and <see cref="IProducerConfigurationBuilder"/>
@@ -18,7 +21,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IProducerConfigurationBuilder WithProducerConfig(this IProducerConfigurationBuilder builder, ProducerConfig config)
         {
-            return ((ProducerConfigurationBuilder) builder).WithProducerConfig(config);
+            return ((ProducerConfigurationBuilder)builder).WithProducerConfig(config);
         }
 
         /// <summary>
@@ -40,7 +43,7 @@ namespace KafkaFlow
             CompressionType compressionType,
             int? compressionLevel = -1)
         {
-            return ((ProducerConfigurationBuilder) builder).WithCompression(compressionType, compressionLevel);
+            return ((ProducerConfigurationBuilder)builder).WithCompression(compressionType, compressionLevel);
         }
 
         /// <summary>
@@ -51,7 +54,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IConsumerConfigurationBuilder WithConsumerConfig(this IConsumerConfigurationBuilder builder, ConsumerConfig config)
         {
-            return ((ConsumerConfigurationBuilder) builder).WithConsumerConfig(config);
+            return ((ConsumerConfigurationBuilder)builder).WithConsumerConfig(config);
         }
 
         /// <summary>
@@ -105,7 +108,7 @@ namespace KafkaFlow
             this IConsumerConfigurationBuilder builder,
             ConsumerCustomFactory decoratorFactory)
         {
-            return ((ConsumerConfigurationBuilder) builder).WithCustomFactory(decoratorFactory);
+            return ((ConsumerConfigurationBuilder)builder).WithCustomFactory(decoratorFactory);
         }
 
         /// <summary>
@@ -118,7 +121,58 @@ namespace KafkaFlow
             this IProducerConfigurationBuilder builder,
             ProducerCustomFactory decoratorFactory)
         {
-            return ((ProducerConfigurationBuilder) builder).WithCustomFactory(decoratorFactory);
+            return ((ProducerConfigurationBuilder)builder).WithCustomFactory(decoratorFactory);
+        }
+
+        /// <summary>
+        /// Configures the consumer to use the consumer's lag as a metric for dynamically calculating the number of workers for each application instance.
+        /// </summary>
+        /// <param name="builder">The consumer's configuration builder.</param>
+        /// <param name="totalWorkers">The total number of workers to be distributed across all application instances. The sum of workers across all instances will approximate this number.</param>
+        /// <param name="minInstanceWorkers">The minimum number of workers for each application instance.</param>
+        /// <param name="maxInstanceWorkers">The maximum number of workers for each application instance.</param>
+        /// <param name="evaluationInterval">The interval at which the number of workers will be recalculated based on consumer's lag.</param>
+        /// <returns></returns>
+        public static IConsumerConfigurationBuilder WithConsumerLagWorkerBalancer(
+            this IConsumerConfigurationBuilder builder,
+            int totalWorkers,
+            int minInstanceWorkers,
+            int maxInstanceWorkers,
+            TimeSpan evaluationInterval)
+        {
+            return builder.WithWorkersCount(
+                (context, resolver) =>
+                    new ConsumerLagWorkerBalancer(
+                            resolver.Resolve<IClusterManager>(),
+                            resolver.Resolve<IConsumerAccessor>(),
+                            resolver.Resolve<ILogHandler>(),
+                            totalWorkers,
+                            minInstanceWorkers,
+                            maxInstanceWorkers)
+                        .GetWorkersCountAsync(context),
+                evaluationInterval);
+        }
+
+        /// <summary>
+        /// Configures the consumer to use the consumer's lag as a metric for dynamically calculating the number of workers for each application instance.
+        /// The number of workers will be re-evaluated every 5 minutes.
+        /// </summary>
+        /// <param name="builder">The consumer's configuration builder.</param>
+        /// <param name="totalWorkers">The total number of workers to be distributed across all application instances. The sum of workers across all instances will approximate this number.</param>
+        /// <param name="minInstanceWorkers">The minimum number of workers for each application instance.</param>
+        /// <param name="maxInstanceWorkers">The maximum number of workers for each application instance.</param>
+        /// <returns></returns>
+        public static IConsumerConfigurationBuilder WithConsumerLagWorkerBalancer(
+            this IConsumerConfigurationBuilder builder,
+            int totalWorkers,
+            int minInstanceWorkers,
+            int maxInstanceWorkers)
+        {
+            return builder.WithConsumerLagWorkerBalancer(
+                totalWorkers,
+                minInstanceWorkers,
+                maxInstanceWorkers,
+                TimeSpan.FromMinutes(5));
         }
     }
 }
