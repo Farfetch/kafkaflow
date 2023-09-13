@@ -50,16 +50,16 @@ namespace KafkaFlow
 
                 foreach (var consumerConfiguration in cluster.Consumers)
                 {
-                    var dependencyScope = this.dependencyResolver.CreateScope();
+                    var consumerDependencyScope = this.dependencyResolver.CreateScope();
 
                     var consumerManager =
-                        this.consumerManagerFactory.Create(consumerConfiguration, dependencyScope.Resolver);
+                        this.consumerManagerFactory.Create(consumerConfiguration, consumerDependencyScope.Resolver);
 
                     this.consumerManagers.Add(consumerManager);
                     this.Consumers.Add(
                         new MessageConsumer(
                             consumerManager,
-                            dependencyScope.Resolver.Resolve<ILogHandler>()));
+                            consumerDependencyScope.Resolver.Resolve<ILogHandler>()));
 
                     if (consumerConfiguration.InitialState == ConsumerInitialState.Running)
                     {

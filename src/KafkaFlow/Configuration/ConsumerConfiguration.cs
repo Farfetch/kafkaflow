@@ -22,15 +22,14 @@ namespace KafkaFlow.Configuration
             TimeSpan workerStopTimeout,
             Factory<IDistributionStrategy> distributionStrategyFactory,
             IReadOnlyList<MiddlewareConfiguration> middlewaresConfigurations,
-            bool autoStoreOffsets,
+            bool autoMessageCompletion,
             bool noStoreOffsets,
             ConsumerInitialState initialState,
             TimeSpan autoCommitInterval,
             IReadOnlyList<Action<string>> statisticsHandlers,
             IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> partitionsAssignedHandlers,
             IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionsRevokedHandlers,
-            IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
-                pendingOffsetsHandlers,
+            IReadOnlyList<PendingOffsetsStatisticsHandler> pendingOffsetsStatisticsHandlers,
             ConsumerCustomFactory customFactory)
         {
             this.consumerConfig = consumerConfig ?? throw new ArgumentNullException(nameof(consumerConfig));
@@ -44,7 +43,7 @@ namespace KafkaFlow.Configuration
                 distributionStrategyFactory ?? throw new ArgumentNullException(nameof(distributionStrategyFactory));
             this.MiddlewaresConfigurations =
                 middlewaresConfigurations ?? throw new ArgumentNullException(nameof(middlewaresConfigurations));
-            this.AutoStoreOffsets = autoStoreOffsets;
+            this.AutoMessageCompletion = autoMessageCompletion;
             this.NoStoreOffsets = noStoreOffsets;
             this.InitialState = initialState;
             this.AutoCommitInterval = autoCommitInterval;
@@ -59,7 +58,7 @@ namespace KafkaFlow.Configuration
             this.StatisticsHandlers = statisticsHandlers;
             this.PartitionsAssignedHandlers = partitionsAssignedHandlers;
             this.PartitionsRevokedHandlers = partitionsRevokedHandlers;
-            this.PendingOffsetsHandlers = pendingOffsetsHandlers;
+            this.PendingOffsetsStatisticsHandlers = pendingOffsetsStatisticsHandlers;
             this.CustomFactory = customFactory;
 
             this.BufferSize = bufferSize > 0 ?
@@ -94,7 +93,7 @@ namespace KafkaFlow.Configuration
 
         public TimeSpan WorkerStopTimeout { get; }
 
-        public bool AutoStoreOffsets { get; }
+        public bool AutoMessageCompletion { get; }
 
         public bool NoStoreOffsets { get; }
 
@@ -108,8 +107,7 @@ namespace KafkaFlow.Configuration
 
         public IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
 
-        public IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
-            PendingOffsetsHandlers { get; }
+        public IReadOnlyList<PendingOffsetsStatisticsHandler> PendingOffsetsStatisticsHandlers { get; }
 
         public ConsumerCustomFactory CustomFactory { get; }
 

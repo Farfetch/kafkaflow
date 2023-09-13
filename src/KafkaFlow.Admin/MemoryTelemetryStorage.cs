@@ -52,7 +52,7 @@ namespace KafkaFlow.Admin
                     return;
                 }
 
-                this.lastCleanDate = this.dateTimeProvider.Now;
+                this.lastCleanDate = this.dateTimeProvider.UtcNow;
 
                 this.CleanExpiredItems();
             }
@@ -70,6 +70,6 @@ namespace KafkaFlow.Admin
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool NeedsCleaning() => this.dateTimeProvider.Now - this.lastCleanDate > this.cleanRunInterval;
+        private bool NeedsCleaning() => this.dateTimeProvider.UtcNow - this.lastCleanDate > this.cleanRunInterval;
     }
 }
