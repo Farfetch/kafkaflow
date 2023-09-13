@@ -29,9 +29,9 @@ namespace KafkaFlow.Consumers
 
             lock (offsets)
             {
-                if (offsets.ShouldCommit(context, out var lastProcessedContext))
+                if (offsets.IsCommitAllowed(context))
                 {
-                    this.committer.MarkAsProcessed(lastProcessedContext.TopicPartitionOffset);
+                    this.committer.MarkAsProcessed(offsets.ReadyToCommitContext.TopicPartitionOffset);
                 }
             }
         }

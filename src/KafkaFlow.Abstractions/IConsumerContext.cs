@@ -55,9 +55,9 @@ namespace KafkaFlow
         DateTime MessageTimestamp { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether if the framework should store the current offset in the end when auto store offset is used
+        /// Gets or sets a value indicating whether if the framework should auto complete the message in the end
         /// </summary>
-        bool ShouldStoreOffset { get; set; }
+        bool AutoCompleteMessage { get; set; }
 
         /// <summary>
         /// Gets an instance of IDependencyResolver which provides methods to resolve dependencies.
@@ -74,12 +74,12 @@ namespace KafkaFlow
         IDependencyResolver WorkerDependencyResolver { get; }
 
         /// <summary>
-        /// Stores the message offset to eventually be committed. After this call, the framework considers the
-        /// message processing as finished and releases resources associated with the message.
-        /// By default, this method is automatically called when the message processing ends, unless
-        /// the consumer is set to manual store offsets or the <see cref="ShouldStoreOffset"/> flag is set to false.
+        /// Signals the completion of message processing and stores the message offset to eventually be committed.
+        /// After this call, the framework marks the message processing as finished and releases resources associated with the message.
+        /// By default, this method is automatically invoked when message processing concludes, unless
+        /// the consumer is configured for manual message completion or the <see cref="AutoCompleteMessage"/> flag is set to false.
         /// </summary>
-        void StoreOffset();
+        void Complete();
 
         /// <summary>
         /// Get offset watermark data
@@ -98,7 +98,7 @@ namespace KafkaFlow
         void Resume();
 
         /// <summary>
-        /// Gets a Task that completes when the <see cref="StoreOffset"/> method is invoked,
+        /// Gets a Task that completes when the <see cref="Complete"/> method is invoked,
         /// indicating the end of message processing. This allows async operations
         /// to wait for the message to be fully processed and its offset stored.
         /// </summary>

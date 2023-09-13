@@ -20,7 +20,7 @@ namespace KafkaFlow.UnitTests
             var offsets = new PartitionOffsets();
 
             // Act
-            Func<bool> act = () => offsets.ShouldCommit(1, out _);
+            Func<bool> act = () => offsets.IsCommitAllowed(1, out _);
 
             // Assert
             act.Should().Throw<InvalidOperationException>();
@@ -34,7 +34,7 @@ namespace KafkaFlow.UnitTests
             offsets.Enqueue(1);
 
             // Act
-            var shouldUpdate = offsets.ShouldCommit(1, out var offset);
+            var shouldUpdate = offsets.IsCommitAllowed(1, out var offset);
 
             // Assert
             Assert.IsTrue(shouldUpdate);
@@ -49,7 +49,7 @@ namespace KafkaFlow.UnitTests
             offsets.Enqueue(1);
 
             // Act
-            var shouldUpdate = offsets.ShouldCommit(2, out var offset);
+            var shouldUpdate = offsets.IsCommitAllowed(2, out var offset);
 
             // Assert
             Assert.IsFalse(shouldUpdate);
@@ -76,63 +76,63 @@ namespace KafkaFlow.UnitTests
             {
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldCommit(7, out long offset),
+                    ShouldUpdateResult = offsets.IsCommitAllowed(7, out long offset),
                     ShouldUpdateExpected = false,
                     LastOffsetResult = offset,
                     LastOffsetExpected = -1,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldCommit(1, out offset),
+                    ShouldUpdateResult = offsets.IsCommitAllowed(1, out offset),
                     ShouldUpdateExpected = true,
                     LastOffsetResult = offset,
                     LastOffsetExpected = 1,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldCommit(2, out offset),
+                    ShouldUpdateResult = offsets.IsCommitAllowed(2, out offset),
                     ShouldUpdateExpected = true,
                     LastOffsetResult = offset,
                     LastOffsetExpected = 2,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldCommit(20, out offset),
+                    ShouldUpdateResult = offsets.IsCommitAllowed(20, out offset),
                     ShouldUpdateExpected = false,
                     LastOffsetResult = offset,
                     LastOffsetExpected = -1,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldCommit(5, out offset),
+                    ShouldUpdateResult = offsets.IsCommitAllowed(5, out offset),
                     ShouldUpdateExpected = false,
                     LastOffsetResult = offset,
                     LastOffsetExpected = -1,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldCommit(8, out offset),
+                    ShouldUpdateResult = offsets.IsCommitAllowed(8, out offset),
                     ShouldUpdateExpected = false,
                     LastOffsetResult = offset,
                     LastOffsetExpected = -1,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldCommit(4, out offset),
+                    ShouldUpdateResult = offsets.IsCommitAllowed(4, out offset),
                     ShouldUpdateExpected = true,
                     LastOffsetResult = offset,
                     LastOffsetExpected = 8,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldCommit(15, out offset),
+                    ShouldUpdateResult = offsets.IsCommitAllowed(15, out offset),
                     ShouldUpdateExpected = true,
                     LastOffsetResult = offset,
                     LastOffsetExpected = 20,
                 },
                 new
                 {
-                    ShouldUpdateResult = offsets.ShouldCommit(50, out offset),
+                    ShouldUpdateResult = offsets.IsCommitAllowed(50, out offset),
                     ShouldUpdateExpected = true,
                     LastOffsetResult = offset,
                     LastOffsetExpected = 50,
@@ -174,7 +174,7 @@ namespace KafkaFlow.UnitTests
                         {
                             waitHandle.WaitOne();
 
-                            if (target.ShouldCommit(offset, out var lastProcessedOffset))
+                            if (target.IsCommitAllowed(offset, out var lastProcessedOffset))
                             {
                                 offsetsCommitted.Add(lastProcessedOffset);
                             }

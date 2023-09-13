@@ -101,7 +101,7 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
                 .WithWorkersCount(workers)
                 .WithGroupId(groupId)
                 .WithAutoOffsetReset(offsetReset)
-                .WithManualStoreOffsets()
+                .WithManualMessageCompletion()
                 .WithAutoCommitIntervalMs(autoCommitInterval)
                 .WithMaxPollIntervalMs(maxPollIntervalMs)
                 .WithConsumerConfig(consumerConfig)

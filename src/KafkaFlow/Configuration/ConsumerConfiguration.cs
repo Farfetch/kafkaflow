@@ -22,7 +22,7 @@ namespace KafkaFlow.Configuration
             TimeSpan workerStopTimeout,
             Factory<IDistributionStrategy> distributionStrategyFactory,
             IReadOnlyList<MiddlewareConfiguration> middlewaresConfigurations,
-            bool autoStoreOffsets,
+            bool autoMessageCompletion,
             bool noStoreOffsets,
             ConsumerInitialState initialState,
             TimeSpan autoCommitInterval,
@@ -44,7 +44,7 @@ namespace KafkaFlow.Configuration
                 distributionStrategyFactory ?? throw new ArgumentNullException(nameof(distributionStrategyFactory));
             this.MiddlewaresConfigurations =
                 middlewaresConfigurations ?? throw new ArgumentNullException(nameof(middlewaresConfigurations));
-            this.AutoStoreOffsets = autoStoreOffsets;
+            this.AutoMessageCompletion = autoMessageCompletion;
             this.NoStoreOffsets = noStoreOffsets;
             this.InitialState = initialState;
             this.AutoCommitInterval = autoCommitInterval;
@@ -94,7 +94,7 @@ namespace KafkaFlow.Configuration
 
         public TimeSpan WorkerStopTimeout { get; }
 
-        public bool AutoStoreOffsets { get; }
+        public bool AutoMessageCompletion { get; }
 
         public bool NoStoreOffsets { get; }
 

@@ -32,7 +32,7 @@ namespace KafkaFlow.Configuration
         private TimeSpan workersCountEvaluationInterval = TimeSpan.FromMinutes(5);
         private int bufferSize;
         private TimeSpan workerStopTimeout = TimeSpan.FromSeconds(30);
-        private bool autoStoreOffsets = true;
+        private bool autoMessageCompletion = true;
         private bool noStoreOffsets;
         private ConsumerInitialState initialState = ConsumerInitialState.Running;
         private int statisticsInterval;
@@ -174,15 +174,9 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public IConsumerConfigurationBuilder WithAutoStoreOffsets()
+        public IConsumerConfigurationBuilder WithManualMessageCompletion()
         {
-            this.autoStoreOffsets = true;
-            return this;
-        }
-
-        public IConsumerConfigurationBuilder WithManualStoreOffsets()
-        {
-            this.autoStoreOffsets = false;
+            this.autoMessageCompletion = false;
             return this;
         }
 
@@ -276,7 +270,7 @@ namespace KafkaFlow.Configuration
                 this.workerStopTimeout,
                 this.distributionStrategyFactory,
                 middlewareConfiguration,
-                this.autoStoreOffsets,
+                this.autoMessageCompletion,
                 this.noStoreOffsets,
                 this.initialState,
                 this.autoCommitInterval,

@@ -39,10 +39,10 @@ namespace KafkaFlow.Consumers
             this.workerStoppingSubject = new(logHandler);
             this.workerStoppedSubject = new(logHandler);
 
-            var workerContext = this.workerDependencyResolverScope.Resolver.Resolve<WorkerLifetimeContext>();
+            var middlewareContext = this.workerDependencyResolverScope.Resolver.Resolve<ConsumerMiddlewareContext>();
 
-            workerContext.Worker = this;
-            workerContext.Consumer = consumer;
+            middlewareContext.Worker = this;
+            middlewareContext.Consumer = consumer;
         }
 
         public int Id { get; }
@@ -152,9 +152,9 @@ namespace KafkaFlow.Consumers
                         });
                 }
 
-                if (this.consumer.Configuration.AutoStoreOffsets && context.ConsumerContext.ShouldStoreOffset)
+                if (context.ConsumerContext.AutoCompleteMessage)
                 {
-                    context.ConsumerContext.StoreOffset();
+                    context.ConsumerContext.Complete();
                 }
 
                 this.onMessageFinishedHandler?.Invoke();

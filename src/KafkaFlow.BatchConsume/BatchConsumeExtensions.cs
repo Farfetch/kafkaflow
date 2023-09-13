@@ -24,7 +24,7 @@ namespace KafkaFlow.BatchConsume
         {
             return builder.Add(
                 resolver => new BatchConsumeMiddleware(
-                    resolver.Resolve<IWorkerLifetimeContext>(),
+                    resolver.Resolve<IConsumerMiddlewareContext>(),
                     batchSize,
                     batchTimeout,
                     resolver.Resolve<ILogHandler>()),

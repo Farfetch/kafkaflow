@@ -72,9 +72,9 @@ namespace KafkaFlow.Configuration
         TimeSpan WorkerStopTimeout { get; }
 
         /// <summary>
-        /// Gets a value indicating whether if the application should store store at the end
+        /// Gets a value indicating whether if the application should manual complete the message at the end
         /// </summary>
-        bool AutoStoreOffsets { get; }
+        bool AutoMessageCompletion { get; }
 
         /// <summary>
         /// Gets a value indicating that no offsets will be stored on Kafka

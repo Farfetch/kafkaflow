@@ -38,8 +38,6 @@ namespace KafkaFlow.Consumers
             this.logHandler = logHandler;
         }
 
-        public void FlushOffsets() => this.CommitHandler();
-
         public void MarkAsProcessed(TopicPartitionOffset tpo)
         {
             this.offsetsToCommit.AddOrUpdate(

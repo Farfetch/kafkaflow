@@ -26,7 +26,7 @@
         private Task<Task> dispatchTask;
 
         public BatchConsumeMiddleware(
-            IWorkerLifetimeContext workerContext,
+            IConsumerMiddlewareContext workerContext,
             int batchSize,
             TimeSpan batchTimeout,
             ILogHandler logHandler)
@@ -46,7 +46,7 @@
 
             try
             {
-                context.ConsumerContext.ShouldStoreOffset = false;
+                context.ConsumerContext.AutoCompleteMessage = false;
 
                 this.batch.Add(context);
 
@@ -138,11 +138,11 @@
                 this.dispatchSemaphore.Release();
             }
 
-            if (this.consumerConfiguration.AutoStoreOffsets)
+            if (this.consumerConfiguration.AutoMessageCompletion)
             {
                 foreach (var messageContext in localBatch)
                 {
-                    messageContext.ConsumerContext.StoreOffset();
+                    messageContext.ConsumerContext.Complete();
                 }
             }
         }
