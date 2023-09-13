@@ -30,9 +30,7 @@ namespace KafkaFlow.BatchConsume
         public IDictionary<string, object> Items { get; }
 
         public IMessageContext SetMessage(object key, object value) =>
-            throw new NotSupportedException($"{nameof(BatchConsumeMessageContext)} does not allow change the message");
-
-        public IMessageContext TransformMessage(object message) => throw new NotImplementedException();
+            throw new NotSupportedException($"{nameof(BatchConsumeMessageContext)} does not allow to change the message");
 
         public void Dispose() => this.batchDependencyScope.Dispose();
     }

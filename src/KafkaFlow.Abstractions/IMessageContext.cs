@@ -1,6 +1,5 @@
 namespace KafkaFlow
 {
-    using System;
     using System.Collections.Generic;
 
     /// <summary>
@@ -40,7 +39,6 @@ namespace KafkaFlow
         /// </summary>
         IDependencyResolver DependencyResolver { get; }
 
-
         /// <summary>
         /// Creates a new <see cref="IMessageContext"/> with the new message
         /// </summary>
@@ -48,13 +46,5 @@ namespace KafkaFlow
         /// <param name="value">The new message value</param>
         /// <returns>A new message context containing the new values</returns>
         IMessageContext SetMessage(object key, object value);
-
-        /// <summary>
-        /// Deprecated
-        /// </summary>
-        /// <param name="message">key</param>
-        /// <returns></returns>
-        [Obsolete("This method should no longer be used, use the " + nameof(SetMessage) + "() instead.", true)]
-        IMessageContext TransformMessage(object message);
     }
 }

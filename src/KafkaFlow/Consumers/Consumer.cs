@@ -54,6 +54,11 @@ namespace KafkaFlow.Consumers
                 this.OnPartitionsRevoked((resolver, _, topicPartitions) => handler(resolver, topicPartitions));
             }
 
+            var middlewareContext = this.dependencyResolver.Resolve<ConsumerMiddlewareContext>();
+
+            middlewareContext.Worker = null;
+            middlewareContext.Consumer = this;
+
             this.RegisterLogErrorHandler();
         }
 
