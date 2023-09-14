@@ -56,12 +56,12 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             // Assert
             configuration.Topics.Should().BeEquivalentTo(topic1);
             configuration.BufferSize.Should().Be(bufferSize);
-            configuration.WorkersCountCalculator(null).Result.Should().Be(workers);
+            configuration.WorkersCountCalculator(null, null).Result.Should().Be(workers);
             configuration.GroupId.Should().Be(groupId);
             configuration.GetKafkaConfig().AutoOffsetReset.Should().BeNull();
             configuration.GetKafkaConfig().EnableAutoOffsetStore.Should().Be(false);
             configuration.GetKafkaConfig().EnableAutoCommit.Should().Be(false);
-            configuration.AutoStoreOffsets.Should().Be(true);
+            configuration.AutoMessageCompletion.Should().Be(true);
             configuration.AutoCommitInterval.Should().Be(TimeSpan.FromSeconds(5));
             configuration.StatisticsHandlers.Should().BeEmpty();
             configuration.PartitionsAssignedHandlers.Should().BeEmpty();
@@ -119,10 +119,10 @@ namespace KafkaFlow.UnitTests.ConfigurationBuilders
             configuration.Topics.Should().BeEquivalentTo(topic1, topic2);
             configuration.ConsumerName.Should().Be(name);
             configuration.BufferSize.Should().Be(bufferSize);
-            configuration.WorkersCountCalculator(null).Result.Should().Be(workers);
+            configuration.WorkersCountCalculator(null, null).Result.Should().Be(workers);
             configuration.GroupId.Should().Be(groupId);
             configuration.GetKafkaConfig().AutoOffsetReset.Should().Be(offsetReset);
-            configuration.AutoStoreOffsets.Should().Be(false);
+            configuration.AutoMessageCompletion.Should().Be(false);
             configuration.GetKafkaConfig().EnableAutoOffsetStore.Should().Be(false);
             configuration.GetKafkaConfig().EnableAutoCommit.Should().Be(false);
             configuration.AutoCommitInterval.Should().Be(TimeSpan.FromMilliseconds(autoCommitInterval));

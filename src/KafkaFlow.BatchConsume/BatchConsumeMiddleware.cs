@@ -46,7 +46,7 @@
 
             try
             {
-                context.ConsumerContext.AutoCompleteMessage = false;
+                context.ConsumerContext.AutoMessageCompletion = false;
 
                 this.batch.Add(context);
 

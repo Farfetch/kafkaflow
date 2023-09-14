@@ -14,8 +14,7 @@ namespace KafkaFlow.Configuration
         private readonly List<TopicPartitions> topicsPartitions = new();
         private readonly List<Action<string>> statisticsHandlers = new();
 
-        private readonly List<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>>, TimeSpan interval)>
-            pendingOffsetsStatisticsHandlers = new();
+        private readonly List<PendingOffsetsStatisticsHandler> pendingOffsetsStatisticsHandlers = new();
 
         private readonly List<Action<IDependencyResolver, List<TopicPartition>>> partitionAssignedHandlers = new();
         private readonly List<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionRevokedHandlers = new();
@@ -228,7 +227,7 @@ namespace KafkaFlow.Configuration
             Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> pendingOffsetsHandler,
             TimeSpan interval)
         {
-            this.pendingOffsetsStatisticsHandlers.Add((pendingOffsetsHandler, interval));
+            this.pendingOffsetsStatisticsHandlers.Add(new(pendingOffsetsHandler, interval));
             return this;
         }
 

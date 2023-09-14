@@ -57,7 +57,7 @@ namespace KafkaFlow
         /// <summary>
         /// Gets or sets a value indicating whether if the framework should auto complete the message in the end
         /// </summary>
-        bool AutoCompleteMessage { get; set; }
+        bool AutoMessageCompletion { get; set; }
 
         /// <summary>
         /// Gets an instance of IDependencyResolver which provides methods to resolve dependencies.
@@ -74,10 +74,17 @@ namespace KafkaFlow
         IDependencyResolver WorkerDependencyResolver { get; }
 
         /// <summary>
+        /// Gets a Task that completes when the <see cref="Complete"/> method is invoked,
+        /// indicating the end of message processing. This allows async operations
+        /// to wait for the message to be fully processed and its offset stored.
+        /// </summary>
+        Task<TopicPartitionOffset> Completion { get; }
+
+        /// <summary>
         /// Signals the completion of message processing and stores the message offset to eventually be committed.
         /// After this call, the framework marks the message processing as finished and releases resources associated with the message.
         /// By default, this method is automatically invoked when message processing concludes, unless
-        /// the consumer is configured for manual message completion or the <see cref="AutoCompleteMessage"/> flag is set to false.
+        /// the consumer is configured for manual message completion or the <see cref="AutoMessageCompletion"/> flag is set to false.
         /// </summary>
         void Complete();
 
@@ -96,12 +103,5 @@ namespace KafkaFlow
         /// Resume Kafka's message fetch
         /// </summary>
         void Resume();
-
-        /// <summary>
-        /// Gets a Task that completes when the <see cref="Complete"/> method is invoked,
-        /// indicating the end of message processing. This allows async operations
-        /// to wait for the message to be fully processed and its offset stored.
-        /// </summary>
-        Task<TopicPartitionOffset> Completion { get; }
     }
 }

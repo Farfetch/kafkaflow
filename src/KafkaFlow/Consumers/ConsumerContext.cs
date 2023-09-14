@@ -27,7 +27,7 @@ namespace KafkaFlow.Consumers
             this.offsetManager = offsetManager;
             this.worker = worker;
             this.messageDependencyScope = messageDependencyScope;
-            this.AutoCompleteMessage = this.consumer.Configuration.AutoMessageCompletion;
+            this.AutoMessageCompletion = this.consumer.Configuration.AutoMessageCompletion;
             this.TopicPartitionOffset = new TopicPartitionOffset(
                 kafkaResult.Topic,
                 kafkaResult.Partition.Value,
@@ -55,7 +55,7 @@ namespace KafkaFlow.Consumers
 
         public string GroupId => this.consumer.Configuration.GroupId;
 
-        public bool AutoCompleteMessage { get; set; }
+        public bool AutoMessageCompletion { get; set; }
 
         public DateTime MessageTimestamp { get; }
 

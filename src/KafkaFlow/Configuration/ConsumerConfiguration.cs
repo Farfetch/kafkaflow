@@ -29,8 +29,7 @@ namespace KafkaFlow.Configuration
             IReadOnlyList<Action<string>> statisticsHandlers,
             IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> partitionsAssignedHandlers,
             IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionsRevokedHandlers,
-            IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
-                pendingOffsetsHandlers,
+            IReadOnlyList<PendingOffsetsStatisticsHandler> pendingOffsetsStatisticsHandlers,
             ConsumerCustomFactory customFactory)
         {
             this.consumerConfig = consumerConfig ?? throw new ArgumentNullException(nameof(consumerConfig));
@@ -59,7 +58,7 @@ namespace KafkaFlow.Configuration
             this.StatisticsHandlers = statisticsHandlers;
             this.PartitionsAssignedHandlers = partitionsAssignedHandlers;
             this.PartitionsRevokedHandlers = partitionsRevokedHandlers;
-            this.PendingOffsetsHandlers = pendingOffsetsHandlers;
+            this.PendingOffsetsStatisticsHandlers = pendingOffsetsStatisticsHandlers;
             this.CustomFactory = customFactory;
 
             this.BufferSize = bufferSize > 0 ?
@@ -108,8 +107,7 @@ namespace KafkaFlow.Configuration
 
         public IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
 
-        public IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
-            PendingOffsetsHandlers { get; }
+        public IReadOnlyList<PendingOffsetsStatisticsHandler> PendingOffsetsStatisticsHandlers { get; }
 
         public ConsumerCustomFactory CustomFactory { get; }
 

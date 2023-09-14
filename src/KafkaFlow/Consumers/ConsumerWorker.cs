@@ -152,7 +152,7 @@ namespace KafkaFlow.Consumers
                         });
                 }
 
-                if (context.ConsumerContext.AutoCompleteMessage)
+                if (context.ConsumerContext.AutoMessageCompletion)
                 {
                     context.ConsumerContext.Complete();
                 }

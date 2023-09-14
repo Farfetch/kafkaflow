@@ -45,8 +45,9 @@ namespace KafkaFlow.Consumers
                 new OffsetCommitter(
                     consumer,
                     consumerDependencyResolver,
-                    consumer.Configuration.PendingOffsetsHandlers,
                     logHandler);
+
+            this.offsetCommitter.PendingOffsetsStatisticsHandlers.AddRange(consumer.Configuration.PendingOffsetsStatisticsHandlers);
         }
 
         public int CurrentWorkersCount { get; private set; }

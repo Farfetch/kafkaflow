@@ -104,10 +104,7 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Gets the handlers that will be called when there are pending offsets
         /// </summary>
-        IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)> PendingOffsetsHandlers
-        {
-            get;
-        }
+        IReadOnlyList<PendingOffsetsStatisticsHandler> PendingOffsetsStatisticsHandlers { get; }
 
         /// <summary>
         /// Gets the custom factory used to create a new <see cref="KafkaFlow.Consumers.IConsumer"/>

@@ -10,7 +10,7 @@ namespace KafkaFlow.Consumers
         private readonly SortedDictionary<long, IConsumerContext> processedContexts = new();
         private readonly LinkedList<IConsumerContext> receivedContexts = new();
 
-        public IConsumerContext ReadyToCommitContext { get; private set; }
+        public IConsumerContext DequeuedContext { get; private set; }
 
         public void Enqueue(IConsumerContext context)
         {
@@ -20,9 +20,9 @@ namespace KafkaFlow.Consumers
             }
         }
 
-        public bool IsCommitAllowed(IConsumerContext context)
+        public bool TryDequeue(IConsumerContext context)
         {
-            this.ReadyToCommitContext = null;
+            this.DequeuedContext = null;
 
             lock (this.receivedContexts)
             {
@@ -40,7 +40,7 @@ namespace KafkaFlow.Consumers
 
                 do
                 {
-                    this.ReadyToCommitContext = this.receivedContexts.First.Value;
+                    this.DequeuedContext = this.receivedContexts.First.Value;
                     this.receivedContexts.RemoveFirst();
                 } while (this.receivedContexts.Count > 0 && this.processedContexts.Remove(this.receivedContexts.First.Value.Offset));
             }

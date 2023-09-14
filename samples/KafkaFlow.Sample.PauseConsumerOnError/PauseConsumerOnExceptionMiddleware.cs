@@ -21,7 +21,7 @@ public class PauseConsumerOnExceptionMiddleware : IMessageMiddleware
         }
         catch (Exception exception)
         {
-            context.ConsumerContext.AutoCompleteMessage = false;
+            context.ConsumerContext.AutoMessageCompletion = false;
             this.logHandler.Error("Error handling message", exception,
                 new
                 {
