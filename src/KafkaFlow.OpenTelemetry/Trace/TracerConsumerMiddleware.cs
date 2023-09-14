@@ -11,11 +11,11 @@
     internal class TracerConsumerMiddleware : IMessageMiddleware
     {
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
-        private static readonly string ReceiveString = "receive";
+        private static readonly string ProcessString = "process";
 
         public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
-            var activityName = !string.IsNullOrEmpty(context?.ConsumerContext.Topic) ? $"{context.ConsumerContext.Topic} {ReceiveString}" : ReceiveString;
+            var activityName = !string.IsNullOrEmpty(context?.ConsumerContext.Topic) ? $"{context.ConsumerContext.Topic} {ProcessString}" : ProcessString;
 
             // Extract the PropagationContext of the upstream parent from the message headers.
             var parentContext = Propagator.Extract(new PropagationContext(default, Baggage.Current), context, this.ExtractTraceContextIntoBasicProperties);
@@ -59,7 +59,7 @@
 
         private void SetConsumerTags(IMessageContext context, Activity activity)
         {
-            activity.SetTag("messaging.operation", ReceiveString);
+            activity.SetTag("messaging.operation", ProcessString);
             activity.SetTag("messaging.source.name", context.ConsumerContext.Topic);
             activity.SetTag("messaging.kafka.consumer.group", context.ConsumerContext.GroupId);
             activity.SetTag("messaging.kafka.message.key", context.Message.Key);
