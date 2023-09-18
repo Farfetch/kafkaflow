@@ -24,7 +24,6 @@
         <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro\KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.ConfluentJson\KafkaFlow.Serializer.SchemaRegistry.ConfluentJson.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf.csproj" />
-        <ProjectReference Include="..\..\src\KafkaFlow.Serializer\KafkaFlow.Serializer.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow.TypedHandler\KafkaFlow.TypedHandler.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow\KafkaFlow.csproj" />
     </ItemGroup>

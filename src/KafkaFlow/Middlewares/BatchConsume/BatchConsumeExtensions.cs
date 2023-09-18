@@ -1,4 +1,4 @@
-namespace KafkaFlow.BatchConsume
+namespace KafkaFlow.Middlewares.BatchConsume
 {
     using System;
     using System.Collections.Generic;

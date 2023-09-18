@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using KafkaFlow.BatchConsume;
+using KafkaFlow.Middlewares.BatchConsume;
 
 namespace KafkaFlow.Sample.BatchOperations;
 

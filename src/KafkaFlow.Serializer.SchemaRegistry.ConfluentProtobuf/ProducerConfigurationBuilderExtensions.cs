@@ -1,4 +1,6 @@
-﻿namespace KafkaFlow
+﻿using KafkaFlow.Serializer;
+
+namespace KafkaFlow
 {
     using Confluent.SchemaRegistry;
     using Confluent.SchemaRegistry.Serdes;

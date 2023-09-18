@@ -9,6 +9,7 @@
     <ItemGroup>
         <PackageReference Include="Confluent.Kafka" Version="2.1.1" />
         <PackageReference Include="System.Threading.Channels" Version="6.0.0" />
+        <PackageReference Include="System.Memory" Version="4.5.5" />
     </ItemGroup>
 
     <ItemGroup>
@@ -19,5 +20,11 @@
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
             <_Parameter1>$(AssemblyName).UnitTests</_Parameter1>
         </AssemblyAttribute>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.IO.RecyclableMemoryStream">
+        <HintPath>..\..\..\..\.nuget\packages\microsoft.io.recyclablememorystream\2.1.3\lib\netstandard2.0\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
+      </Reference>
     </ItemGroup>
 </Project>

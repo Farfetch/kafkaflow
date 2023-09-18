@@ -1,6 +1,7 @@
 ﻿namespace KafkaFlow
 {
     using KafkaFlow.Configuration;
+    using KafkaFlow.Serializer;
     using KafkaFlow.Serializer.SchemaRegistry;
 
     /// <summary>

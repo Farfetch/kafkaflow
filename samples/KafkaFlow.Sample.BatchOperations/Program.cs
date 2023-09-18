@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using KafkaFlow;
-using KafkaFlow.BatchConsume;
+using KafkaFlow.Middlewares.BatchConsume;
 using KafkaFlow.Producers;
 using KafkaFlow.Sample.BatchOperations;
 using KafkaFlow.Serializer;

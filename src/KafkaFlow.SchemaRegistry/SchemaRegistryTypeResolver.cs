@@ -1,3 +1,5 @@
+using KafkaFlow.Serializer;
+
 namespace KafkaFlow
 {
     using System;

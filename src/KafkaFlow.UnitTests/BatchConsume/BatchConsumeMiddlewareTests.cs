@@ -3,7 +3,7 @@ namespace KafkaFlow.UnitTests.BatchConsume
     using System;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using KafkaFlow.BatchConsume;
+    using KafkaFlow.Middlewares.BatchConsume;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
 

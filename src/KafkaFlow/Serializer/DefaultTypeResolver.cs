@@ -1,7 +1,7 @@
-namespace KafkaFlow
-{
-    using System;
+using System;
 
+namespace KafkaFlow.Serializer
+{
     internal class DefaultTypeResolver : IMessageTypeResolver
     {
         private const string MessageType = "Message-Type";

@@ -1,7 +1,8 @@
-﻿namespace KafkaFlow
+﻿using Microsoft.IO;
+
+namespace KafkaFlow.Serializer
 {
     using System.Threading.Tasks;
-    using Microsoft.IO;
 
     /// <summary>
     /// Middleware to serialize messages when producing

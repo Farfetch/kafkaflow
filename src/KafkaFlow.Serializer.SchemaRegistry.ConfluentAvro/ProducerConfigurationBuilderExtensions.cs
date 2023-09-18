@@ -3,6 +3,7 @@
     using Confluent.SchemaRegistry;
     using Confluent.SchemaRegistry.Serdes;
     using KafkaFlow.Configuration;
+    using KafkaFlow.Serializer;
     using KafkaFlow.Serializer.SchemaRegistry;
 
     /// <summary>

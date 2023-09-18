@@ -1,3 +1,5 @@
+using KafkaFlow.Serializer;
+
 namespace KafkaFlow.UnitTests.Serializers
 {
     using System.IO;
