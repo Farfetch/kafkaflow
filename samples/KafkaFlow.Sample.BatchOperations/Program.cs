@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using KafkaFlow;
-using KafkaFlow.BatchConsume;
 using KafkaFlow.Producers;
 using KafkaFlow.Sample.BatchOperations;
 using KafkaFlow.Serializer;
@@ -35,8 +34,8 @@ services.AddKafka(
                         .WithWorkersCount(1)
                         .AddMiddlewares(
                             middlewares => middlewares
-                                .AddSerializer<JsonCoreSerializer>()
-                                .BatchConsume(10, TimeSpan.FromSeconds(10))
+                                .AddDeserializer<JsonCoreDeserializer>()
+                                .AddBatching(10, TimeSpan.FromSeconds(10))
                                 .Add<PrintConsoleMiddleware>()
                         )
                 )

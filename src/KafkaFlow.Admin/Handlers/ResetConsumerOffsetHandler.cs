@@ -7,7 +7,7 @@ namespace KafkaFlow.Admin.Handlers
     using KafkaFlow.Admin.Extensions;
     using KafkaFlow.Admin.Messages;
     using KafkaFlow.Consumers;
-    using KafkaFlow.TypedHandler;
+    using KafkaFlow.Middlewares.TypedHandler;
 
     internal class ResetConsumerOffsetHandler : IMessageHandler<ResetConsumerOffset>
     {

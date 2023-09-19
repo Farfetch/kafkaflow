@@ -1,6 +1,5 @@
 ﻿namespace KafkaFlow.Serializer
 {
-    using System;
     using System.IO;
     using System.Text;
     using System.Threading.Tasks;
@@ -42,21 +41,6 @@
             serializer.Serialize(sw, message);
 
             return Task.CompletedTask;
-        }
-
-        /// <inheritdoc/>
-        public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
-        {
-            using var sr = new StreamReader(
-                input,
-                UTF8NoBom,
-                true,
-                DefaultBufferSize,
-                true);
-
-            var serializer = JsonSerializer.CreateDefault(this.settings);
-
-            return Task.FromResult(serializer.Deserialize(sr, type));
         }
     }
 }

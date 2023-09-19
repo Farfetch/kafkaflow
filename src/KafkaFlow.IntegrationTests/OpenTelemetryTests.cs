@@ -180,7 +180,7 @@
                                             .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                             .AddMiddlewares(
                                                 middlewares => middlewares
-                                                    .AddCompressor<GzipMessageCompressor>()
+                                                    .AddDecompressor<GzipMessageDecompressor>()
                                                     .Add<GzipMiddleware>())
                                             .WithPartitionsAssignedHandler((_, _) =>
                                             {
