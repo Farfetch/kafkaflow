@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using KafkaFlow;
+using KafkaFlow.Configuration;
 using KafkaFlow.Producers;
 using KafkaFlow.Sample;
 using KafkaFlow.Serializer;
@@ -37,6 +38,7 @@ services.AddKafka(
                                 .AddTypedHandlers(h => h.AddHandler<PrintConsoleHandler>())
                         )
                 )
+                .AddOpenTelemetryInstrumentation()
         )
 );
 

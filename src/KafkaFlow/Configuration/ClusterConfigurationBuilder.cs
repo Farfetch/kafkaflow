@@ -15,6 +15,8 @@ namespace KafkaFlow.Configuration
         private IEnumerable<string> brokers;
         private string name;
         private Func<SecurityInformation> securityInformationHandler;
+        private Type instrumentationConsumerMiddleware = typeof(IMessageMiddleware);
+        private Type instrumentationProducerMiddleware = typeof(IMessageMiddleware);
 
         public ClusterConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
@@ -35,7 +37,15 @@ namespace KafkaFlow.Configuration
                 this.topicsToCreateIfNotExist);
 
             configuration.AddProducers(this.producers.Select(x => x.Build(configuration)));
-            configuration.AddConsumers(this.consumers.Select(x => x.Build(configuration)));
+            configuration.AddConsumers(this.consumers.Select(x =>
+            {
+                if(this.instrumentationConsumerMiddleware != null)
+                {
+                    x.AddInstrumentation<this.instrumentationConsumerMiddleware>();
+                }
+
+                return x.Build(configuration);
+            }));
 
             return configuration;
         }
@@ -92,6 +102,16 @@ namespace KafkaFlow.Configuration
             consumer(builder);
 
             this.consumers.Add(builder);
+
+            return this;
+        }
+
+        public IClusterConfigurationBuilder AddInstrumentation<TConsumerInstrumentationMiddleware, TProducerInstrumentationMiddleware>()
+            where TConsumerInstrumentationMiddleware : class, IMessageMiddleware
+            where TProducerInstrumentationMiddleware : class, IMessageMiddleware
+        {
+
+            this.instrumentationConsumerMiddleware = typeof(TConsumerInstrumentationMiddleware);
 
             return this;
         }
