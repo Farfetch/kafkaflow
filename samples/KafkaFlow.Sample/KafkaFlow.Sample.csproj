@@ -22,6 +22,7 @@
       <ProjectReference Include="..\..\src\KafkaFlow.Compressor\KafkaFlow.Compressor.csproj" />
       <ProjectReference Include="..\..\src\KafkaFlow.LogHandler.Console\KafkaFlow.LogHandler.Console.csproj" />
       <ProjectReference Include="..\..\src\KafkaFlow.Microsoft.DependencyInjection\KafkaFlow.Microsoft.DependencyInjection.csproj" />
+      <ProjectReference Include="..\..\src\KafkaFlow.OpenTelemetry\KafkaFlow.OpenTelemetry.csproj" />
       <ProjectReference Include="..\..\src\KafkaFlow.Serializer.JsonCore\KafkaFlow.Serializer.JsonCore.csproj" />
       <ProjectReference Include="..\..\src\KafkaFlow.Serializer.ProtobufNet\KafkaFlow.Serializer.ProtobufNet.csproj" />
       <ProjectReference Include="..\..\src\KafkaFlow.Serializer\KafkaFlow.Serializer.csproj" />

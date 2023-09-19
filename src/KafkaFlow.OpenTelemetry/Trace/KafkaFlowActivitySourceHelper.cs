@@ -8,7 +8,7 @@ namespace KafkaFlow.OpenTelemetry.Trace
     using System.Reflection;
     using Conventions = SemanticConventions::OpenTelemetry.Trace.TraceSemanticConventions;
 
-    internal class KafkaFlowActivitySourceHelper
+    internal static class KafkaFlowActivitySourceHelper
     {
         public static readonly ActivitySource ActivitySource = new ActivitySource(KafkaFlowString, Version.ToString());
 

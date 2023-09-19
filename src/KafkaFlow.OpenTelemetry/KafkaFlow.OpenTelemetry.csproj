@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="OpenTelemetry.Api" Version="1.6.0" />
-    <PackageReference Include="OpenTelemetry.Extensions.Propagators" Version="1.6.0"/>
+    <PackageReference Include="OpenTelemetry.Extensions.Propagators" Version="1.6.0" />
     <PackageReference Include="OpenTelemetry.SemanticConventions" Version="1.0.0-rc9.9">
       <Aliases>SemanticConventions</Aliases>
     </PackageReference>
