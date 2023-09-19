@@ -2,6 +2,7 @@
 {
     using Confluent.SchemaRegistry;
     using KafkaFlow.Configuration;
+    using KafkaFlow.Middlewares.Serializer;
     using KafkaFlow.Serializer.SchemaRegistry;
 
     /// <summary>
@@ -14,12 +15,12 @@
         /// </summary>
         /// <param name="middlewares">The middleware configuration builder</param>
         /// <returns></returns>
-        public static IConsumerMiddlewareConfigurationBuilder AddSchemaRegistryAvroSerializer(
+        public static IConsumerMiddlewareConfigurationBuilder AddSchemaRegistryAvroDeserializer(
             this IConsumerMiddlewareConfigurationBuilder middlewares)
         {
             return middlewares.Add(
-                resolver => new SerializerConsumerMiddleware(
-                    new ConfluentAvroSerializer(resolver),
+                resolver => new DeserializerConsumerMiddleware(
+                    new ConfluentAvroDeserializer(resolver),
                     new SchemaRegistryTypeResolver(new ConfluentAvroTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>()))));
         }
     }

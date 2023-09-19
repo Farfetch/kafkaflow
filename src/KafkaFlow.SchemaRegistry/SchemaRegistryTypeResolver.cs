@@ -6,6 +6,7 @@ namespace KafkaFlow
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using KafkaFlow.Middlewares.Serializer.Resolvers;
 
     /// <summary>
     ///  The message type resolver to be used with schema registry serializers

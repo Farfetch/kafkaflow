@@ -5,7 +5,6 @@ using Confluent.SchemaRegistry.Serdes;
 using KafkaFlow;
 using KafkaFlow.Producers;
 using KafkaFlow.Sample.SchemaRegistry.Handlers;
-using KafkaFlow.TypedHandler;
 using Microsoft.Extensions.DependencyInjection;
 using SchemaRegistry;
 
@@ -74,7 +73,7 @@ services.AddKafka(
                         .WithAutoOffsetReset(AutoOffsetReset.Latest)
                         .AddMiddlewares(
                             middlewares => middlewares
-                                .AddSchemaRegistryAvroSerializer()
+                                .AddSchemaRegistryAvroDeserializer()
                                 .AddTypedHandlers(
                                     handlers => handlers
                                         .AddHandler<AvroMessageHandler>()
@@ -103,7 +102,7 @@ services.AddKafka(
                         .WithAutoOffsetReset(AutoOffsetReset.Latest)
                         .AddMiddlewares(
                             middlewares => middlewares
-                                .AddSchemaRegistryProtobufSerializer()
+                                .AddSchemaRegistryProtobufDeserializer()
                                 .AddTypedHandlers(handlers => handlers.AddHandler<ProtobufMessageHandler>())
                         )
                 )

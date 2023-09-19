@@ -3,7 +3,7 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers
     using System;
     using System.Threading.Tasks;
     using KafkaFlow.IntegrationTests.Core.Messages;
-    using KafkaFlow.TypedHandler;
+    using KafkaFlow.Middlewares.TypedHandler;
 
     internal class MessageHandler2 : IMessageHandler<TestMessage2>
     {

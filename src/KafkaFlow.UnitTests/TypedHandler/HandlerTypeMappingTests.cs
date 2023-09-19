@@ -1,7 +1,7 @@
 namespace KafkaFlow.UnitTests.TypedHandler
 {
     using FluentAssertions;
-    using KafkaFlow.TypedHandler;
+    using KafkaFlow.Middlewares.TypedHandler;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

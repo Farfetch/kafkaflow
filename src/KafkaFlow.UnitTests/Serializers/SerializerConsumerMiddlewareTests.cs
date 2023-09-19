@@ -4,6 +4,8 @@ namespace KafkaFlow.UnitTests.Serializers
     using System.IO;
     using System.Threading.Tasks;
     using FluentAssertions;
+    using KafkaFlow.Middlewares.Serializer;
+    using KafkaFlow.Middlewares.Serializer.Resolvers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
 
@@ -11,22 +13,22 @@ namespace KafkaFlow.UnitTests.Serializers
     public class SerializerConsumerMiddlewareTests
     {
         private Mock<IMessageContext> contextMock;
-        private Mock<ISerializer> serializerMock;
+        private Mock<IDeserializer> deserializerMock;
         private Mock<IMessageTypeResolver> typeResolverMock;
 
         private bool nextCalled;
 
-        private SerializerConsumerMiddleware target;
+        private DeserializerConsumerMiddleware target;
 
         [TestInitialize]
         public void Setup()
         {
             this.contextMock = new Mock<IMessageContext>();
-            this.serializerMock = new Mock<ISerializer>();
+            this.deserializerMock = new Mock<IDeserializer>();
             this.typeResolverMock = new Mock<IMessageTypeResolver>();
 
-            this.target = new SerializerConsumerMiddleware(
-                this.serializerMock.Object,
+            this.target = new DeserializerConsumerMiddleware(
+                this.deserializerMock.Object,
                 this.typeResolverMock.Object);
         }
 
@@ -49,7 +51,7 @@ namespace KafkaFlow.UnitTests.Serializers
             this.nextCalled.Should().BeFalse();
             this.typeResolverMock.VerifyAll();
             this.contextMock.Verify(x => x.SetMessage(It.IsAny<object>(), It.IsAny<object>()), Times.Never);
-            this.serializerMock.Verify(
+            this.deserializerMock.Verify(
                 x => x.DeserializeAsync(It.IsAny<Stream>(), It.IsAny<Type>(), It.IsAny<ISerializerContext>()),
                 Times.Never);
         }
@@ -67,7 +69,7 @@ namespace KafkaFlow.UnitTests.Serializers
 
             // Assert
             this.nextCalled.Should().BeTrue();
-            this.serializerMock.Verify(
+            this.deserializerMock.Verify(
                 x => x.DeserializeAsync(It.IsAny<Stream>(), It.IsAny<Type>(), It.IsAny<ISerializerContext>()),
                 Times.Never);
             this.typeResolverMock.Verify(x => x.OnConsumeAsync(It.IsAny<IMessageContext>()), Times.Never);
@@ -88,7 +90,7 @@ namespace KafkaFlow.UnitTests.Serializers
             act.Should().Throw<InvalidOperationException>();
             this.nextCalled.Should().BeFalse();
             this.contextMock.Verify(x => x.SetMessage(It.IsAny<object>(), It.IsAny<object>()), Times.Never);
-            this.serializerMock.Verify(
+            this.deserializerMock.Verify(
                 x => x.DeserializeAsync(It.IsAny<Stream>(), It.IsAny<Type>(), It.IsAny<ISerializerContext>()),
                 Times.Never);
             this.typeResolverMock.Verify(x => x.OnConsumeAsync(It.IsAny<IMessageContext>()), Times.Never);
@@ -122,7 +124,7 @@ namespace KafkaFlow.UnitTests.Serializers
                 .Setup(x => x.OnConsumeAsync(this.contextMock.Object))
                 .ReturnsAsync(messageType);
 
-            this.serializerMock
+            this.deserializerMock
                 .Setup(x => x.DeserializeAsync(It.IsAny<Stream>(), messageType, It.IsAny<ISerializerContext>()))
                 .ReturnsAsync(deserializedMessage);
 
@@ -143,7 +145,7 @@ namespace KafkaFlow.UnitTests.Serializers
             resultContext.Should().NotBeNull();
             resultContext.Should().Be(transformedContextMock.Object);
             this.contextMock.VerifyAll();
-            this.serializerMock.VerifyAll();
+            this.deserializerMock.VerifyAll();
             this.typeResolverMock.VerifyAll();
         }
 

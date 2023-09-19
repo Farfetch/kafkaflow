@@ -4,7 +4,6 @@ using KafkaFlow;
 using KafkaFlow.Producers;
 using KafkaFlow.Sample;
 using KafkaFlow.Serializer;
-using KafkaFlow.TypedHandler;
 using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection();
@@ -33,7 +32,7 @@ services.AddKafka(
                         .WithWorkersCount(3)
                         .AddMiddlewares(
                             middlewares => middlewares
-                                .AddSerializer<ProtobufNetSerializer>()
+                                .AddDeserializer<ProtobufNetDeserializer>()
                                 .AddTypedHandlers(h => h.AddHandler<PrintConsoleHandler>())
                         )
                 )

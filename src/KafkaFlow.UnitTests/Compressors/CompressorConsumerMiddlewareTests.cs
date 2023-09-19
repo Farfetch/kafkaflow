@@ -3,7 +3,9 @@ namespace KafkaFlow.UnitTests.Compressors
     using System;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using KafkaFlow.Compressor;
+
+    using KafkaFlow.Middlewares.Compressor;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
 
@@ -11,16 +13,16 @@ namespace KafkaFlow.UnitTests.Compressors
     public class CompressorConsumerMiddlewareTests
     {
         private Mock<IMessageContext> contextMock;
-        private Mock<IMessageCompressor> compressorMock;
+        private Mock<IDecompressor> decompressorMock;
         private bool nextCalled;
-        private CompressorConsumerMiddleware target;
+        private DecompressorConsumerMiddleware target;
 
         [TestInitialize]
         public void Setup()
         {
             this.contextMock = new Mock<IMessageContext>();
-            this.compressorMock = new Mock<IMessageCompressor>();
-            this.target = new CompressorConsumerMiddleware(this.compressorMock.Object);
+            this.decompressorMock = new Mock<IDecompressor>();
+            this.target = new DecompressorConsumerMiddleware(this.decompressorMock.Object);
         }
 
         [TestMethod]
@@ -38,7 +40,7 @@ namespace KafkaFlow.UnitTests.Compressors
             act.Should().Throw<InvalidOperationException>();
             this.nextCalled.Should().BeFalse();
             this.contextMock.Verify(x => x.SetMessage(It.IsAny<object>(), It.IsAny<object>()), Times.Never);
-            this.compressorMock.Verify(x => x.Decompress(It.IsAny<byte[]>()), Times.Never);
+            this.decompressorMock.Verify(x => x.Decompress(It.IsAny<byte[]>()), Times.Never);
         }
 
         [TestMethod]
@@ -55,7 +57,7 @@ namespace KafkaFlow.UnitTests.Compressors
                 .SetupGet(x => x.Message)
                 .Returns(compressedMessage);
 
-            this.compressorMock
+            this.decompressorMock
                 .Setup(x => x.Decompress((byte[]) compressedMessage.Value))
                 .Returns(uncompressedValue);
 
@@ -76,7 +78,7 @@ namespace KafkaFlow.UnitTests.Compressors
             resultContext.Should().NotBeNull();
             resultContext.Should().Be(transformedContextMock.Object);
             this.contextMock.VerifyAll();
-            this.compressorMock.VerifyAll();
+            this.decompressorMock.VerifyAll();
         }
 
         private Task SetNextCalled()
