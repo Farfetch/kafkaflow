@@ -7,6 +7,8 @@ namespace KafkaFlow
     using KafkaFlow.Configuration;
     using KafkaFlow.Consumers;
     using KafkaFlow.Consumers.WorkersBalancers;
+    using KafkaFlow.Middlewares.Compressor;
+    using KafkaFlow.Middlewares.TypedHandler;
 
     /// <summary>
     /// Provides extension methods over <see cref="IConsumerConfigurationBuilder"/> and <see cref="IProducerConfigurationBuilder"/>
@@ -173,6 +175,91 @@ namespace KafkaFlow
                 minInstanceWorkers,
                 maxInstanceWorkers,
                 TimeSpan.FromMinutes(5));
+        }
+
+        /// <summary>
+        /// Adds typed handler middleware
+        /// </summary>
+        /// <param name="builder">Instance of <see cref="IConsumerMiddlewareConfigurationBuilder"/></param>
+        /// <param name="configure">A handler to configure the middleware</param>
+        /// <returns></returns>
+        public static IConsumerMiddlewareConfigurationBuilder AddTypedHandlers(
+            this IConsumerMiddlewareConfigurationBuilder builder,
+            Action<TypedHandlerConfigurationBuilder> configure)
+        {
+            var typedHandlerBuilder = new TypedHandlerConfigurationBuilder(builder.DependencyConfigurator);
+
+            configure(typedHandlerBuilder);
+
+            var configuration = typedHandlerBuilder.Build();
+
+            builder.Add(
+                resolver => new TypedHandlerMiddleware(resolver, configuration),
+                MiddlewareLifetime.Message);
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Registers a middleware to decompress the message
+        /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
+        /// <typeparam name="T">The compressor type</typeparam>
+        /// <returns></returns>
+        [Obsolete("Compressors should only be used in backward compatibility scenarios, in the vast majority of cases native compression (producer.WithCompression()) should be used instead")]
+        public static IConsumerMiddlewareConfigurationBuilder AddDecompressor<T>(this IConsumerMiddlewareConfigurationBuilder middlewares)
+            where T : class, IDecompressor
+        {
+            middlewares.DependencyConfigurator.AddTransient<T>();
+            return middlewares.AddDecompressor(resolver => resolver.Resolve<T>());
+        }
+
+        /// <summary>
+        /// Registers a middleware to decompress the message
+        /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
+        /// <typeparam name="T">The decompressor type that implements <see cref="IDecompressor"/></typeparam>
+        /// <param name="factory">A factory to create the <see cref="IDecompressor"/> instance</param>
+        /// <returns></returns>
+        [Obsolete("Compressors should only be used in backward compatibility scenarios, in the vast majority of cases native compression (producer.WithCompression()) should be used instead")]
+        public static IConsumerMiddlewareConfigurationBuilder AddDecompressor<T>(
+            this IConsumerMiddlewareConfigurationBuilder middlewares,
+            Factory<T> factory)
+            where T : class, IDecompressor
+        {
+            return middlewares.Add(resolver => new DecompressorConsumerMiddleware(factory(resolver)));
+        }
+
+        /// <summary>
+        /// Registers a middleware to compress the message
+        /// It is highly recommended to use the producer native compression ('WithCompression()' method) instead of using the compressor middleware
+        /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
+        /// <typeparam name="T">The compressor type that implements <see cref="ICompressor"/></typeparam>
+        /// <returns></returns>
+        [Obsolete("Compressors should only be used in backward compatibility scenarios, in the vast majority of cases native compression (producer.WithCompression()) should be used instead")]
+        public static IProducerMiddlewareConfigurationBuilder AddCompressor<T>(this IProducerMiddlewareConfigurationBuilder middlewares)
+            where T : class, ICompressor
+        {
+            middlewares.DependencyConfigurator.AddTransient<T>();
+            return middlewares.AddCompressor(resolver => resolver.Resolve<T>());
+        }
+
+        /// <summary>
+        /// Registers a middleware to compress the message
+        /// It is highly recommended to use the producer native compression ('WithCompression()' method) instead of using the compressor middleware
+        /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
+        /// <typeparam name="T">The compressor type that implements <see cref="ICompressor"/></typeparam>
+        /// <param name="factory">A factory to create the <see cref="ICompressor"/> instance</param>
+        /// <returns></returns>
+        [Obsolete("Compressors should only be used in backward compatibility scenarios, in the vast majority of cases native compression (producer.WithCompression()) should be used instead")]
+        public static IProducerMiddlewareConfigurationBuilder AddCompressor<T>(
+            this IProducerMiddlewareConfigurationBuilder middlewares,
+            Factory<T> factory)
+            where T : class, ICompressor
+        {
+            return middlewares.Add(resolver => new CompressorProducerMiddleware(factory(resolver)));
         }
     }
 }

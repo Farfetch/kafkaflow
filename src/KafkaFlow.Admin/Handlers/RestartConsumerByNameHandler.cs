@@ -3,7 +3,7 @@ namespace KafkaFlow.Admin.Handlers
     using System.Threading.Tasks;
     using KafkaFlow.Admin.Messages;
     using KafkaFlow.Consumers;
-    using KafkaFlow.TypedHandler;
+    using KafkaFlow.Middlewares.TypedHandler;
 
     internal class RestartConsumerByNameHandler : IMessageHandler<RestartConsumerByName>
     {

@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using global::SchemaRegistry;
-using TypedHandler;
+using KafkaFlow.Middlewares.TypedHandler;
 
 public class AvroMessageHandler2 : IMessageHandler<AvroLogMessage2>
 {

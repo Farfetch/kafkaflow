@@ -1,4 +1,4 @@
-using KafkaFlow.TypedHandler;
+using KafkaFlow.Middlewares.TypedHandler;
 
 namespace KafkaFlow.Sample.PauseConsumerOnError;
 

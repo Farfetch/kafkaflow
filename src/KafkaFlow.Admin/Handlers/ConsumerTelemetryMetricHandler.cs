@@ -2,7 +2,7 @@ namespace KafkaFlow.Admin.Handlers
 {
     using System.Threading.Tasks;
     using KafkaFlow.Admin.Messages;
-    using KafkaFlow.TypedHandler;
+    using KafkaFlow.Middlewares.TypedHandler;
 
     internal class ConsumerTelemetryMetricHandler : IMessageHandler<ConsumerTelemetryMetric>
     {

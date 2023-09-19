@@ -3,7 +3,9 @@ namespace KafkaFlow.UnitTests.Compressors
     using System;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using KafkaFlow.Compressor;
+
+    using KafkaFlow.Middlewares.Compressor;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
 
@@ -11,7 +13,7 @@ namespace KafkaFlow.UnitTests.Compressors
     public class CompressorProducerMiddlewareTests
     {
         private Mock<IMessageContext> contextMock;
-        private Mock<IMessageCompressor> compressorMock;
+        private Mock<ICompressor> compressorMock;
 
         private CompressorProducerMiddleware target;
 
@@ -19,7 +21,7 @@ namespace KafkaFlow.UnitTests.Compressors
         public void Setup()
         {
             this.contextMock = new Mock<IMessageContext>();
-            this.compressorMock = new Mock<IMessageCompressor>();
+            this.compressorMock = new Mock<ICompressor>();
 
             this.target = new CompressorProducerMiddleware(this.compressorMock.Object);
         }

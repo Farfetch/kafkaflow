@@ -2,14 +2,12 @@ namespace KafkaFlow.UnitTests.Serializers
 {
     using System;
     using System.IO;
-    using System.Text;
     using System.Threading.Tasks;
     using AutoFixture;
     using FluentAssertions;
     using KafkaFlow.Serializer;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
-    using Newtonsoft.Json;
 
     [TestClass]
     public class NewtonsoftJsonSerializerTests
@@ -32,21 +30,6 @@ namespace KafkaFlow.UnitTests.Serializers
             // Assert
             output.Length.Should().BeGreaterThan(0);
             output.Position.Should().BeGreaterThan(0);
-        }
-
-        [TestMethod]
-        public async Task DeserializeAsync_ValidPayload_ObjectGenerated()
-        {
-            // Arrange
-            var message = this.fixture.Create<TestMessage>();
-            using var input = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)));
-
-            // Act
-            var result = await this.serializer.DeserializeAsync(input, typeof(TestMessage), this.contextMock.Object);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.Should().BeOfType<TestMessage>();
         }
 
         private class TestMessage

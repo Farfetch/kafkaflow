@@ -35,7 +35,7 @@ services.AddKafka(
                             .WithWorkersCount(1)
                             .AddMiddlewares(
                                 m => m
-                                    .AddSingleTypeSerializer<SampleMessage, NewtonsoftJsonSerializer>()
+                                    .AddSingleTypeDeserializer<SampleMessage, NewtonsoftJsonDeserializer>()
                                     .Add<PrintConsoleMiddleware>()
                             )
                     );

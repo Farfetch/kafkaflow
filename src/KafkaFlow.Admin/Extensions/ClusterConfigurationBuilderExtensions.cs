@@ -6,7 +6,6 @@
     using KafkaFlow.Admin.Handlers;
     using KafkaFlow.Configuration;
     using KafkaFlow.Serializer;
-    using KafkaFlow.TypedHandler;
 
     /// <summary>
     /// No needed
@@ -54,7 +53,7 @@
                         .DisableManagement()
                         .AddMiddlewares(
                             middlewares => middlewares
-                                .AddSerializer<ProtobufNetSerializer>()
+                                .AddDeserializer<ProtobufNetDeserializer>()
                                 .AddTypedHandlers(
                                     handlers => handlers
                                         .WithHandlerLifetime(InstanceLifetime.Singleton)
@@ -123,7 +122,7 @@
                         .WithAutoOffsetReset(AutoOffsetReset.Latest)
                         .AddMiddlewares(
                             middlewares => middlewares
-                                .AddSerializer<ProtobufNetSerializer>()
+                                .AddDeserializer<ProtobufNetDeserializer>()
                                 .AddTypedHandlers(
                                     handlers => handlers
                                         .WithHandlerLifetime(InstanceLifetime.Singleton)

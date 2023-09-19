@@ -62,19 +62,5 @@
                         this.schemaGeneratorSettings))
                 .SerializeAsync(message, output, context);
         }
-
-        /// <inheritdoc/>
-        public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
-        {
-            return ConfluentDeserializerWrapper
-                .GetOrCreateDeserializer(
-                    type,
-                    () => Activator
-                        .CreateInstance(
-                            typeof(JsonDeserializer<>).MakeGenericType(type),
-                            null,
-                            this.schemaGeneratorSettings))
-                .DeserializeAsync(input, context);
-        }
     }
 }
