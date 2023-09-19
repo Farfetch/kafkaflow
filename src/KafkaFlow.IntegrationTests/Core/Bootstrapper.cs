@@ -9,7 +9,6 @@ namespace KafkaFlow.IntegrationTests.Core
     using global::Microsoft.Extensions.Configuration;
     using global::Microsoft.Extensions.DependencyInjection;
     using global::Microsoft.Extensions.Hosting;
-    using KafkaFlow.Compressor;
     using KafkaFlow.Compressor.Gzip;
     using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Messages;
@@ -17,7 +16,6 @@ namespace KafkaFlow.IntegrationTests.Core
     using KafkaFlow.IntegrationTests.Core.Producers;
     using KafkaFlow.Serializer;
     using KafkaFlow.Serializer.SchemaRegistry;
-    using KafkaFlow.TypedHandler;
     using AutoOffsetReset = KafkaFlow.AutoOffsetReset;
 
     internal static class Bootstrapper
@@ -130,7 +128,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithConsumerConfig(defaultConfig)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ConfluentAvroSerializer>()
+                                            .AddDeserializer<ConfluentAvroDeserializer>()
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)
@@ -158,7 +156,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithConsumerConfig(defaultConfig)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ConfluentProtobufSerializer>()
+                                            .AddDeserializer<ConfluentProtobufDeserializer>()
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)
@@ -186,7 +184,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithConsumerConfig(defaultConfig)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<ConfluentJsonSerializer>()
+                                            .AddDeserializer<ConfluentJsonDeserializer>()
                                             .AddTypedHandlers(
                                                 handlers => handlers
                                                     .WithHandlerLifetime(InstanceLifetime.Singleton)
@@ -210,7 +208,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSingleTypeSerializer<ProtobufNetSerializer>(typeof(TestMessage1))
+                                            .AddSingleTypeDeserializer<ProtobufNetDeserializer>(typeof(TestMessage1))
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -231,7 +229,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                         })
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSingleTypeSerializer<PauseResumeMessage, ProtobufNetSerializer>()
+                                            .AddSingleTypeDeserializer<PauseResumeMessage, ProtobufNetDeserializer>()
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -246,7 +244,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer<JsonCoreSerializer>()
+                                            .AddDeserializer<JsonCoreDeserializer>()
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -261,7 +259,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddCompressor<GzipMessageCompressor>()
+                                            .AddDecompressor<GzipMessageDecompressor>()
                                             .Add<GzipMiddleware>()))
                             .AddConsumer(
                                 consumer => consumer
@@ -272,7 +270,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddSerializer(_ => new JsonCoreSerializer())
+                                            .AddDeserializer(_ => new JsonCoreDeserializer())
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers
@@ -288,8 +286,8 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .WithAutoCommitIntervalMs(1)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddCompressor<GzipMessageCompressor>()
-                                            .AddSerializer<ProtobufNetSerializer>()
+                                            .AddDecompressor<GzipMessageDecompressor>()
+                                            .AddDeserializer<ProtobufNetDeserializer>()
                                             .AddTypedHandlers(
                                                 handlers =>
                                                     handlers

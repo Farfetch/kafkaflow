@@ -1,7 +1,7 @@
 namespace KafkaFlow
 {
     /// <summary>
-    /// A context that can have some metadata to help with serialization process
+    /// Context for serialization and deserialization operations.
     /// </summary>
     public interface ISerializerContext
     {

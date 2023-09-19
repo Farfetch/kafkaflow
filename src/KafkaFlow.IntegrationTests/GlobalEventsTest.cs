@@ -222,7 +222,7 @@
                 .WithAutoOffsetReset(KafkaFlow.AutoOffsetReset.Earliest)
                 .AddMiddlewares(
                     middlewares => middlewares
-                        .AddSerializer<ProtobufNetSerializer>()
+                        .AddDeserializer<ProtobufNetDeserializer>()
                         .Add<T>())
                 .WithPartitionsAssignedHandler((_, _) =>
                 {

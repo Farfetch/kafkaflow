@@ -2,6 +2,7 @@
 {
     using Confluent.SchemaRegistry.Serdes;
     using KafkaFlow.Configuration;
+    using KafkaFlow.Middlewares.Serializer.Resolvers;
     using KafkaFlow.Serializer.SchemaRegistry;
 
     /// <summary>
