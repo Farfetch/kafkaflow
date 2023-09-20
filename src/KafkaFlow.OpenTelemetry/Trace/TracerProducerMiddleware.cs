@@ -7,23 +7,24 @@
     using System.Threading.Tasks;
     using global::OpenTelemetry;
     using global::OpenTelemetry.Context.Propagation;
+    using static System.Net.Mime.MediaTypeNames;
 
-    internal class TracerProducerMiddleware : IProducerInstrumentationMiddleware
+    internal class TracerProducerMiddleware
     {
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
         private static readonly string PublishString = "publish";
 
-        public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
+        public void CreateActivityOnProduce(IMessageContext context)
         {
-            var activityName = !string.IsNullOrEmpty(context?.ProducerContext.Topic) ? $"{context.ProducerContext.Topic} {PublishString}" : PublishString;
-
-            // Start an activity with a name following the semantic convention of the OpenTelemetry messaging specification.
-            // The convention also defines a set of attributes (in .NET they are mapped as `tags`) to be populated in the activity.
-            // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md
-            using var activity = KafkaFlowActivitySourceHelper.ActivitySource.StartActivity(activityName, ActivityKind.Producer);
-
             try
             {
+                var activityName = !string.IsNullOrEmpty(context?.ProducerContext.Topic) ? $"{context.ProducerContext.Topic} {PublishString}" : PublishString;
+
+                // Start an activity with a name following the semantic convention of the OpenTelemetry messaging specification.
+                // The convention also defines a set of attributes (in .NET they are mapped as `tags`) to be populated in the activity.
+                // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md
+                using var activity = KafkaFlowActivitySourceHelper.ActivitySource.StartActivity(activityName, ActivityKind.Producer);
+
                 // Depending on Sampling (and whether a listener is registered or not), the
                 // activity above may not be created.
                 // If it is created, then propagate its context.
@@ -48,14 +49,24 @@
                 {
                     this.SetProducerTags(context, activity);
                 }
-
-                await next.Invoke(context);
             }
-            catch (Exception ex)
+            catch
             {
-                activity?.SetTag("exception.message", ex.Message);
+                // do nothing
+            }
+        }
 
-                throw;
+        public void UpdateActivityOnError(Exception ex)
+        {
+            try
+            {
+                var activity = Activity.Current;
+
+                activity?.SetTag("exception.message", ex.Message);
+            }
+            catch
+            {
+                // ignored
             }
         }
 

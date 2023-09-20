@@ -37,15 +37,7 @@ namespace KafkaFlow.Configuration
                 this.topicsToCreateIfNotExist);
 
             configuration.AddProducers(this.producers.Select(x => x.Build(configuration)));
-            configuration.AddConsumers(this.consumers.Select(x =>
-            {
-                if (this.instrumentationConsumerMiddleware != null)
-                {
-                    x.AddInstrumentation<IMessageMiddleware>();
-                }
-
-                return x.Build(configuration);
-            }));
+            configuration.AddConsumers(this.consumers.Select(x => x.Build(configuration)));
 
             return configuration;
         }

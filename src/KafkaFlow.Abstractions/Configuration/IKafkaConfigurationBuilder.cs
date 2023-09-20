@@ -1,6 +1,7 @@
 namespace KafkaFlow.Configuration
 {
     using System;
+    using KafkaFlow.Events;
 
     /// <summary>
     /// A builder to configure KafkaFlow
@@ -21,5 +22,7 @@ namespace KafkaFlow.Configuration
         /// <returns></returns>
         IKafkaConfigurationBuilder UseLogHandler<TLogHandler>()
             where TLogHandler : ILogHandler;
+
+        IKafkaConfigurationBuilder SubscribeEvents(Action<IEventsListener> eventsListener);
     }
 }
