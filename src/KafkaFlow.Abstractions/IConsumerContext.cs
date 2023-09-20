@@ -110,6 +110,7 @@ namespace KafkaFlow
         /// </summary>
         void Resume();
 
+        // TODO: Need to discuss
         IReadOnlyCollection<string> Brokers { get; }
     }
 }

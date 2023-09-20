@@ -39,5 +39,5 @@
     <ProjectReference Include="..\KafkaFlow.Admin\KafkaFlow.Admin.csproj" />
     <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
   </ItemGroup>
-
+  
 </Project>
