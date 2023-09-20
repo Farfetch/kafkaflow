@@ -8,7 +8,7 @@
     using global::OpenTelemetry;
     using global::OpenTelemetry.Context.Propagation;
 
-    internal class TracerConsumerMiddleware : IMessageMiddleware
+    internal class TracerConsumerMiddleware : IConsumerInstrumentationMiddleware
     {
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
         private static readonly string ProcessString = "process";

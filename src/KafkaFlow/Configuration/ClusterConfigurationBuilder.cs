@@ -39,9 +39,9 @@ namespace KafkaFlow.Configuration
             configuration.AddProducers(this.producers.Select(x => x.Build(configuration)));
             configuration.AddConsumers(this.consumers.Select(x =>
             {
-                if(this.instrumentationConsumerMiddleware != null)
+                if (this.instrumentationConsumerMiddleware != null)
                 {
-                    x.AddInstrumentation<this.instrumentationConsumerMiddleware>();
+                    x.AddInstrumentation<IMessageMiddleware>();
                 }
 
                 return x.Build(configuration);
@@ -107,11 +107,15 @@ namespace KafkaFlow.Configuration
         }
 
         public IClusterConfigurationBuilder AddInstrumentation<TConsumerInstrumentationMiddleware, TProducerInstrumentationMiddleware>()
-            where TConsumerInstrumentationMiddleware : class, IMessageMiddleware
-            where TProducerInstrumentationMiddleware : class, IMessageMiddleware
+            where TConsumerInstrumentationMiddleware : class, IConsumerInstrumentationMiddleware
+            where TProducerInstrumentationMiddleware : class, IProducerInstrumentationMiddleware
         {
-
             this.instrumentationConsumerMiddleware = typeof(TConsumerInstrumentationMiddleware);
+            this.instrumentationProducerMiddleware = typeof(IProducerInstrumentationMiddleware);
+
+            //this.DependencyConfigurator
+            //    .AddTransient(typeof(IConsumerInstrumentationMiddleware), this.instrumentationConsumerMiddleware)
+            //    .AddTransient(typeof(IProducerInstrumentationMiddleware), this.instrumentationProducerMiddleware);
 
             return this;
         }

@@ -1,6 +1,7 @@
 namespace KafkaFlow.Consumers
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using Confluent.Kafka;
 
@@ -37,6 +38,8 @@ namespace KafkaFlow.Consumers
         public long Offset => this.kafkaResult.Offset.Value;
 
         public string GroupId => this.consumer.Configuration.GroupId;
+
+        public IReadOnlyCollection<string> Brokers => this.consumer.Configuration.ClusterConfiguration.Brokers;
 
         public bool ShouldStoreOffset { get; set; } = true;
 

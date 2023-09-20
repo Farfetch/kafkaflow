@@ -44,6 +44,11 @@ namespace KafkaFlow.Configuration
             return this.AddAt<T>(0, lifetime);
         }
 
+        public TBuilder AddAtBeginning(Type messageMiddleware, MiddlewareLifetime lifetime = MiddlewareLifetime.ConsumerOrProducer)
+        {
+            return this.AddAt(messageMiddleware, 0, lifetime);
+        }
+
         public IReadOnlyList<MiddlewareConfiguration> Build() => this.middlewaresConfigurations;
 
         private static InstanceLifetime ParseLifetime(MiddlewareLifetime lifetime)
@@ -89,6 +94,21 @@ namespace KafkaFlow.Configuration
             this.middlewaresConfigurations.Insert(
                 position,
                 new MiddlewareConfiguration(typeof(T), lifetime));
+
+            return this as TBuilder;
+        }
+
+        private TBuilder AddAt(
+            Type messageMiddleware,
+            int position,
+            MiddlewareLifetime lifetime = MiddlewareLifetime.ConsumerOrProducer)
+        {
+
+            this.DependencyConfigurator.Add(typeof(IMessageMiddleware), messageMiddleware, ParseLifetime(lifetime));
+
+            this.middlewaresConfigurations.Insert(
+                position,
+                new MiddlewareConfiguration(messageMiddleware.GetType(), lifetime));
 
             return this as TBuilder;
         }
