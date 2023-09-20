@@ -5,17 +5,21 @@ namespace KafkaFlow.Configuration
     using System.Linq;
     using KafkaFlow.Clusters;
     using KafkaFlow.Consumers;
+    using KafkaFlow.Events;
     using KafkaFlow.Producers;
 
     internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
     {
         private readonly IDependencyConfigurator dependencyConfigurator;
+
         private readonly List<ClusterConfigurationBuilder> clusters = new();
         private Type logHandlerType = typeof(NullLogHandler);
+        private readonly EventsManager eventsManager;
 
         public KafkaConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
             this.dependencyConfigurator = dependencyConfigurator;
+            this.eventsManager = new EventsManager();
         }
 
         public KafkaConfiguration Build()
@@ -44,7 +48,9 @@ namespace KafkaFlow.Configuration
                 .AddSingleton<IDateTimeProvider, DateTimeProvider>()
                 .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
                 .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
-                .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>();
+                .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
+                .AddSingleton<IEventsListener>(this.eventsManager)
+                .AddSingleton<IEventsNotifier>(this.eventsManager);
 
             return configuration;
         }
@@ -64,6 +70,12 @@ namespace KafkaFlow.Configuration
             where TLogHandler : ILogHandler
         {
             this.logHandlerType = typeof(TLogHandler);
+            return this;
+        }
+
+        public IKafkaConfigurationBuilder SubscribeEvents(Action<IEventsListener> eventsListener)
+        {
+            eventsListener?.Invoke(this.eventsManager);
             return this;
         }
     }

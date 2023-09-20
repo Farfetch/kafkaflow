@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using KafkaFlow;
 using KafkaFlow.Configuration;
+using KafkaFlow.OpenTelemetry.Trace;
 using KafkaFlow.Producers;
 using KafkaFlow.Sample;
 using KafkaFlow.Serializer;
 using KafkaFlow.TypedHandler;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 
 var services = new ServiceCollection();
 
@@ -38,8 +42,8 @@ services.AddKafka(
                                 .AddTypedHandlers(h => h.AddHandler<PrintConsoleHandler>())
                         )
                 )
-                .AddOpenTelemetryInstrumentation()
         )
+        .AddOpenTelemetryInstrumentation()
 );
 
 var provider = services.BuildServiceProvider();
@@ -53,6 +57,11 @@ var producer = provider
     .GetProducer(producerName);
 
 Console.WriteLine("Type the number of messages to produce or 'exit' to quit:");
+
+using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+    .AddSource("KafkaFlow")
+    .AddConsoleExporter()
+    .Build();
 
 while (true)
 {

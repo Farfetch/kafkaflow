@@ -5,6 +5,7 @@ namespace KafkaFlow.Consumers
     using System.Threading.Channels;
     using System.Threading.Tasks;
     using Confluent.Kafka;
+    using KafkaFlow.Events;
 
     internal class ConsumerWorker : IConsumerWorker
     {
@@ -13,6 +14,7 @@ namespace KafkaFlow.Consumers
         private readonly IOffsetManager offsetManager;
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly ILogHandler logHandler;
+        private readonly IEventsNotifier eventsNotifier;
 
         private readonly Channel<ConsumeResult<byte[], byte[]>> messagesBuffer;
 
@@ -35,6 +37,9 @@ namespace KafkaFlow.Consumers
             this.middlewareExecutor = middlewareExecutor;
             this.logHandler = logHandler;
             this.messagesBuffer = Channel.CreateBounded<ConsumeResult<byte[], byte[]>>(consumer.Configuration.BufferSize);
+
+            var scope = this.dependencyResolver.CreateScope();
+            this.eventsNotifier = scope.Resolver.Resolve<IEventsNotifier>();
         }
 
         public int Id { get; }
@@ -117,6 +122,8 @@ namespace KafkaFlow.Consumers
                         this.Id),
                     null);
 
+                this.eventsNotifier?.NotifyOnConsumeStart(context);
+
                 try
                 {
                     var scope = this.dependencyResolver.CreateScope();
@@ -135,6 +142,8 @@ namespace KafkaFlow.Consumers
                 }
                 catch (Exception ex)
                 {
+                    this.eventsNotifier?.NotifyOnConsumeError(ex);
+
                     this.logHandler.Error(
                         "Error processing message",
                         ex,
