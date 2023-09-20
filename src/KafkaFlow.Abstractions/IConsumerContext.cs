@@ -1,6 +1,7 @@
 namespace KafkaFlow
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -108,5 +109,7 @@ namespace KafkaFlow
         /// Resume Kafka's message fetch
         /// </summary>
         void Resume();
+
+        IReadOnlyCollection<string> Brokers { get; }
     }
 }

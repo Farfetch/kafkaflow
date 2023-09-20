@@ -85,7 +85,7 @@ namespace KafkaFlow.Configuration
 
         // Gets the cluster configuration
         IClusterConfigurationBuilder AddInstrumentation<TConsumerInstrumentationMiddleware, TProducerInstrumentationMiddleware>()
-            where TConsumerInstrumentationMiddleware : class, IMessageMiddleware
-            where TProducerInstrumentationMiddleware : class, IMessageMiddleware;
+            where TConsumerInstrumentationMiddleware : class, IConsumerInstrumentationMiddleware
+            where TProducerInstrumentationMiddleware : class, IProducerInstrumentationMiddleware;
     }
 }
