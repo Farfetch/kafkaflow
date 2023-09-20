@@ -229,12 +229,6 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public void AddInstrumentation<T>(IConsumerInstrumentationMiddleware consumerInstrumentationMiddleware)
-            where T : class, IMessageMiddleware
-        {
-            var type = typeof(IConsumerInstrumentationMiddleware);            
-        }
-
         public IConsumerConfiguration Build(ClusterConfiguration clusterConfiguration)
         {
             var middlewareConfiguration = this.middlewareConfigurationBuilder.Build();

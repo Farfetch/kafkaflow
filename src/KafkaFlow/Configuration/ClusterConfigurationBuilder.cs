@@ -98,20 +98,6 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public IClusterConfigurationBuilder AddInstrumentation<TConsumerInstrumentationMiddleware, TProducerInstrumentationMiddleware>()
-            where TConsumerInstrumentationMiddleware : class, IConsumerInstrumentationMiddleware
-            where TProducerInstrumentationMiddleware : class, IProducerInstrumentationMiddleware
-        {
-            this.instrumentationConsumerMiddleware = typeof(TConsumerInstrumentationMiddleware);
-            this.instrumentationProducerMiddleware = typeof(IProducerInstrumentationMiddleware);
-
-            //this.DependencyConfigurator
-            //    .AddTransient(typeof(IConsumerInstrumentationMiddleware), this.instrumentationConsumerMiddleware)
-            //    .AddTransient(typeof(IProducerInstrumentationMiddleware), this.instrumentationProducerMiddleware);
-
-            return this;
-        }
-
         public IClusterConfigurationBuilder OnStopping(Action<IDependencyResolver> handler)
         {
             this.onStoppingHandler = handler;

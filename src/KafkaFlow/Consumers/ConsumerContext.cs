@@ -39,6 +39,7 @@ namespace KafkaFlow.Consumers
 
         public string GroupId => this.consumer.Configuration.GroupId;
 
+        // TODO: Need to discuss
         public IReadOnlyCollection<string> Brokers => this.consumer.Configuration.ClusterConfiguration.Brokers;
 
         public bool ShouldStoreOffset { get; set; } = true;

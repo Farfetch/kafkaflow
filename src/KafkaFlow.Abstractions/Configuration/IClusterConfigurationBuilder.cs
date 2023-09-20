@@ -82,10 +82,5 @@ namespace KafkaFlow.Configuration
             string topicName,
             int numberOfPartitions,
             short replicationFactor);
-
-        // Gets the cluster configuration
-        IClusterConfigurationBuilder AddInstrumentation<TConsumerInstrumentationMiddleware, TProducerInstrumentationMiddleware>()
-            where TConsumerInstrumentationMiddleware : class, IConsumerInstrumentationMiddleware
-            where TProducerInstrumentationMiddleware : class, IProducerInstrumentationMiddleware;
     }
 }
