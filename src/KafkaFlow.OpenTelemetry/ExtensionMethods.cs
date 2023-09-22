@@ -1,5 +1,6 @@
 ﻿namespace KafkaFlow.Configuration
 {
+    using KafkaFlow.OpenTelemetry;
     using KafkaFlow.OpenTelemetry.Trace;
 
     /// <summary>
@@ -16,6 +17,7 @@
         {
             var tracerConsumerMiddleware = new TracerConsumerMiddleware();
             var tracerProducerMiddleware = new TracerProducerMiddleware();
+            var openTelemetryObserver = new OpenTelemetryObserver();
 
             builder.SubscribeEvents(events =>
             {
@@ -24,6 +26,8 @@
                 events.OnProduceError += (sender, args) => tracerProducerMiddleware.UpdateActivityOnError(args.Exception);
                 events.OnProduceStart += (sender, args) => tracerProducerMiddleware.CreateActivityOnProduce(args.MessageContext);
             });
+
+            builder.SubscribeObserver(openTelemetryObserver);
 
             return builder;
         }
