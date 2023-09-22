@@ -24,5 +24,7 @@ namespace KafkaFlow.Configuration
             where TLogHandler : ILogHandler;
 
         IKafkaConfigurationBuilder SubscribeEvents(Action<IEventsListener> eventsListener);
+
+        IKafkaConfigurationBuilder SubscribeObserver(IObserver<IMessageContext> observer);
     }
 }

@@ -15,6 +15,7 @@ namespace KafkaFlow.Configuration
         private readonly List<ClusterConfigurationBuilder> clusters = new();
         private Type logHandlerType = typeof(NullLogHandler);
         private readonly EventsManager eventsManager;
+        private readonly ProcessMessageHandler processMessageHandler = new();
 
         public KafkaConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
@@ -50,7 +51,8 @@ namespace KafkaFlow.Configuration
                 .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
                 .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
                 .AddSingleton<IEventsListener>(this.eventsManager)
-                .AddSingleton<IEventsNotifier>(this.eventsManager);
+                .AddSingleton<IEventsNotifier>(this.eventsManager)
+                .AddSingleton<IProcessMessageHandler>(this.processMessageHandler);
 
             return configuration;
         }
@@ -76,6 +78,12 @@ namespace KafkaFlow.Configuration
         public IKafkaConfigurationBuilder SubscribeEvents(Action<IEventsListener> eventsListener)
         {
             eventsListener?.Invoke(this.eventsManager);
+            return this;
+        }
+
+        public IKafkaConfigurationBuilder SubscribeObserver(IObserver<IMessageContext> observer)
+        {
+            this.processMessageHandler.Subscribe(observer);
             return this;
         }
     }

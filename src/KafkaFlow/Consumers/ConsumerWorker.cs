@@ -15,6 +15,8 @@ namespace KafkaFlow.Consumers
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly ILogHandler logHandler;
         private readonly IEventsNotifier eventsNotifier;
+        //private readonly IObservable<IMessageContext> observable;
+        private readonly IProcessMessageHandler observable;
 
         private readonly Channel<ConsumeResult<byte[], byte[]>> messagesBuffer;
 
@@ -40,6 +42,7 @@ namespace KafkaFlow.Consumers
 
             var scope = this.dependencyResolver.CreateScope();
             this.eventsNotifier = scope.Resolver.Resolve<IEventsNotifier>();
+            this.observable = scope.Resolver.Resolve<IProcessMessageHandler>();
         }
 
         public int Id { get; }
@@ -122,7 +125,14 @@ namespace KafkaFlow.Consumers
                         this.Id),
                     null);
 
-                this.eventsNotifier?.NotifyOnConsumeStart(context);
+                //this.eventsNotifier?.NotifyOnConsumeStart(context);
+
+                var observers = this.observable.GetObservers();
+
+                foreach (var observer in observers)
+                {
+                    observer.OnNext(context);
+                }
 
                 try
                 {
