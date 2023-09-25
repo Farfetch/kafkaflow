@@ -15,19 +15,12 @@
         /// <returns></returns>
         public static IKafkaConfigurationBuilder AddOpenTelemetryInstrumentation(this IKafkaConfigurationBuilder builder)
         {
-            var tracerConsumerMiddleware = new TracerConsumerMiddleware();
-            var tracerProducerMiddleware = new TracerProducerMiddleware();
-            var openTelemetryObserver = new OpenTelemetryObserver();
+            var openTelemetryConsumerObserver = new OpenTelemetryConsumerObserver();
+            var openTelemetryProducerObserver = new OpenTelemetryProducerObserver();
 
-            builder.SubscribeEvents(events =>
-            {
-                events.OnConsumeError += (sender, args) => tracerConsumerMiddleware.UpdateActivityOnError(args.Exception);
-                events.OnConsumeStart += (sender, args) => tracerConsumerMiddleware.CreateActivityOnConsume(args.MessageContext);
-                events.OnProduceError += (sender, args) => tracerProducerMiddleware.UpdateActivityOnError(args.Exception);
-                events.OnProduceStart += (sender, args) => tracerProducerMiddleware.CreateActivityOnProduce(args.MessageContext);
-            });
 
-            builder.SubscribeObserver(openTelemetryObserver);
+            builder.SubscribeWorkerStartedSubjectObserver(openTelemetryConsumerObserver);
+            builder.SubscribeProducerStartedSubjectObserver(openTelemetryProducerObserver);
 
             return builder;
         }

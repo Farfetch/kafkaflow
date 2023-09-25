@@ -17,6 +17,7 @@ namespace KafkaFlow.Consumers
 
         private readonly WorkerStoppingSubject workerStoppingSubject;
         private readonly WorkerStoppedSubject workerStoppedSubject;
+        private readonly WorkerStartedSubject workerStartedSubject;
 
         private CancellationTokenSource stopCancellationTokenSource;
         private Task backgroundTask;
@@ -38,6 +39,7 @@ namespace KafkaFlow.Consumers
 
             this.workerStoppingSubject = new(logHandler);
             this.workerStoppedSubject = new(logHandler);
+            this.workerStartedSubject = this.workerDependencyResolverScope.Resolver.Resolve<WorkerStartedSubject>();
 
             var middlewareContext = this.workerDependencyResolverScope.Resolver.Resolve<ConsumerMiddlewareContext>();
 
@@ -128,6 +130,8 @@ namespace KafkaFlow.Consumers
         {
             try
             {
+                await this.workerStartedSubject.NotifyAsync(context);
+
                 try
                 {
                     await this.middlewareExecutor

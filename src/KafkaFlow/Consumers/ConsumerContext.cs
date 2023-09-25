@@ -1,6 +1,7 @@
 namespace KafkaFlow.Consumers
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
@@ -62,6 +63,8 @@ namespace KafkaFlow.Consumers
         public DateTime MessageTimestamp { get; }
 
         public Task<TopicPartitionOffset> Completion => this.completionSource.Task;
+
+        public IReadOnlyCollection<string> Brokers => throw new NotImplementedException();
 
         public void Complete()
         {

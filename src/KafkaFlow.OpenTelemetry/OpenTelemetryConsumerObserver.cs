@@ -4,11 +4,14 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Text;
+    using System.Threading.Tasks;
     using global::OpenTelemetry;
     using global::OpenTelemetry.Context.Propagation;
+    using KafkaFlow.Consumers;
+    using KafkaFlow.Observer;
     using KafkaFlow.OpenTelemetry.Trace;
 
-    internal class OpenTelemetryObserver : IObserver<IMessageContext>
+    internal class OpenTelemetryConsumerObserver : ISubjectObserver<WorkerStartedSubject, IMessageContext>
     {
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
         private static readonly string ProcessString = "process";
@@ -49,6 +52,36 @@
             {
                 // ignored
             }
+        }
+
+        public Task OnNotification(WorkerStartedSubject subject, IMessageContext context)
+        {
+            try
+            {
+                var activityName = !string.IsNullOrEmpty(context?.ConsumerContext.Topic) ? $"{context.ConsumerContext.Topic} {ProcessString}" : ProcessString;
+
+                // Extract the PropagationContext of the upstream parent from the message headers.
+                var parentContext = Propagator.Extract(new PropagationContext(default, Baggage.Current), context, this.ExtractTraceContextIntoBasicProperties);
+                Baggage.Current = parentContext.Baggage;
+
+                // Start an activity with a name following the semantic convention of the OpenTelemetry messaging specification.
+                // The convention also defines a set of attributes (in .NET they are mapped as `tags`) to be populated in the activity.
+                // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md
+                using var activity = KafkaFlowActivitySourceHelper.ActivitySource.StartActivity(activityName, ActivityKind.Consumer, parentContext.ActivityContext);
+
+                KafkaFlowActivitySourceHelper.SetGenericTags(activity);
+
+                if (activity != null && activity.IsAllDataRequested)
+                {
+                    this.SetConsumerTags(context, activity);
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+
+            return Task.CompletedTask;
         }
 
         private IEnumerable<string> ExtractTraceContextIntoBasicProperties(IMessageContext context, string key)

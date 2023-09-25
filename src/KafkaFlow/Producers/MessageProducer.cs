@@ -5,6 +5,7 @@ namespace KafkaFlow.Producers
     using System.Threading.Tasks;
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
+    using KafkaFlow.Consumers;
     using KafkaFlow.Events;
 
     internal class MessageProducer : IMessageProducer, IDisposable
@@ -14,6 +15,7 @@ namespace KafkaFlow.Producers
         private readonly IProducerConfiguration configuration;
         private readonly MiddlewareExecutor middlewareExecutor;
         private readonly IEventsNotifier eventsNotifier;
+        private readonly ProducerStartedSubject producerStartedSubject;
 
         private readonly object producerCreationSync = new();
 
@@ -28,8 +30,7 @@ namespace KafkaFlow.Producers
             this.configuration = configuration;
             this.middlewareExecutor = new MiddlewareExecutor(configuration.MiddlewaresConfigurations);
 
-            var scope = this.dependencyResolver.CreateScope();
-            this.eventsNotifier = scope.Resolver.Resolve<IEventsNotifier>();
+            this.producerStartedSubject = dependencyResolver.Resolve<ProducerStartedSubject>();
         }
 
         public string ProducerName => this.configuration.Name;
@@ -272,7 +273,7 @@ namespace KafkaFlow.Producers
 
             try
             {
-                this.eventsNotifier?.NotifyOnProduceStart(context);
+                await this.producerStartedSubject.NotifyAsync(context);
 
                 var produceTask = partition.HasValue ?
                     localProducer.ProduceAsync(new TopicPartition(context.ProducerContext.Topic, partition.Value), message) :
@@ -286,8 +287,6 @@ namespace KafkaFlow.Producers
                 {
                     this.InvalidateProducer(e.Error, result);
                 }
-
-                this.eventsNotifier?.NotifyOnProduceError(e);
 
                 throw;
             }
