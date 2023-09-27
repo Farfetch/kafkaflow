@@ -7,11 +7,10 @@
     using System.Threading.Tasks;
     using global::OpenTelemetry;
     using global::OpenTelemetry.Context.Propagation;
-    using KafkaFlow.Consumers;
-    using KafkaFlow.Observer;
     using KafkaFlow.OpenTelemetry.Trace;
+    using KafkaFlow.Producers;
 
-    internal class OpenTelemetryProducerObserver : ISubjectObserver<ProducerStartedSubject, IMessageContext>
+    internal class OpenTelemetryProducerObserver : IProducerInstrumentationObservers
     {
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
         private static readonly string PublishString = "publish";
@@ -25,7 +24,7 @@
                 // Start an activity with a name following the semantic convention of the OpenTelemetry messaging specification.
                 // The convention also defines a set of attributes (in .NET they are mapped as `tags`) to be populated in the activity.
                 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md
-                using var activity = KafkaFlowActivitySourceHelper.ActivitySource.StartActivity(activityName, ActivityKind.Producer);
+                var activity = KafkaFlowActivitySourceHelper.ActivitySource.StartActivity(activityName, ActivityKind.Producer);
 
                 // Depending on Sampling (and whether a listener is registered or not), the
                 // activity above may not be created.
@@ -51,27 +50,34 @@
                 {
                     this.SetProducerTags(context, activity);
                 }
+
+                Console.WriteLine(activity.TraceId);
+                Console.WriteLine(activity.SpanId);
+                Console.WriteLine(activity.ParentSpanId);
             }
             catch
             {
-                // do nothing
             }
 
             return Task.CompletedTask;
         }
 
-        public void UpdateActivityOnError(Exception ex)
+        public Task OnNotification(ProducerStoppedSubject subject, VoidObject arg)
         {
-            try
-            {
-                var activity = Activity.Current;
+            var activity = Activity.Current;
 
-                activity?.SetTag("exception.message", ex.Message);
-            }
-            catch
-            {
-                // ignored
-            }
+            activity?.Stop();
+
+            return Task.CompletedTask;
+        }
+
+        public Task OnNotification(ProducerErrorSubject subject, Exception ex)
+        {
+            var activity = Activity.Current;
+
+            activity?.SetTag("exception.message", ex.Message);
+
+            return Task.CompletedTask;
         }
 
         private void InjectTraceContextIntoBasicProperties(IMessageContext context, string key, string value)

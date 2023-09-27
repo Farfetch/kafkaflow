@@ -15,13 +15,21 @@ namespace KafkaFlow.Configuration
         private readonly List<ClusterConfigurationBuilder> clusters = new();
         private Type logHandlerType = typeof(NullLogHandler);
         private readonly WorkerStartedSubject workerStartedSubject;
+        private readonly WorkerStoppedSubject workerStoppedSubject;
+        private readonly WorkerErrorSubject workerErrorSubject;
+        private readonly ProducerErrorSubject producerErrorSubject;
         private readonly ProducerStartedSubject producerStartedSubject;
+        private readonly ProducerStoppedSubject producerStoppedSubject;
 
         public KafkaConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
             this.dependencyConfigurator = dependencyConfigurator;
+            this.workerErrorSubject = new WorkerErrorSubject(null);
             this.workerStartedSubject = new WorkerStartedSubject(null);
+            this.workerStoppedSubject = new WorkerStoppedSubject(null);
+            this.producerErrorSubject = new ProducerErrorSubject(null);
             this.producerStartedSubject = new ProducerStartedSubject(null);
+            this.producerStoppedSubject = new ProducerStoppedSubject(null);
         }
 
         public KafkaConfiguration Build()
@@ -55,7 +63,11 @@ namespace KafkaFlow.Configuration
                 .AddScoped<ConsumerMiddlewareContext>()
                 .AddScoped<IConsumerMiddlewareContext>(r => r.Resolve<ConsumerMiddlewareContext>())
                 .AddSingleton(this.workerStartedSubject)
-                .AddSingleton(this.producerStartedSubject);
+                .AddSingleton(this.workerStoppedSubject)
+                .AddSingleton(this.workerErrorSubject)
+                .AddSingleton(this.producerStartedSubject)
+                .AddSingleton(this.producerStoppedSubject)
+                .AddSingleton(this.producerErrorSubject);
 
             return configuration;
         }
@@ -78,23 +90,22 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public IKafkaConfigurationBuilder SubscribeWorkerStartedSubjectObserver(ISubjectObserver<WorkerStartedSubject, IMessageContext> observer)
+        public IKafkaConfigurationBuilder SubscribeConsumerInstrumentationSubjects(IConsumerInstrumentationObservers observers)
         {
-            this.workerStartedSubject.Subscribe(observer);
+            this.workerErrorSubject.Subscribe(observers);
+            this.workerStartedSubject.Subscribe(observers);
+            this.workerStoppedSubject.Subscribe(observers);
+
             return this;
         }
 
-        public IKafkaConfigurationBuilder SubscribeProducerStartedSubjectObserver(ISubjectObserver<ProducerStartedSubject, IMessageContext> observer)
+        public IKafkaConfigurationBuilder SubscribeProducerInstrumentationSubjects(IProducerInstrumentationObservers observers)
         {
-            this.producerStartedSubject.Subscribe(observer);
+            this.producerErrorSubject.Subscribe(observers);
+            this.producerStartedSubject.Subscribe(observers);
+            this.producerStoppedSubject.Subscribe(observers);
+
             return this;
         }
-
-        //public IKafkaConfigurationBuilder SubscribeObserver(IObserver<IMessageContext> observer)
-        //{
-        //    this.processMessageHandler.Subscribe(observer);
-
-        //    return this;
-        //}
     }
 }

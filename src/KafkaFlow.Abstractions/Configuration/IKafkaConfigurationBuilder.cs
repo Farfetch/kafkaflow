@@ -4,6 +4,7 @@ namespace KafkaFlow.Configuration
     using KafkaFlow.Consumers;
     using KafkaFlow.Events;
     using KafkaFlow.Observer;
+    using KafkaFlow.Producers;
 
     /// <summary>
     /// A builder to configure KafkaFlow
@@ -25,8 +26,8 @@ namespace KafkaFlow.Configuration
         IKafkaConfigurationBuilder UseLogHandler<TLogHandler>()
             where TLogHandler : ILogHandler;
 
-        IKafkaConfigurationBuilder SubscribeWorkerStartedSubjectObserver(ISubjectObserver<WorkerStartedSubject, IMessageContext> observer);
+        IKafkaConfigurationBuilder SubscribeConsumerInstrumentationSubjects(IConsumerInstrumentationObservers observers);
 
-        IKafkaConfigurationBuilder SubscribeProducerStartedSubjectObserver(ISubjectObserver<ProducerStartedSubject, IMessageContext> observer);
+        IKafkaConfigurationBuilder SubscribeProducerInstrumentationSubjects(IProducerInstrumentationObservers observers);
     }
 }

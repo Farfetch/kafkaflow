@@ -18,6 +18,7 @@ namespace KafkaFlow.Consumers
         private readonly WorkerStoppingSubject workerStoppingSubject;
         private readonly WorkerStoppedSubject workerStoppedSubject;
         private readonly WorkerStartedSubject workerStartedSubject;
+        private readonly WorkerErrorSubject workerErrorSubject;
 
         private CancellationTokenSource stopCancellationTokenSource;
         private Task backgroundTask;
@@ -38,8 +39,9 @@ namespace KafkaFlow.Consumers
             this.messagesBuffer = Channel.CreateBounded<IMessageContext>(consumer.Configuration.BufferSize);
 
             this.workerStoppingSubject = new(logHandler);
-            this.workerStoppedSubject = new(logHandler);
+            this.workerStoppedSubject = this.workerDependencyResolverScope.Resolver.Resolve<WorkerStoppedSubject>();
             this.workerStartedSubject = this.workerDependencyResolverScope.Resolver.Resolve<WorkerStartedSubject>();
+            this.workerErrorSubject = this.workerDependencyResolverScope.Resolver.Resolve<WorkerErrorSubject>();
 
             var middlewareContext = this.workerDependencyResolverScope.Resolver.Resolve<ConsumerMiddlewareContext>();
 
@@ -144,6 +146,8 @@ namespace KafkaFlow.Consumers
                 }
                 catch (Exception ex)
                 {
+                    await this.workerErrorSubject.NotifyAsync(ex);
+
                     this.logHandler.Error(
                         "Error processing message",
                         ex,

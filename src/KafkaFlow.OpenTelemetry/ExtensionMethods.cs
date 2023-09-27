@@ -18,9 +18,8 @@
             var openTelemetryConsumerObserver = new OpenTelemetryConsumerObserver();
             var openTelemetryProducerObserver = new OpenTelemetryProducerObserver();
 
-
-            builder.SubscribeWorkerStartedSubjectObserver(openTelemetryConsumerObserver);
-            builder.SubscribeProducerStartedSubjectObserver(openTelemetryProducerObserver);
+            builder.SubscribeConsumerInstrumentationSubjects(openTelemetryConsumerObserver);
+            builder.SubscribeProducerInstrumentationSubjects(openTelemetryProducerObserver);
 
             return builder;
         }

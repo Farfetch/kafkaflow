@@ -1,5 +1,6 @@
-﻿namespace KafkaFlow.Consumers
+﻿namespace KafkaFlow.Producers
 {
+    using KafkaFlow;
     using KafkaFlow.Observer;
 
     public class ProducerStartedSubject : Subject<ProducerStartedSubject, IMessageContext>

@@ -5,7 +5,6 @@ namespace KafkaFlow.Producers
     using System.Threading.Tasks;
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
-    using KafkaFlow.Consumers;
     using KafkaFlow.Events;
 
     internal class MessageProducer : IMessageProducer, IDisposable
@@ -14,8 +13,9 @@ namespace KafkaFlow.Producers
         private readonly ILogHandler logHandler;
         private readonly IProducerConfiguration configuration;
         private readonly MiddlewareExecutor middlewareExecutor;
-        private readonly IEventsNotifier eventsNotifier;
         private readonly ProducerStartedSubject producerStartedSubject;
+        private readonly ProducerStoppedSubject producerStoppedSubject;
+        private readonly ProducerErrorSubject producerErrorSubject;
 
         private readonly object producerCreationSync = new();
 
@@ -31,6 +31,8 @@ namespace KafkaFlow.Producers
             this.middlewareExecutor = new MiddlewareExecutor(configuration.MiddlewaresConfigurations);
 
             this.producerStartedSubject = dependencyResolver.Resolve<ProducerStartedSubject>();
+            this.producerStoppedSubject = dependencyResolver.Resolve<ProducerStoppedSubject>();
+            this.producerErrorSubject = dependencyResolver.Resolve<ProducerErrorSubject>();
         }
 
         public string ProducerName => this.configuration.Name;
@@ -61,6 +63,8 @@ namespace KafkaFlow.Producers
                             .ConfigureAwait(false);
                     })
                 .ConfigureAwait(false);
+
+            await this.producerStoppedSubject.NotifyAsync(VoidObject.Value);
 
             return report;
         }
@@ -287,6 +291,8 @@ namespace KafkaFlow.Producers
                 {
                     this.InvalidateProducer(e.Error, result);
                 }
+
+                await this.producerErrorSubject.NotifyAsync(e);
 
                 throw;
             }
