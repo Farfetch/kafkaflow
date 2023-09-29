@@ -4,7 +4,6 @@ namespace KafkaFlow.Consumers
     using System.Threading;
     using System.Threading.Channels;
     using System.Threading.Tasks;
-    using KafkaFlow.Observer;
 
     internal class ConsumerWorker : IConsumerWorker
     {
@@ -15,10 +14,8 @@ namespace KafkaFlow.Consumers
 
         private readonly Channel<IMessageContext> messagesBuffer;
 
-        private readonly WorkerStoppingSubject workerStoppingSubject;
-        private readonly WorkerStoppedSubject workerStoppedSubject;
-        private readonly WorkerStartedSubject workerStartedSubject;
-        private readonly WorkerErrorSubject workerErrorSubject;
+        private readonly Event workerStoppingSubject;
+        private readonly Event workerStoppedSubject;
 
         private CancellationTokenSource stopCancellationTokenSource;
         private Task backgroundTask;
@@ -39,9 +36,7 @@ namespace KafkaFlow.Consumers
             this.messagesBuffer = Channel.CreateBounded<IMessageContext>(consumer.Configuration.BufferSize);
 
             this.workerStoppingSubject = new(logHandler);
-            this.workerStoppedSubject = this.workerDependencyResolverScope.Resolver.Resolve<WorkerStoppedSubject>();
-            this.workerStartedSubject = this.workerDependencyResolverScope.Resolver.Resolve<WorkerStartedSubject>();
-            this.workerErrorSubject = this.workerDependencyResolverScope.Resolver.Resolve<WorkerErrorSubject>();
+            this.workerStoppedSubject = new(logHandler);
 
             var middlewareContext = this.workerDependencyResolverScope.Resolver.Resolve<ConsumerMiddlewareContext>();
 
@@ -55,9 +50,9 @@ namespace KafkaFlow.Consumers
 
         public IDependencyResolver WorkerDependencyResolver => this.workerDependencyResolverScope.Resolver;
 
-        public ISubject<WorkerStoppingSubject, VoidObject> WorkerStopping => this.workerStoppingSubject;
+        public IEvent WorkerStopping => this.workerStoppingSubject;
 
-        public ISubject<WorkerStoppedSubject, VoidObject> WorkerStopped => this.workerStoppedSubject;
+        public IEvent WorkerStopped => this.workerStoppedSubject;
 
         public ValueTask EnqueueAsync(
             IMessageContext context,
@@ -102,7 +97,7 @@ namespace KafkaFlow.Consumers
 
         public async Task StopAsync()
         {
-            await this.workerStoppingSubject.NotifyAsync(VoidObject.Value);
+            await this.workerStoppingSubject.FireAsync();
 
             this.messagesBuffer.Writer.TryComplete();
 
@@ -113,7 +108,7 @@ namespace KafkaFlow.Consumers
 
             await this.backgroundTask.ConfigureAwait(false);
 
-            await this.workerStoppedSubject.NotifyAsync(VoidObject.Value);
+            await this.workerStoppedSubject.FireAsync();
         }
 
         public void Dispose()
@@ -132,8 +127,6 @@ namespace KafkaFlow.Consumers
         {
             try
             {
-                await this.workerStartedSubject.NotifyAsync(context);
-
                 try
                 {
                     await this.middlewareExecutor
@@ -142,12 +135,10 @@ namespace KafkaFlow.Consumers
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
-                    context.ConsumerContext.StoreOffsetOnCompletion = false;
+                    context.ConsumerContext.ShouldStoreOffset = false;
                 }
                 catch (Exception ex)
                 {
-                    await this.workerErrorSubject.NotifyAsync(ex);
-
                     this.logHandler.Error(
                         "Error processing message",
                         ex,

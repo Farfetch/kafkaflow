@@ -7,12 +7,8 @@
     using System.Threading.Tasks;
     using KafkaFlow.Configuration;
     using KafkaFlow.Consumers;
-    using KafkaFlow.Observer;
 
-    internal class BatchConsumeMiddleware
-        : IMessageMiddleware,
-            ISubjectObserver<WorkerStoppedSubject, VoidObject>,
-            IDisposable
+    internal class BatchConsumeMiddleware : IMessageMiddleware, IDisposable
     {
         private readonly SemaphoreSlim dispatchSemaphore = new(1, 1);
 
@@ -26,7 +22,7 @@
         private Task<Task> dispatchTask;
 
         public BatchConsumeMiddleware(
-            IConsumerMiddlewareContext workerContext,
+            IConsumerMiddlewareContext middlewareContext,
             int batchSize,
             TimeSpan batchTimeout,
             ILogHandler logHandler)
@@ -35,9 +31,9 @@
             this.batchTimeout = batchTimeout;
             this.logHandler = logHandler;
             this.batch = new(batchSize);
-            this.consumerConfiguration = workerContext.Consumer.Configuration;
+            this.consumerConfiguration = middlewareContext.Consumer.Configuration;
 
-            workerContext.Worker.WorkerStopped.Subscribe(this);
+            middlewareContext.Worker.WorkerStopped.Subscribe(() => this.TriggerDispatchAndWaitAsync());
         }
 
         public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
@@ -66,8 +62,6 @@
                 await this.TriggerDispatchAndWaitAsync();
             }
         }
-
-        public async Task OnNotification(WorkerStoppedSubject subject, VoidObject arg) => await this.TriggerDispatchAndWaitAsync();
 
         public void Dispose()
         {
@@ -120,7 +114,7 @@
             {
                 foreach (var messageContext in localBatch)
                 {
-                    messageContext.ConsumerContext.StoreOffsetOnCompletion = false;
+                    messageContext.ConsumerContext.ShouldStoreOffset = false;
                 }
             }
             catch (Exception ex)

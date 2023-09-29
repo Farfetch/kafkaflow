@@ -1,8 +1,6 @@
 namespace KafkaFlow
 {
     using System;
-    using KafkaFlow.Configuration;
-    using KafkaFlow.Observer;
 
     /// <summary>
     /// Represents the interface of a internal worker
@@ -23,11 +21,11 @@ namespace KafkaFlow
         /// <summary>
         /// Gets the subject for worker stopping events where observers can subscribe to receive notifications.
         /// </summary>
-        ISubject<WorkerStoppingSubject, VoidObject> WorkerStopping { get; }
+        IEvent WorkerStopping { get; }
 
         /// <summary>
         /// Gets the subject for worker stopped events where observers can subscribe to receive notifications.
         /// </summary>
-        ISubject<WorkerStoppedSubject, VoidObject> WorkerStopped { get; }
+        IEvent WorkerStopped { get; }
     }
 }
