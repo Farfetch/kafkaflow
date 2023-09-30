@@ -14,6 +14,7 @@ Please describe the tests that you ran to verify your changes.
 -   [ ] I have performed a self-review of my own code
 -   [ ] I have added tests to cover my changes
 -   [ ] I have made corresponding changes to the documentation
+-   [ ] This change is related to an RFC document, and I've linked it in the Pull Request. _RFCs aren't required to contribute. KafkaFlow uses them to document complex and/or impactful evolutions. You can now more about them at the [Contributing Guidelines](https://github.com/Farfetch/)kafkaflow/blob/master/CONTRIBUTING.md)._
 
 ### Disclaimer
 
