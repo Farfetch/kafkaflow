@@ -14,6 +14,7 @@ Please describe the tests that you ran to verify your changes.
 -   [ ] I have performed a self-review of my own code
 -   [ ] I have added tests to cover my changes
 -   [ ] I have made corresponding changes to the documentation
+-   [ ] Optional: I created a RFC (Only for complex and/or impactful changes as defined in the [Contributing Guidelines](https://github.com/Farfetch/)kafkaflow/blob/master/CONTRIBUTING.md)
 
 ### Disclaimer
 
