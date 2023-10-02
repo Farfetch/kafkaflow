@@ -16,6 +16,8 @@ namespace KafkaFlow.Consumers
 
         private readonly Event workerStoppingSubject;
         private readonly Event workerStoppedSubject;
+        private readonly Event<IMessageContext> workerStarted;
+        private readonly Event<Exception> workerError;
 
         private CancellationTokenSource stopCancellationTokenSource;
         private Task backgroundTask;
@@ -37,6 +39,8 @@ namespace KafkaFlow.Consumers
 
             this.workerStoppingSubject = new(logHandler);
             this.workerStoppedSubject = new(logHandler);
+            this.workerStarted = new(logHandler);
+            this.workerError = new(logHandler);
 
             var middlewareContext = this.workerDependencyResolverScope.Resolver.Resolve<ConsumerMiddlewareContext>();
 
@@ -127,6 +131,8 @@ namespace KafkaFlow.Consumers
         {
             try
             {
+                await this.workerStarted.FireAsync(context).ConfigureAwait(false);
+
                 try
                 {
                     await this.middlewareExecutor
@@ -135,10 +141,12 @@ namespace KafkaFlow.Consumers
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
-                    context.ConsumerContext.ShouldStoreOffset = false;
+                    //context.ConsumerContext.ShouldStoreOffset = false;
                 }
                 catch (Exception ex)
                 {
+                    await this.workerError.FireAsync(ex);
+
                     this.logHandler.Error(
                         "Error processing message",
                         ex,

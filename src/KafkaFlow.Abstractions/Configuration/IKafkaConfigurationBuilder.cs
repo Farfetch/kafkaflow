@@ -26,7 +26,7 @@ namespace KafkaFlow.Configuration
         IKafkaConfigurationBuilder UseLogHandler<TLogHandler>()
             where TLogHandler : ILogHandler;
 
-        IKafkaConfigurationBuilder SubscribeConsumerInstrumentationSubjects(IConsumerInstrumentationObservers observers);
+        IKafkaConfigurationBuilder SubscribeConsumerEvents(IConsumerInstrumentationObservers observers);
 
         IKafkaConfigurationBuilder SubscribeProducerInstrumentationSubjects(IProducerInstrumentationObservers observers);
     }

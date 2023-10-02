@@ -18,7 +18,7 @@
             var openTelemetryConsumerObserver = new OpenTelemetryConsumerObserver();
             var openTelemetryProducerObserver = new OpenTelemetryProducerObserver();
 
-            builder.SubscribeConsumerInstrumentationSubjects(openTelemetryConsumerObserver);
+            builder.SubscribeConsumerEvents(openTelemetryConsumerObserver);
             builder.SubscribeProducerInstrumentationSubjects(openTelemetryProducerObserver);
 
             return builder;

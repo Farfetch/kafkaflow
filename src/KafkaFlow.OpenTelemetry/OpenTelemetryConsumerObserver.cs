@@ -57,7 +57,7 @@
             return Task.CompletedTask;
         }
 
-        public Task OnNotification(WorkerErrorSubject subject, Exception ex)
+        public Task OnNotification(WorkerErrorEvent subject, Exception ex)
         {
             var activity = Activity.Current;
 

@@ -6,7 +6,7 @@
     public interface IConsumerInstrumentationObservers :
         ISubjectObserver<WorkerStartedSubject, IMessageContext>,
         ISubjectObserver<WorkerStoppedSubject, VoidObject>,
-        ISubjectObserver<WorkerErrorSubject, Exception>
+        ISubjectObserver<WorkerErrorEvent, Exception>
     {
     }
 }

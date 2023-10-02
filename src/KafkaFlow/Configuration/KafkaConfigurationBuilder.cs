@@ -16,7 +16,7 @@ namespace KafkaFlow.Configuration
         private Type logHandlerType = typeof(NullLogHandler);
         private readonly WorkerStartedSubject workerStartedSubject;
         private readonly WorkerStoppedSubject workerStoppedSubject;
-        private readonly WorkerErrorSubject workerErrorSubject;
+        private readonly WorkerErrorEvent workerErrorSubject;
         private readonly ProducerErrorSubject producerErrorSubject;
         private readonly ProducerStartedSubject producerStartedSubject;
         private readonly ProducerStoppedSubject producerStoppedSubject;
@@ -24,7 +24,7 @@ namespace KafkaFlow.Configuration
         public KafkaConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
             this.dependencyConfigurator = dependencyConfigurator;
-            this.workerErrorSubject = new WorkerErrorSubject(null);
+            this.workerErrorSubject = new WorkerErrorEvent(null);
             this.workerStartedSubject = new WorkerStartedSubject(null);
             this.workerStoppedSubject = new WorkerStoppedSubject(null);
             this.producerErrorSubject = new ProducerErrorSubject(null);
@@ -90,7 +90,7 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public IKafkaConfigurationBuilder SubscribeConsumerInstrumentationSubjects(IConsumerInstrumentationObservers observers)
+        public IKafkaConfigurationBuilder SubscribeConsumerEvents(Action<IKafkaGlobalEventsBuilder>)
         {
             this.workerErrorSubject.Subscribe(observers);
             this.workerStartedSubject.Subscribe(observers);

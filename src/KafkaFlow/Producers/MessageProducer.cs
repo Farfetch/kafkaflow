@@ -13,9 +13,9 @@ namespace KafkaFlow.Producers
         private readonly ILogHandler logHandler;
         private readonly IProducerConfiguration configuration;
         private readonly MiddlewareExecutor middlewareExecutor;
-        private readonly ProducerStartedSubject producerStartedSubject;
-        private readonly ProducerStoppedSubject producerStoppedSubject;
-        private readonly ProducerErrorSubject producerErrorSubject;
+        private readonly Event<IMessageContext> producerStartedSubject;
+        private readonly Event producerStoppedSubject;
+        private readonly Event<Exception> producerErrorSubject;
 
         private readonly object producerCreationSync = new();
 
@@ -30,9 +30,9 @@ namespace KafkaFlow.Producers
             this.configuration = configuration;
             this.middlewareExecutor = new MiddlewareExecutor(configuration.MiddlewaresConfigurations);
 
-            this.producerStartedSubject = dependencyResolver.Resolve<ProducerStartedSubject>();
-            this.producerStoppedSubject = dependencyResolver.Resolve<ProducerStoppedSubject>();
-            this.producerErrorSubject = dependencyResolver.Resolve<ProducerErrorSubject>();
+            this.producerStartedSubject = dependencyResolver.Resolve<Event<IMessageContext>>();
+            this.producerStoppedSubject = dependencyResolver.Resolve<Event>();
+            this.producerErrorSubject = dependencyResolver.Resolve<Event<Exception>>();
         }
 
         public string ProducerName => this.configuration.Name;
@@ -64,7 +64,7 @@ namespace KafkaFlow.Producers
                     })
                 .ConfigureAwait(false);
 
-            await this.producerStoppedSubject.NotifyAsync(VoidObject.Value);
+            await this.producerStoppedSubject.FireAsync();
 
             return report;
         }
@@ -277,7 +277,7 @@ namespace KafkaFlow.Producers
 
             try
             {
-                await this.producerStartedSubject.NotifyAsync(context);
+                await this.producerStartedSubject.FireAsync(context);
 
                 var produceTask = partition.HasValue ?
                     localProducer.ProduceAsync(new TopicPartition(context.ProducerContext.Topic, partition.Value), message) :
@@ -292,7 +292,7 @@ namespace KafkaFlow.Producers
                     this.InvalidateProducer(e.Error, result);
                 }
 
-                await this.producerErrorSubject.NotifyAsync(e);
+                await this.producerErrorSubject.FireAsync(e);
 
                 throw;
             }
