@@ -1,7 +1,6 @@
 namespace KafkaFlow.Admin.WebApi.Contracts
 {
     using System.Collections.Generic;
-    using KafkaFlow.Consumers;
 
     /// <summary>
     /// The response of the consumer groups

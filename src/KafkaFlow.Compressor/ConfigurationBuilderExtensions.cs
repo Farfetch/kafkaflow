@@ -1,6 +1,5 @@
 ﻿namespace KafkaFlow.Compressor
 {
-    using System;
     using KafkaFlow.Configuration;
 
     /// <summary>

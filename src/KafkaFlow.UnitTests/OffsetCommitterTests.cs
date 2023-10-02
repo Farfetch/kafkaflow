@@ -3,10 +3,8 @@ namespace KafkaFlow.UnitTests
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading;
     using System.Threading.Tasks;
     using Confluent.Kafka;
-    using FluentAssertions;
     using KafkaFlow.Consumers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;

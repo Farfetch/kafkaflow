@@ -1,6 +1,5 @@
 ﻿namespace KafkaFlow.Compressor.Gzip
 {
-    using System;
     using System.IO;
     using System.IO.Compression;
 
