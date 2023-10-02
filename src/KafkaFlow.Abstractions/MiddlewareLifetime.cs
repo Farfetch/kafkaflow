@@ -1,7 +1,5 @@
 namespace KafkaFlow
 {
-    using System;
-
     /// <summary>
     /// Specifies the lifetime of a middleware
     /// </summary>

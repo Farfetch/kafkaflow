@@ -9,7 +9,6 @@ namespace KafkaFlow.IntegrationTests
     using KafkaFlow.IntegrationTests.Core;
     using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Producers;
-    using KafkaFlow.Producers;
 
     [TestClass]
     public class CompressionTest
