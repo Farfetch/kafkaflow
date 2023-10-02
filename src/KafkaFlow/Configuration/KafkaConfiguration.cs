@@ -1,24 +1,26 @@
-namespace KafkaFlow.Configuration
+namespace KafkaFlow.Configuration;
+
+using System.Collections.Generic;
+
+/// <summary>
+/// Represents the kafka configuration values
+/// </summary>
+public class KafkaConfiguration
 {
-    using System.Collections.Generic;
+    private readonly List<ClusterConfiguration> clusters = new();
+
+    internal KafkaConfiguration(GlobalEventsConfiguration globalEventsConfiguration)
+    {
+        this.GlobalEventsConfiguration = globalEventsConfiguration;
+    }
 
     /// <summary>
-    /// Represents the kafka configuration values
+    /// Gets the cluster configuration list
     /// </summary>
-    public class KafkaConfiguration
-    {
-        private readonly List<ClusterConfiguration> clusters = new();
+    public IReadOnlyCollection<ClusterConfiguration> Clusters => this.clusters;
 
-        /// <summary>
-        /// Gets the cluster configuration list
-        /// </summary>
-        public IReadOnlyCollection<ClusterConfiguration> Clusters => this.clusters;
+    internal GlobalEventsConfiguration GlobalEventsConfiguration { get; }
 
-        /// <summary>
-        /// Adds a list of cluster configurations
-        /// </summary>
-        /// <param name="configurations">A list of cluster configurations</param>
-        public void AddClusters(IEnumerable<ClusterConfiguration> configurations) =>
-            this.clusters.AddRange(configurations);
-    }
+    internal void AddClusters(IEnumerable<ClusterConfiguration> configurations) =>
+        this.clusters.AddRange(configurations);
 }

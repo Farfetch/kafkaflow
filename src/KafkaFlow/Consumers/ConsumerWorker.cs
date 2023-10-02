@@ -4,6 +4,7 @@ namespace KafkaFlow.Consumers
     using System.Threading;
     using System.Threading.Channels;
     using System.Threading.Tasks;
+    using KafkaFlow.Configuration;
 
     internal class ConsumerWorker : IConsumerWorker
     {
@@ -16,12 +17,11 @@ namespace KafkaFlow.Consumers
 
         private readonly Event workerStoppingSubject;
         private readonly Event workerStoppedSubject;
-        private readonly Event<IMessageContext> workerStarted;
-        private readonly Event<Exception> workerError;
 
         private CancellationTokenSource stopCancellationTokenSource;
         private Task backgroundTask;
         private Action onMessageFinishedHandler;
+        private readonly Event<(IMessageContext, IDependencyResolver)> messageConsumeStartEvent;
 
         public ConsumerWorker(
             IConsumer consumer,
@@ -37,10 +37,12 @@ namespace KafkaFlow.Consumers
             this.logHandler = logHandler;
             this.messagesBuffer = Channel.CreateBounded<IMessageContext>(consumer.Configuration.BufferSize);
 
+            this.messageConsumeStartEvent = new Event<(IMessageContext, IDependencyResolver)>(
+                logHandler,
+                this.consumer.Configuration.ClusterConfiguration.Kafka.GlobalEventsConfiguration);
+
             this.workerStoppingSubject = new(logHandler);
             this.workerStoppedSubject = new(logHandler);
-            this.workerStarted = new(logHandler);
-            this.workerError = new(logHandler);
 
             var middlewareContext = this.workerDependencyResolverScope.Resolver.Resolve<ConsumerMiddlewareContext>();
 
@@ -131,7 +133,7 @@ namespace KafkaFlow.Consumers
         {
             try
             {
-                await this.workerStarted.FireAsync(context).ConfigureAwait(false);
+                await this.messageConsumeStartEvent.FireAsync((context, context.ConsumerContext.ConsumerDependencyResolver));
 
                 try
                 {
@@ -145,7 +147,7 @@ namespace KafkaFlow.Consumers
                 }
                 catch (Exception ex)
                 {
-                    await this.workerError.FireAsync(ex);
+                    //await this.workerError.FireAsync(ex);
 
                     this.logHandler.Error(
                         "Error processing message",

@@ -19,7 +19,7 @@
     /// Represents an Event to be subscribed.
     /// </summary>
     /// <typeparam name="TArg">The argument expected by the event.</typeparam>
-    public interface IEvent<TArg>
+    public interface IEvent<out TArg>
     {
         /// <summary>
         /// Subscribes to the event.

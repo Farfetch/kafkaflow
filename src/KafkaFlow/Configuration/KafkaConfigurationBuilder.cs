@@ -1,111 +1,81 @@
-namespace KafkaFlow.Configuration
+namespace KafkaFlow.Configuration;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using KafkaFlow.Clusters;
+using KafkaFlow.Consumers;
+using KafkaFlow.Producers;
+
+internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using KafkaFlow.Clusters;
-    using KafkaFlow.Consumers;
-    using KafkaFlow.Events;
-    using KafkaFlow.Observer;
-    using KafkaFlow.Producers;
+    private readonly IDependencyConfigurator dependencyConfigurator;
+    private readonly List<ClusterConfigurationBuilder> clusters = new();
+    private readonly GlobalEventsConfigurationBuilder globalEventsConfigurationBuilder = new();
+    private Type logHandlerType = typeof(NullLogHandler);
 
-    internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
+    public KafkaConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
     {
-        private readonly IDependencyConfigurator dependencyConfigurator;
-        private readonly List<ClusterConfigurationBuilder> clusters = new();
-        private Type logHandlerType = typeof(NullLogHandler);
-        private readonly WorkerStartedSubject workerStartedSubject;
-        private readonly WorkerStoppedSubject workerStoppedSubject;
-        private readonly WorkerErrorEvent workerErrorSubject;
-        private readonly ProducerErrorSubject producerErrorSubject;
-        private readonly ProducerStartedSubject producerStartedSubject;
-        private readonly ProducerStoppedSubject producerStoppedSubject;
+        this.dependencyConfigurator = dependencyConfigurator;
+    }
 
-        public KafkaConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
+    public KafkaConfiguration Build()
+    {
+        var globalEventsConfiguration = this.globalEventsConfigurationBuilder.Build();
+
+        var configuration = new KafkaConfiguration(globalEventsConfiguration);
+
+        configuration.AddClusters(this.clusters.Select(x => x.Build(configuration)));
+
+        this.dependencyConfigurator.AddSingleton<IProducerAccessor>(
+            resolver => new ProducerAccessor(
+                configuration.Clusters
+                    .SelectMany(x => x.Producers)
+                    .Select(
+                        producer => new MessageProducer(
+                            resolver,
+                            producer))));
+
+        foreach (var cluster in configuration.Clusters)
         {
-            this.dependencyConfigurator = dependencyConfigurator;
-            this.workerErrorSubject = new WorkerErrorEvent(null);
-            this.workerStartedSubject = new WorkerStartedSubject(null);
-            this.workerStoppedSubject = new WorkerStoppedSubject(null);
-            this.producerErrorSubject = new ProducerErrorSubject(null);
-            this.producerStartedSubject = new ProducerStartedSubject(null);
-            this.producerStoppedSubject = new ProducerStoppedSubject(null);
+            this.dependencyConfigurator.AddSingleton<IClusterManager>(
+                resolver =>
+                    new ClusterManager(resolver.Resolve<ILogHandler>(), cluster));
         }
 
-        public KafkaConfiguration Build()
-        {
-            var configuration = new KafkaConfiguration();
+        this.dependencyConfigurator
+            .AddTransient(typeof(ILogHandler), this.logHandlerType)
+            .AddSingleton<IDateTimeProvider, DateTimeProvider>()
+            .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
+            .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
+            .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
+            .AddScoped<ConsumerMiddlewareContext>()
+            .AddScoped<IConsumerMiddlewareContext>(r => r.Resolve<ConsumerMiddlewareContext>());
 
-            configuration.AddClusters(this.clusters.Select(x => x.Build(configuration)));
+        return configuration;
+    }
 
-            this.dependencyConfigurator.AddSingleton<IProducerAccessor>(
-                resolver => new ProducerAccessor(
-                    configuration.Clusters
-                        .SelectMany(x => x.Producers)
-                        .Select(
-                            producer => new MessageProducer(
-                                resolver,
-                                producer))));
+    public IKafkaConfigurationBuilder AddCluster(Action<IClusterConfigurationBuilder> cluster)
+    {
+        var builder = new ClusterConfigurationBuilder(this.dependencyConfigurator);
 
-            foreach (var cluster in configuration.Clusters)
-            {
-                this.dependencyConfigurator.AddSingleton<IClusterManager>(
-                    resolver =>
-                        new ClusterManager(resolver.Resolve<ILogHandler>(), cluster));
-            }
+        cluster(builder);
 
-            this.dependencyConfigurator
-                .AddTransient(typeof(ILogHandler), this.logHandlerType)
-                .AddSingleton<IDateTimeProvider, DateTimeProvider>()
-                .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
-                .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
-                .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
-                .AddScoped<ConsumerMiddlewareContext>()
-                .AddScoped<IConsumerMiddlewareContext>(r => r.Resolve<ConsumerMiddlewareContext>())
-                .AddSingleton(this.workerStartedSubject)
-                .AddSingleton(this.workerStoppedSubject)
-                .AddSingleton(this.workerErrorSubject)
-                .AddSingleton(this.producerStartedSubject)
-                .AddSingleton(this.producerStoppedSubject)
-                .AddSingleton(this.producerErrorSubject);
+        this.clusters.Add(builder);
 
-            return configuration;
-        }
+        return this;
+    }
 
-        public IKafkaConfigurationBuilder AddCluster(Action<IClusterConfigurationBuilder> cluster)
-        {
-            var builder = new ClusterConfigurationBuilder(this.dependencyConfigurator);
+    public IKafkaConfigurationBuilder UseLogHandler<TLogHandler>()
+        where TLogHandler : ILogHandler
+    {
+        this.logHandlerType = typeof(TLogHandler);
+        return this;
+    }
 
-            cluster(builder);
-
-            this.clusters.Add(builder);
-
-            return this;
-        }
-
-        public IKafkaConfigurationBuilder UseLogHandler<TLogHandler>()
-            where TLogHandler : ILogHandler
-        {
-            this.logHandlerType = typeof(TLogHandler);
-            return this;
-        }
-
-        public IKafkaConfigurationBuilder SubscribeConsumerEvents(Action<IKafkaGlobalEventsBuilder>)
-        {
-            this.workerErrorSubject.Subscribe(observers);
-            this.workerStartedSubject.Subscribe(observers);
-            this.workerStoppedSubject.Subscribe(observers);
-
-            return this;
-        }
-
-        public IKafkaConfigurationBuilder SubscribeProducerInstrumentationSubjects(IProducerInstrumentationObservers observers)
-        {
-            this.producerErrorSubject.Subscribe(observers);
-            this.producerStartedSubject.Subscribe(observers);
-            this.producerStoppedSubject.Subscribe(observers);
-
-            return this;
-        }
+    public IKafkaConfigurationBuilder SubscribeGlobalEvents(Action<IGlobalEventsConfigurationBuilder> builder)
+    {
+        builder(this.globalEventsConfigurationBuilder);
+        return this;
     }
 }
