@@ -1,7 +1,6 @@
 namespace KafkaFlow
 {
     using System;
-    using KafkaFlow.Configuration;
     using KafkaFlow.Observer;
 
     /// <summary>
