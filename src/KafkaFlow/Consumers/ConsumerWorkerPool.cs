@@ -7,7 +7,6 @@ namespace KafkaFlow.Consumers
     using System.Threading.Tasks;
     using Confluent.Kafka;
     using KafkaFlow.Configuration;
-    using KafkaFlow.Observer;
 
     internal class ConsumerWorkerPool : IConsumerWorkerPool
     {
@@ -18,7 +17,7 @@ namespace KafkaFlow.Consumers
         private readonly Factory<IDistributionStrategy> distributionStrategyFactory;
         private readonly IOffsetCommitter offsetCommitter;
 
-        private readonly WorkerPoolStoppedSubject workerPoolStoppedSubject;
+        private readonly Event workerPoolStoppedSubject;
 
         private TaskCompletionSource<object> startedTaskSource = new();
         private List<IConsumerWorker> workers = new();
@@ -38,7 +37,7 @@ namespace KafkaFlow.Consumers
             this.middlewareExecutor = middlewareExecutor;
             this.logHandler = logHandler;
             this.distributionStrategyFactory = consumerConfiguration.DistributionStrategyFactory;
-            this.workerPoolStoppedSubject = new(logHandler);
+            this.workerPoolStoppedSubject = new Event(logHandler);
 
             this.offsetCommitter = consumer.Configuration.NoStoreOffsets ?
                 new NullOffsetCommitter() :
@@ -52,7 +51,7 @@ namespace KafkaFlow.Consumers
 
         public int CurrentWorkersCount { get; private set; }
 
-        public ISubject<WorkerPoolStoppedSubject, VoidObject> WorkerPoolStopped => this.workerPoolStoppedSubject;
+        public IEvent WorkerPoolStopped => this.workerPoolStoppedSubject;
 
         public async Task StartAsync(IReadOnlyCollection<TopicPartition> partitions, int workersCount)
         {
@@ -121,7 +120,7 @@ namespace KafkaFlow.Consumers
 
             this.offsetManager = null;
 
-            await this.workerPoolStoppedSubject.NotifyAsync(VoidObject.Value);
+            await this.workerPoolStoppedSubject.FireAsync();
 
             await this.offsetCommitter.StopAsync();
         }

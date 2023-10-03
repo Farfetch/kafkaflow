@@ -51,7 +51,7 @@ namespace KafkaFlow.UnitTests.BatchConsume
 
             workerMock
                 .SetupGet(x => x.WorkerStopped)
-                .Returns(new WorkerStoppedSubject(this.logHandlerMock.Object));
+                .Returns(new Event(this.logHandlerMock.Object));
 
             consumerConfigurationMock
                 .SetupGet(x => x.AutoMessageCompletion)
