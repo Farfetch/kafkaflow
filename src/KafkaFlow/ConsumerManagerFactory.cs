@@ -22,7 +22,7 @@ namespace KafkaFlow
                 configuration,
                 logHandler);
 
-            consumerWorkerPool.WorkerPoolStopped.Subscribe(middlewareExecutor);
+            consumerWorkerPool.WorkerPoolStopped.Subscribe(() => middlewareExecutor.OnWorkerPoolStopped());
 
             var feeder = new WorkerPoolFeeder(
                 consumer,
