@@ -22,5 +22,5 @@ public interface IKafkaConfigurationBuilder
     IKafkaConfigurationBuilder UseLogHandler<TLogHandler>()
         where TLogHandler : ILogHandler;
 
-    IKafkaConfigurationBuilder SubscribeGlobalEvents(Action<IGlobalEventsConfigurationBuilder> observers);
+    IKafkaConfigurationBuilder SubscribeGlobalEvents(Action<IEventHub> observers);
 }

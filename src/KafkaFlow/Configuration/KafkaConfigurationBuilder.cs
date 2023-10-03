@@ -11,7 +11,7 @@ internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
 {
     private readonly IDependencyConfigurator dependencyConfigurator;
     private readonly List<ClusterConfigurationBuilder> clusters = new();
-    private readonly GlobalEventsConfigurationBuilder globalEventsConfigurationBuilder = new();
+    private readonly IList<Action<IEventHub>> eventHubsConfigurators = new List<Action<IEventHub>>();
     private Type logHandlerType = typeof(NullLogHandler);
 
     public KafkaConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
@@ -21,9 +21,7 @@ internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
 
     public KafkaConfiguration Build()
     {
-        var globalEventsConfiguration = this.globalEventsConfigurationBuilder.Build();
-
-        var configuration = new KafkaConfiguration(globalEventsConfiguration);
+        var configuration = new KafkaConfiguration();
 
         configuration.AddClusters(this.clusters.Select(x => x.Build(configuration)));
 
@@ -49,6 +47,19 @@ internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
             .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
             .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
             .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
+            .AddSingleton<IEventHub>(r =>
+            {
+                var logHandler = r.Resolve<ILogHandler>();
+
+                var hub = new EventHub(logHandler);
+
+                foreach(var del in this.eventHubsConfigurators)
+                {
+                    del.Invoke(hub);
+                }
+
+                return hub;
+            })
             .AddScoped<ConsumerMiddlewareContext>()
             .AddScoped<IConsumerMiddlewareContext>(r => r.Resolve<ConsumerMiddlewareContext>());
 
@@ -73,9 +84,10 @@ internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
         return this;
     }
 
-    public IKafkaConfigurationBuilder SubscribeGlobalEvents(Action<IGlobalEventsConfigurationBuilder> builder)
+    public IKafkaConfigurationBuilder SubscribeGlobalEvents(Action<IEventHub> builder)
     {
-        builder(this.globalEventsConfigurationBuilder);
+        this.eventHubsConfigurators.Add(builder);
+
         return this;
     }
 }

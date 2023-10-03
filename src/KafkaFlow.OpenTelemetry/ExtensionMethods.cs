@@ -18,8 +18,13 @@
             var openTelemetryConsumerObserver = new OpenTelemetryConsumerObserver();
             var openTelemetryProducerObserver = new OpenTelemetryProducerObserver();
 
-            builder.SubscribeConsumerEvents(openTelemetryConsumerObserver);
-            builder.SubscribeProducerInstrumentationSubjects(openTelemetryProducerObserver);
+            builder.SubscribeGlobalEvents(hub =>
+            {
+                hub.MessageConsumeStarted.Subscribe(openTelemetryConsumerObserver);
+            });
+
+            //builder.SubscribeConsumerEvents(openTelemetryConsumerObserver);
+            //builder.SubscribeProducerInstrumentationSubjects(openTelemetryProducerObserver);
 
             return builder;
         }

@@ -12,7 +12,7 @@ namespace KafkaFlow.Consumers
         private readonly IDependencyResolverScope workerDependencyResolverScope;
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly ILogHandler logHandler;
-
+        private readonly EventHub eventHub;
         private readonly Channel<IMessageContext> messagesBuffer;
 
         private readonly Event workerStoppingSubject;
@@ -21,25 +21,24 @@ namespace KafkaFlow.Consumers
         private CancellationTokenSource stopCancellationTokenSource;
         private Task backgroundTask;
         private Action onMessageFinishedHandler;
-        private readonly Event<(IMessageContext, IDependencyResolver)> messageConsumeStartEvent;
 
         public ConsumerWorker(
             IConsumer consumer,
             IDependencyResolver consumerDependencyResolver,
             int workerId,
             IMiddlewareExecutor middlewareExecutor,
-            ILogHandler logHandler)
+            ILogHandler logHandler,
+            EventHub eventHub)
         {
             this.Id = workerId;
             this.consumer = consumer;
             this.workerDependencyResolverScope = consumerDependencyResolver.CreateScope();
             this.middlewareExecutor = middlewareExecutor;
             this.logHandler = logHandler;
+            this.eventHub = eventHub;
             this.messagesBuffer = Channel.CreateBounded<IMessageContext>(consumer.Configuration.BufferSize);
 
-            this.messageConsumeStartEvent = new Event<(IMessageContext, IDependencyResolver)>(
-                logHandler,
-                this.consumer.Configuration.ClusterConfiguration.Kafka.GlobalEventsConfiguration);
+            //this.messageConsumeStartEvent = new Event<IMessageContext>(logHandler);
 
             this.workerStoppingSubject = new(logHandler);
             this.workerStoppedSubject = new(logHandler);
@@ -133,7 +132,7 @@ namespace KafkaFlow.Consumers
         {
             try
             {
-                await this.messageConsumeStartEvent.FireAsync((context, context.ConsumerContext.ConsumerDependencyResolver));
+                await this.eventHub.FireMessageConsumeStartedAsync(context, null);
 
                 try
                 {

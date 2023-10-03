@@ -9,17 +9,11 @@
     {
         private readonly ILogHandler logHandler;
 
-        private readonly IList<Func<TArg, Task>> handlers;
-
-        public Event(ILogHandler logHandler, IEnumerable<Func<TArg, Task>> handlers)
-        {
-            this.logHandler = logHandler;
-            this.handlers = handlers.ToList();
-        }
+        private readonly List<Func<TArg, Task>> handlers = new();
 
         public Event(ILogHandler logHandler)
-            : this(logHandler, Enumerable.Empty<Func<TArg, Task>>())
         {
+            this.logHandler = logHandler;
         }
 
         public void Subscribe(Func<TArg, Task> handler)
