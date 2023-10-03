@@ -11,7 +11,7 @@ namespace KafkaFlow.Consumers
         private readonly IDependencyResolverScope workerDependencyResolverScope;
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly ILogHandler logHandler;
-
+        private readonly EventHub eventHub;
         private readonly Channel<IMessageContext> messagesBuffer;
 
         private readonly Event workerStoppingEvent;
@@ -20,24 +20,25 @@ namespace KafkaFlow.Consumers
 
         private CancellationTokenSource stopCancellationTokenSource;
         private Task backgroundTask;
+        private Action onMessageFinishedHandler;
 
         public ConsumerWorker(
             IConsumer consumer,
             IDependencyResolver consumerDependencyResolver,
             int workerId,
             IMiddlewareExecutor middlewareExecutor,
-            ILogHandler logHandler)
+            ILogHandler logHandler,
+            EventHub eventHub)
         {
             this.Id = workerId;
             this.consumer = consumer;
             this.workerDependencyResolverScope = consumerDependencyResolver.CreateScope();
             this.middlewareExecutor = middlewareExecutor;
             this.logHandler = logHandler;
+            this.eventHub = eventHub;
             this.messagesBuffer = Channel.CreateBounded<IMessageContext>(consumer.Configuration.BufferSize);
 
-            this.workerStoppingEvent = new(logHandler);
-            this.workerStoppedEvent = new(logHandler);
-            this.workerProcessingEnded = new Event<IMessageContext>(logHandler);
+            //this.messageConsumeStartEvent = new Event<IMessageContext>(logHandler);
 
             var middlewareContext = this.workerDependencyResolverScope.Resolver.Resolve<ConsumerMiddlewareContext>();
 
@@ -125,6 +126,8 @@ namespace KafkaFlow.Consumers
         {
             try
             {
+                await this.eventHub.FireMessageConsumeStartedAsync(context, null);
+
                 try
                 {
                     await this.middlewareExecutor

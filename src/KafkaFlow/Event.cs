@@ -2,27 +2,23 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     internal class Event<TArg> : IEvent<TArg>
     {
         private readonly ILogHandler logHandler;
 
-        private readonly IList<Func<TArg, Task>> handlers = new List<Func<TArg, Task>>();
+        private readonly List<Func<TArg, Task>> handlers = new();
 
         public Event(ILogHandler logHandler)
         {
             this.logHandler = logHandler;
         }
 
-        public IEventSubscription Subscribe(Func<TArg, Task> handler)
+        public void Subscribe(Func<TArg, Task> handler)
         {
-            if (!this.handlers.Contains(handler))
-            {
-                this.handlers.Add(handler);
-            }
-
-            return new EventSubscription(() => this.handlers.Remove(handler));
+            this.handlers.Add(handler);
         }
 
         internal async Task FireAsync(TArg arg)
@@ -55,8 +51,14 @@
             this.evt = new Event<object>(logHandler);
         }
 
-        public IEventSubscription Subscribe(Func<Task> handler) => this.evt.Subscribe(_ => handler.Invoke());
+        public void Subscribe(Func<Task> handle)
+        {
+            this.evt.Subscribe(_ => handle?.Invoke());
+        }
 
-        internal Task FireAsync() => this.evt.FireAsync(null);
+        internal Task FireAsync()
+        {
+            return this.evt.FireAsync(null);
+        }
     }
 }
