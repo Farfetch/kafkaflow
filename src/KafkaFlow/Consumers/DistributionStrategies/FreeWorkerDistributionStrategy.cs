@@ -18,7 +18,7 @@ namespace KafkaFlow.Consumers.DistributionStrategies
         {
             foreach (var worker in workers)
             {
-                worker.OnTaskCompleted(() => this.freeWorkers.Writer.WriteAsync(worker));
+                worker.WorkerProcessingEnded.Subscribe(_ => Task.FromResult(this.freeWorkers.Writer.WriteAsync(worker)));
                 this.freeWorkers.Writer.TryWrite(worker);
             }
         }

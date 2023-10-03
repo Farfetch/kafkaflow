@@ -7,12 +7,8 @@
     using System.Threading.Tasks;
     using KafkaFlow.Configuration;
     using KafkaFlow.Consumers;
-    using KafkaFlow.Observer;
 
-    internal class BatchConsumeMiddleware
-        : IMessageMiddleware,
-            ISubjectObserver<WorkerStoppedSubject, VoidObject>,
-            IDisposable
+    internal class BatchConsumeMiddleware : IMessageMiddleware, IDisposable
     {
         private readonly SemaphoreSlim dispatchSemaphore = new(1, 1);
 
@@ -37,7 +33,7 @@
             this.batch = new(batchSize);
             this.consumerConfiguration = middlewareContext.Consumer.Configuration;
 
-            middlewareContext.Worker.WorkerStopped.Subscribe(this);
+            middlewareContext.Worker.WorkerStopped.Subscribe(() => this.TriggerDispatchAndWaitAsync());
         }
 
         public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
@@ -66,8 +62,6 @@
                 await this.TriggerDispatchAndWaitAsync();
             }
         }
-
-        public async Task OnNotification(WorkerStoppedSubject subject, VoidObject arg) => await this.TriggerDispatchAndWaitAsync();
 
         public void Dispose()
         {
