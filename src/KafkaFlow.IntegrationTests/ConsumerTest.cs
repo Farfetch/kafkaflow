@@ -6,6 +6,7 @@ namespace KafkaFlow.IntegrationTests
     using AutoFixture;
     using global::Microsoft.Extensions.DependencyInjection;
     using global::Microsoft.VisualStudio.TestTools.UnitTesting;
+    using KafkaFlow.Consumers;
     using KafkaFlow.IntegrationTests.Core;
     using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Messages;
@@ -140,6 +141,22 @@ namespace KafkaFlow.IntegrationTests
             {
                 await MessageStorage.AssertMessageAsync(message);
             }
+        }
+
+        [TestMethod]
+        public void AddConsumer_WithSharedConsumerConfig_ConsumersAreConfiguratedIndependently()
+        {
+            // Act
+            var consumers = this.provider.GetRequiredService<IConsumerAccessor>().All;
+
+            // Assert
+            Assert.IsNotNull(consumers.FirstOrDefault(x => x.GroupId.Equals(Bootstrapper.AvroGroupId)));
+            Assert.IsNotNull(consumers.FirstOrDefault(x => x.GroupId.Equals(Bootstrapper.GzipGroupId)));
+            Assert.IsNotNull(consumers.FirstOrDefault(x => x.GroupId.Equals(Bootstrapper.JsonGroupId)));
+            Assert.IsNotNull(consumers.FirstOrDefault(x => x.GroupId.Equals(Bootstrapper.JsonGzipGroupId)));
+            Assert.IsNotNull(consumers.FirstOrDefault(x => x.GroupId.Equals(Bootstrapper.PauseResumeGroupId)));
+            Assert.IsNotNull(consumers.FirstOrDefault(x => x.GroupId.Equals(Bootstrapper.ProtobufGroupId)));
+            Assert.IsNotNull(consumers.FirstOrDefault(x => x.GroupId.Equals(Bootstrapper.ProtobufGzipGroupId)));
         }
     }
 }

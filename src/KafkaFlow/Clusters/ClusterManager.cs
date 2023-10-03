@@ -19,8 +19,16 @@ namespace KafkaFlow.Clusters
             this.logHandler = logHandler;
             this.configuration = configuration;
             this.lazyAdminClientBuilder = new Lazy<AdminClientBuilder>(
-                () => new AdminClientBuilder(new AdminClientConfig
-                { BootstrapServers = string.Join(",", configuration.Brokers) }));
+                () =>
+                {
+                    var adminConfig = new AdminClientConfig
+                    {
+                        BootstrapServers = string.Join(",", configuration.Brokers),
+                    };
+                    adminConfig.ReadSecurityInformationFrom(configuration);
+
+                    return new AdminClientBuilder(adminConfig);
+                });
         }
 
         public string ClusterName => this.configuration.Name;

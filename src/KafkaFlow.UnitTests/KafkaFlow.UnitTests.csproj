@@ -35,6 +35,7 @@
         <ProjectReference Include="..\KafkaFlow.Compressor\KafkaFlow.Compressor.csproj" />
         <ProjectReference Include="..\KafkaFlow.LogHandler.Microsoft\KafkaFlow.LogHandler.Microsoft.csproj" />
         <ProjectReference Include="..\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf.csproj" />
+        <ProjectReference Include="..\KafkaFlow.Serializer.JsonCore\KafkaFlow.Serializer.JsonCore.csproj" />
         <ProjectReference Include="..\KafkaFlow.Serializer\KafkaFlow.Serializer.csproj" />
         <ProjectReference Include="..\KafkaFlow.Serializer.NewtonsoftJson\KafkaFlow.Serializer.NewtonsoftJson.csproj" />
         <ProjectReference Include="..\KafkaFlow.TypedHandler\KafkaFlow.TypedHandler.csproj" />

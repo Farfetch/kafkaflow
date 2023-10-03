@@ -234,19 +234,22 @@ namespace KafkaFlow.Configuration
             var middlewareConfiguration = this.middlewareConfigurationBuilder.Build();
 
             this.consumerConfig ??= new ConsumerConfig();
-            this.consumerConfig.BootstrapServers ??= string.Join(",", clusterConfiguration.Brokers);
-            this.consumerConfig.GroupId ??= this.groupId;
-            this.consumerConfig.AutoOffsetReset ??= this.autoOffsetReset;
-            this.consumerConfig.MaxPollIntervalMs ??= this.maxPollIntervalMs;
-            this.consumerConfig.StatisticsIntervalMs ??= this.statisticsInterval;
 
-            this.consumerConfig.EnableAutoOffsetStore = false;
-            this.consumerConfig.EnableAutoCommit = false;
+            var consumerConfigCopy = new ConsumerConfig(this.consumerConfig.ToDictionary(x => x.Key, x => x.Value));
 
-            this.consumerConfig.ReadSecurityInformationFrom(clusterConfiguration);
+            consumerConfigCopy.BootstrapServers = this.consumerConfig.BootstrapServers ?? string.Join(",", clusterConfiguration.Brokers);
+            consumerConfigCopy.GroupId = this.consumerConfig.GroupId ?? this.groupId;
+            consumerConfigCopy.AutoOffsetReset = this.consumerConfig.AutoOffsetReset ?? this.autoOffsetReset;
+            consumerConfigCopy.MaxPollIntervalMs = this.consumerConfig.MaxPollIntervalMs ?? this.maxPollIntervalMs;
+            consumerConfigCopy.StatisticsIntervalMs = this.consumerConfig.StatisticsIntervalMs ?? this.statisticsInterval;
+
+            consumerConfigCopy.EnableAutoOffsetStore = false;
+            consumerConfigCopy.EnableAutoCommit = false;
+
+            consumerConfigCopy.ReadSecurityInformationFrom(clusterConfiguration);
 
             return new ConsumerConfiguration(
-                this.consumerConfig,
+                consumerConfigCopy,
                 this.topics,
                 this.topicsPartitions,
                 this.name,
