@@ -114,7 +114,7 @@
             {
                 foreach (var messageContext in localBatch)
                 {
-                    messageContext.ConsumerContext.ShouldStoreOffset = false;
+                    messageContext.ConsumerContext.StoreOffsetOnCompletion = false;
                 }
             }
             catch (Exception ex)

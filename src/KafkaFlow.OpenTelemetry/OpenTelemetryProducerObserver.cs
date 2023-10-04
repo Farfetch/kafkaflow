@@ -8,14 +8,13 @@
     using global::OpenTelemetry;
     using global::OpenTelemetry.Context.Propagation;
     using KafkaFlow.OpenTelemetry.Trace;
-    using KafkaFlow.Producers;
 
-    internal class OpenTelemetryProducerObserver : IProducerInstrumentationObservers
+    internal class OpenTelemetryProducerObserver
     {
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
         private static readonly string PublishString = "publish";
 
-        public Task OnNotification(ProducerStartedSubject subject, IMessageContext context)
+        public Task OnNotification(IMessageContext context)
         {
             try
             {
@@ -62,7 +61,7 @@
             return Task.CompletedTask;
         }
 
-        public Task OnNotification(ProducerStoppedSubject subject, VoidObject arg)
+        public Task OnNotification()
         {
             var activity = Activity.Current;
 
@@ -71,7 +70,7 @@
             return Task.CompletedTask;
         }
 
-        public Task OnNotification(ProducerErrorSubject subject, Exception ex)
+        public Task OnNotification(Exception ex)
         {
             var activity = Activity.Current;
 
@@ -86,7 +85,6 @@
             {
                 if (!context.Headers.Any(x => x.Key == key))
                 {
-                    Console.WriteLine("Injecting");
                     context.Headers.Add(key, Encoding.ASCII.GetBytes(value));
                 }
             }

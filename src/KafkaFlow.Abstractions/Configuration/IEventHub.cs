@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace KafkaFlow.Configuration
+﻿namespace KafkaFlow.Configuration
 {
+    using KafkaFlow.Abstractions;
+
     public interface IEventHub
     {
-        IEvent<IMessageContext> MessageConsumeStarted { get; }
+        IEvent<MessageEventContext> MessageConsumeStarted { get; }
+
+        IEvent<MessageEventContext> MessageProduceStarted { get; }
     }
 }

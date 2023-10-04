@@ -7,15 +7,14 @@
     using System.Threading.Tasks;
     using global::OpenTelemetry;
     using global::OpenTelemetry.Context.Propagation;
-    using KafkaFlow.Consumers;
     using KafkaFlow.OpenTelemetry.Trace;
 
-    internal class OpenTelemetryConsumerObserver : IConsumerInstrumentationObservers
+    internal class OpenTelemetryConsumerObserver
     {
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
         private static readonly string ProcessString = "process";
 
-        public Task OnNotification(WorkerStartedSubject subject, IMessageContext context)
+        public Task OnNotification(IMessageContext context)
         {
             try
             {
@@ -48,7 +47,7 @@
             return Task.CompletedTask;
         }
 
-        public Task OnNotification(WorkerStoppedSubject subject, VoidObject arg)
+        public Task OnNotification()
         {
             var activity = Activity.Current;
 
@@ -57,7 +56,7 @@
             return Task.CompletedTask;
         }
 
-        public Task OnNotification(WorkerErrorEvent subject, Exception ex)
+        public Task OnNotification(Exception ex)
         {
             var activity = Activity.Current;
 

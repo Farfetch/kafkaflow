@@ -20,7 +20,17 @@
 
             builder.SubscribeGlobalEvents(hub =>
             {
-                hub.MessageConsumeStarted.Subscribe(openTelemetryConsumerObserver);
+                hub.MessageConsumeStarted.Subscribe(eventContext =>
+                {
+                    var observer = new OpenTelemetryConsumerObserver();
+                    return observer.OnNotification(eventContext.MessageContext);
+                });
+
+                hub.MessageProduceStarted.Subscribe(eventContext =>
+                {
+                    var observer = new OpenTelemetryProducerObserver();
+                    return observer.OnNotification(eventContext.MessageContext);
+                });
             });
 
             //builder.SubscribeConsumerEvents(openTelemetryConsumerObserver);

@@ -4,6 +4,7 @@ namespace KafkaFlow.Producers
     using System.Text;
     using System.Threading.Tasks;
     using Confluent.Kafka;
+    using KafkaFlow.Abstractions;
     using KafkaFlow.Configuration;
     using KafkaFlow.Events;
 
@@ -58,13 +59,21 @@ namespace KafkaFlow.Producers
                         new ProducerContext(topic, this.producerDependencyScope.Resolver)),
                     async context =>
                     {
+                        var eventHub = this.producerDependencyScope.Resolver.Resolve<IEventHub>() as EventHub;
+
+                        await eventHub.FireMessageProduceStartedAsync(
+                            new MessageEventContext {
+                                MessageContext = context,
+                                DependencyResolver = this.producerDependencyScope.Resolver,
+                            });
+
                         report = await this
                             .InternalProduceAsync(context, partition)
                             .ConfigureAwait(false);
                     })
                 .ConfigureAwait(false);
 
-            await this.producerStoppedSubject.FireAsync();
+            //await this.producerStoppedSubject.FireAsync();
 
             return report;
         }
@@ -277,7 +286,7 @@ namespace KafkaFlow.Producers
 
             try
             {
-                await this.producerStartedSubject.FireAsync(context);
+                //await this.producerStartedSubject.FireAsync(context);
 
                 var produceTask = partition.HasValue ?
                     localProducer.ProduceAsync(new TopicPartition(context.ProducerContext.Topic, partition.Value), message) :
