@@ -22,5 +22,10 @@ public interface IKafkaConfigurationBuilder
     IKafkaConfigurationBuilder UseLogHandler<TLogHandler>()
         where TLogHandler : ILogHandler;
 
+    /// <summary>
+    /// Subscribe the global events defined in <see cref="IEventHub"/>
+    /// </summary>
+    /// <param name="observers">A handle to subscribe the events</param>
+    /// <returns></returns>
     IKafkaConfigurationBuilder SubscribeGlobalEvents(Action<IEventHub> observers);
 }

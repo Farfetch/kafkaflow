@@ -12,6 +12,7 @@ namespace KafkaFlow.Producers
         private readonly ILogHandler logHandler;
         private readonly IProducerConfiguration configuration;
         private readonly MiddlewareExecutor middlewareExecutor;
+        private readonly EventHub eventHub;
 
         private readonly object producerCreationSync = new();
 
@@ -25,6 +26,7 @@ namespace KafkaFlow.Producers
             this.logHandler = dependencyResolver.Resolve<ILogHandler>();
             this.configuration = configuration;
             this.middlewareExecutor = new MiddlewareExecutor(configuration.MiddlewaresConfigurations);
+            this.eventHub = this.producerDependencyScope.Resolver.Resolve<IEventHub>() as EventHub;
         }
 
         public string ProducerName => this.configuration.Name;
@@ -264,6 +266,13 @@ namespace KafkaFlow.Producers
 
             var localProducer = this.EnsureProducer();
             var message = CreateMessage(context);
+
+            await this.eventHub.FireMessageProduceStartedAsync(
+                    new MessageEventContext
+                    {
+                        DependencyResolver = this.producerDependencyScope.Resolver,
+                        MessageContext = context,
+                    });
 
             try
             {

@@ -5,16 +5,32 @@
 
     internal class EventHub : IEventHub
     {
-        private readonly Event<IMessageContext> messageConsumeStarted;
+        private readonly Event<MessageEventContext> messageConsumeStarted;
+
+        private readonly Event<MessageEventContext> messageConsumeStopped;
+
+        private readonly Event<MessageEventContext> messageProduceStarted;
 
         public EventHub(ILogHandler log)
         {
-            this.messageConsumeStarted = new Event<IMessageContext>(log);
+            this.messageConsumeStarted = new Event<MessageEventContext>(log);
+            this.messageConsumeStopped = new Event<MessageEventContext>(log);
+            this.messageProduceStarted = new Event<MessageEventContext>(log);
         }
 
-        public IEvent<IMessageContext> MessageConsumeStarted => this.messageConsumeStarted;
+        public IEvent<MessageEventContext> MessageConsumeStarted => this.messageConsumeStarted;
 
-        public Task FireMessageConsumeStartedAsync(IMessageContext context, IDependencyResolver resolver)
+        public IEvent<MessageEventContext> MessageConsumeEnded => this.messageConsumeStopped;
+
+        public IEvent<MessageEventContext> MessageProduceStarted => this.messageProduceStarted;
+
+        public Task FireMessageConsumeStartedAsync(MessageEventContext context)
             => this.messageConsumeStarted.FireAsync(context);
+
+        public Task FireMessageConsumeStoppedAsync(MessageEventContext context)
+            => this.messageConsumeStopped.FireAsync(context);
+
+        public Task FireMessageProduceStartedAsync(MessageEventContext context)
+            => this.messageProduceStarted.FireAsync(context);
     }
 }
