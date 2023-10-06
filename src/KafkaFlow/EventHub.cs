@@ -13,9 +13,9 @@
 
         public EventHub(ILogHandler log)
         {
-            this.messageConsumeStarted = new Event<MessageEventContext>(log);
-            this.messageConsumeStopped = new Event<MessageEventContext>(log);
-            this.messageProduceStarted = new Event<MessageEventContext>(log);
+            this.messageConsumeStarted = new (log);
+            this.messageConsumeStopped = new (log);
+            this.messageProduceStarted = new (log);
         }
 
         public IEvent<MessageEventContext> MessageConsumeStarted => this.messageConsumeStarted;
