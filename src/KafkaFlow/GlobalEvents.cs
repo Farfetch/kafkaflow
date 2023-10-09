@@ -3,7 +3,7 @@
     using System.Threading.Tasks;
     using KafkaFlow.Configuration;
 
-    internal class EventHub : IEventHub
+    internal class GlobalEvents : IGlobalEvents
     {
         private readonly Event<MessageEventContext> messageConsumeStarted;
 
@@ -11,7 +11,7 @@
 
         private readonly Event<MessageEventContext> messageProduceStarted;
 
-        public EventHub(ILogHandler log)
+        public GlobalEvents(ILogHandler log)
         {
             this.messageConsumeStarted = new (log);
             this.messageConsumeStopped = new (log);
@@ -27,7 +27,7 @@
         public Task FireMessageConsumeStartedAsync(MessageEventContext context)
             => this.messageConsumeStarted.FireAsync(context);
 
-        public Task FireMessageConsumeStoppedAsync(MessageEventContext context)
+        public Task FireMessageConsumeCompletedAsync(MessageEventContext context)
             => this.messageConsumeStopped.FireAsync(context);
 
         public Task FireMessageProduceStartedAsync(MessageEventContext context)

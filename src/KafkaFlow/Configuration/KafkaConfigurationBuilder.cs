@@ -11,7 +11,7 @@ internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
 {
     private readonly IDependencyConfigurator dependencyConfigurator;
     private readonly List<ClusterConfigurationBuilder> clusters = new();
-    private readonly IList<Action<IEventHub>> eventHubsConfigurators = new List<Action<IEventHub>>();
+    private readonly IList<Action<IGlobalEvents>> globalEventsConfigurators = new List<Action<IGlobalEvents>>();
     private Type logHandlerType = typeof(NullLogHandler);
 
     public KafkaConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
@@ -47,13 +47,13 @@ internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
             .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
             .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
             .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
-            .AddSingleton<IEventHub>(r =>
+            .AddSingleton<IGlobalEvents>(r =>
             {
                 var logHandler = r.Resolve<ILogHandler>();
 
-                var hub = new EventHub(logHandler);
+                var hub = new GlobalEvents(logHandler);
 
-                foreach(var del in this.eventHubsConfigurators)
+                foreach(var del in this.globalEventsConfigurators)
                 {
                     del.Invoke(hub);
                 }
@@ -84,9 +84,9 @@ internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
         return this;
     }
 
-    public IKafkaConfigurationBuilder SubscribeGlobalEvents(Action<IEventHub> builder)
+    public IKafkaConfigurationBuilder SubscribeGlobalEvents(Action<IGlobalEvents> builder)
     {
-        this.eventHubsConfigurators.Add(builder);
+        this.globalEventsConfigurators.Add(builder);
 
         return this;
     }

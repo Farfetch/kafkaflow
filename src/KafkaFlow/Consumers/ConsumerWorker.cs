@@ -12,7 +12,7 @@ namespace KafkaFlow.Consumers
         private readonly IDependencyResolverScope workerDependencyResolverScope;
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly ILogHandler logHandler;
-        private readonly EventHub eventHub;
+        private readonly GlobalEvents globalEvents;
         private readonly Channel<IMessageContext> messagesBuffer;
 
         private readonly Event workerStoppingEvent;
@@ -37,7 +37,7 @@ namespace KafkaFlow.Consumers
             this.messagesBuffer = Channel.CreateBounded<IMessageContext>(consumer.Configuration.BufferSize);
 
             var middlewareContext = this.workerDependencyResolverScope.Resolver.Resolve<ConsumerMiddlewareContext>();
-            this.eventHub = this.workerDependencyResolverScope.Resolver.Resolve<IEventHub>() as EventHub;
+            this.globalEvents = this.workerDependencyResolverScope.Resolver.Resolve<GlobalEvents>();
 
             middlewareContext.Worker = this;
             middlewareContext.Consumer = consumer;
@@ -123,12 +123,8 @@ namespace KafkaFlow.Consumers
         {
             try
             {
-                await this.eventHub.FireMessageConsumeStartedAsync(
-                    new MessageEventContext
-                    {
-                        DependencyResolver = this.workerDependencyResolverScope.Resolver,
-                        MessageContext = context,
-                    });
+                await this.globalEvents.FireMessageConsumeStartedAsync(
+                    new MessageEventContext(context));
 
                 try
                 {
@@ -162,12 +158,8 @@ namespace KafkaFlow.Consumers
 
                     await this.workerProcessingEnded.FireAsync(context);
 
-                    await this.eventHub.FireMessageConsumeStoppedAsync(
-                       new MessageEventContext
-                       {
-                           DependencyResolver = this.workerDependencyResolverScope.Resolver,
-                           MessageContext = context,
-                       });
+                    await this.globalEvents.FireMessageConsumeCompletedAsync(
+                       new MessageEventContext(context));
                 }
             }
             catch (Exception ex)

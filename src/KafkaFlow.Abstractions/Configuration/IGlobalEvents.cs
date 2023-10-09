@@ -3,7 +3,7 @@
     /// <summary>
     /// Provides access to events fired by the internals of the library
     /// </summary>
-    public interface IEventHub
+    public interface IGlobalEvents
     {
         /// <summary>
         /// Gets the message consume started event
