@@ -16,6 +16,7 @@ namespace KafkaFlow.Consumers
         private readonly ILogHandler logHandler;
         private readonly Factory<IDistributionStrategy> distributionStrategyFactory;
         private readonly IOffsetCommitter offsetCommitter;
+        private readonly GlobalEvents globalEvents;
 
         private readonly Event workerPoolStoppedSubject;
 
@@ -47,6 +48,8 @@ namespace KafkaFlow.Consumers
                     logHandler);
 
             this.offsetCommitter.PendingOffsetsStatisticsHandlers.AddRange(consumer.Configuration.PendingOffsetsStatisticsHandlers);
+
+            this.globalEvents = this.consumerDependencyResolver.Resolve<GlobalEvents>();
         }
 
         public int CurrentWorkersCount { get; private set; }
@@ -161,7 +164,8 @@ namespace KafkaFlow.Consumers
                     message,
                     worker,
                     messageDependencyScope,
-                    this.consumerDependencyResolver),
+                    this.consumerDependencyResolver,
+                    this.globalEvents),
                 null);
             return context;
         }

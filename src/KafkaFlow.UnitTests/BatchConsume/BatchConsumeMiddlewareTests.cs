@@ -86,7 +86,7 @@ namespace KafkaFlow.UnitTests.BatchConsume
             this.timesNextWasCalled.Should().Be(0);
             await this.WaitBatchTimeoutAsync();
             this.timesNextWasCalled.Should().Be(1);
-            consumerContext.Verify(x => x.Complete(), Times.Once);
+            consumerContext.Verify(x => x.Complete(context.Object), Times.Once);
         }
 
         [TestMethod]
@@ -115,7 +115,7 @@ namespace KafkaFlow.UnitTests.BatchConsume
             // Assert
             this.timesNextWasCalled.Should().Be(1);
             this.nextContext.GetMessagesBatch().Should().HaveCount(BatchSize);
-            consumerContext.Verify(x => x.Complete(), Times.Exactly(BatchSize));
+            consumerContext.Verify(x => x.Complete(contextMock.Object), Times.Exactly(BatchSize));
         }
 
         [TestMethod]
@@ -144,11 +144,11 @@ namespace KafkaFlow.UnitTests.BatchConsume
             // Assert
             this.timesNextWasCalled.Should().Be(1);
             this.nextContext.GetMessagesBatch().Should().HaveCount(BatchSize);
-            consumerContext.Verify(x => x.Complete(), Times.Exactly(BatchSize));
+            consumerContext.Verify(x => x.Complete(contextMock.Object), Times.Exactly(BatchSize));
 
             await this.WaitBatchTimeoutAsync();
             this.timesNextWasCalled.Should().Be(2);
-            consumerContext.Verify(x => x.Complete(), Times.Exactly(BatchSize + 1));
+            consumerContext.Verify(x => x.Complete(contextMock.Object), Times.Exactly(BatchSize + 1));
         }
 
         [TestMethod]

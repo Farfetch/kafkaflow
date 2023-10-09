@@ -91,7 +91,7 @@ namespace KafkaFlow
         /// By default, this method is automatically invoked when message processing concludes, unless
         /// the consumer is configured for manual message completion or the <see cref="AutoMessageCompletion"/> flag is set to false.
         /// </summary>
-        void Complete();
+        void Complete(IMessageContext context);
 
         /// <summary>
         /// Get offset watermark data

@@ -153,13 +153,10 @@ namespace KafkaFlow.Consumers
                 {
                     if (context.ConsumerContext.AutoMessageCompletion)
                     {
-                        context.ConsumerContext.Complete();
+                        context.ConsumerContext.Complete(context);
                     }
 
                     await this.workerProcessingEnded.FireAsync(context);
-
-                    await this.globalEvents.FireMessageConsumeCompletedAsync(
-                       new MessageEventContext(context));
                 }
             }
             catch (Exception ex)

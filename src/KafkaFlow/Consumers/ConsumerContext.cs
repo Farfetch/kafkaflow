@@ -13,6 +13,7 @@ namespace KafkaFlow.Consumers
         private readonly IOffsetManager offsetManager;
         private readonly IConsumerWorker worker;
         private readonly IDependencyResolverScope messageDependencyScope;
+        private readonly GlobalEvents globalEvents;
 
         public ConsumerContext(
             IConsumer consumer,
@@ -20,7 +21,8 @@ namespace KafkaFlow.Consumers
             ConsumeResult<byte[], byte[]> kafkaResult,
             IConsumerWorker worker,
             IDependencyResolverScope messageDependencyScope,
-            IDependencyResolver consumerDependencyResolver)
+            IDependencyResolver consumerDependencyResolver,
+            GlobalEvents globalEvents)
         {
             this.ConsumerDependencyResolver = consumerDependencyResolver;
             this.consumer = consumer;
@@ -33,6 +35,7 @@ namespace KafkaFlow.Consumers
                 kafkaResult.Partition.Value,
                 kafkaResult.Offset.Value);
             this.MessageTimestamp = kafkaResult.Message.Timestamp.UtcDateTime;
+            this.globalEvents = globalEvents;
         }
 
         public string ConsumerName => this.consumer.Configuration.ConsumerName;
@@ -63,8 +66,11 @@ namespace KafkaFlow.Consumers
 
         public Task<TopicPartitionOffset> Completion => this.completionSource.Task;
 
-        public void Complete()
+        public void Complete(IMessageContext context)
         {
+            this.globalEvents.FireMessageConsumeCompletedAsync(
+                       new MessageEventContext(context));
+
             if (this.ShouldStoreOffset)
             {
                 this.offsetManager.MarkAsProcessed(this);

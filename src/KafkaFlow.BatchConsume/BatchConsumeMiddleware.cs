@@ -138,7 +138,7 @@
                 {
                     foreach (var messageContext in localBatch)
                     {
-                        messageContext.ConsumerContext.Complete();
+                        messageContext.ConsumerContext.Complete(context);
                     }
                 }
             }
