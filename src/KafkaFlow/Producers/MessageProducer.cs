@@ -301,6 +301,9 @@ namespace KafkaFlow.Producers
             var localProducer = this.EnsureProducer();
             var message = CreateMessage(context);
 
+            this.globalEvents.FireMessageProduceStartedAsync(
+                    new MessageEventContext(context, this.producerDependencyScope.Resolver));
+
             if (partition.HasValue)
             {
                 localProducer.Produce(
