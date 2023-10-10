@@ -36,7 +36,7 @@ namespace KafkaFlow.Configuration
         private ConsumerInitialState initialState = ConsumerInitialState.Running;
         private int statisticsInterval;
 
-        private Factory<IDistributionStrategy> distributionStrategyFactory = _ => new BytesSumDistributionStrategy();
+        private Factory<IWorkerDistributionStrategy> distributionStrategyFactory = _ => new BytesSumDistributionStrategy();
         private TimeSpan autoCommitInterval = TimeSpan.FromSeconds(5);
 
         private ConsumerCustomFactory customFactory = (consumer, _) => consumer;
@@ -157,15 +157,15 @@ namespace KafkaFlow.Configuration
             return this;
         }
 
-        public IConsumerConfigurationBuilder WithWorkDistributionStrategy<T>(Factory<T> factory)
-            where T : class, IDistributionStrategy
+        public IConsumerConfigurationBuilder WithWorkerDistributionStrategy<T>(Factory<T> factory)
+            where T : class, IWorkerDistributionStrategy
         {
             this.distributionStrategyFactory = factory;
             return this;
         }
 
-        public IConsumerConfigurationBuilder WithWorkDistributionStrategy<T>()
-            where T : class, IDistributionStrategy
+        public IConsumerConfigurationBuilder WithWorkerDistributionStrategy<T>()
+            where T : class, IWorkerDistributionStrategy
         {
             this.DependencyConfigurator.AddTransient<T>();
             this.distributionStrategyFactory = resolver => resolver.Resolve<T>();

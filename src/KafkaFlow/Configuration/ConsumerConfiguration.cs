@@ -20,7 +20,7 @@ namespace KafkaFlow.Configuration
             TimeSpan workersCountEvaluationInterval,
             int bufferSize,
             TimeSpan workerStopTimeout,
-            Factory<IDistributionStrategy> distributionStrategyFactory,
+            Factory<IWorkerDistributionStrategy> distributionStrategyFactory,
             IReadOnlyList<MiddlewareConfiguration> middlewaresConfigurations,
             bool autoMessageCompletion,
             bool noStoreOffsets,
@@ -69,7 +69,7 @@ namespace KafkaFlow.Configuration
                     "The value must be greater than 0");
         }
 
-        public Factory<IDistributionStrategy> DistributionStrategyFactory { get; }
+        public Factory<IWorkerDistributionStrategy> DistributionStrategyFactory { get; }
 
         public IReadOnlyList<MiddlewareConfiguration> MiddlewaresConfigurations { get; }
 
