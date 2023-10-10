@@ -13,7 +13,7 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Gets the consumer worker distribution strategy
         /// </summary>
-        Factory<IDistributionStrategy> DistributionStrategyFactory { get; }
+        Factory<IWorkerDistributionStrategy> DistributionStrategyFactory { get; }
 
         /// <summary>
         /// Gets the consumer middlewares configurations
