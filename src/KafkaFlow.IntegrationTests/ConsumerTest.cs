@@ -22,6 +22,8 @@ namespace KafkaFlow.IntegrationTests
         [TestInitialize]
         public void Setup()
         {
+            Bootstrapper.GlobalEvents = observers => { };
+
             this.provider = Bootstrapper.GetServiceProvider();
             MessageStorage.Clear();
         }

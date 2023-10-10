@@ -47,7 +47,7 @@ internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
             .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
             .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
             .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
-            .AddSingleton<IGlobalEvents>(r =>
+            .AddSingleton(r =>
             {
                 var logHandler = r.Resolve<ILogHandler>();
 

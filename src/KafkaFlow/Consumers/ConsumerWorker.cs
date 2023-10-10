@@ -41,6 +41,9 @@ namespace KafkaFlow.Consumers
 
             middlewareContext.Worker = this;
             middlewareContext.Consumer = consumer;
+            this.workerStoppingEvent = new Event(logHandler);
+            this.workerStoppedEvent = new Event(logHandler);
+            this.workerProcessingEnded = new Event<IMessageContext>(logHandler);
         }
 
         public int Id { get; }

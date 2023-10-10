@@ -3,6 +3,7 @@ namespace KafkaFlow.IntegrationTests.Core
     using System;
     using System.IO;
     using System.Threading;
+    using System.Threading.Tasks;
     using Confluent.Kafka;
     using Confluent.SchemaRegistry;
     using Confluent.SchemaRegistry.Serdes;
@@ -11,6 +12,7 @@ namespace KafkaFlow.IntegrationTests.Core
     using global::Microsoft.Extensions.Hosting;
     using KafkaFlow.Compressor;
     using KafkaFlow.Compressor.Gzip;
+    using KafkaFlow.Configuration;
     using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Messages;
     using KafkaFlow.IntegrationTests.Core.Middlewares;
@@ -42,8 +44,27 @@ namespace KafkaFlow.IntegrationTests.Core
         private const string ProtobufGzipTopicName = "test-protobuf-gzip";
         private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
         private const string AvroTopicName = "test-avro";
+        private static Action<IGlobalEvents> globalEvents;
 
         private static readonly Lazy<IServiceProvider> LazyProvider = new(SetupProvider);
+
+        public static Action<IGlobalEvents> GlobalEvents
+        {
+            get
+            {
+                if(globalEvents == null)
+                {
+                    return _ => { };
+                }
+
+                return globalEvents;
+            }
+
+            set
+            {
+                globalEvents = value;
+            }
+        }
 
         public static IServiceProvider GetServiceProvider() => LazyProvider.Value;
 
@@ -87,7 +108,7 @@ namespace KafkaFlow.IntegrationTests.Core
 
             ConsumerConfig defaultConfig = new()
             {
-                Acks = Confluent.Kafka.Acks.All,
+                Acks = Acks.All,
                 AllowAutoCreateTopics = false,
                 AutoCommitIntervalMs = 5000,
                 AutoOffsetReset = Confluent.Kafka.AutoOffsetReset.Latest,
@@ -332,7 +353,8 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(GzipTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddCompressor<GzipMessageCompressor>()))));
+                                            .AddCompressor<GzipMessageCompressor>())))
+                    .SubscribeGlobalEvents(GlobalEvents));
 
             services.AddSingleton<JsonProducer>();
             services.AddSingleton<JsonGzipProducer>();
