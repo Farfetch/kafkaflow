@@ -137,19 +137,19 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Sets the strategy to choose a worker when a message arrives
         /// </summary>
-        /// <typeparam name="T">A class that implements the <see cref="IDistributionStrategy"/> interface</typeparam>
+        /// <typeparam name="T">A class that implements the <see cref="IWorkerDistributionStrategy"/> interface</typeparam>
         /// <param name="factory">A factory to create the instance</param>
         /// <returns></returns>
-        IConsumerConfigurationBuilder WithWorkDistributionStrategy<T>(Factory<T> factory)
-            where T : class, IDistributionStrategy;
+        IConsumerConfigurationBuilder WithWorkerDistributionStrategy<T>(Factory<T> factory)
+            where T : class, IWorkerDistributionStrategy;
 
         /// <summary>
         /// Sets the strategy to choose a worker when a message arrives
         /// </summary>
-        /// <typeparam name="T">A class that implements the <see cref="IDistributionStrategy"/> interface</typeparam>
+        /// <typeparam name="T">A class that implements the <see cref="IWorkerDistributionStrategy"/> interface</typeparam>
         /// <returns></returns>
-        IConsumerConfigurationBuilder WithWorkDistributionStrategy<T>()
-            where T : class, IDistributionStrategy;
+        IConsumerConfigurationBuilder WithWorkerDistributionStrategy<T>()
+            where T : class, IWorkerDistributionStrategy;
 
         /// <summary>
         /// Configures the consumer for manual message completion.
