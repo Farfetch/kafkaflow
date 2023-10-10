@@ -22,11 +22,6 @@ Learn more about using KafkaFlow on the [site](https://farfetch.github.io/kafkaf
 
 Read our [contributing guidelines](CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes.
 
-## Authors
-
--   [filipeesch](https://github.com/filipeesch)
--   [dougolima](https://github.com/dougolima)
-
 ## Get in touch
 
 You can find us at:
