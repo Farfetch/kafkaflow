@@ -13,7 +13,7 @@
         /// <summary>
         /// Gets the message consume ended event
         /// </summary>
-        IEvent<MessageEventContext> MessageConsumeEnded { get; }
+        IEvent<MessageEventContext> MessageConsumeCompleted { get; }
 
         /// <summary>
         /// Gets the message produce started event

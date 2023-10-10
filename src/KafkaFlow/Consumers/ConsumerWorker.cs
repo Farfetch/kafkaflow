@@ -13,6 +13,7 @@ namespace KafkaFlow.Consumers
         private readonly IOffsetManager offsetManager;
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly ILogHandler logHandler;
+        private readonly GlobalEvents globalEvents;
 
         private readonly Channel<ConsumeResult<byte[], byte[]>> messagesBuffer;
 
@@ -35,6 +36,7 @@ namespace KafkaFlow.Consumers
             this.middlewareExecutor = middlewareExecutor;
             this.logHandler = logHandler;
             this.messagesBuffer = Channel.CreateBounded<ConsumeResult<byte[], byte[]>>(consumer.Configuration.BufferSize);
+            this.globalEvents = this.dependencyResolver.Resolve<GlobalEvents>();
         }
 
         public int Id { get; }
@@ -125,6 +127,8 @@ namespace KafkaFlow.Consumers
                         message.TopicPartitionOffset,
                         () => scope.Dispose());
 
+                    await this.globalEvents.FireMessageConsumeStartedAsync(new MessageEventContext(context));
+
                     await this.middlewareExecutor
                         .Execute(scope.Resolver, context, _ => Task.CompletedTask)
                         .ConfigureAwait(false);
@@ -151,6 +155,8 @@ namespace KafkaFlow.Consumers
                 {
                     this.offsetManager.MarkAsProcessed(message.TopicPartitionOffset);
                 }
+
+                await this.globalEvents.FireMessageConsumeCompletedAsync(new MessageEventContext(context));
 
                 this.onMessageFinishedHandler?.Invoke();
             }

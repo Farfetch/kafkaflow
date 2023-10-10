@@ -11,6 +11,7 @@ namespace KafkaFlow.Producers
         private readonly IDependencyResolver dependencyResolver;
         private readonly IProducerConfiguration configuration;
         private readonly MiddlewareExecutor middlewareExecutor;
+        private readonly GlobalEvents globalEvents;
 
         private readonly object producerCreationSync = new();
 
@@ -23,6 +24,7 @@ namespace KafkaFlow.Producers
             this.dependencyResolver = dependencyResolver;
             this.configuration = configuration;
             this.middlewareExecutor = new MiddlewareExecutor(configuration.MiddlewaresConfigurations);
+            this.globalEvents = this.dependencyResolver.Resolve<GlobalEvents>();
         }
 
         public string ProducerName => this.configuration.Name;
@@ -267,6 +269,8 @@ namespace KafkaFlow.Producers
             var localProducer = this.EnsureProducer();
             var message = CreateMessage(context);
 
+            await this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(context, this.dependencyResolver));
+
             try
             {
                 var produceTask = partition.HasValue ?
@@ -287,6 +291,8 @@ namespace KafkaFlow.Producers
 
             FillContextWithResultMetadata(context, result);
 
+            await this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(context, this.dependencyResolver));
+
             return result;
         }
 
@@ -297,6 +303,8 @@ namespace KafkaFlow.Producers
         {
             var localProducer = this.EnsureProducer();
             var message = CreateMessage(context);
+
+            this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(context, this.dependencyResolver));
 
             if (partition.HasValue)
             {
@@ -321,6 +329,8 @@ namespace KafkaFlow.Producers
                 }
 
                 FillContextWithResultMetadata(context, report);
+
+                this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(context, this.dependencyResolver));
 
                 deliveryHandler(report);
             }
