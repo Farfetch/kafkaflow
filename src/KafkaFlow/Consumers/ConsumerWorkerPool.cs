@@ -14,7 +14,7 @@ namespace KafkaFlow.Consumers
         private readonly IDependencyResolver consumerDependencyResolver;
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly ILogHandler logHandler;
-        private readonly Factory<IDistributionStrategy> distributionStrategyFactory;
+        private readonly Factory<IWorkerDistributionStrategy> distributionStrategyFactory;
         private readonly IOffsetCommitter offsetCommitter;
 
         private readonly Event workerPoolStoppedSubject;
@@ -22,7 +22,7 @@ namespace KafkaFlow.Consumers
         private TaskCompletionSource<object> startedTaskSource = new();
         private List<IConsumerWorker> workers = new();
 
-        private IDistributionStrategy distributionStrategy;
+        private IWorkerDistributionStrategy distributionStrategy;
         private IOffsetManager offsetManager;
 
         public ConsumerWorkerPool(
@@ -85,7 +85,7 @@ namespace KafkaFlow.Consumers
                     .ConfigureAwait(false);
 
                 this.distributionStrategy = this.distributionStrategyFactory(this.consumerDependencyResolver);
-                this.distributionStrategy.Init(this.workers.AsReadOnly());
+                this.distributionStrategy.Initialize(this.workers.AsReadOnly());
 
                 this.startedTaskSource.TrySetResult(null);
             }
@@ -130,7 +130,13 @@ namespace KafkaFlow.Consumers
             await this.startedTaskSource.Task.ConfigureAwait(false);
 
             var worker = (IConsumerWorker)await this.distributionStrategy
-                .GetWorkerAsync(message.Message.Key, stopCancellationToken)
+                .GetWorkerAsync(
+                    new WorkerDistributionContext(
+                        this.consumer.Configuration.ConsumerName,
+                        message.Topic,
+                        message.Partition.Value,
+                        message.Message.Key,
+                        stopCancellationToken))
                 .ConfigureAwait(false);
 
             if (worker is null)
