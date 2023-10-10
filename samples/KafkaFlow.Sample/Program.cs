@@ -1,16 +1,24 @@
 ﻿using System;
 using System.Threading.Tasks;
 using KafkaFlow;
+using KafkaFlow.Configuration;
 using KafkaFlow.Producers;
 using KafkaFlow.Sample;
 using KafkaFlow.Serializer;
 using KafkaFlow.TypedHandler;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 
 var services = new ServiceCollection();
 
 const string producerName = "PrintConsole";
 const string topicName = "sample-topic";
+
+using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+    .AddSource("KafkaFlow")
+    .AddConsoleExporter()
+    .Build();
 
 services.AddKafka(
     kafka => kafka
@@ -38,6 +46,7 @@ services.AddKafka(
                         )
                 )
         )
+        .AddOpenTelemetryInstrumentation()
 );
 
 var provider = services.BuildServiceProvider();
