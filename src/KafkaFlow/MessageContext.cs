@@ -1,5 +1,7 @@
 namespace KafkaFlow
 {
+    using System.Collections.Generic;
+
     internal class MessageContext : IMessageContext
     {
         public MessageContext(
@@ -12,6 +14,7 @@ namespace KafkaFlow
             this.Headers = headers ?? new MessageHeaders();
             this.ConsumerContext = consumer;
             this.ProducerContext = producer;
+            this.Items = new Dictionary<string, object>();
         }
 
         public Message Message { get; }
@@ -21,6 +24,8 @@ namespace KafkaFlow
         public IProducerContext ProducerContext { get; }
 
         public IMessageHeaders Headers { get; }
+
+        public IDictionary<string, object> Items { get; }
 
         public IMessageContext SetMessage(object key, object value) => new MessageContext(
             new Message(key, value),

@@ -1,6 +1,7 @@
 namespace KafkaFlow
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// A context that contains the message and metadata
@@ -26,6 +27,11 @@ namespace KafkaFlow
         /// Gets the <see cref="IProducerContext"></see> from the produced message
         /// </summary>
         IProducerContext ProducerContext { get; }
+
+        /// <summary>
+        /// Gets the items
+        /// </summary>
+        IDictionary<string, object> Items { get; }
 
         /// <summary>
         /// Creates a new <see cref="IMessageContext"/> with the new message

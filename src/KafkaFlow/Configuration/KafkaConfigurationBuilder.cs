@@ -11,6 +11,7 @@ namespace KafkaFlow.Configuration
     {
         private readonly IDependencyConfigurator dependencyConfigurator;
         private readonly List<ClusterConfigurationBuilder> clusters = new();
+        private readonly IList<Action<IGlobalEvents>> globalEventsConfigurators = new List<Action<IGlobalEvents>>();
         private Type logHandlerType = typeof(NullLogHandler);
 
         public KafkaConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
@@ -44,7 +45,20 @@ namespace KafkaFlow.Configuration
                 .AddSingleton<IDateTimeProvider, DateTimeProvider>()
                 .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
                 .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
-                .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>();
+                .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
+                .AddSingleton(r =>
+                {
+                    var logHandler = r.Resolve<ILogHandler>();
+
+                    var globalEvents = new GlobalEvents(logHandler);
+
+                    foreach (var del in this.globalEventsConfigurators)
+                    {
+                        del.Invoke(globalEvents);
+                    }
+
+                    return globalEvents;
+                });
 
             return configuration;
         }
@@ -64,6 +78,13 @@ namespace KafkaFlow.Configuration
             where TLogHandler : ILogHandler
         {
             this.logHandlerType = typeof(TLogHandler);
+            return this;
+        }
+
+        public IKafkaConfigurationBuilder SubscribeGlobalEvents(Action<IGlobalEvents> observers)
+        {
+            this.globalEventsConfigurators.Add(observers);
+
             return this;
         }
     }

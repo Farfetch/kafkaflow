@@ -8,7 +8,7 @@ In this section, we will introduce how configuration is done in KafkaFlow.
 
 KafkaFlow is a highly configured framework. You can customize it through a Fluent Builder.
 
-Using the builder, you can configure [Logging](../guides/logging.md), Clusters, Producers, Consumers and others.
+Using the builder, you can configure [Logging](../guides/logging.md), [Global Events](../guides/global-events.md), Clusters, Producers, Consumers and others.
 
 There are a few options to configure KafkaFlow:
   - [Using a Hosted Service](#hosted-service)

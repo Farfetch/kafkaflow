@@ -11,6 +11,7 @@ namespace KafkaFlow.BatchConsume
         {
             this.ConsumerContext = consumer;
             this.Message = new Message(null, batchMessage);
+            this.Items = new Dictionary<string, object>();
         }
 
         public Message Message { get; }
@@ -20,6 +21,8 @@ namespace KafkaFlow.BatchConsume
         public IConsumerContext ConsumerContext { get; }
 
         public IProducerContext ProducerContext => null;
+
+        public IDictionary<string, object> Items { get; }
 
         public IMessageContext SetMessage(object key, object value) =>
             throw new NotSupportedException($"{nameof(BatchConsumeMessageContext)} does not allow change the message");
