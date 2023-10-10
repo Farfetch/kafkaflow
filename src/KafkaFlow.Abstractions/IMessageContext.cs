@@ -1,6 +1,7 @@
 namespace KafkaFlow
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// A context that contains the message and metadata
@@ -42,5 +43,7 @@ namespace KafkaFlow
         /// <returns></returns>
         [Obsolete("This method should no longer be used, use the " + nameof(SetMessage) + "() instead.", true)]
         IMessageContext TransformMessage(object message);
+
+        IDictionary<string, object> Items { get; }
     }
 }

@@ -7,21 +7,20 @@
     using System.Threading.Tasks;
     using global::OpenTelemetry;
     using global::OpenTelemetry.Context.Propagation;
-    using KafkaFlow.OpenTelemetry.Trace;
 
-    internal class OpenTelemetryConsumerObserver
+    internal static class OpenTelemetryConsumerObserver
     {
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
         private static readonly string ProcessString = "process";
 
-        public Task OnConsumeStarted(IMessageContext context)
+        public static Task OnConsumeStarted(IMessageContext context)
         {
             try
             {
                 var activityName = !string.IsNullOrEmpty(context?.ConsumerContext.Topic) ? $"{context.ConsumerContext.Topic} {ProcessString}" : ProcessString;
 
                 // Extract the PropagationContext of the upstream parent from the message headers.
-                var parentContext = Propagator.Extract(new PropagationContext(default, Baggage.Current), context, this.ExtractTraceContextIntoBasicProperties);
+                var parentContext = Propagator.Extract(new PropagationContext(default, Baggage.Current), context, ExtractTraceContextIntoBasicProperties);
                 Baggage.Current = parentContext.Baggage;
 
                 // Start an activity with a name following the semantic convention of the OpenTelemetry messaging specification.
@@ -29,11 +28,13 @@
                 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md
                 var activity = KafkaFlowActivitySourceHelper.ActivitySource.StartActivity(activityName, ActivityKind.Consumer, parentContext.ActivityContext);
 
+                context.Items.Add(KafkaFlowActivitySourceHelper.ActivityString, activity);
+
                 KafkaFlowActivitySourceHelper.SetGenericTags(activity);
 
                 if (activity != null && activity.IsAllDataRequested)
                 {
-                    this.SetConsumerTags(context, activity);
+                    SetConsumerTags(context, activity);
                 }
 
                 Console.WriteLine(activity.TraceId);
@@ -47,25 +48,28 @@
             return Task.CompletedTask;
         }
 
-        public Task OnConsumeCompleted()
+        public static Task OnConsumeCompleted(IMessageContext context)
         {
-            var activity = Activity.Current;
+            var activity = context.Items[KafkaFlowActivitySourceHelper.ActivityString] as Activity;
+            Console.WriteLine(activity.TraceId);
+            Console.WriteLine(activity.SpanId);
+            Console.WriteLine(activity.ParentSpanId);
 
-            activity?.Stop();
+            activity?.Dispose();
 
             return Task.CompletedTask;
         }
 
-        public Task OnConsumeError(Exception ex)
+        public static Task OnConsumeError(IMessageContext context, Exception ex)
         {
-            var activity = Activity.Current;
+            var activity = context.Items[KafkaFlowActivitySourceHelper.ActivityString] as Activity;
 
             activity?.SetTag("exception.message", ex.Message);
 
             return Task.CompletedTask;
         }
 
-        private IEnumerable<string> ExtractTraceContextIntoBasicProperties(IMessageContext context, string key)
+        private static IEnumerable<string> ExtractTraceContextIntoBasicProperties(IMessageContext context, string key)
         {
             try
             {
@@ -77,8 +81,9 @@
             }
         }
 
-        private void SetConsumerTags(IMessageContext context, Activity activity)
+        private static void SetConsumerTags(IMessageContext context, Activity activity)
         {
+            // TODO: Use conventions here too
             activity.SetTag("messaging.operation", ProcessString);
             activity.SetTag("messaging.source.name", context.ConsumerContext.Topic);
             activity.SetTag("messaging.kafka.consumer.group", context.ConsumerContext.GroupId);

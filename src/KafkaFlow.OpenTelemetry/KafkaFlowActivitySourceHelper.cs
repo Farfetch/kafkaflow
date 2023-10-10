@@ -1,6 +1,6 @@
 ﻿extern alias SemanticConventions;
 
-namespace KafkaFlow.OpenTelemetry.Trace
+namespace KafkaFlow.OpenTelemetry
 {
     using System;
     using System.Collections.Generic;
@@ -8,20 +8,21 @@ namespace KafkaFlow.OpenTelemetry.Trace
     using System.Reflection;
     using Conventions = SemanticConventions::OpenTelemetry.Trace.TraceSemanticConventions;
 
-    public static class KafkaFlowActivitySourceHelper
+    internal static class KafkaFlowActivitySourceHelper
     {
+        public static readonly ActivitySource ActivitySource = new ActivitySource(KafkaFlowString, Version.ToString());
+
+        internal static readonly string ActivityString = "activity";
+        internal static readonly string KafkaFlowString = "KafkaFlow";
+        internal static readonly string KafkaString = "kafka";
+
         internal static readonly IEnumerable<KeyValuePair<string, object>> CreationTags = new[]
         {
             new KeyValuePair<string, object>(Conventions.AttributePeerService, KafkaString),
             new KeyValuePair<string, object>(Conventions.AttributeMessagingSystem, KafkaString),
         };
 
-        internal static readonly string KafkaFlowString = "KafkaFlow";
-        internal static readonly string KafkaString = "kafka";
-
         private static readonly Version Version = Assembly.GetExecutingAssembly().GetName().Version;
-
-        public static readonly ActivitySource ActivitySource = new ActivitySource(KafkaFlowString, Version.ToString());
 
         public static void SetGenericTags(Activity activity)
         {

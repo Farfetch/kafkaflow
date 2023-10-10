@@ -7,14 +7,13 @@
     using System.Threading.Tasks;
     using global::OpenTelemetry;
     using global::OpenTelemetry.Context.Propagation;
-    using KafkaFlow.OpenTelemetry.Trace;
 
-    internal class OpenTelemetryProducerObserver
+    internal static class OpenTelemetryProducerObserver
     {
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
         private static readonly string PublishString = "publish";
 
-        public Task OnProducerStarted(IMessageContext context)
+        public static Task OnProducerStarted(IMessageContext context)
         {
             try
             {
@@ -41,13 +40,13 @@
                 }
 
                 // Inject the ActivityContext into the message headers to propagate trace context to the receiving service.
-                Propagator.Inject(new PropagationContext(contextToInject, Baggage.Current), context, this.InjectTraceContextIntoBasicProperties);
+                Propagator.Inject(new PropagationContext(contextToInject, Baggage.Current), context, InjectTraceContextIntoBasicProperties);
 
                 KafkaFlowActivitySourceHelper.SetGenericTags(activity);
 
                 if (activity != null && activity.IsAllDataRequested)
                 {
-                    this.SetProducerTags(context, activity);
+                    SetProducerTags(context, activity);
                 }
 
                 Console.WriteLine(activity.TraceId);
@@ -61,7 +60,7 @@
             return Task.CompletedTask;
         }
 
-        public Task OnProducerCompleted()
+        public static Task OnProducerCompleted()
         {
             var activity = Activity.Current;
 
@@ -70,7 +69,7 @@
             return Task.CompletedTask;
         }
 
-        public Task OnProducerError(Exception ex)
+        public static Task OnProducerError(Exception ex)
         {
             var activity = Activity.Current;
 
@@ -79,7 +78,7 @@
             return Task.CompletedTask;
         }
 
-        private void InjectTraceContextIntoBasicProperties(IMessageContext context, string key, string value)
+        private static void InjectTraceContextIntoBasicProperties(IMessageContext context, string key, string value)
         {
             try
             {
@@ -94,7 +93,7 @@
             }
         }
 
-        private void SetProducerTags(IMessageContext context, Activity activity)
+        private static void SetProducerTags(IMessageContext context, Activity activity)
         {
             activity.SetTag("messaging.operation", PublishString);
             activity.SetTag("messaging.destination.name", context?.ProducerContext.Topic);

@@ -40,14 +40,14 @@ namespace KafkaFlow.Producers
 
             using var scope = this.dependencyResolver.CreateScope();
 
+            var messageContext = this.CreateMessageContext(topic, messageKey, messageValue, headers);
+
+            await this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext, this.dependencyResolver));
+
             await this.middlewareExecutor
                 .Execute(
                     scope.Resolver,
-                    new MessageContext(
-                        new Message(messageKey, messageValue),
-                        headers,
-                        null,
-                        new ProducerContext(topic)),
+                    messageContext,
                     async context =>
                     {
                         report = await this
@@ -55,6 +55,8 @@ namespace KafkaFlow.Producers
                             .ConfigureAwait(false);
                     })
                 .ConfigureAwait(false);
+
+            await this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext, this.dependencyResolver));
 
             return report;
         }
@@ -89,14 +91,14 @@ namespace KafkaFlow.Producers
         {
             var scope = this.dependencyResolver.CreateScope();
 
+            var messageContext = this.CreateMessageContext(topic, messageKey, messageValue, headers);
+
+            this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext, this.dependencyResolver));
+
             this.middlewareExecutor
                 .Execute(
                     scope.Resolver,
-                    new MessageContext(
-                        new Message(messageKey, messageValue),
-                        headers,
-                        null,
-                        new ProducerContext(topic)),
+                    messageContext,
                     context =>
                     {
                         var completionSource = new TaskCompletionSource<byte>();
@@ -136,6 +138,8 @@ namespace KafkaFlow.Producers
 
                         scope.Dispose();
                     });
+
+            this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext, this.dependencyResolver));
         }
 
         public void Produce(
@@ -269,8 +273,6 @@ namespace KafkaFlow.Producers
             var localProducer = this.EnsureProducer();
             var message = CreateMessage(context);
 
-            await this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(context, this.dependencyResolver));
-
             try
             {
                 var produceTask = partition.HasValue ?
@@ -291,8 +293,6 @@ namespace KafkaFlow.Producers
 
             FillContextWithResultMetadata(context, result);
 
-            await this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(context, this.dependencyResolver));
-
             return result;
         }
 
@@ -303,8 +303,6 @@ namespace KafkaFlow.Producers
         {
             var localProducer = this.EnsureProducer();
             var message = CreateMessage(context);
-
-            this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(context, this.dependencyResolver));
 
             if (partition.HasValue)
             {
@@ -330,10 +328,21 @@ namespace KafkaFlow.Producers
 
                 FillContextWithResultMetadata(context, report);
 
-                this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(context, this.dependencyResolver));
-
                 deliveryHandler(report);
             }
+        }
+
+        private MessageContext CreateMessageContext(
+            string topic,
+            object messageKey,
+            object messageValue,
+            IMessageHeaders headers = null)
+        {
+            return new(
+                new Message(messageKey, messageValue),
+                headers,
+                null,
+                new ProducerContext(topic));
         }
     }
 }
