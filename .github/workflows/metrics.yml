@@ -1,0 +1,99 @@
+name: Monthly Metrics
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '3 2 1 * *'
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    name: Calculate Metrics
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Get dates for last month
+      id: get-dates
+      shell: bash
+      run: |
+        # Calculate the first day of the previous month
+        first_day=$(date -d "last month" +%Y-%m-01)
+
+        # Calculate the last day of the previous month
+        last_day=$(date -d "$first_day +1 month -1 day" +%Y-%m-%d)
+
+        # Calculate the previous month
+        previous_date=$(date -d "$current_date -1 month" +'%Y-%m-%d')
+
+        # Put the report month and year in the environment
+        echo report_month="$(date -d "$previous_date" +'%B') $(date -d "$previous_date" +'%Y')" >> "$GITHUB_ENV"
+
+        #Set an environment variable with the date range
+        echo "$first_day..$last_day"
+        echo "last_month=$first_day..$last_day" >> "$GITHUB_ENV"
+
+    - name: Run issue-metrics tool for items opened last month
+      id: opened-metrics
+      uses: github/issue-metrics@v2
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SEARCH_QUERY: 'repo:farfetch/kafkaflow created:${{ env.last_month }} -reason:"not planned"'
+
+    - name: Create issue for opened items 
+      uses: peter-evans/create-issue-from-file@v4
+      with:
+        title: "[Metrics] Opened in ${{ env.report_month }}"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        content-filepath: ./issue_metrics.md
+        assignees: ${{ vars.TEAM_MEMBERS }}
+        labels: metrics
+
+    - name: Run issue-metrics tool for items closed last month
+      id: closed-metrics
+      uses: github/issue-metrics@v2
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SEARCH_QUERY: 'repo:farfetch/kafkaflow closed:${{ env.last_month }} -reason:"not planned"'
+
+    - name: Create issue for closed items
+      uses: peter-evans/create-issue-from-file@v4
+      with:
+        title: "[Metrics] Closed in ${{ env.report_month }}"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        content-filepath: ./issue_metrics.md
+        assignees: ${{ vars.TEAM_MEMBERS }}
+        labels: metrics
+
+    - name: Run issue-metrics tool for discussions opened last month
+      id: opened-discussions-metrics
+      uses: github/issue-metrics@v2
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SEARCH_QUERY: 'repo:farfetch/kafkaflow type:discussions created:${{ env.last_month }} -reason:"not planned"'
+
+    - name: Create issue for opened discussions
+      uses: peter-evans/create-issue-from-file@v4
+      with:
+        title: "[Metrics] Opened Discussions in ${{ env.report_month }}"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        content-filepath: ./issue_metrics.md
+        assignees: ${{ vars.TEAM_MEMBERS }}
+        labels: metrics
+
+    - name: Run issue-metrics tool for discussions closed last month
+      id: closed-discussions-metrics
+      uses: github/issue-metrics@v2
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SEARCH_QUERY: 'repo:farfetch/kafkaflow type:discussions closed:${{ env.last_month }} -reason:"not planned"'
+
+    - name: Create issue for closed discussions
+      uses: peter-evans/create-issue-from-file@v4
+      with:
+        title: "[Metrics] Closed Discussions in ${{ env.report_month }}"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        content-filepath: ./issue_metrics.md
+        assignees: ${{ vars.TEAM_MEMBERS }}
+        labels: metrics
