@@ -36,10 +36,6 @@
                 {
                     SetConsumerTags(context, activity);
                 }
-
-                Console.WriteLine(activity.TraceId);
-                Console.WriteLine(activity.SpanId);
-                Console.WriteLine(activity.ParentSpanId);
             }
             catch
             {
@@ -51,9 +47,6 @@
         public static Task OnConsumeCompleted(IMessageContext context)
         {
             var activity = context.Items[KafkaFlowActivitySourceHelper.ActivityString] as Activity;
-            Console.WriteLine(activity.TraceId);
-            Console.WriteLine(activity.SpanId);
-            Console.WriteLine(activity.ParentSpanId);
 
             activity?.Dispose();
 
