@@ -64,7 +64,9 @@
         {
             var activity = context.Items[KafkaFlowActivitySourceHelper.ActivityString] as Activity;
 
-            activity?.SetTag("exception.message", ex.Message);
+            var exceptionEvent = KafkaFlowActivitySourceHelper.CreateExceptionEvent(ex);
+
+            activity?.AddEvent(exceptionEvent);
 
             return Task.CompletedTask;
         }
@@ -83,7 +85,6 @@
 
         private static void SetConsumerTags(IMessageContext context, Activity activity)
         {
-            // TODO: Use conventions here too
             activity.SetTag("messaging.operation", ProcessString);
             activity.SetTag("messaging.source.name", context.ConsumerContext.Topic);
             activity.SetTag("messaging.kafka.consumer.group", context.ConsumerContext.GroupId);

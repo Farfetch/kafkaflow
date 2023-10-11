@@ -139,6 +139,8 @@ namespace KafkaFlow.Consumers
                 }
                 catch (Exception ex)
                 {
+                    await this.globalEvents.FireMessageConsumeErrorAsync(new MessageEventExceptionContext(context, ex));
+
                     this.logHandler.Error(
                         "Error processing message",
                         ex,

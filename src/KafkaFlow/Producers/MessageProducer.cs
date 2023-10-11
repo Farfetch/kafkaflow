@@ -283,6 +283,8 @@ namespace KafkaFlow.Producers
             }
             catch (ProduceException<byte[], byte[]> e)
             {
+                await this.globalEvents.FireMessageProduceErrorAsync(new MessageEventExceptionContext(context, e));
+
                 if (e.Error.IsFatal)
                 {
                     this.InvalidateProducer(e.Error, result);

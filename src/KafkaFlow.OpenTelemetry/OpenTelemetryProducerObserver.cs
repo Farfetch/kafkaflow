@@ -24,6 +24,8 @@
                 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md
                 var activity = KafkaFlowActivitySourceHelper.ActivitySource.StartActivity(activityName, ActivityKind.Producer);
 
+                context.Items.Add(KafkaFlowActivitySourceHelper.ActivityString, activity);
+
                 // Depending on Sampling (and whether a listener is registered or not), the
                 // activity above may not be created.
                 // If it is created, then propagate its context.
@@ -60,20 +62,22 @@
             return Task.CompletedTask;
         }
 
-        public static Task OnProducerCompleted()
+        public static Task OnProducerCompleted(IMessageContext context)
         {
-            var activity = Activity.Current;
+            var activity = context.Items[KafkaFlowActivitySourceHelper.ActivityString] as Activity;
 
             activity?.Stop();
 
             return Task.CompletedTask;
         }
 
-        public static Task OnProducerError(Exception ex)
+        public static Task OnProducerError(IMessageContext context, Exception ex)
         {
-            var activity = Activity.Current;
+            var activity = context.Items[KafkaFlowActivitySourceHelper.ActivityString] as Activity;
 
-            activity?.SetTag("exception.message", ex.Message);
+            var exceptionEvent = KafkaFlowActivitySourceHelper.CreateExceptionEvent(ex);
+
+            activity?.AddEvent(exceptionEvent);
 
             return Task.CompletedTask;
         }
