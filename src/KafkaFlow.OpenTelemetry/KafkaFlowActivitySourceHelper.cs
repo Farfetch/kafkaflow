@@ -16,15 +16,10 @@ namespace KafkaFlow.OpenTelemetry
         internal static readonly string KafkaString = "kafka";
         internal static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
         internal static readonly ActivitySource ActivitySource = new(KafkaFlowString, Version);
-        internal static readonly IEnumerable<KeyValuePair<string, object>> CreationTags = new[]
-        {
-            new KeyValuePair<string, object>(Conventions.AttributePeerService, KafkaString),
-            new KeyValuePair<string, object>(Conventions.AttributeMessagingSystem, KafkaString),
-        };
 
         public static void SetGenericTags(Activity activity)
         {
-            activity?.SetTag("messaging.system", KafkaString);
+            activity?.SetTag(Conventions.AttributeMessagingSystem, KafkaString);
         }
 
         public static ActivityEvent CreateExceptionEvent(Exception exception)
