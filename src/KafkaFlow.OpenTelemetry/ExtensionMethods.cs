@@ -14,12 +14,16 @@
         /// <returns></returns>
         public static IKafkaConfigurationBuilder AddOpenTelemetryInstrumentation(this IKafkaConfigurationBuilder builder)
         {
-            // Todo: Missing on exception and on producer completed
             builder.SubscribeGlobalEvents(hub =>
             {
                 hub.MessageConsumeStarted.Subscribe(eventContext =>
                 {
                     return OpenTelemetryConsumerObserver.OnConsumeStarted(eventContext.MessageContext);
+                });
+
+                hub.MessageConsumeError.Subscribe(eventContext =>
+                {
+                    return OpenTelemetryConsumerObserver.OnConsumeError(eventContext.MessageContext, eventContext.Exception);
                 });
 
                 hub.MessageConsumeCompleted.Subscribe(eventContext =>
@@ -30,6 +34,16 @@
                 hub.MessageProduceStarted.Subscribe(eventContext =>
                 {
                     return OpenTelemetryProducerObserver.OnProducerStarted(eventContext.MessageContext);
+                });
+
+                hub.MessageProduceError.Subscribe(eventContext =>
+                {
+                    return OpenTelemetryProducerObserver.OnProducerError(eventContext.MessageContext, eventContext.Exception);
+                });
+
+                hub.MessageProduceCompleted.Subscribe(eventContext =>
+                {
+                    return OpenTelemetryProducerObserver.OnProducerCompleted(eventContext.MessageContext);
                 });
             });
 
