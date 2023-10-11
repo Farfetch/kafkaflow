@@ -50,10 +50,6 @@
                 {
                     SetProducerTags(context, activity);
                 }
-
-                Console.WriteLine(activity.TraceId);
-                Console.WriteLine(activity.SpanId);
-                Console.WriteLine(activity.ParentSpanId);
             }
             catch
             {
