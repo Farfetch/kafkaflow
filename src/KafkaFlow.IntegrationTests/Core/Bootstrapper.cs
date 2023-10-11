@@ -11,6 +11,7 @@ namespace KafkaFlow.IntegrationTests.Core
     using global::Microsoft.Extensions.Hosting;
     using KafkaFlow.Compressor;
     using KafkaFlow.Compressor.Gzip;
+    using KafkaFlow.Configuration;
     using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Messages;
     using KafkaFlow.IntegrationTests.Core.Middlewares;
@@ -44,6 +45,8 @@ namespace KafkaFlow.IntegrationTests.Core
         private const string AvroTopicName = "test-avro";
 
         private static readonly Lazy<IServiceProvider> LazyProvider = new(SetupProvider);
+
+        public static Action<IGlobalEvents> GlobalEvents { get; set; } = _ => { };
 
         public static IServiceProvider GetServiceProvider() => LazyProvider.Value;
 
@@ -332,7 +335,8 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(GzipTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddCompressor<GzipMessageCompressor>()))));
+                                           .AddCompressor<GzipMessageCompressor>())))
+                    .SubscribeGlobalEvents(GlobalEvents));
 
             services.AddSingleton<JsonProducer>();
             services.AddSingleton<JsonGzipProducer>();
