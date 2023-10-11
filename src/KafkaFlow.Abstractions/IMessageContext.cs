@@ -29,6 +29,11 @@ namespace KafkaFlow
         IProducerContext ProducerContext { get; }
 
         /// <summary>
+        /// Gets the items
+        /// </summary>
+        IDictionary<string, object> Items { get; }
+
+        /// <summary>
         /// Creates a new <see cref="IMessageContext"/> with the new message
         /// </summary>
         /// <param name="key">The new message key</param>
@@ -43,7 +48,5 @@ namespace KafkaFlow
         /// <returns></returns>
         [Obsolete("This method should no longer be used, use the " + nameof(SetMessage) + "() instead.", true)]
         IMessageContext TransformMessage(object message);
-
-        IDictionary<string, object> Items { get; }
     }
 }

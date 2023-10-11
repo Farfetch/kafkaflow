@@ -25,8 +25,6 @@ namespace KafkaFlow.OpenTelemetry
         public static void SetGenericTags(Activity activity)
         {
             activity?.SetTag("messaging.system", KafkaString);
-            // TODO: Broker information below. Set values after
-            activity?.SetTag("peer.service", KafkaString);
         }
 
         public static ActivityEvent CreateExceptionEvent(Exception exception)
