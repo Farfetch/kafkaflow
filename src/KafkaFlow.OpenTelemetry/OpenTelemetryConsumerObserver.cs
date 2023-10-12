@@ -28,6 +28,11 @@
                 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md
                 var activity = KafkaFlowActivitySourceHelper.ActivitySource.StartActivity(activityName, ActivityKind.Consumer, parentContext.ActivityContext);
 
+                foreach (var item in Baggage.Current)
+                {
+                    activity.AddBaggage(item.Key, item.Value);
+                }
+
                 context.Items.Add(KafkaFlowActivitySourceHelper.ActivityString, activity);
 
                 KafkaFlowActivitySourceHelper.SetGenericTags(activity);

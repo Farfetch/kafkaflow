@@ -1,30 +1,25 @@
 ﻿namespace KafkaFlow.IntegrationTests
 {
     using System;
-    using System.IO;
-    using System.Threading;
-    using Confluent.SchemaRegistry;
-    using Confluent.SchemaRegistry.Serdes;
-    using global::Microsoft.Extensions.Configuration;
-    using global::Microsoft.Extensions.Hosting;
-    using KafkaFlow.Configuration;
-    using KafkaFlow.IntegrationTests.Core.Handlers;
-    using KafkaFlow.IntegrationTests.Core.Producers;
-    using KafkaFlow.Serializer.SchemaRegistry;
-    using KafkaFlow.TypedHandler;
-    using AutoOffsetReset = KafkaFlow.AutoOffsetReset;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using System.Threading.Tasks;
-    using KafkaFlow.IntegrationTests.Core;
-    using AutoFixture;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.IO;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using AutoFixture;
     using global::OpenTelemetry;
     using global::OpenTelemetry.Trace;
-    using Microsoft.Extensions.DependencyInjection;
     using KafkaFlow.Compressor;
     using KafkaFlow.Compressor.Gzip;
+    using KafkaFlow.Configuration;
+    using KafkaFlow.IntegrationTests.Core;
+    using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Middlewares;
+    using KafkaFlow.IntegrationTests.Core.Producers;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
     public class OpenTelemetryTests
@@ -39,7 +34,6 @@
         public void Setup()
         {
             this.exportedItems = new List<Activity>();
-            //this.BuildTracerProvider();
             this.provider = this.GetServiceProvider();
             MessageStorage.Clear();
         }
@@ -63,12 +57,58 @@
             await Task.Delay(8000).ConfigureAwait(false);
 
             Assert.IsNotNull(this.exportedItems);
+
             var producerSpan = this.exportedItems.Find(x => x.Kind == ActivityKind.Producer);
             var consumerSpan = this.exportedItems.Find(x => x.Kind == ActivityKind.Consumer);
 
             Assert.IsNull(producerSpan.ParentId);
             Assert.AreEqual(producerSpan.TraceId, consumerSpan.TraceId);
             Assert.AreEqual(consumerSpan.ParentSpanId, producerSpan.SpanId);
+        }
+
+        [TestMethod]
+        public async Task AddOpenTelemetry_ProducingAndConsumingOneMessage_BaggageIsPropagatedFromTestActivityToConsumer()
+        {
+            // Arrange
+            var kafkaFlowTestString = "KafkaFlowTest";
+            var baggageName1 = "TestBaggage1";
+            var baggageValue1 = "TestBaggageValue1";
+            var baggageName2 = "TestBaggage2";
+            var baggageValue2 = "TestBaggageValue2";
+
+            using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .AddSource("KafkaFlow")
+            .AddSource(kafkaFlowTestString)
+            .AddInMemoryExporter(this.exportedItems)
+            .Build();
+
+            var producer = this.provider.GetRequiredService<IMessageProducer<GzipProducer>>();
+            var message = this.fixture.Create<byte[]>();
+
+            // Act
+            ActivitySource activitySource = new(kafkaFlowTestString);
+
+            var activity = activitySource.StartActivity("TestActivity", ActivityKind.Client);
+
+            activity.AddBaggage(baggageName1, baggageValue1);
+            activity.AddBaggage(baggageName2, baggageValue2);
+
+            await producer.ProduceAsync(null, message);
+
+            // Assert
+            await Task.Delay(40000).ConfigureAwait(false);
+
+            Assert.IsNotNull(this.exportedItems);
+
+            var producerSpan = this.exportedItems.Find(x => x.Kind == ActivityKind.Producer);
+            var consumerSpan = this.exportedItems.Find(x => x.Kind == ActivityKind.Consumer);
+
+            Assert.AreEqual(producerSpan.TraceId, consumerSpan.TraceId);
+            Assert.AreEqual(consumerSpan.ParentSpanId, producerSpan.SpanId);
+            Assert.AreEqual(producerSpan.GetBaggageItem(baggageName1), baggageValue1);
+            Assert.AreEqual(consumerSpan.GetBaggageItem(baggageName1), baggageValue1);
+            Assert.AreEqual(producerSpan.GetBaggageItem(baggageName2), baggageValue2);
+            Assert.AreEqual(consumerSpan.GetBaggageItem(baggageName2), baggageValue2);
         }
 
         private IServiceProvider GetServiceProvider()
@@ -129,11 +169,6 @@
             Thread.Sleep(10000);
 
             return host.Services;
-        }
-
-        private void BuildTracerProvider()
-        {
-            
         }
     }
 }

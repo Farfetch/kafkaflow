@@ -41,6 +41,8 @@
                     contextToInject = Activity.Current.Context;
                 }
 
+                Baggage.Current = Baggage.Create(activity.Baggage.ToDictionary(item => item.Key, item => item.Value));
+
                 // Inject the ActivityContext into the message headers to propagate trace context to the receiving service.
                 Propagator.Inject(new PropagationContext(contextToInject, Baggage.Current), context, InjectTraceContextIntoBasicProperties);
 
