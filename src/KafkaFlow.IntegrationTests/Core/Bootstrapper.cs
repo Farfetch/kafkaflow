@@ -11,7 +11,6 @@ namespace KafkaFlow.IntegrationTests.Core
     using global::Microsoft.Extensions.Hosting;
     using KafkaFlow.Compressor;
     using KafkaFlow.Compressor.Gzip;
-    using KafkaFlow.Configuration;
     using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Messages;
     using KafkaFlow.IntegrationTests.Core.Middlewares;
@@ -46,11 +45,7 @@ namespace KafkaFlow.IntegrationTests.Core
 
         private static readonly Lazy<IServiceProvider> LazyProvider = new(SetupProvider);
 
-        public static Action<IKafkaConfigurationBuilder> ConfigureKafka { get; set; } = _ => { };
-
         public static IServiceProvider GetServiceProvider() => LazyProvider.Value;
-
-        public static IServiceProvider InitializeServiceProvider() => SetupProvider();
 
         private static IServiceProvider SetupProvider()
         {
@@ -339,8 +334,6 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .AddMiddlewares(
                                         middlewares => middlewares
                                            .AddCompressor<GzipMessageCompressor>())));
-
-                    ConfigureKafka(kafka);
                 });
 
             services.AddSingleton<JsonProducer>();
