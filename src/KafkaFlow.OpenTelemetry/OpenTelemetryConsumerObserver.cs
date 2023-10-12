@@ -51,20 +51,22 @@
 
         public static Task OnConsumeCompleted(IMessageContext context)
         {
-            var activity = context.Items[KafkaFlowActivitySourceHelper.ActivityString] as Activity;
-
-            activity?.Dispose();
+            if (context.Items.TryGetValue(KafkaFlowActivitySourceHelper.ActivityString, out var value) && value is Activity activity)
+            {
+                activity?.Dispose();
+            }
 
             return Task.CompletedTask;
         }
 
         public static Task OnConsumeError(IMessageContext context, Exception ex)
         {
-            var activity = context.Items[KafkaFlowActivitySourceHelper.ActivityString] as Activity;
+            if (context.Items.TryGetValue(KafkaFlowActivitySourceHelper.ActivityString, out var value) && value is Activity activity)
+            {
+                var exceptionEvent = KafkaFlowActivitySourceHelper.CreateExceptionEvent(ex);
 
-            var exceptionEvent = KafkaFlowActivitySourceHelper.CreateExceptionEvent(ex);
-
-            activity?.AddEvent(exceptionEvent);
+                activity?.AddEvent(exceptionEvent);
+            }
 
             return Task.CompletedTask;
         }
