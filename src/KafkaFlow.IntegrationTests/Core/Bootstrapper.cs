@@ -46,9 +46,11 @@ namespace KafkaFlow.IntegrationTests.Core
 
         private static readonly Lazy<IServiceProvider> LazyProvider = new(SetupProvider);
 
-        public static Action<IGlobalEvents> GlobalEvents { get; set; } = _ => { };
+        public static Action<IKafkaConfigurationBuilder> ConfigureKafka { get; set; } = _ => { };
 
         public static IServiceProvider GetServiceProvider() => LazyProvider.Value;
+
+        public static IServiceProvider InitializeServiceProvider() => SetupProvider();
 
         private static IServiceProvider SetupProvider()
         {
@@ -100,8 +102,9 @@ namespace KafkaFlow.IntegrationTests.Core
             };
 
             services.AddKafka(
-                kafka => kafka
-                    .UseLogHandler<TraceLogHandler>()
+                kafka =>
+                {
+                    kafka.UseLogHandler<TraceLogHandler>()
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(kafkaBrokers.Split(';'))
@@ -335,8 +338,10 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(GzipTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                           .AddCompressor<GzipMessageCompressor>())))
-                    .SubscribeGlobalEvents(GlobalEvents));
+                                           .AddCompressor<GzipMessageCompressor>())));
+
+                    ConfigureKafka(kafka);
+                });
 
             services.AddSingleton<JsonProducer>();
             services.AddSingleton<JsonGzipProducer>();
