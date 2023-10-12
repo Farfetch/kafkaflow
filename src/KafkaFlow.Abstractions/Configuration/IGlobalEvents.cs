@@ -13,7 +13,7 @@
         /// <summary>
         /// Gets the message consume error event
         /// </summary>
-        IEvent<MessageEventExceptionContext> MessageConsumeError { get; }
+        IEvent<MessageErrorEventContext> MessageConsumeError { get; }
 
         /// <summary>
         /// Gets the message consume started event
@@ -28,7 +28,7 @@
         /// <summary>
         /// Gets the message produce error event
         /// </summary>
-        IEvent<MessageEventExceptionContext> MessageProduceError { get; }
+        IEvent<MessageErrorEventContext> MessageProduceError { get; }
 
         /// <summary>
         /// Gets the message produce started event

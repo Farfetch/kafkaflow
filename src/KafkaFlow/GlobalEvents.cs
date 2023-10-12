@@ -6,10 +6,10 @@
     internal class GlobalEvents : IGlobalEvents
     {
         private readonly Event<MessageEventContext> messageConsumeCompleted;
-        private readonly Event<MessageEventExceptionContext> messageConsumeError;
+        private readonly Event<MessageErrorEventContext> messageConsumeError;
         private readonly Event<MessageEventContext> messageConsumeStarted;
         private readonly Event<MessageEventContext> messageProduceCompleted;
-        private readonly Event<MessageEventExceptionContext> messageProduceError;
+        private readonly Event<MessageErrorEventContext> messageProduceError;
         private readonly Event<MessageEventContext> messageProduceStarted;
 
         public GlobalEvents(ILogHandler log)
@@ -24,20 +24,20 @@
 
         public IEvent<MessageEventContext> MessageConsumeCompleted => this.messageConsumeCompleted;
 
-        public IEvent<MessageEventExceptionContext> MessageConsumeError => this.messageConsumeError;
+        public IEvent<MessageErrorEventContext> MessageConsumeError => this.messageConsumeError;
 
         public IEvent<MessageEventContext> MessageConsumeStarted => this.messageConsumeStarted;
 
         public IEvent<MessageEventContext> MessageProduceCompleted => this.messageProduceCompleted;
 
-        public IEvent<MessageEventExceptionContext> MessageProduceError => this.messageProduceError;
+        public IEvent<MessageErrorEventContext> MessageProduceError => this.messageProduceError;
 
         public IEvent<MessageEventContext> MessageProduceStarted => this.messageProduceStarted;
 
         public Task FireMessageConsumeStartedAsync(MessageEventContext context)
             => this.messageConsumeStarted.FireAsync(context);
 
-        public Task FireMessageConsumeErrorAsync(MessageEventExceptionContext context)
+        public Task FireMessageConsumeErrorAsync(MessageErrorEventContext context)
             => this.messageConsumeError.FireAsync(context);
 
         public Task FireMessageConsumeCompletedAsync(MessageEventContext context)
@@ -46,8 +46,8 @@
         public Task FireMessageProduceStartedAsync(MessageEventContext context)
             => this.messageProduceStarted.FireAsync(context);
 
-        public Task FireMessageProduceErrorAsync(MessageEventExceptionContext context)
-           => this.messageConsumeError.FireAsync(context);
+        public Task FireMessageProduceErrorAsync(MessageErrorEventContext context)
+           => this.messageProduceError.FireAsync(context);
 
         public Task FireMessageProduceCompletedAsync(MessageEventContext context)
             => this.messageProduceCompleted.FireAsync(context);
