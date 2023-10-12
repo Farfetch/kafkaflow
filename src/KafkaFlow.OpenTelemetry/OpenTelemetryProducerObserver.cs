@@ -88,7 +88,7 @@
             {
                 if (!context.Headers.Any(x => x.Key == key))
                 {
-                    context.Headers.Add(key, Encoding.ASCII.GetBytes(value));
+                    context.Headers.SetString(key, value, Encoding.ASCII);
                 }
             }
             catch (Exception ex)
