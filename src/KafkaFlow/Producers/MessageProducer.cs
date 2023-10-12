@@ -42,7 +42,7 @@ namespace KafkaFlow.Producers
 
             var messageContext = this.CreateMessageContext(topic, messageKey, messageValue, headers);
 
-            await this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext, this.dependencyResolver));
+            await this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext));
 
             await this.middlewareExecutor
                 .Execute(
@@ -56,7 +56,7 @@ namespace KafkaFlow.Producers
                     })
                 .ConfigureAwait(false);
 
-            await this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext, this.dependencyResolver));
+            await this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext));
 
             return report;
         }
@@ -93,7 +93,7 @@ namespace KafkaFlow.Producers
 
             var messageContext = this.CreateMessageContext(topic, messageKey, messageValue, headers);
 
-            this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext, this.dependencyResolver));
+            this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext));
 
             this.middlewareExecutor
                 .Execute(
@@ -139,7 +139,7 @@ namespace KafkaFlow.Producers
                         scope.Dispose();
                     });
 
-            this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext, this.dependencyResolver));
+            this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext));
         }
 
         public void Produce(
@@ -283,7 +283,7 @@ namespace KafkaFlow.Producers
             }
             catch (ProduceException<byte[], byte[]> e)
             {
-                await this.globalEvents.FireMessageProduceErrorAsync(new MessageEventExceptionContext(context, e));
+                await this.globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(context, e));
 
                 if (e.Error.IsFatal)
                 {
