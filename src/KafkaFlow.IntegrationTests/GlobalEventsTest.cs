@@ -22,28 +22,31 @@
             // Arrange
             bool isMessageProducedStarted = false, isMessageConsumeStarted = false, isMessageConsumeCompleted = false;
 
-            Bootstrapper.GlobalEvents = observers =>
+            Bootstrapper.ConfigureKafka = kafka =>
             {
-                observers.MessageProduceStarted.Subscribe(eventContext =>
+                kafka.SubscribeGlobalEvents(observers =>
                 {
-                    isMessageProducedStarted = true;
-                    return Task.CompletedTask;
-                });
+                    observers.MessageProduceStarted.Subscribe(eventContext =>
+                    {
+                        isMessageProducedStarted = true;
+                        return Task.CompletedTask;
+                    });
 
-                observers.MessageConsumeStarted.Subscribe(eventContext =>
-                {
-                    isMessageConsumeStarted = true;
-                    return Task.CompletedTask;
-                });
+                    observers.MessageConsumeStarted.Subscribe(eventContext =>
+                    {
+                        isMessageConsumeStarted = true;
+                        return Task.CompletedTask;
+                    });
 
-                observers.MessageConsumeCompleted.Subscribe(eventContext =>
-                {
-                    isMessageConsumeCompleted = true;
-                    return Task.CompletedTask;
+                    observers.MessageConsumeCompleted.Subscribe(eventContext =>
+                    {
+                        isMessageConsumeCompleted = true;
+                        return Task.CompletedTask;
+                    });
                 });
             };
 
-            var provider = Bootstrapper.GetServiceProvider();
+            var provider = Bootstrapper.InitializeServiceProvider();
             MessageStorage.Clear();
 
             var consumer = provider.GetRequiredService<IConsumerAccessor>().All.First();
@@ -67,16 +70,19 @@
             // Arrange
             IMessageContext messageContext = null;
 
-            Bootstrapper.GlobalEvents = observers =>
+            Bootstrapper.ConfigureKafka = kafka =>
             {
-                observers.MessageProduceStarted.Subscribe(eventContext =>
+                kafka.SubscribeGlobalEvents(observers =>
                 {
-                    messageContext = eventContext.MessageContext;
-                    return Task.CompletedTask;
+                    observers.MessageProduceStarted.Subscribe(eventContext =>
+                    {
+                        messageContext = eventContext.MessageContext;
+                        return Task.CompletedTask;
+                    });
                 });
             };
 
-            var provider = Bootstrapper.GetServiceProvider();
+            var provider = Bootstrapper.InitializeServiceProvider();
             MessageStorage.Clear();
 
             var consumer = provider.GetRequiredService<IConsumerAccessor>().All.First();
