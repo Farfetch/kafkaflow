@@ -50,14 +50,14 @@ namespace KafkaFlow.Configuration
                 {
                     var logHandler = r.Resolve<ILogHandler>();
 
-                    var hub = new GlobalEvents(logHandler);
+                    var globalEvents = new GlobalEvents(logHandler);
 
                     foreach (var del in this.globalEventsConfigurators)
                     {
-                        del.Invoke(hub);
+                        del.Invoke(globalEvents);
                     }
 
-                    return hub;
+                    return globalEvents;
                 });
 
             return configuration;
