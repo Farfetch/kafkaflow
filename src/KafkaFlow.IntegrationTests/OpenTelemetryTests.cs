@@ -43,7 +43,7 @@
         {
             // Arrange
             using var tracerProvider = Sdk.CreateTracerProviderBuilder()
-            .AddSource("KafkaFlow")
+            .AddSource("KafkaFlow.OpenTelemetry")
             .AddInMemoryExporter(this.exportedItems)
             .Build();
 
@@ -77,7 +77,7 @@
             var baggageValue2 = "TestBaggageValue2";
 
             using var tracerProvider = Sdk.CreateTracerProviderBuilder()
-            .AddSource("KafkaFlow")
+            .AddSource("KafkaFlow.OpenTelemetry")
             .AddSource(kafkaFlowTestString)
             .AddInMemoryExporter(this.exportedItems)
             .Build();

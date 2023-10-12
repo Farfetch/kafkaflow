@@ -10,12 +10,13 @@ namespace KafkaFlow.OpenTelemetry
 
     internal static class KafkaFlowActivitySourceHelper
     {
-        internal static readonly string ActivityString = "activity";
-        internal static readonly string ExceptionString = "exception";
-        internal static readonly string KafkaFlowString = "KafkaFlow";
-        internal static readonly string KafkaString = "kafka";
+        internal const string ActivityString = "otel_activity";
+        internal const string ExceptionString = "exception";
+        internal const string KafkaString = "kafka";
+        internal static readonly AssemblyName AssemblyName = typeof(KafkaFlowActivitySourceHelper).Assembly.GetName();
+        internal static readonly string ActivitySourceName = AssemblyName.Name;
         internal static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-        internal static readonly ActivitySource ActivitySource = new(KafkaFlowString, Version);
+        internal static readonly ActivitySource ActivitySource = new(ActivitySourceName, Version);
 
         public static void SetGenericTags(Activity activity)
         {
