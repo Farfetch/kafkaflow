@@ -8,7 +8,7 @@
     using global::OpenTelemetry;
     using global::OpenTelemetry.Context.Propagation;
 
-    internal static class OpenTelemetryProducerObserver
+    internal static class OpenTelemetryProducerEventsHandler
     {
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
         private static readonly string PublishString = "publish";

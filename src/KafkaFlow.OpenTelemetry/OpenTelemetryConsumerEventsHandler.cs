@@ -8,7 +8,7 @@
     using global::OpenTelemetry;
     using global::OpenTelemetry.Context.Propagation;
 
-    internal static class OpenTelemetryConsumerObserver
+    internal static class OpenTelemetryConsumerEventsHandler
     {
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
         private static readonly string ProcessString = "process";
