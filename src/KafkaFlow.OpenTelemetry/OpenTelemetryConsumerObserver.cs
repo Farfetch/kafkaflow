@@ -73,14 +73,7 @@
 
         private static IEnumerable<string> ExtractTraceContextIntoBasicProperties(IMessageContext context, string key)
         {
-            try
-            {
-                return new[] { context.Headers.GetString(key, Encoding.UTF8) };
-            }
-            catch
-            {
-                return new string[] { };
-            }
+            return new[] { context.Headers.GetString(key, Encoding.UTF8) };
         }
 
         private static void SetConsumerTags(IMessageContext context, Activity activity)
