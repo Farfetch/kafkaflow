@@ -7,8 +7,6 @@
     /// </summary>
     public class MessageErrorEventContext : MessageEventContext
     {
-        private readonly Exception exception;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="MessageErrorEventContext"/> class.
         /// </summary>
@@ -17,12 +15,12 @@
         public MessageErrorEventContext(IMessageContext messageContext, Exception exception)
             : base(messageContext)
         {
-            this.exception = exception;
+            this.Exception = exception;
         }
 
         /// <summary>
         /// Gets the exception
         /// </summary>
-        public Exception Exception => this.exception;
+        public Exception Exception { get; }
     }
 }

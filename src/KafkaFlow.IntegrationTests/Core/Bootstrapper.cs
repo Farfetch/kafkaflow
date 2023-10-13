@@ -333,7 +333,7 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(GzipTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                           .AddCompressor<GzipMessageCompressor>())));
+                                            .AddCompressor<GzipMessageCompressor>())));
                 });
 
             services.AddSingleton<JsonProducer>();

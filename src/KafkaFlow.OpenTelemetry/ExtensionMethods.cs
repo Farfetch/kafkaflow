@@ -16,35 +16,17 @@
         {
             builder.SubscribeGlobalEvents(hub =>
             {
-                hub.MessageConsumeStarted.Subscribe(eventContext =>
-                {
-                    return OpenTelemetryConsumerEventsHandler.OnConsumeStarted(eventContext.MessageContext);
-                });
+                hub.MessageConsumeStarted.Subscribe(eventContext => OpenTelemetryConsumerEventsHandler.OnConsumeStarted(eventContext.MessageContext));
 
-                hub.MessageConsumeError.Subscribe(eventContext =>
-                {
-                    return OpenTelemetryConsumerEventsHandler.OnConsumeError(eventContext.MessageContext, eventContext.Exception);
-                });
+                hub.MessageConsumeError.Subscribe(eventContext => OpenTelemetryConsumerEventsHandler.OnConsumeError(eventContext.MessageContext, eventContext.Exception));
 
-                hub.MessageConsumeCompleted.Subscribe(eventContext =>
-                {
-                    return OpenTelemetryConsumerEventsHandler.OnConsumeCompleted(eventContext.MessageContext);
-                });
+                hub.MessageConsumeCompleted.Subscribe(eventContext => OpenTelemetryConsumerEventsHandler.OnConsumeCompleted(eventContext.MessageContext));
 
-                hub.MessageProduceStarted.Subscribe(eventContext =>
-                {
-                    return OpenTelemetryProducerEventsHandler.OnProducerStarted(eventContext.MessageContext);
-                });
+                hub.MessageProduceStarted.Subscribe(eventContext => OpenTelemetryProducerEventsHandler.OnProducerStarted(eventContext.MessageContext));
 
-                hub.MessageProduceError.Subscribe(eventContext =>
-                {
-                    return OpenTelemetryProducerEventsHandler.OnProducerError(eventContext.MessageContext, eventContext.Exception);
-                });
+                hub.MessageProduceError.Subscribe(eventContext => OpenTelemetryProducerEventsHandler.OnProducerError(eventContext.MessageContext, eventContext.Exception));
 
-                hub.MessageProduceCompleted.Subscribe(eventContext =>
-                {
-                    return OpenTelemetryProducerEventsHandler.OnProducerCompleted(eventContext.MessageContext);
-                });
+                hub.MessageProduceCompleted.Subscribe(eventContext => OpenTelemetryProducerEventsHandler.OnProducerCompleted(eventContext.MessageContext));
             });
 
             return builder;
