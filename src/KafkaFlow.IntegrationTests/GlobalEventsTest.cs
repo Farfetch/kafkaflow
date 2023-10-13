@@ -22,7 +22,16 @@
     public class GlobalEventsTest
     {
         private readonly Fixture fixture = new();
+        private string topic;
         private bool isPartitionAssigned;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            this.topic = $"GlobalEventsTestTopic_{Guid.NewGuid()}";
+
+            MessageStorage.Clear();
+        }
 
         [TestMethod]
         public async Task SubscribeGlobalEvents_AllEvents_TriggeredCorrectly()
@@ -51,7 +60,10 @@
                 });
             }
 
-            var provider = await this.GetServiceProviderAsync(ConfigureGlobalEvents);
+            var provider = await this.GetServiceProviderAsync(
+                ConfigureGlobalEvents,
+                this.ConfigureConsumer<GzipMiddleware>,
+                this.ConfigureProducer<ProtobufNetSerializer>);
             MessageStorage.Clear();
 
             var producer = provider.GetRequiredService<IMessageProducer<JsonProducer2>>();
@@ -83,7 +95,11 @@
                 });
             }
 
-            var provider = await this.GetServiceProviderAsync(ConfigureGlobalEvents);
+            var provider = await this.GetServiceProviderAsync(
+                ConfigureGlobalEvents,
+                this.ConfigureConsumer<GzipMiddleware>,
+                this.ConfigureProducer<ProtobufNetSerializer>);
+
             MessageStorage.Clear();
 
             var producer = provider.GetRequiredService<IMessageProducer<JsonProducer2>>();
@@ -97,11 +113,89 @@
             Assert.AreEqual(messageContext.Message.Key, message.Id.ToString());
         }
 
-        private async Task<IServiceProvider> GetServiceProviderAsync(Action<IGlobalEvents> configureGlobalEvents)
+        [TestMethod]
+        public async Task SubscribeGlobalEvents_ConsumerErrorEvent_TriggeredCorrectly()
+        {
+            // Arrange
+            bool isMessageProducedStarted = false, isMessageConsumeStarted = false, isMessageConsumerError = false;
+
+            void ConfigureGlobalEvents(IGlobalEvents observers)
+            {
+                observers.MessageProduceStarted.Subscribe(eventContext =>
+                {
+                    isMessageProducedStarted = true;
+                    return Task.CompletedTask;
+                });
+
+                observers.MessageConsumeStarted.Subscribe(eventContext =>
+                {
+                    isMessageConsumeStarted = true;
+                    return Task.CompletedTask;
+                });
+
+                observers.MessageConsumeError.Subscribe(eventContext =>
+                {
+                    isMessageConsumerError = true;
+                    return Task.CompletedTask;
+                });
+            }
+
+            var provider = await this.GetServiceProviderAsync(
+                ConfigureGlobalEvents,
+                this.ConfigureConsumer<TriggerErrorMessageMiddleware>,
+                this.ConfigureProducer<ProtobufNetSerializer>);
+
+            MessageStorage.Clear();
+
+            var producer = provider.GetRequiredService<IMessageProducer<JsonProducer2>>();
+            var message = this.fixture.Create<byte[]>();
+
+            // Act
+            await producer.ProduceAsync(null, message);
+
+            await Task.Delay(10000);
+
+            await MessageStorage.AssertMessageAsync(message);
+
+            // Assert
+            Assert.IsTrue(isMessageProducedStarted);
+            Assert.IsTrue(isMessageConsumeStarted);
+            Assert.IsTrue(isMessageConsumerError);
+        }
+
+        private void ConfigureConsumer<T>(IConsumerConfigurationBuilder consumerConfigurationBuilder)
+            where T : class, IMessageMiddleware
+        {
+            consumerConfigurationBuilder
+                .Topic(this.topic)
+                .WithGroupId(this.topic)
+                .WithBufferSize(100)
+                .WithWorkersCount(10)
+                .WithAutoOffsetReset(AutoOffsetReset.Earliest)
+                .AddMiddlewares(
+                    middlewares => middlewares
+                        .AddSerializer<ProtobufNetSerializer>()
+                        .Add<T>())
+                .WithPartitionsAssignedHandler((resolver, partitions) =>
+                {
+                    this.isPartitionAssigned = true;
+                });
+        }
+
+        private void ConfigureProducer<T>(IProducerConfigurationBuilder producerConfigurationBuilder)
+            where T : class, ISerializer
+        {
+            producerConfigurationBuilder
+                .DefaultTopic(this.topic)
+                .AddMiddlewares(middlewares => middlewares.AddSerializer<T>());
+        }
+
+        private async Task<IServiceProvider> GetServiceProviderAsync(
+            Action<IGlobalEvents> configureGlobalEvents,
+            Action<IConsumerConfigurationBuilder> consumerConfiguration,
+            Action<IProducerConfigurationBuilder> producerConfiguration)
         {
             this.isPartitionAssigned = false;
-
-            var topicName = $"GlobalEventsTestTopic_{Guid.NewGuid()}";
 
             var builder = Host
                 .CreateDefaultBuilder()
@@ -123,28 +217,9 @@
                             .AddCluster(
                                 cluster => cluster
                                     .WithBrokers(context.Configuration.GetValue<string>("Kafka:Brokers").Split(';'))
-                                    .CreateTopicIfNotExists(topicName, 1, 1)
-                                    .AddProducer<JsonProducer2>(
-                                        producer => producer
-                                            .DefaultTopic(topicName)
-                                            .AddMiddlewares(
-                                                middlewares => middlewares
-                                                    .AddSerializer<ProtobufNetSerializer>()))
-                                    .AddConsumer(
-                                        consumer => consumer
-                                            .Topic(topicName)
-                                            .WithGroupId(topicName)
-                                            .WithBufferSize(100)
-                                            .WithWorkersCount(10)
-                                            .WithAutoOffsetReset(AutoOffsetReset.Earliest)
-                                            .AddMiddlewares(
-                                                middlewares => middlewares
-                                                    .AddSerializer<ProtobufNetSerializer>()
-                                                    .Add<GzipMiddleware>())
-                                            .WithPartitionsAssignedHandler((resolver, partitions) =>
-                                            {
-                                                this.isPartitionAssigned = true;
-                                            })))
+                                    .CreateTopicIfNotExists(this.topic, 1, 1)
+                                    .AddProducer<JsonProducer2>(producerConfiguration)
+                                    .AddConsumer(consumerConfiguration))
                             .SubscribeGlobalEvents(configureGlobalEvents)))
                 .UseDefaultServiceProvider(
                     (_, options) =>
