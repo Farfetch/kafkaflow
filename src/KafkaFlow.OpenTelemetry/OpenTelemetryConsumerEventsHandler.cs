@@ -10,8 +10,8 @@
 
     internal static class OpenTelemetryConsumerEventsHandler
     {
-        private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
         private const string ProcessString = "process";
+        private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
 
         public static Task OnConsumeStarted(IMessageContext context)
         {
