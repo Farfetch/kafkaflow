@@ -2,7 +2,7 @@
 {
     using System;
     using System.IO;
-    using System.Threading;
+    using System.Linq;
     using System.Threading.Tasks;
     using AutoFixture;
     using KafkaFlow.Configuration;
@@ -16,11 +16,13 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Polly;
 
     [TestClass]
     public class GlobalEventsTest
     {
         private readonly Fixture fixture = new();
+        private bool isPartitionAssigned;
 
         [TestMethod]
         public async Task SubscribeGlobalEvents_AllEvents_TriggeredCorrectly()
@@ -49,7 +51,7 @@
                 });
             }
 
-            var provider = this.GetServiceProvider(ConfigureGlobalEvents);
+            var provider = await this.GetServiceProviderAsync(ConfigureGlobalEvents);
             MessageStorage.Clear();
 
             var producer = provider.GetRequiredService<IMessageProducer<JsonProducer2>>();
@@ -67,7 +69,7 @@
         }
 
         [TestMethod]
-        public void SubscribeGlobalEvents_MessageContext_IsAssignedCorrectly()
+        public async Task SubscribeGlobalEvents_MessageContext_IsAssignedCorrectly()
         {
             // Arrange
             IMessageContext messageContext = null;
@@ -81,7 +83,7 @@
                 });
             }
 
-            var provider = this.GetServiceProvider(ConfigureGlobalEvents);
+            var provider = await this.GetServiceProviderAsync(ConfigureGlobalEvents);
             MessageStorage.Clear();
 
             var producer = provider.GetRequiredService<IMessageProducer<JsonProducer2>>();
@@ -95,9 +97,11 @@
             Assert.AreEqual(messageContext.Message.Key, message.Id.ToString());
         }
 
-        private IServiceProvider GetServiceProvider(Action<IGlobalEvents> configureGlobalEvents)
+        private async Task<IServiceProvider> GetServiceProviderAsync(Action<IGlobalEvents> configureGlobalEvents)
         {
-            var topicName = $"topic_{Guid.NewGuid()}";
+            this.isPartitionAssigned = false;
+
+            var topicName = $"GlobalEventsTestTopic_{Guid.NewGuid()}";
 
             var builder = Host
                 .CreateDefaultBuilder()
@@ -136,7 +140,11 @@
                                             .AddMiddlewares(
                                                 middlewares => middlewares
                                                     .AddSerializer<ProtobufNetSerializer>()
-                                                    .Add<GzipMiddleware>())))
+                                                    .Add<GzipMiddleware>())
+                                            .WithPartitionsAssignedHandler((resolver, partitions) =>
+                                            {
+                                                this.isPartitionAssigned = true;
+                                            })))
                             .SubscribeGlobalEvents(configureGlobalEvents)))
                 .UseDefaultServiceProvider(
                     (_, options) =>
@@ -149,10 +157,26 @@
             var bus = host.Services.CreateKafkaBus();
             bus.StartAsync().GetAwaiter().GetResult();
 
-            // Wait partition assignment
-            Thread.Sleep(10000);
+            await this.WaitForPartitionAssignmentAsync();
 
             return host.Services;
+        }
+
+        private async Task WaitForPartitionAssignmentAsync()
+        {
+            var retryPolicy = Policy
+                .Handle<Exception>()
+                .WaitAndRetryAsync(Enumerable.Range(0, 6).Select(i => TimeSpan.FromSeconds(Math.Pow(i, 2))));
+
+            await retryPolicy.ExecuteAsync(() =>
+            {
+                if (!this.isPartitionAssigned)
+                {
+                    throw new Exception("Partition assignment hasn't occurred yet.");
+                }
+
+                return Task.CompletedTask;
+            });
         }
     }
 }
