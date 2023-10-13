@@ -26,8 +26,6 @@
                 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md
                 var activity = ActivitySourceAccessor.ActivitySource.StartActivity(activityName, ActivityKind.Producer);
 
-                context?.Items.Add(ActivitySourceAccessor.ActivityString, activity);
-
                 // Depending on Sampling (and whether a listener is registered or not), the
                 // activity above may not be created.
                 // If it is created, then propagate its context.
@@ -36,6 +34,8 @@
 
                 if (activity != null)
                 {
+                    context?.Items.Add(ActivitySourceAccessor.ActivityString, activity);
+
                     contextToInject = activity.Context;
                 }
                 else if (Activity.Current != null)
