@@ -11,6 +11,8 @@
     internal static class OpenTelemetryProducerEventsHandler
     {
         private const string PublishString = "publish";
+        private const string AttributeMessagingDestinationName = "messaging.destination.name";
+        private const string AttributeMessagingKafkaDestinationPartition = "messaging.kafka.destination.partition";
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
 
         public static Task OnProducerStarted(IMessageContext context)
@@ -22,9 +24,9 @@
                 // Start an activity with a name following the semantic convention of the OpenTelemetry messaging specification.
                 // The convention also defines a set of attributes (in .NET they are mapped as `tags`) to be populated in the activity.
                 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md
-                var activity = KafkaFlowActivitySourceHelper.ActivitySource.StartActivity(activityName, ActivityKind.Producer);
+                var activity = ActivitySourceAccessor.ActivitySource.StartActivity(activityName, ActivityKind.Producer);
 
-                context?.Items.Add(KafkaFlowActivitySourceHelper.ActivityString, activity);
+                context?.Items.Add(ActivitySourceAccessor.ActivityString, activity);
 
                 // Depending on Sampling (and whether a listener is registered or not), the
                 // activity above may not be created.
@@ -46,7 +48,7 @@
                 // Inject the ActivityContext into the message headers to propagate trace context to the receiving service.
                 Propagator.Inject(new PropagationContext(contextToInject, Baggage.Current), context, InjectTraceContextIntoBasicProperties);
 
-                KafkaFlowActivitySourceHelper.SetGenericTags(activity);
+                ActivitySourceAccessor.SetGenericTags(activity);
 
                 if (activity != null && activity.IsAllDataRequested)
                 {
@@ -63,7 +65,7 @@
 
         public static Task OnProducerCompleted(IMessageContext context)
         {
-            if (context.Items.TryGetValue(KafkaFlowActivitySourceHelper.ActivityString, out var value) && value is Activity activity)
+            if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityString, out var value) && value is Activity activity)
             {
                 activity.Dispose();
             }
@@ -73,9 +75,9 @@
 
         public static Task OnProducerError(IMessageContext context, Exception ex)
         {
-            if (context.Items.TryGetValue(KafkaFlowActivitySourceHelper.ActivityString, out var value) && value is Activity activity)
+            if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityString, out var value) && value is Activity activity)
             {
-                var exceptionEvent = KafkaFlowActivitySourceHelper.CreateExceptionEvent(ex);
+                var exceptionEvent = ActivitySourceAccessor.CreateExceptionEvent(ex);
 
                 activity?.AddEvent(exceptionEvent);
             }
@@ -85,26 +87,19 @@
 
         private static void InjectTraceContextIntoBasicProperties(IMessageContext context, string key, string value)
         {
-            try
+            if (!context.Headers.Any(x => x.Key == key))
             {
-                if (!context.Headers.Any(x => x.Key == key))
-                {
-                    context.Headers.SetString(key, value, Encoding.ASCII);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"{ex}. Failed to inject trace context.");
+                context.Headers.SetString(key, value, Encoding.ASCII);
             }
         }
 
         private static void SetProducerTags(IMessageContext context, Activity activity)
         {
-            activity.SetTag("messaging.operation", PublishString);
-            activity.SetTag("messaging.destination.name", context?.ProducerContext.Topic);
-            activity.SetTag("messaging.kafka.destination.partition", context?.ProducerContext.Partition);
-            activity.SetTag("messaging.kafka.message.key", context?.Message.Key);
-            activity.SetTag("messaging.kafka.message.offset", context?.ProducerContext.Offset);
+            activity.SetTag(ActivitySourceAccessor.AttributeMessagingOperation, PublishString);
+            activity.SetTag(AttributeMessagingDestinationName, context?.ProducerContext.Topic);
+            activity.SetTag(AttributeMessagingKafkaDestinationPartition, context?.ProducerContext.Partition);
+            activity.SetTag(ActivitySourceAccessor.AttributeMessagingKafkaMessageKey, context?.Message.Key);
+            activity.SetTag(ActivitySourceAccessor.AttributeMessagingKafkaMessageOffset, context?.ProducerContext.Offset);
         }
     }
 }

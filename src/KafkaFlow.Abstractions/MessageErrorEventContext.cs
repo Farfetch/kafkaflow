@@ -13,6 +13,7 @@
         /// Initializes a new instance of the <see cref="MessageErrorEventContext"/> class.
         /// </summary>
         /// <param name="messageContext">The message context</param>
+        /// <param name="exception">The event exception</param>
         public MessageErrorEventContext(IMessageContext messageContext, Exception exception)
             : base(messageContext)
         {

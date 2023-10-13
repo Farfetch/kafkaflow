@@ -24,6 +24,7 @@ namespace KafkaFlow
         public IProducerContext ProducerContext { get; }
 
         public IMessageHeaders Headers { get; }
+
         public IDictionary<string, object> Items { get; }
 
         public IMessageContext SetMessage(object key, object value) => new MessageContext(

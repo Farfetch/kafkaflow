@@ -11,6 +11,9 @@
     internal static class OpenTelemetryConsumerEventsHandler
     {
         private const string ProcessString = "process";
+        private const string AttributeMessagingSourceName = "messaging.source.name";
+        private const string AttributeMessagingKafkaConsumerGroup = "messaging.kafka.consumer.group";
+        private const string AttributeMessagingKafkaSourcePartition = "messaging.kafka.source.partition";
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
 
         public static Task OnConsumeStarted(IMessageContext context)
@@ -26,16 +29,16 @@
                 // Start an activity with a name following the semantic convention of the OpenTelemetry messaging specification.
                 // The convention also defines a set of attributes (in .NET they are mapped as `tags`) to be populated in the activity.
                 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md
-                var activity = KafkaFlowActivitySourceHelper.ActivitySource.StartActivity(activityName, ActivityKind.Consumer, parentContext.ActivityContext);
+                var activity = ActivitySourceAccessor.ActivitySource.StartActivity(activityName, ActivityKind.Consumer, parentContext.ActivityContext);
 
                 foreach (var item in Baggage.Current)
                 {
                     activity.AddBaggage(item.Key, item.Value);
                 }
 
-                context?.Items.Add(KafkaFlowActivitySourceHelper.ActivityString, activity);
+                context?.Items.Add(ActivitySourceAccessor.ActivityString, activity);
 
-                KafkaFlowActivitySourceHelper.SetGenericTags(activity);
+                ActivitySourceAccessor.SetGenericTags(activity);
 
                 if (activity != null && activity.IsAllDataRequested)
                 {
@@ -52,7 +55,7 @@
 
         public static Task OnConsumeCompleted(IMessageContext context)
         {
-            if (context.Items.TryGetValue(KafkaFlowActivitySourceHelper.ActivityString, out var value) && value is Activity activity)
+            if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityString, out var value) && value is Activity activity)
             {
                 activity?.Dispose();
             }
@@ -62,9 +65,9 @@
 
         public static Task OnConsumeError(IMessageContext context, Exception ex)
         {
-            if (context.Items.TryGetValue(KafkaFlowActivitySourceHelper.ActivityString, out var value) && value is Activity activity)
+            if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityString, out var value) && value is Activity activity)
             {
-                var exceptionEvent = KafkaFlowActivitySourceHelper.CreateExceptionEvent(ex);
+                var exceptionEvent = ActivitySourceAccessor.CreateExceptionEvent(ex);
 
                 activity?.AddEvent(exceptionEvent);
             }
@@ -79,12 +82,12 @@
 
         private static void SetConsumerTags(IMessageContext context, Activity activity)
         {
-            activity.SetTag("messaging.operation", ProcessString);
-            activity.SetTag("messaging.source.name", context.ConsumerContext.Topic);
-            activity.SetTag("messaging.kafka.consumer.group", context.ConsumerContext.GroupId);
-            activity.SetTag("messaging.kafka.message.key", context.Message.Key);
-            activity.SetTag("messaging.kafka.message.offset", context.ConsumerContext.Offset);
-            activity.SetTag("messaging.kafka.source.partition", context.ConsumerContext.Partition);
+            activity.SetTag(ActivitySourceAccessor.AttributeMessagingOperation, ProcessString);
+            activity.SetTag(AttributeMessagingSourceName, context.ConsumerContext.Topic);
+            activity.SetTag(AttributeMessagingKafkaConsumerGroup, context.ConsumerContext.GroupId);
+            activity.SetTag(ActivitySourceAccessor.AttributeMessagingKafkaMessageKey, context.Message.Key);
+            activity.SetTag(ActivitySourceAccessor.AttributeMessagingKafkaMessageOffset, context.ConsumerContext.Offset);
+            activity.SetTag(AttributeMessagingKafkaSourcePartition, context.ConsumerContext.Partition);
         }
     }
 }
