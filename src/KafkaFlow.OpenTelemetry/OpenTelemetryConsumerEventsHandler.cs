@@ -33,7 +33,7 @@
 
                 foreach (var item in Baggage.Current)
                 {
-                    activity.AddBaggage(item.Key, item.Value);
+                    activity?.AddBaggage(item.Key, item.Value);
                 }
 
                 context?.Items.Add(ActivitySourceAccessor.ActivityString, activity);
