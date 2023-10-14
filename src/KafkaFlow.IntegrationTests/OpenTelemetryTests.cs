@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-    using System.Threading;
+    using System.Linq;
     using System.Threading.Tasks;
     using AutoFixture;
     using global::OpenTelemetry;
@@ -20,6 +20,7 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Polly;
 
     [TestClass]
     public class OpenTelemetryTests
@@ -30,18 +31,21 @@
 
         private IServiceProvider provider;
 
+        private bool isPartitionAssigned;
+
         [TestInitialize]
         public void Setup()
         {
             this.exportedItems = new List<Activity>();
-            this.provider = this.GetServiceProvider();
-            MessageStorage.Clear();
         }
 
         [TestMethod]
         public async Task AddOpenTelemetry_ProducingAndConsumingOneMessage_TraceAndSpansAreCreatedCorrectly()
         {
             // Arrange
+            this.provider = await this.GetServiceProvider();
+            MessageStorage.Clear();
+
             using var tracerProvider = Sdk.CreateTracerProviderBuilder()
             .AddSource("KafkaFlow.OpenTelemetry")
             .AddInMemoryExporter(this.exportedItems)
@@ -70,6 +74,9 @@
         public async Task AddOpenTelemetry_ProducingAndConsumingOneMessage_BaggageIsPropagatedFromTestActivityToConsumer()
         {
             // Arrange
+            this.provider = await this.GetServiceProvider();
+            MessageStorage.Clear();
+
             var kafkaFlowTestString = "KafkaFlowTest";
             var baggageName1 = "TestBaggage1";
             var baggageValue1 = "TestBaggageValue1";
@@ -96,7 +103,7 @@
             await producer.ProduceAsync(null, message);
 
             // Assert
-            await Task.Delay(40000).ConfigureAwait(false);
+            await Task.Delay(10000).ConfigureAwait(false);
 
             Assert.IsNotNull(this.exportedItems);
 
@@ -111,9 +118,11 @@
             Assert.AreEqual(consumerSpan.GetBaggageItem(baggageName2), baggageValue2);
         }
 
-        private IServiceProvider GetServiceProvider()
+        private async Task<IServiceProvider> GetServiceProvider()
         {
             string topicName = "Otel";
+
+            this.isPartitionAssigned = false;
 
             var builder = Host
                 .CreateDefaultBuilder()
@@ -152,7 +161,11 @@
                                             .AddMiddlewares(
                                                 middlewares => middlewares
                                                     .AddCompressor<GzipMessageCompressor>()
-                                                    .Add<GzipMiddleware>())))
+                                                    .Add<GzipMiddleware>())
+                                            .WithPartitionsAssignedHandler((resolver, partitions) =>
+                                            {
+                                                this.isPartitionAssigned = true;
+                                            })))
                             .AddOpenTelemetryInstrumentation()))
                 .UseDefaultServiceProvider(
                     (_, options) =>
@@ -165,10 +178,26 @@
             var bus = host.Services.CreateKafkaBus();
             bus.StartAsync().GetAwaiter().GetResult();
 
-            // Wait partition assignment
-            Thread.Sleep(10000);
+            await this.WaitForPartitionAssignmentAsync();
 
             return host.Services;
+        }
+
+        private async Task WaitForPartitionAssignmentAsync()
+        {
+            var retryPolicy = Policy
+                .Handle<Exception>()
+                .WaitAndRetryAsync(Enumerable.Range(0, 6).Select(i => TimeSpan.FromSeconds(Math.Pow(i, 2))));
+
+            await retryPolicy.ExecuteAsync(() =>
+            {
+                if (!this.isPartitionAssigned)
+                {
+                    throw new Exception("Partition assignment hasn't occurred yet.");
+                }
+
+                return Task.CompletedTask;
+            });
         }
     }
 }
