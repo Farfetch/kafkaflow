@@ -177,7 +177,7 @@
                     middlewares => middlewares
                         .AddSerializer<ProtobufNetSerializer>()
                         .Add<T>())
-                .WithPartitionsAssignedHandler((_, partitions) =>
+                .WithPartitionsAssignedHandler((_, _) =>
                 {
                     this.isPartitionAssigned = true;
                 });

@@ -161,7 +161,7 @@
                                                 middlewares => middlewares
                                                     .AddCompressor<GzipMessageCompressor>()
                                                     .Add<GzipMiddleware>())
-                                            .WithPartitionsAssignedHandler((_, partitions) =>
+                                            .WithPartitionsAssignedHandler((_, _) =>
                                             {
                                                 this.isPartitionAssigned = true;
                                             })))
