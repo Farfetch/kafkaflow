@@ -2,7 +2,7 @@
 {
     using System;
 
-    internal class PartitionAssignmentException : Exception
+    public class PartitionAssignmentException : Exception
     {
         private const string ExceptionMessage = "Partition assignment hasn't occurred yet.";
 
