@@ -1,18 +1,15 @@
-﻿using KafkaFlow.IntegrationTests.Core.Handlers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace KafkaFlow.IntegrationTests.Core.Middlewares
+﻿namespace KafkaFlow.IntegrationTests.Core.Middlewares
 {
+    using System.Threading.Tasks;
+    using KafkaFlow.IntegrationTests.Core.Exceptions;
+    using KafkaFlow.IntegrationTests.Core.Handlers;
+
     internal class TriggerErrorMessageMiddleware : IMessageMiddleware
     {
         public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
             MessageStorage.Add((byte[])context.Message.Value);
-            throw new Exception();
+            throw new ErrorExecutingMiddlewareException(nameof(TriggerErrorMessageMiddleware));
             await next(context);
         }
     }

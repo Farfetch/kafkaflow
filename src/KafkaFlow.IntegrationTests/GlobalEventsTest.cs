@@ -7,6 +7,7 @@
     using AutoFixture;
     using KafkaFlow.Configuration;
     using KafkaFlow.IntegrationTests.Core;
+    using KafkaFlow.IntegrationTests.Core.Exceptions;
     using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Messages;
     using KafkaFlow.IntegrationTests.Core.Middlewares;
@@ -176,7 +177,7 @@
                     middlewares => middlewares
                         .AddSerializer<ProtobufNetSerializer>()
                         .Add<T>())
-                .WithPartitionsAssignedHandler((resolver, partitions) =>
+                .WithPartitionsAssignedHandler((_, partitions) =>
                 {
                     this.isPartitionAssigned = true;
                 });
@@ -247,7 +248,7 @@
             {
                 if (!this.isPartitionAssigned)
                 {
-                    throw new Exception("Partition assignment hasn't occurred yet.");
+                    throw new PartitionAssignmentException();
                 }
 
                 return Task.CompletedTask;
