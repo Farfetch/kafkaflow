@@ -13,6 +13,7 @@
     using KafkaFlow.Compressor.Gzip;
     using KafkaFlow.Configuration;
     using KafkaFlow.IntegrationTests.Core;
+    using KafkaFlow.IntegrationTests.Core.Exceptions;
     using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Middlewares;
     using KafkaFlow.IntegrationTests.Core.Producers;
@@ -29,8 +30,6 @@
 
         private List<Activity> exportedItems;
 
-        private IServiceProvider provider;
-
         private bool isPartitionAssigned;
 
         [TestInitialize]
@@ -43,7 +42,7 @@
         public async Task AddOpenTelemetry_ProducingAndConsumingOneMessage_TraceAndSpansAreCreatedCorrectly()
         {
             // Arrange
-            this.provider = await this.GetServiceProvider();
+            var provider = await this.GetServiceProvider();
             MessageStorage.Clear();
 
             using var tracerProvider = Sdk.CreateTracerProviderBuilder()
@@ -51,7 +50,7 @@
             .AddInMemoryExporter(this.exportedItems)
             .Build();
 
-            var producer = this.provider.GetRequiredService<IMessageProducer<GzipProducer>>();
+            var producer = provider.GetRequiredService<IMessageProducer<GzipProducer>>();
             var message = this.fixture.Create<byte[]>();
 
             // Act
@@ -74,7 +73,7 @@
         public async Task AddOpenTelemetry_ProducingAndConsumingOneMessage_BaggageIsPropagatedFromTestActivityToConsumer()
         {
             // Arrange
-            this.provider = await this.GetServiceProvider();
+            var provider = await this.GetServiceProvider();
             MessageStorage.Clear();
 
             var kafkaFlowTestString = "KafkaFlowTest";
@@ -89,7 +88,7 @@
             .AddInMemoryExporter(this.exportedItems)
             .Build();
 
-            var producer = this.provider.GetRequiredService<IMessageProducer<GzipProducer>>();
+            var producer = provider.GetRequiredService<IMessageProducer<GzipProducer>>();
             var message = this.fixture.Create<byte[]>();
 
             // Act
@@ -162,7 +161,7 @@
                                                 middlewares => middlewares
                                                     .AddCompressor<GzipMessageCompressor>()
                                                     .Add<GzipMiddleware>())
-                                            .WithPartitionsAssignedHandler((resolver, partitions) =>
+                                            .WithPartitionsAssignedHandler((_, partitions) =>
                                             {
                                                 this.isPartitionAssigned = true;
                                             })))
@@ -193,7 +192,7 @@
             {
                 if (!this.isPartitionAssigned)
                 {
-                    throw new Exception("Partition assignment hasn't occurred yet.");
+                    throw new PartitionAssignmentException();
                 }
 
                 return Task.CompletedTask;
