@@ -13,7 +13,6 @@
     using KafkaFlow.Compressor.Gzip;
     using KafkaFlow.Configuration;
     using KafkaFlow.IntegrationTests.Core;
-    using KafkaFlow.IntegrationTests.Core.Exceptions;
     using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Middlewares;
     using KafkaFlow.IntegrationTests.Core.Producers;
@@ -57,13 +56,9 @@
             await producer.ProduceAsync(null, message);
 
             // Assert
-            await Task.Delay(8000).ConfigureAwait(false);
+            var (producerSpan, consumerSpan) = await this.WaitForSpansAsync();
 
             Assert.IsNotNull(this.exportedItems);
-
-            var producerSpan = this.exportedItems.Find(x => x.Kind == ActivityKind.Producer);
-            var consumerSpan = this.exportedItems.Find(x => x.Kind == ActivityKind.Consumer);
-
             Assert.IsNull(producerSpan.ParentId);
             Assert.AreEqual(producerSpan.TraceId, consumerSpan.TraceId);
             Assert.AreEqual(consumerSpan.ParentSpanId, producerSpan.SpanId);
@@ -102,13 +97,9 @@
             await producer.ProduceAsync(null, message);
 
             // Assert
-            await Task.Delay(10000).ConfigureAwait(false);
+            var (producerSpan, consumerSpan) = await this.WaitForSpansAsync();
 
             Assert.IsNotNull(this.exportedItems);
-
-            var producerSpan = this.exportedItems.Find(x => x.Kind == ActivityKind.Producer);
-            var consumerSpan = this.exportedItems.Find(x => x.Kind == ActivityKind.Consumer);
-
             Assert.AreEqual(producerSpan.TraceId, consumerSpan.TraceId);
             Assert.AreEqual(consumerSpan.ParentSpanId, producerSpan.SpanId);
             Assert.AreEqual(producerSpan.GetBaggageItem(baggageName1), baggageValue1);
@@ -119,7 +110,7 @@
 
         private async Task<IServiceProvider> GetServiceProvider()
         {
-            string topicName = "Otel";
+            var topicName = $"OpenTelemetryTestTopic_{Guid.NewGuid()}";
 
             this.isPartitionAssigned = false;
 
@@ -184,19 +175,28 @@
 
         private async Task WaitForPartitionAssignmentAsync()
         {
-            var retryPolicy = Policy
-                .Handle<Exception>()
-                .WaitAndRetryAsync(Enumerable.Range(0, 6).Select(i => TimeSpan.FromSeconds(Math.Pow(i, 2))));
+            await Policy
+                .HandleResult<bool>(isAvailable => !isAvailable)
+                .WaitAndRetryAsync(Enumerable.Range(0, 6).Select(i => TimeSpan.FromSeconds(Math.Pow(i, 2))))
+                .ExecuteAsync(() => Task.FromResult(this.isPartitionAssigned));
+        }
 
-            await retryPolicy.ExecuteAsync(() =>
-            {
-                if (!this.isPartitionAssigned)
+        private async Task<(Activity producerSpan, Activity consumerSpan)> WaitForSpansAsync()
+        {
+            Activity producerSpan = null, consumerSpan = null;
+
+            await Policy
+                .HandleResult<bool>(isAvailable => !isAvailable)
+                .WaitAndRetryAsync(Enumerable.Range(0, 6).Select(i => TimeSpan.FromSeconds(Math.Pow(i, 2))))
+                .ExecuteAsync(() =>
                 {
-                    throw new PartitionAssignmentException();
-                }
+                    producerSpan = this.exportedItems.Find(x => x.Kind == ActivityKind.Producer);
+                    consumerSpan = this.exportedItems.Find(x => x.Kind == ActivityKind.Consumer);
 
-                return Task.CompletedTask;
-            });
+                    return Task.FromResult(producerSpan != null && consumerSpan != null);
+                });
+
+            return (producerSpan, consumerSpan);
         }
     }
 }

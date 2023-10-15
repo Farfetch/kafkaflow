@@ -7,7 +7,6 @@
     using AutoFixture;
     using KafkaFlow.Configuration;
     using KafkaFlow.IntegrationTests.Core;
-    using KafkaFlow.IntegrationTests.Core.Exceptions;
     using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Messages;
     using KafkaFlow.IntegrationTests.Core.Middlewares;
@@ -240,19 +239,10 @@
 
         private async Task WaitForPartitionAssignmentAsync()
         {
-            var retryPolicy = Policy
-                .Handle<Exception>()
-                .WaitAndRetryAsync(Enumerable.Range(0, 6).Select(i => TimeSpan.FromSeconds(Math.Pow(i, 2))));
-
-            await retryPolicy.ExecuteAsync(() =>
-            {
-                if (!this.isPartitionAssigned)
-                {
-                    throw new PartitionAssignmentException();
-                }
-
-                return Task.CompletedTask;
-            });
+            await Policy
+                .HandleResult<bool>(isAvailable => !isAvailable)
+                .WaitAndRetryAsync(Enumerable.Range(0, 6).Select(i => TimeSpan.FromSeconds(Math.Pow(i, 2))))
+                .ExecuteAsync(() => Task.FromResult(this.isPartitionAssigned));
         }
     }
 }
