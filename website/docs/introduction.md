@@ -27,6 +27,7 @@ To do that, KafkaFlow gives you access to features like:
 -   [Serializer middleware](guides/middlewares/serializer-middleware.md) with **ApacheAvro**, **ProtoBuf** and **Json** algorithms.
 -   [Schema Registry](guides/middlewares/serializer-middleware.md#adding-schema-registry-support) support.
 -   [Compression](guides/compression.md) using native Confluent Kafka client compression or compressor middleware.
+-   [Global Events Subcription](guides/global-events.md) for message production and consumption.
 -   Graceful shutdown (wait to finish processing to shutdown).
 -   Store offset when processing ends, avoiding message loss.
 -   Supports .NET Core and .NET Framework.

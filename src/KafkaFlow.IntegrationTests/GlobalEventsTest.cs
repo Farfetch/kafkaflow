@@ -153,8 +153,6 @@
             // Act
             await producer.ProduceAsync(null, message);
 
-            await Task.Delay(10000);
-
             await MessageStorage.AssertMessageAsync(message);
 
             // Assert
