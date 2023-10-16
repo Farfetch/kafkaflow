@@ -70,6 +70,8 @@
                 var exceptionEvent = ActivitySourceAccessor.CreateExceptionEvent(ex);
 
                 activity?.AddEvent(exceptionEvent);
+
+                activity?.Dispose();
             }
 
             return Task.CompletedTask;

@@ -163,6 +163,45 @@
             Assert.IsTrue(isMessageConsumerError);
         }
 
+        [TestMethod]
+        public async Task SubscribeGlobalEvents_ProducerErrorEvent_TriggeredCorrectly()
+        {
+            // Arrange
+            bool isMessageProducedStarted = false, isProduceErrorFired = false;
+
+            void ConfigureGlobalEvents(IGlobalEvents observers)
+            {
+                observers.MessageProduceStarted.Subscribe(eventContext =>
+                {
+                    isMessageProducedStarted = true;
+                    return Task.CompletedTask;
+                });
+
+                observers.MessageProduceError.Subscribe(eventContext =>
+                {
+                    isProduceErrorFired = true;
+                    return Task.CompletedTask;
+                });
+            }
+
+            var provider = await this.GetServiceProviderAsync(
+                ConfigureGlobalEvents,
+                this.ConfigureConsumer<TriggerErrorMessageMiddleware>,
+                this.ConfigureProducer<TriggerErrorSerializerMiddleware>);
+
+            MessageStorage.Clear();
+
+            var producer = provider.GetRequiredService<IMessageProducer<JsonProducer2>>();
+            var message = this.fixture.Create<byte[]>();
+
+            // Act
+            await producer.ProduceAsync(null, message);
+
+            // Assert
+            Assert.IsTrue(isMessageProducedStarted);
+            Assert.IsTrue(isProduceErrorFired);
+        }
+
         private void ConfigureConsumer<T>(IConsumerConfigurationBuilder consumerConfigurationBuilder)
             where T : class, IMessageMiddleware
         {

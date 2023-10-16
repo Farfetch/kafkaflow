@@ -132,6 +132,8 @@ namespace KafkaFlow.Consumers
                     await this.middlewareExecutor
                         .Execute(scope.Resolver, context, _ => Task.CompletedTask)
                         .ConfigureAwait(false);
+
+                    await this.globalEvents.FireMessageConsumeCompletedAsync(new MessageEventContext(context));
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
@@ -157,8 +159,6 @@ namespace KafkaFlow.Consumers
                 {
                     this.offsetManager.MarkAsProcessed(message.TopicPartitionOffset);
                 }
-
-                await this.globalEvents.FireMessageConsumeCompletedAsync(new MessageEventContext(context));
 
                 this.onMessageFinishedHandler?.Invoke();
             }

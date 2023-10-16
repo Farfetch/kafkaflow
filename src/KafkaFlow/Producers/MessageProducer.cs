@@ -44,7 +44,9 @@ namespace KafkaFlow.Producers
 
             await this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext));
 
-            await this.middlewareExecutor
+            try
+            {
+                await this.middlewareExecutor
                 .Execute(
                     scope.Resolver,
                     messageContext,
@@ -56,7 +58,13 @@ namespace KafkaFlow.Producers
                     })
                 .ConfigureAwait(false);
 
-            await this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext));
+                await this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext));
+            }
+            catch(Exception e)
+            {
+                await this.globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(messageContext, e));
+                throw;
+            }
 
             return report;
         }
