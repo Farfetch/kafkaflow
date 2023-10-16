@@ -5,8 +5,10 @@
     using System.Linq;
     using System.Threading.Tasks;
     using AutoFixture;
+    using Confluent.Kafka;
     using KafkaFlow.Configuration;
     using KafkaFlow.IntegrationTests.Core;
+    using KafkaFlow.IntegrationTests.Core.Exceptions;
     using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Messages;
     using KafkaFlow.IntegrationTests.Core.Middlewares;
@@ -214,7 +216,7 @@
                 .WithGroupId(this.topic)
                 .WithBufferSize(100)
                 .WithWorkersCount(10)
-                .WithAutoOffsetReset(AutoOffsetReset.Earliest)
+                .WithAutoOffsetReset(KafkaFlow.AutoOffsetReset.Earliest)
                 .AddMiddlewares(
                     middlewares => middlewares
                         .AddSerializer<ProtobufNetSerializer>()
@@ -286,6 +288,31 @@
                 .HandleResult<bool>(isAvailable => !isAvailable)
                 .WaitAndRetryAsync(Enumerable.Range(0, 6).Select(i => TimeSpan.FromSeconds(Math.Pow(i, 2))))
                 .ExecuteAsync(() => Task.FromResult(this.isPartitionAssigned));
+        }
+    }
+
+    internal class TriggerErrorMessageMiddleware : IMessageMiddleware
+    {
+        public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
+        {
+            MessageStorage.Add((byte[])context.Message.Value);
+            throw new ErrorExecutingMiddlewareException(nameof(TriggerErrorMessageMiddleware));
+            await next(context);
+        }
+    }
+
+    public class TriggerErrorSerializerMiddleware : ISerializer
+    {
+        public Task SerializeAsync(object message, Stream output, ISerializerContext context)
+        {
+            var error = new Error(ErrorCode.BrokerNotAvailable);
+            throw new ProduceException<byte[], byte[]>(error, null);
+        }
+
+        public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
+        {
+            var error = new Error(ErrorCode.BrokerNotAvailable);
+            throw new ProduceException<byte[], byte[]>(error, null);
         }
     }
 }
