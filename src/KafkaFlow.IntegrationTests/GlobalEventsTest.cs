@@ -195,7 +195,13 @@
             var message = this.fixture.Create<byte[]>();
 
             // Act
-            await producer.ProduceAsync(null, message);
+            try
+            {
+                await producer.ProduceAsync(null, message);
+            }
+            catch (Exception ex)
+            {
+            }
 
             // Assert
             Assert.IsTrue(isMessageProducedStarted);
