@@ -36,8 +36,6 @@
                     activity?.AddBaggage(item.Key, item.Value);
                 }
 
-                Activity.Current = activity;
-
                 context?.Items.Add(ActivitySourceAccessor.ActivityString, activity);
 
                 ActivitySourceAccessor.SetGenericTags(activity);
@@ -59,7 +57,7 @@
         {
             if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityString, out var value) && value is Activity activity)
             {
-                activity?.Stop();
+                activity?.Dispose();
             }
 
             return Task.CompletedTask;
@@ -73,7 +71,7 @@
 
                 activity?.AddEvent(exceptionEvent);
 
-                activity?.Stop();
+                activity?.Dispose();
             }
 
             return Task.CompletedTask;
