@@ -16,7 +16,7 @@ KafkaFlow offers a range of Global Events that can be subscribed to. These event
 
 ## Message Produce Started Event {#message-produce-started-event}
 
-The Message Produce Started Event is triggered when the message production process begins. It provides an opportunity to perform tasks or gather information before the message is sent.
+The Message Produce Started Event is triggered when the message production process begins. It provides an opportunity to perform tasks or gather information before middlewares execution.
 
 ```csharp
 services.AddKafka(
@@ -32,7 +32,7 @@ services.AddKafka(
 
 ## Message Produce Completed Event {#message-produce-completed-event}
 
-The Message Produce Completed Event occurs when a message is successfully produced. Subscribing to this event enables you to track the successful completion of message production.
+The Message Produce Completed Event is triggered when a message is successfully produced or when error messages occur during the production process. Subscribing to this event enables you to track the successful completion of message production.
 
 ```csharp
 services.AddKafka(
@@ -48,7 +48,7 @@ services.AddKafka(
 
 ## Message Produce Error Event {#message-produce-error-event}
 
-In case an error occurs during message production, the Message Produce Error Event is triggered. Subscribing to this event allows you to handle errors gracefully and perform, for instance, any necessary cleanup or logging.
+In case an error occurs during message production, the Message Produce Error Event is triggered. By subscribing to this event, you will be able to catch any exceptions that may occur while producing a message.
 
 ```csharp
 services.AddKafka(
@@ -83,7 +83,7 @@ services.AddKafka(
 The Message Consume Completed Event signals the successful completion of message consumption. By subscribing to this event, you can track when messages have been successfully processed.
 
 :::info
-Please note that the current event is not currently compatible with Batch Consume, but this limitation will be addressed in a future release.
+Please note that the current event is not compatible with Batch Consume in the current version (v2). However, this limitation is expected to be addressed in future releases (v3+).
 :::info
 
 ```csharp
