@@ -289,30 +289,29 @@
                 .WaitAndRetryAsync(Enumerable.Range(0, 6).Select(i => TimeSpan.FromSeconds(Math.Pow(i, 2))))
                 .ExecuteAsync(() => Task.FromResult(this.isPartitionAssigned));
         }
-    }
 
-    internal class TriggerErrorMessageMiddleware : IMessageMiddleware
-    {
-        public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
+        private class TriggerErrorMessageMiddleware : IMessageMiddleware
         {
-            MessageStorage.Add((byte[])context.Message.Value);
-            throw new ErrorExecutingMiddlewareException(nameof(TriggerErrorMessageMiddleware));
-            await next(context);
-        }
-    }
-
-    public class TriggerErrorSerializerMiddleware : ISerializer
-    {
-        public Task SerializeAsync(object message, Stream output, ISerializerContext context)
-        {
-            var error = new Error(ErrorCode.BrokerNotAvailable);
-            throw new ProduceException<byte[], byte[]>(error, null);
+            public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
+            {
+                MessageStorage.Add((byte[])context.Message.Value);
+                throw new ErrorExecutingMiddlewareException(nameof(TriggerErrorMessageMiddleware));
+            }
         }
 
-        public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
+        private class TriggerErrorSerializerMiddleware : ISerializer
         {
-            var error = new Error(ErrorCode.BrokerNotAvailable);
-            throw new ProduceException<byte[], byte[]>(error, null);
+            public Task SerializeAsync(object message, Stream output, ISerializerContext context)
+            {
+                var error = new Error(ErrorCode.BrokerNotAvailable);
+                throw new ProduceException<byte[], byte[]>(error, null);
+            }
+
+            public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
+            {
+                var error = new Error(ErrorCode.BrokerNotAvailable);
+                throw new ProduceException<byte[], byte[]>(error, null);
+            }
         }
     }
 }
