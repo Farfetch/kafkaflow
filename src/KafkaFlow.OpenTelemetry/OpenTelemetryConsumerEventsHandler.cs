@@ -57,7 +57,7 @@
         {
             if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityString, out var value) && value is Activity activity)
             {
-                activity?.Stop();
+                //activity?.Stop();
             }
 
             return Task.CompletedTask;
@@ -71,7 +71,7 @@
 
                 activity?.AddEvent(exceptionEvent);
 
-                activity?.Stop();
+                //activity?.Stop();
             }
 
             return Task.CompletedTask;
