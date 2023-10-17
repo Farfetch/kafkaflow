@@ -84,10 +84,12 @@
 
         private static void SetConsumerTags(IMessageContext context, Activity activity)
         {
+            var messageKey = Encoding.UTF8.GetString(context.Message.Key as byte[]);
+
             activity.SetTag(ActivitySourceAccessor.AttributeMessagingOperation, ProcessString);
             activity.SetTag(AttributeMessagingSourceName, context.ConsumerContext.Topic);
             activity.SetTag(AttributeMessagingKafkaConsumerGroup, context.ConsumerContext.GroupId);
-            activity.SetTag(ActivitySourceAccessor.AttributeMessagingKafkaMessageKey, context.Message.Key);
+            activity.SetTag(ActivitySourceAccessor.AttributeMessagingKafkaMessageKey, messageKey);
             activity.SetTag(ActivitySourceAccessor.AttributeMessagingKafkaMessageOffset, context.ConsumerContext.Offset);
             activity.SetTag(AttributeMessagingKafkaSourcePartition, context.ConsumerContext.Partition);
         }
