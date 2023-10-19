@@ -11,6 +11,7 @@ namespace KafkaFlow.Producers
         private readonly IDependencyResolver dependencyResolver;
         private readonly IProducerConfiguration configuration;
         private readonly MiddlewareExecutor middlewareExecutor;
+        private readonly GlobalEvents globalEvents;
 
         private readonly object producerCreationSync = new();
 
@@ -23,6 +24,7 @@ namespace KafkaFlow.Producers
             this.dependencyResolver = dependencyResolver;
             this.configuration = configuration;
             this.middlewareExecutor = new MiddlewareExecutor(configuration.MiddlewaresConfigurations);
+            this.globalEvents = this.dependencyResolver.Resolve<GlobalEvents>();
         }
 
         public string ProducerName => this.configuration.Name;
@@ -38,14 +40,16 @@ namespace KafkaFlow.Producers
 
             using var scope = this.dependencyResolver.CreateScope();
 
-            await this.middlewareExecutor
+            var messageContext = this.CreateMessageContext(topic, messageKey, messageValue, headers);
+
+            await this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext));
+
+            try
+            {
+                await this.middlewareExecutor
                 .Execute(
                     scope.Resolver,
-                    new MessageContext(
-                        new Message(messageKey, messageValue),
-                        headers,
-                        null,
-                        new ProducerContext(topic)),
+                    messageContext,
                     async context =>
                     {
                         report = await this
@@ -53,6 +57,14 @@ namespace KafkaFlow.Producers
                             .ConfigureAwait(false);
                     })
                 .ConfigureAwait(false);
+
+                await this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext));
+            }
+            catch(Exception e)
+            {
+                await this.globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(messageContext, e));
+                throw;
+            }
 
             return report;
         }
@@ -87,14 +99,14 @@ namespace KafkaFlow.Producers
         {
             var scope = this.dependencyResolver.CreateScope();
 
+            var messageContext = this.CreateMessageContext(topic, messageKey, messageValue, headers);
+
+            this.globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext));
+
             this.middlewareExecutor
                 .Execute(
                     scope.Resolver,
-                    new MessageContext(
-                        new Message(messageKey, messageValue),
-                        headers,
-                        null,
-                        new ProducerContext(topic)),
+                    messageContext,
                     context =>
                     {
                         var completionSource = new TaskCompletionSource<byte>();
@@ -134,6 +146,8 @@ namespace KafkaFlow.Producers
 
                         scope.Dispose();
                     });
+
+            this.globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext));
         }
 
         public void Produce(
@@ -277,6 +291,8 @@ namespace KafkaFlow.Producers
             }
             catch (ProduceException<byte[], byte[]> e)
             {
+                await this.globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(context, e));
+
                 if (e.Error.IsFatal)
                 {
                     this.InvalidateProducer(e.Error, result);
@@ -324,6 +340,19 @@ namespace KafkaFlow.Producers
 
                 deliveryHandler(report);
             }
+        }
+
+        private MessageContext CreateMessageContext(
+            string topic,
+            object messageKey,
+            object messageValue,
+            IMessageHeaders headers = null)
+        {
+            return new(
+                new Message(messageKey, messageValue),
+                headers,
+                null,
+                new ProducerContext(topic));
         }
     }
 }
