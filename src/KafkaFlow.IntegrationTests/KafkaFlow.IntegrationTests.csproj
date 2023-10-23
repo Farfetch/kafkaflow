@@ -28,11 +28,6 @@
 		<PackageReference Include="OpenTelemetry.Exporter.InMemory" Version="1.6.0" />
 		<PackageReference Include="Polly" Version="8.0.0" />
     </ItemGroup>
-    
-    <ItemGroup Condition="$([MSBuild]::IsOsPlatform('OSX'))">
-        <PackageReference Include="librdkafka.redist" Version="1.9.2" />
-    </ItemGroup>
-    
 
     <ItemGroup>
         <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
