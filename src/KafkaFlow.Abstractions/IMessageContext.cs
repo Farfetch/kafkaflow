@@ -40,6 +40,11 @@ namespace KafkaFlow
         IDependencyResolver DependencyResolver { get; }
 
         /// <summary>
+        /// Gets the brokers associated with the message
+        /// </summary>
+        public IReadOnlyCollection<string> Brokers { get; }
+
+        /// <summary>
         /// Creates a new <see cref="IMessageContext"/> with the new message
         /// </summary>
         /// <param name="key">The new message key</param>

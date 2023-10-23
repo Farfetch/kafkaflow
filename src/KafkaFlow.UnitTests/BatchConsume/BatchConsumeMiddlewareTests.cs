@@ -1,7 +1,9 @@
 namespace KafkaFlow.UnitTests.BatchConsume
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
+    using AutoFixture;
     using FluentAssertions;
     using KafkaFlow.Batching;
     using KafkaFlow.Configuration;
@@ -16,6 +18,7 @@ namespace KafkaFlow.UnitTests.BatchConsume
 
         private readonly TimeSpan batchTimeout = TimeSpan.FromMilliseconds(1000);
         private readonly TimeSpan waitForTaskExecution = TimeSpan.FromMilliseconds(100);
+        private readonly Fixture fixture = new();
 
         private Mock<ILogHandler> logHandlerMock;
 
@@ -36,6 +39,10 @@ namespace KafkaFlow.UnitTests.BatchConsume
             var workerMock = new Mock<IWorker>();
             var consumerMock = new Mock<IConsumer>();
             var consumerConfigurationMock = new Mock<IConsumerConfiguration>();
+
+            var clusterConfig = this.fixture.Create<ClusterConfiguration>();
+
+            consumerConfigurationMock.SetupGet(x => x.ClusterConfiguration).Returns(clusterConfig);
 
             middlewareContextMock
                 .SetupGet(x => x.Worker)

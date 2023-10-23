@@ -131,11 +131,20 @@ namespace KafkaFlow.Consumers
                 {
                     await this.globalEvents.FireMessageConsumeStartedAsync(new MessageEventContext(context));
 
+                    _= context.ConsumerContext.Completion.ContinueWith(
+                        async task =>
+                        {
+                            if (task.IsFaulted)
+                            {
+                                await this.globalEvents.FireMessageConsumeErrorAsync(new MessageErrorEventContext(context, task.Exception));
+                            }
+
+                            await this.globalEvents.FireMessageConsumeCompletedAsync(new MessageEventContext(context));
+                        });
+
                     await this.middlewareExecutor
                         .Execute(context, _ => Task.CompletedTask)
                         .ConfigureAwait(false);
-
-                    await this.globalEvents.FireMessageConsumeCompletedAsync(new MessageEventContext(context));
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {

@@ -360,7 +360,8 @@ namespace KafkaFlow.Producers
                 headers,
                 messageScopedResolver,
                 null,
-                new ProducerContext(topic, this.producerDependencyScope.Resolver));
+                new ProducerContext(topic, this.producerDependencyScope.Resolver),
+                this.configuration.Cluster.Brokers);
         }
     }
 }
