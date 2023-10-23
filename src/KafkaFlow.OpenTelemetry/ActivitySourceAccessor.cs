@@ -5,6 +5,7 @@ namespace KafkaFlow.OpenTelemetry
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using System.Reflection;
     using Conventions = SemanticConventions::OpenTelemetry.Trace.TraceSemanticConventions;
 
@@ -21,9 +22,10 @@ namespace KafkaFlow.OpenTelemetry
         internal static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
         internal static readonly ActivitySource ActivitySource = new(ActivitySourceName, Version);
 
-        public static void SetGenericTags(Activity activity)
+        public static void SetGenericTags(Activity activity, IEnumerable<string> bootstrapServers)
         {
             activity?.SetTag(Conventions.AttributeMessagingSystem, MessagingSystemId);
+            activity?.SetTag(Conventions.AttributePeerService, string.Join(",", bootstrapServers ?? Enumerable.Empty<string>()));
         }
 
         public static ActivityEvent CreateExceptionEvent(Exception exception)
