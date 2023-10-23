@@ -38,7 +38,7 @@
 
                 context?.Items.Add(ActivitySourceAccessor.ActivityString, activity);
 
-                ActivitySourceAccessor.SetGenericTags(activity);
+                ActivitySourceAccessor.SetGenericTags(activity, context?.Brokers);
 
                 if (activity != null && activity.IsAllDataRequested)
                 {
@@ -84,7 +84,7 @@
 
         private static void SetConsumerTags(IMessageContext context, Activity activity)
         {
-            var messageKey = Encoding.UTF8.GetString(context.Message.Key as byte[]);
+            string messageKey = context.Message.Key != null ? Encoding.UTF8.GetString(context.Message.Key as byte[]) : string.Empty;
 
             activity.SetTag(ActivitySourceAccessor.AttributeMessagingOperation, ProcessString);
             activity.SetTag(AttributeMessagingSourceName, context.ConsumerContext.Topic);

@@ -9,12 +9,14 @@ namespace KafkaFlow.Batching
 
         public BatchConsumeMessageContext(
             IConsumerContext consumer,
-            IReadOnlyCollection<IMessageContext> batchMessage)
+            IReadOnlyCollection<IMessageContext> batchMessage,
+            IReadOnlyCollection<string> brokers)
         {
             this.ConsumerContext = consumer;
             this.Message = new Message(null, batchMessage);
             this.batchDependencyScope = consumer.WorkerDependencyResolver.CreateScope();
             this.Items = new Dictionary<string, object>();
+            this.Brokers = brokers;
         }
 
         public Message Message { get; }
@@ -28,6 +30,8 @@ namespace KafkaFlow.Batching
         public IDependencyResolver DependencyResolver => this.batchDependencyScope.Resolver;
 
         public IDictionary<string, object> Items { get; }
+
+        public IReadOnlyCollection<string> Brokers { get; }
 
         public IMessageContext SetMessage(object key, object value) =>
             throw new NotSupportedException($"{nameof(BatchConsumeMessageContext)} does not allow to change the message");
