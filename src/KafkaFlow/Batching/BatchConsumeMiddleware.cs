@@ -106,7 +106,7 @@
                     return;
                 }
 
-                var batchContext = new BatchConsumeMessageContext(context.ConsumerContext, localBatch);
+                var batchContext = new BatchConsumeMessageContext(context.ConsumerContext, localBatch, this.consumerConfiguration.ClusterConfiguration.Brokers);
 
                 await next(batchContext).ConfigureAwait(false);
             }

@@ -162,7 +162,8 @@ namespace KafkaFlow.Consumers
                     worker,
                     messageDependencyScope,
                     this.consumerDependencyResolver),
-                null);
+                null,
+                this.consumer.Configuration.ClusterConfiguration.Brokers);
             return context;
         }
     }

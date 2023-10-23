@@ -49,7 +49,7 @@
                 // Inject the ActivityContext into the message headers to propagate trace context to the receiving service.
                 Propagator.Inject(new PropagationContext(contextToInject, Baggage.Current), context, InjectTraceContextIntoBasicProperties);
 
-                ActivitySourceAccessor.SetGenericTags(activity);
+                ActivitySourceAccessor.SetGenericTags(activity, context?.Brokers);
 
                 if (activity != null && activity.IsAllDataRequested)
                 {

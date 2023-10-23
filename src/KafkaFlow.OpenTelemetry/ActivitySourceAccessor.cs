@@ -18,6 +18,7 @@ namespace KafkaFlow.OpenTelemetry
         internal static void SetGenericTags(Activity activity)
         {
             activity?.SetTag(Conventions.AttributeMessagingSystem, MessagingSystemId);
+            activity?.SetTag(Conventions.AttributePeerService, string.Join(",", bootstrapServers ?? Enumerable.Empty<string>()));
         }
     }
 }

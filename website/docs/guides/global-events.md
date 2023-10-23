@@ -4,7 +4,7 @@ sidebar_position: 9
 
 # Global Events
 
-In this section, we will delve into the concept of Global Events in KafkaFlow, which provides a mechanism to subscribe to various events that are triggered during the message production and consumption processes. 
+In this section, we will delve into the concept of Global Events in KafkaFlow, which provides a mechanism to subscribe to various events that are triggered during the message production and consumption processes.
 
 KafkaFlow offers a range of Global Events that can be subscribed to. These events can be used to monitor and react to different stages of message handling. Below is a list of available events:
   - [Message Produce Started Event](#message-produce-started-event)
@@ -81,10 +81,6 @@ services.AddKafka(
 ## Message Consume Completed Event {#message-consume-completed-event}
 
 The Message Consume Completed Event signals the successful completion of message consumption. By subscribing to this event, you can track when messages have been successfully processed.
-
-:::info
-Please note that the current event is not compatible with Batch Consume in the current version (v2). However, this limitation is expected to be addressed in future releases (v3+).
-:::info
 
 ```csharp
 services.AddKafka(
