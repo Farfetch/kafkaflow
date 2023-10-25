@@ -1,6 +1,9 @@
 name: Monthly Metrics
 on:
   workflow_dispatch:
+    inputs:
+      dates:
+        required: false
   schedule:
     - cron: '3 2 1 * *'
 
@@ -20,19 +23,18 @@ jobs:
       run: |
         # Calculate the first day of the previous month
         first_day=$(date -d "last month" +%Y-%m-01)
-
         # Calculate the last day of the previous month
         last_day=$(date -d "$first_day +1 month -1 day" +%Y-%m-%d)
-
-        # Calculate the previous month
-        previous_date=$(date -d "$current_date -1 month" +'%Y-%m-%d')
-
-        # Put the report month and year in the environment
-        echo report_month="$(date -d "$previous_date" +'%B') $(date -d "$previous_date" +'%Y')" >> "$GITHUB_ENV"
-
         #Set an environment variable with the date range
         echo "$first_day..$last_day"
         echo "last_month=$first_day..$last_day" >> "$GITHUB_ENV"
+    
+    - name: Use input dates
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dates != '' }}
+      shell: bash
+      run: |
+        echo "${{github.event.inputs.dates}}"
+        echo "last_month=${{github.event.inputs.dates}}" >> "$GITHUB_ENV"
 
     - name: Run issue-metrics tool for items opened last month
       id: opened-metrics
