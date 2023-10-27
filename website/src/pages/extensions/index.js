@@ -54,6 +54,15 @@ export default function Extensions() {
       ),
       link:'https://github.com/gsferreira/kafkaflow-mediatr'
     },
+    {
+      title: 'KafkaFlow.Contrib',
+      description: (
+        <>
+          The project contains several extensions to implement features such as Transactional Outbox or Process Managers.
+        </>
+      ),
+      link:'https://github.com/AlexeyRaga/kafkaflow-contrib'
+    },
   ];
 
   const { siteConfig } = useDocusaurusContext();
