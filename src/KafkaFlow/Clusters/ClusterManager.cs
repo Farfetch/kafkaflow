@@ -38,6 +38,7 @@ namespace KafkaFlow.Clusters
             try
             {
                 var topics = configurations
+                    .Distinct(new DuplicateTopicConfigurationEqualityComparer())
                     .Select(
                         topicConfiguration => new TopicSpecification
                         {
@@ -82,6 +83,13 @@ namespace KafkaFlow.Clusters
                     throw;
                 }
             }
+        }
+
+        private class DuplicateTopicConfigurationEqualityComparer : IEqualityComparer<TopicConfiguration>
+        {
+            public bool Equals(TopicConfiguration x, TopicConfiguration y) => x?.Name == y?.Name;
+
+            public int GetHashCode(TopicConfiguration obj) => obj.Name.GetHashCode();
         }
     }
 }
