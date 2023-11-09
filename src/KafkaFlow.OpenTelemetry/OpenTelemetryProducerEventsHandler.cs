@@ -65,10 +65,10 @@
 
         public static Task OnProducerCompleted(IMessageContext context)
         {
-            if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityString, out var value) && value is Activity activity)
-            {
-                activity?.Dispose();
-            }
+            // if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityString, out var value) && value is Activity activity)
+            // {
+            //     activity?.Dispose();
+            // }
 
             return Task.CompletedTask;
         }
