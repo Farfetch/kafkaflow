@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="Confluent.Kafka" Version="2.1.1" />
+        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.1" />
         <PackageReference Include="System.Threading.Channels" Version="4.7.1" />
     </ItemGroup>
 

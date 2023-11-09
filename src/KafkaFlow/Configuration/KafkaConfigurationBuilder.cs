@@ -46,6 +46,7 @@ namespace KafkaFlow.Configuration
                 .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
                 .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
                 .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
+                .AddSingleton<IActivityFactory, ActivityFactory>()
                 .AddSingleton(r =>
                 {
                     var logHandler = r.Resolve<ILogHandler>();

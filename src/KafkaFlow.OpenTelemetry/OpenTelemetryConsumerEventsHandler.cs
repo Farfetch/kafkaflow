@@ -20,25 +20,23 @@
         {
             try
             {
-                var activityName = !string.IsNullOrEmpty(context?.ConsumerContext.Topic) ? $"{context?.ConsumerContext.Topic} {ProcessString}" : ProcessString;
-
                 // Extract the PropagationContext of the upstream parent from the message headers.
                 var parentContext = Propagator.Extract(new PropagationContext(default, Baggage.Current), context, ExtractTraceContextIntoBasicProperties);
                 Baggage.Current = parentContext.Baggage;
 
-                // Start an activity with a name following the semantic convention of the OpenTelemetry messaging specification.
-                // The convention also defines a set of attributes (in .NET they are mapped as `tags`) to be populated in the activity.
-                // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md
-                var activity = ActivitySourceAccessor.ActivitySource.StartActivity(activityName, ActivityKind.Consumer, parentContext.ActivityContext);
+                var activity = context.Items[ActivitySourceAccessor.ActivityString] as Activity;
+
+                if (parentContext.ActivityContext.IsValid())
+                {
+                    activity.SetParentId(parentContext.ActivityContext.TraceId, parentContext.ActivityContext.SpanId, parentContext.ActivityContext.TraceFlags);
+                }
 
                 foreach (var item in Baggage.Current)
                 {
                     activity?.AddBaggage(item.Key, item.Value);
                 }
 
-                context?.Items.Add(ActivitySourceAccessor.ActivityString, activity);
-
-                ActivitySourceAccessor.SetGenericTags(activity);
+                ActivityAccessor.SetGenericTags(activity);
 
                 if (activity != null && activity.IsAllDataRequested)
                 {
@@ -67,7 +65,7 @@
         {
             if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityString, out var value) && value is Activity activity)
             {
-                var exceptionEvent = ActivitySourceAccessor.CreateExceptionEvent(ex);
+                var exceptionEvent = ActivityAccessor.CreateExceptionEvent(ex);
 
                 activity?.AddEvent(exceptionEvent);
 
@@ -86,11 +84,11 @@
         {
             var messageKey = Encoding.UTF8.GetString(context.Message.Key as byte[]);
 
-            activity.SetTag(ActivitySourceAccessor.AttributeMessagingOperation, ProcessString);
+            activity.SetTag(ActivityAccessor.AttributeMessagingOperation, ActivityOperationType.Process);
             activity.SetTag(AttributeMessagingSourceName, context.ConsumerContext.Topic);
             activity.SetTag(AttributeMessagingKafkaConsumerGroup, context.ConsumerContext.GroupId);
-            activity.SetTag(ActivitySourceAccessor.AttributeMessagingKafkaMessageKey, messageKey);
-            activity.SetTag(ActivitySourceAccessor.AttributeMessagingKafkaMessageOffset, context.ConsumerContext.Offset);
+            activity.SetTag(ActivityAccessor.AttributeMessagingKafkaMessageKey, messageKey);
+            activity.SetTag(ActivityAccessor.AttributeMessagingKafkaMessageOffset, context.ConsumerContext.Offset);
             activity.SetTag(AttributeMessagingKafkaSourcePartition, context.ConsumerContext.Partition);
         }
     }
