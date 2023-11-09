@@ -7,4 +7,8 @@
         <Description>Contains all KafkaFlow extendable interfaces</Description>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.1" />
+    </ItemGroup>
+
 </Project>

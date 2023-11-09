@@ -1,6 +1,7 @@
 namespace KafkaFlow.Consumers
 {
     using System;
+    using System.Diagnostics;
     using System.Threading;
     using System.Threading.Channels;
     using System.Threading.Tasks;
@@ -106,6 +107,8 @@ namespace KafkaFlow.Consumers
 
         private async Task ProcessMessageAsync(ConsumeResult<byte[], byte[]> message, CancellationToken cancellationToken)
         {
+            var activity = ActivityFactory.Start(message.Topic, ActivityOperationType.Process, ActivityKind.Consumer);
+
             try
             {
                 var context = new MessageContext(
@@ -118,6 +121,8 @@ namespace KafkaFlow.Consumers
                         cancellationToken,
                         this.Id),
                     null);
+
+                context.Items.Add(ActivitySourceAccessor.ActivityString, activity);
 
                 try
                 {
