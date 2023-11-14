@@ -13,7 +13,6 @@ namespace KafkaFlow.Producers
         private readonly IProducerConfiguration configuration;
         private readonly MiddlewareExecutor middlewareExecutor;
         private readonly GlobalEvents globalEvents;
-        private readonly IActivityFactory activityFactory;
 
         private readonly object producerCreationSync = new();
 
@@ -27,7 +26,6 @@ namespace KafkaFlow.Producers
             this.configuration = configuration;
             this.middlewareExecutor = new MiddlewareExecutor(configuration.MiddlewaresConfigurations);
             this.globalEvents = this.dependencyResolver.Resolve<GlobalEvents>();
-            this.activityFactory = this.dependencyResolver.Resolve<IActivityFactory>();
         }
 
         public string ProducerName => this.configuration.Name;
@@ -43,7 +41,7 @@ namespace KafkaFlow.Producers
 
             using var scope = this.dependencyResolver.CreateScope();
 
-            var activity = this.activityFactory.Start(topic, ActivityOperationType.Publish, ActivityKind.Producer);
+            var activity = ActivityFactory.Start(topic, ActivityOperationType.Publish, ActivityKind.Producer);
 
             var messageContext = this.CreateMessageContext(topic, messageKey, messageValue, headers);
 
@@ -106,7 +104,7 @@ namespace KafkaFlow.Producers
         {
             var scope = this.dependencyResolver.CreateScope();
 
-            var activity = this.activityFactory.Start(topic, ActivityOperationType.Publish, ActivityKind.Producer);
+            var activity = ActivityFactory.Start(topic, ActivityOperationType.Publish, ActivityKind.Producer);
 
             var messageContext = this.CreateMessageContext(topic, messageKey, messageValue, headers);
 

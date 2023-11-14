@@ -2,9 +2,9 @@
 
 namespace KafkaFlow
 {
-    internal class ActivityFactory : IActivityFactory
+    internal class ActivityFactory
     {
-        public Activity Start(string topicName, ActivityOperationType activityOperationType, ActivityKind activityKind)
+        public static Activity Start(string topicName, ActivityOperationType activityOperationType, ActivityKind activityKind)
         {
             var activityName = !string.IsNullOrEmpty(topicName) ? $"{topicName} {activityOperationType}" : activityOperationType.ToString().ToLower();
 

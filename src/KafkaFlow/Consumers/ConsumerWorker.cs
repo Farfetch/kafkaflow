@@ -15,7 +15,6 @@ namespace KafkaFlow.Consumers
         private readonly IMiddlewareExecutor middlewareExecutor;
         private readonly ILogHandler logHandler;
         private readonly GlobalEvents globalEvents;
-        private readonly IActivityFactory activityFactory;
 
         private readonly Channel<ConsumeResult<byte[], byte[]>> messagesBuffer;
 
@@ -39,7 +38,6 @@ namespace KafkaFlow.Consumers
             this.logHandler = logHandler;
             this.messagesBuffer = Channel.CreateBounded<ConsumeResult<byte[], byte[]>>(consumer.Configuration.BufferSize);
             this.globalEvents = this.dependencyResolver.Resolve<GlobalEvents>();
-            this.activityFactory = this.dependencyResolver.Resolve<IActivityFactory>();
         }
 
         public int Id { get; }
@@ -109,7 +107,7 @@ namespace KafkaFlow.Consumers
 
         private async Task ProcessMessageAsync(ConsumeResult<byte[], byte[]> message, CancellationToken cancellationToken)
         {
-            var activity = this.activityFactory.Start(message.Topic, ActivityOperationType.Process, ActivityKind.Consumer);
+            var activity = ActivityFactory.Start(message.Topic, ActivityOperationType.Process, ActivityKind.Consumer);
 
             try
             {

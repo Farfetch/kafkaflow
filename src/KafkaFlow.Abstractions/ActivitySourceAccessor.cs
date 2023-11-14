@@ -1,8 +1,8 @@
-﻿namespace KafkaFlow
-{
-    using System.Diagnostics;
-    using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 
+namespace KafkaFlow
+{
     /// <summary>
     /// ActivitySource properties
     /// </summary>
