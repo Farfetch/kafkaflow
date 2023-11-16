@@ -36,6 +36,10 @@
                     activity?.AddBaggage(item.Key, item.Value);
                 }
 
+                Activity.Current = activity;
+
+                var a = Activity.Current;
+
                 context?.Items.Add(ActivitySourceAccessor.ActivityString, activity);
 
                 ActivitySourceAccessor.SetGenericTags(activity);
