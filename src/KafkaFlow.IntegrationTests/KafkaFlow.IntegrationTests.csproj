@@ -25,18 +25,16 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+		<PackageReference Include="OpenTelemetry.Exporter.InMemory" Version="1.6.0" />
+		<PackageReference Include="Polly" Version="8.0.0" />
     </ItemGroup>
-    
-    <ItemGroup Condition="$([MSBuild]::IsOsPlatform('OSX'))">
-        <PackageReference Include="librdkafka.redist" Version="1.9.2" />
-    </ItemGroup>
-    
 
     <ItemGroup>
         <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
         <ProjectReference Include="..\KafkaFlow.Compressor.Gzip\KafkaFlow.Compressor.Gzip.csproj" />
         <ProjectReference Include="..\KafkaFlow.Compressor\KafkaFlow.Compressor.csproj" />
         <ProjectReference Include="..\KafkaFlow.Microsoft.DependencyInjection\KafkaFlow.Microsoft.DependencyInjection.csproj" />
+        <ProjectReference Include="..\KafkaFlow.OpenTelemetry\KafkaFlow.OpenTelemetry.csproj" />
         <ProjectReference Include="..\KafkaFlow.Serializer.JsonCore\KafkaFlow.Serializer.JsonCore.csproj" />
         <ProjectReference Include="..\KafkaFlow.Serializer.ProtobufNet\KafkaFlow.Serializer.ProtobufNet.csproj" />
         <ProjectReference Include="..\KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro\KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro.csproj" />

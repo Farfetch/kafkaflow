@@ -97,8 +97,9 @@ namespace KafkaFlow.IntegrationTests.Core
             };
 
             services.AddKafka(
-                kafka => kafka
-                    .UseLogHandler<TraceLogHandler>()
+                kafka =>
+                {
+                    kafka.UseLogHandler<TraceLogHandler>()
                     .AddCluster(
                         cluster => cluster
                             .WithBrokers(kafkaBrokers.Split(';'))
@@ -332,7 +333,8 @@ namespace KafkaFlow.IntegrationTests.Core
                                     .DefaultTopic(GzipTopicName)
                                     .AddMiddlewares(
                                         middlewares => middlewares
-                                            .AddCompressor<GzipMessageCompressor>()))));
+                                            .AddCompressor<GzipMessageCompressor>())));
+                });
 
             services.AddSingleton<JsonProducer>();
             services.AddSingleton<JsonGzipProducer>();
