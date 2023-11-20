@@ -16,7 +16,7 @@
         private const string AttributeMessagingKafkaDestinationPartition = "messaging.kafka.destination.partition";
         private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
 
-        public static Task OnProducerStarted(IMessageContext context)
+        public static void OnProducerStarted(IMessageContext context)
         {
             try
             {
@@ -60,21 +60,17 @@
             {
                 // If there is any failure, do not propagate the context.
             }
-
-            return Task.CompletedTask;
         }
 
-        public static Task OnProducerCompleted(IMessageContext context)
+        public static void OnProducerCompleted(IMessageContext context)
         {
             if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityString, out var value) && value is Activity activity)
             {
                 activity?.Dispose();
             }
-
-            return Task.CompletedTask;
         }
 
-        public static Task OnProducerError(IMessageContext context, Exception ex)
+        public static void OnProducerError(IMessageContext context, Exception ex)
         {
             if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityString, out var value) && value is Activity activity)
             {
@@ -83,8 +79,6 @@
 
                 activity?.Dispose();
             }
-
-            return Task.CompletedTask;
         }
 
         private static void InjectTraceContextIntoBasicProperties(IMessageContext context, string key, string value)
