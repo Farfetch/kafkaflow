@@ -35,7 +35,9 @@
         public IEvent<MessageEventContext> MessageProduceStarted => this.messageProduceStarted;
 
         public Task FireMessageConsumeStartedAsync(MessageEventContext context)
-            => this.messageConsumeStarted.FireAsync(context);
+        {
+            return this.messageConsumeStarted.FireAsync(context);
+        }
 
         public Task FireMessageConsumeErrorAsync(MessageErrorEventContext context)
             => this.messageConsumeError.FireAsync(context);

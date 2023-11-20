@@ -8,7 +8,8 @@
     {
         private readonly ILogHandler logHandler;
 
-        private readonly List<Func<TArg, Task>> handlers = new();
+        private readonly List<Func<TArg, Task>> asyncHandlers = new();
+        private readonly List<Action<TArg>> syncHandlers = new();
 
         public Event(ILogHandler logHandler)
         {
@@ -17,31 +18,35 @@
 
         public IEventSubscription Subscribe(Func<TArg, Task> handler)
         {
-            if (!this.handlers.Contains(handler))
+            if (!this.asyncHandlers.Contains(handler))
             {
-                this.handlers.Add(handler);
+                this.asyncHandlers.Add(handler);
             }
 
-            return new EventSubscription(() => this.handlers.Remove(handler));
+            return new EventSubscription(() => this.asyncHandlers.Remove(handler));
         }
 
-        internal async Task FireAsync(TArg arg)
+        internal Task FireAsync(TArg arg)
         {
-            foreach (var handler in this.handlers)
+            return Task.WhenAll(this.FireAsyncCall(arg));
+        }
+
+        private IEnumerable<Task> FireAsyncCall(TArg arg)
+        {
+            foreach (var handler in this.asyncHandlers)
             {
-                try
-                {
                     if (handler is null)
                     {
                         continue;
                     }
 
-                    await handler.Invoke(arg);
-                }
-                catch (Exception e)
-                {
-                    this.logHandler.Error("Error firing event", e, new { Event = this.GetType().Name });
-                }
+                    yield return handler.Invoke(arg).ContinueWith(t =>
+                    {
+                        if (t.IsFaulted)
+                        {
+                            this.logHandler.Error("Error firing event", t.Exception, new { Event = this.GetType().Name });
+                        }
+                    });
             }
         }
     }
