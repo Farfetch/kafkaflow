@@ -14,7 +14,8 @@ namespace KafkaFlow.Configuration
         IDependencyConfigurator DependencyConfigurator { get; }
 
         /// <summary>
-        /// Sets the topic that will be used to read the messages, the partitions will be automatically assigned
+        /// Sets the topic that will be used to read the messages, the partitions will be automatically assigned.
+        /// librdkafka patterns are accepted.
         /// </summary>
         /// <param name="topicName">Topic name</param>
         /// <returns></returns>

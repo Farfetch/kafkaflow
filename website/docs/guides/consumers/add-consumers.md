@@ -31,6 +31,11 @@ services.AddKafka(kafka => kafka
 
 On a Consumer, you can configure the Middlewares that will be invoked. You can find more information on how to configure Middlewares [here](../middlewares).
 
+:::tip
+You can use a naming pattern such as a wildcard to connect to any topic that matches a naming convention.
+You can find a sample on [here](https://github.com/Farfetch/kafkaflow/tree/master/samples/KafkaFlow.Sample.WildcardConsumer).
+:::
+
 ## Automatic Partitions Assignment
 
 Using the `Topic()` or `Topics()` methods, the consumer will trigger the automatic partition assignment that will distribute the topic partitions across the application instances.
