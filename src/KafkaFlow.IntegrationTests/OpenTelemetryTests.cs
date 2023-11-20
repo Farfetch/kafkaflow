@@ -57,12 +57,41 @@
             await producer.ProduceAsync(null, message);
 
             // Assert
-            var (producerSpan, consumerSpan) = await this.WaitForSpansAsync();
+            var (producerSpan, consumerSpan, internalSpan) = await this.WaitForSpansAsync();
 
             Assert.IsNotNull(this.exportedItems);
             Assert.IsNull(producerSpan.ParentId);
             Assert.AreEqual(producerSpan.TraceId, consumerSpan.TraceId);
             Assert.AreEqual(consumerSpan.ParentSpanId, producerSpan.SpanId);
+        }
+
+        [TestMethod]
+        public async Task AddOpenTelemetry_CreateActivityOnConsumingMessage_TraceIsPropagatedToCreatedActivity()
+        {
+            // Arrange
+            var provider = await this.GetServiceProvider();
+            MessageStorage.Clear();
+
+            using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .AddSource("KafkaFlow.OpenTelemetry")
+            .AddInMemoryExporter(this.exportedItems)
+            .Build();
+
+            var producer = provider.GetRequiredService<IMessageProducer<GzipProducer>>();
+            var message = this.fixture.Create<byte[]>();
+
+            // Act
+            await producer.ProduceAsync(null, message);
+
+            // Assert
+            var (producerSpan, consumerSpan, internalSpan) = await this.WaitForSpansAsync();
+
+            Assert.IsNotNull(this.exportedItems);
+            Assert.IsNull(producerSpan.ParentId);
+            Assert.AreEqual(producerSpan.TraceId, consumerSpan.TraceId);
+            Assert.AreEqual(consumerSpan.ParentSpanId, producerSpan.SpanId);
+            Assert.AreEqual(internalSpan.TraceId, consumerSpan.TraceId);
+            Assert.AreEqual(internalSpan.ParentSpanId, consumerSpan.SpanId);
         }
 
         [TestMethod]
@@ -98,7 +127,7 @@
             await producer.ProduceAsync(null, message);
 
             // Assert
-            var (producerSpan, consumerSpan) = await this.WaitForSpansAsync();
+            var (producerSpan, consumerSpan, internalSpan) = await this.WaitForSpansAsync();
 
             Assert.IsNotNull(this.exportedItems);
             Assert.AreEqual(producerSpan.TraceId, consumerSpan.TraceId);
@@ -182,9 +211,9 @@
                 .ExecuteAsync(() => Task.FromResult(this.isPartitionAssigned));
         }
 
-        private async Task<(Activity producerSpan, Activity consumerSpan)> WaitForSpansAsync()
+        private async Task<(Activity producerSpan, Activity consumerSpan, Activity internalSpan)> WaitForSpansAsync()
         {
-            Activity producerSpan = null, consumerSpan = null;
+            Activity producerSpan = null, consumerSpan = null, internalSpan = null;
 
             await Policy
                 .HandleResult<bool>(isAvailable => !isAvailable)
@@ -193,11 +222,12 @@
                 {
                     producerSpan = this.exportedItems.Find(x => x.Kind == ActivityKind.Producer);
                     consumerSpan = this.exportedItems.Find(x => x.Kind == ActivityKind.Consumer);
+                    internalSpan = this.exportedItems.Find(x => x.Kind == ActivityKind.Internal);
 
                     return Task.FromResult(producerSpan != null && consumerSpan != null);
                 });
 
-            return (producerSpan, consumerSpan);
+            return (producerSpan, consumerSpan, internalSpan);
         }
     }
 }

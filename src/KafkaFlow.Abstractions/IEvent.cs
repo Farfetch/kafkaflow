@@ -9,11 +9,18 @@
     public interface IEvent
     {
         /// <summary>
+        /// Subscribes to the async event.
+        /// </summary>
+        /// <param name="handler">The handler to be called when the async event is fired.</param>
+        /// <returns>Event subscription reference</returns>
+        IEventSubscription Subscribe(Func<Task> handler);
+
+        /// <summary>
         /// Subscribes to the event.
         /// </summary>
         /// <param name="handler">The handler to be called when the event is fired.</param>
         /// <returns>Event subscription reference</returns>
-        IEventSubscription Subscribe(Func<Task> handler);
+        IEventSubscription Subscribe(Action handler);
     }
 
     /// <summary>
@@ -23,10 +30,17 @@
     public interface IEvent<out TArg>
     {
         /// <summary>
+        /// Subscribes to the async event.
+        /// </summary>
+        /// <param name="handler">The handler to be called when the async event is fired.</param>
+        /// <returns>Event subscription reference</returns>
+        IEventSubscription Subscribe(Func<TArg, Task> handler);
+
+        /// <summary>
         /// Subscribes to the event.
         /// </summary>
         /// <param name="handler">The handler to be called when the event is fired.</param>
         /// <returns>Event subscription reference</returns>
-        IEventSubscription Subscribe(Func<TArg, Task> handler);
+        IEventSubscription Subscribe(Action<TArg> handler);
     }
 }
