@@ -14,6 +14,8 @@
         /// <param name="handler">The handler to be called when the event is fired.</param>
         /// <returns>Event subscription reference</returns>
         IEventSubscription Subscribe(Func<Task> handler);
+
+        IEventSubscription Subscribe(Action handler);
     }
 
     /// <summary>
@@ -28,5 +30,7 @@
         /// <param name="handler">The handler to be called when the event is fired.</param>
         /// <returns>Event subscription reference</returns>
         IEventSubscription Subscribe(Func<TArg, Task> handler);
+
+        IEventSubscription Subscribe(Action<TArg> handler);
     }
 }

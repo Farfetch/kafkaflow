@@ -2,13 +2,15 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     internal class Event<TArg> : IEvent<TArg>
     {
         private readonly ILogHandler logHandler;
 
-        private readonly List<Func<TArg, Task>> handlers = new();
+        private readonly List<Func<TArg, Task>> asyncHandlers = new();
+        private readonly List<Action<TArg>> syncHandlers = new();
 
         public Event(ILogHandler logHandler)
         {
@@ -17,32 +19,63 @@
 
         public IEventSubscription Subscribe(Func<TArg, Task> handler)
         {
-            if (!this.handlers.Contains(handler))
-            {
-                this.handlers.Add(handler);
-            }
-
-            return new EventSubscription(() => this.handlers.Remove(handler));
+            return this.Subscribe(this.asyncHandlers, handler);
         }
 
-        internal async Task FireAsync(TArg arg)
+        public IEventSubscription Subscribe(Action<TArg> handler)
         {
-            foreach (var handler in this.handlers)
+            return this.Subscribe(this.syncHandlers, handler);
+        }
+
+        internal Task FireAsync(TArg arg)
+        {
+            this.InvokeSyncHandlers(arg);
+            return this.InvokeAsyncHandlers(arg);
+        }
+
+        private IEventSubscription Subscribe<T>(List<T> handlersList, T handler)
+        {
+            if (!handlersList.Contains(handler))
+            {
+                handlersList.Add(handler);
+            }
+
+            return new EventSubscription(() => handlersList.Remove(handler));
+        }
+
+        private async Task InvokeAsyncHandlers(TArg arg)
+        {
+            foreach (var handler in this.asyncHandlers.Where(h => h is not null))
             {
                 try
                 {
-                    if (handler is null)
-                    {
-                        continue;
-                    }
-
                     await handler.Invoke(arg);
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    this.logHandler.Error("Error firing event", e, new { Event = this.GetType().Name });
+                    this.LogHandlerOnError(ex);
                 }
             }
+        }
+
+        private void InvokeSyncHandlers(TArg arg)
+        {
+            foreach (var handler in this.syncHandlers.Where(h => h is not null))
+            {
+                try
+                {
+                    handler.Invoke(arg);
+                }
+                catch (Exception ex)
+                {
+                    this.LogHandlerOnError(ex);
+                }
+            }
+        }
+
+        private void LogHandlerOnError(Exception ex)
+        {
+            this.logHandler.Error("Error firing event", ex, new { Event = this.GetType().Name });
         }
     }
 
@@ -56,6 +89,8 @@
         }
 
         public IEventSubscription Subscribe(Func<Task> handler) => this.evt.Subscribe(_ => handler.Invoke());
+
+        public IEventSubscription Subscribe(Action handler) => this.evt.Subscribe(_ => handler.Invoke());
 
         internal Task FireAsync() => this.evt.FireAsync(null);
     }
