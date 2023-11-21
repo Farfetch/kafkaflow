@@ -1,19 +1,19 @@
-﻿namespace KafkaFlow.Middlewares.Serializer
-{
-    using System.Threading.Tasks;
-    using KafkaFlow.Middlewares.Serializer.Resolvers;
-    using Microsoft.IO;
+﻿using System.Threading.Tasks;
+using KafkaFlow.Middlewares.Serializer.Resolvers;
+using Microsoft.IO;
 
+namespace KafkaFlow.Middlewares.Serializer
+{
     /// <summary>
     /// Middleware to serialize messages when producing
     /// </summary>
     public class SerializerProducerMiddleware : IMessageMiddleware
     {
-        private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
+        private static readonly RecyclableMemoryStreamManager s_memoryStreamManager = new();
 
-        private readonly ISerializer serializer;
+        private readonly ISerializer _serializer;
 
-        private readonly IMessageTypeResolver typeResolver;
+        private readonly IMessageTypeResolver _typeResolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SerializerProducerMiddleware"/> class.
@@ -24,8 +24,8 @@
             ISerializer serializer,
             IMessageTypeResolver typeResolver)
         {
-            this.serializer = serializer;
-            this.typeResolver = typeResolver;
+            _serializer = serializer;
+            _typeResolver = typeResolver;
         }
 
         /// <summary>
@@ -36,13 +36,13 @@
         /// <returns></returns>
         public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
-            await this.typeResolver.OnProduceAsync(context);
+            await _typeResolver.OnProduceAsync(context);
 
             byte[] messageValue;
 
-            using (var buffer = MemoryStreamManager.GetStream())
+            using (var buffer = s_memoryStreamManager.GetStream())
             {
-                await this.serializer
+                await _serializer
                     .SerializeAsync(
                         context.Message.Value,
                         buffer,

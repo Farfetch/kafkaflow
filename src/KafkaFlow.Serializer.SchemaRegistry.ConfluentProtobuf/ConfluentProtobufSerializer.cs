@@ -1,18 +1,18 @@
-﻿namespace KafkaFlow.Serializer.SchemaRegistry
-{
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
-    using Confluent.SchemaRegistry;
-    using Confluent.SchemaRegistry.Serdes;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using Confluent.SchemaRegistry;
+using Confluent.SchemaRegistry.Serdes;
 
+namespace KafkaFlow.Serializer.SchemaRegistry
+{
     /// <summary>
     /// A protobuf message serializer integrated with the confluent schema registry
     /// </summary>
     public class ConfluentProtobufSerializer : ISerializer
     {
-        private readonly ISchemaRegistryClient schemaRegistryClient;
-        private readonly ProtobufSerializerConfig serializerConfig;
+        private readonly ISchemaRegistryClient _schemaRegistryClient;
+        private readonly ProtobufSerializerConfig _serializerConfig;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfluentProtobufSerializer"/> class.
@@ -21,12 +21,12 @@
         /// <param name="serializerConfig">An instance of <see cref="ProtobufSerializerConfig"/></param>
         public ConfluentProtobufSerializer(IDependencyResolver resolver, ProtobufSerializerConfig serializerConfig = null)
         {
-            this.schemaRegistryClient =
+            _schemaRegistryClient =
                 resolver.Resolve<ISchemaRegistryClient>() ??
                 throw new InvalidOperationException(
                     $"No schema registry configuration was found. Set it using {nameof(ClusterConfigurationBuilderExtensions.WithSchemaRegistry)} on cluster configuration");
 
-            this.serializerConfig = serializerConfig;
+            _serializerConfig = serializerConfig;
         }
 
         /// <inheritdoc/>
@@ -37,8 +37,8 @@
                     message.GetType(),
                     () => Activator.CreateInstance(
                         typeof(ProtobufSerializer<>).MakeGenericType(message.GetType()),
-                        this.schemaRegistryClient,
-                        this.serializerConfig))
+                        _schemaRegistryClient,
+                        _serializerConfig))
                 .SerializeAsync(message, output, context);
         }
     }

@@ -1,7 +1,7 @@
+using System.Threading.Tasks;
+
 namespace KafkaFlow
 {
-    using System.Threading.Tasks;
-
     /// <summary>
     /// An interface to implement a type name resolver to messages serialized with schema registry serializers
     /// </summary>

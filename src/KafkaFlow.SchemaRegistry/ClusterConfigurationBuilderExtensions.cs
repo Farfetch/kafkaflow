@@ -1,9 +1,9 @@
+using System;
+using Confluent.SchemaRegistry;
+using KafkaFlow.Configuration;
+
 namespace KafkaFlow
 {
-    using System;
-    using Confluent.SchemaRegistry;
-    using KafkaFlow.Configuration;
-
     /// <summary>
     /// No needed
     /// </summary>

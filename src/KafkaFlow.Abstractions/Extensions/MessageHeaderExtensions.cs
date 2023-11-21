@@ -1,7 +1,7 @@
+using System.Text;
+
 namespace KafkaFlow
 {
-    using System.Text;
-
     /// <summary>
     /// Provides extension methods over <see cref="IMessageHeaders"/>
     /// </summary>

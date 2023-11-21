@@ -1,7 +1,7 @@
+using System;
+
 namespace KafkaFlow
 {
-    using System;
-
     /// <summary>
     /// Provides access to DateTime static members
     /// </summary>

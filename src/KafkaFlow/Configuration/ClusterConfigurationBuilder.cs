@@ -1,20 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using KafkaFlow.Producers;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using KafkaFlow.Producers;
-
     internal class ClusterConfigurationBuilder : IClusterConfigurationBuilder
     {
-        private readonly List<ProducerConfigurationBuilder> producers = new();
-        private readonly List<ConsumerConfigurationBuilder> consumers = new();
-        private readonly List<TopicConfiguration> topicsToCreateIfNotExist = new();
-        private Action<IDependencyResolver> onStartedHandler = _ => { };
-        private Action<IDependencyResolver> onStoppingHandler = _ => { };
-        private IEnumerable<string> brokers;
-        private string name;
-        private Func<SecurityInformation> securityInformationHandler;
+        private readonly List<ProducerConfigurationBuilder> _producers = new();
+        private readonly List<ConsumerConfigurationBuilder> _consumers = new();
+        private readonly List<TopicConfiguration> _topicsToCreateIfNotExist = new();
+        private Action<IDependencyResolver> _onStartedHandler = _ => { };
+        private Action<IDependencyResolver> _onStoppingHandler = _ => { };
+        private IEnumerable<string> _brokers;
+        private string _name;
+        private Func<SecurityInformation> _securityInformationHandler;
 
         public ClusterConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
@@ -27,35 +27,35 @@ namespace KafkaFlow.Configuration
         {
             var configuration = new ClusterConfiguration(
                 kafkaConfiguration,
-                this.name,
-                this.brokers.ToList(),
-                this.securityInformationHandler,
-                this.onStartedHandler,
-                this.onStoppingHandler,
-                this.topicsToCreateIfNotExist);
+                _name,
+                _brokers.ToList(),
+                _securityInformationHandler,
+                _onStartedHandler,
+                _onStoppingHandler,
+                _topicsToCreateIfNotExist);
 
-            configuration.AddProducers(this.producers.Select(x => x.Build(configuration)));
-            configuration.AddConsumers(this.consumers.Select(x => x.Build(configuration)));
+            configuration.AddProducers(_producers.Select(x => x.Build(configuration)));
+            configuration.AddConsumers(_consumers.Select(x => x.Build(configuration)));
 
             return configuration;
         }
 
         public IClusterConfigurationBuilder WithBrokers(IEnumerable<string> brokers)
         {
-            this.brokers = brokers;
+            _brokers = brokers;
             return this;
         }
 
         public IClusterConfigurationBuilder WithName(string name)
         {
-            this.name = name;
+            _name = name;
             return this;
         }
 
         public IClusterConfigurationBuilder WithSecurityInformation(Action<SecurityInformation> handler)
         {
             // Uses a handler to avoid in-memory stored passwords for long periods
-            this.securityInformationHandler = () =>
+            _securityInformationHandler = () =>
             {
                 var config = new SecurityInformation();
                 handler(config);
@@ -80,7 +80,7 @@ namespace KafkaFlow.Configuration
 
             producer(builder);
 
-            this.producers.Add(builder);
+            _producers.Add(builder);
 
             return this;
         }
@@ -91,20 +91,20 @@ namespace KafkaFlow.Configuration
 
             consumer(builder);
 
-            this.consumers.Add(builder);
+            _consumers.Add(builder);
 
             return this;
         }
 
         public IClusterConfigurationBuilder OnStopping(Action<IDependencyResolver> handler)
         {
-            this.onStoppingHandler = handler;
+            _onStoppingHandler = handler;
             return this;
         }
 
         public IClusterConfigurationBuilder OnStarted(Action<IDependencyResolver> handler)
         {
-            this.onStartedHandler = handler;
+            _onStartedHandler = handler;
             return this;
         }
 
@@ -113,7 +113,7 @@ namespace KafkaFlow.Configuration
             int numberOfPartitions,
             short replicationFactor)
         {
-            this.topicsToCreateIfNotExist.Add(new TopicConfiguration(topicName, numberOfPartitions, replicationFactor));
+            _topicsToCreateIfNotExist.Add(new TopicConfiguration(topicName, numberOfPartitions, replicationFactor));
             return this;
         }
     }

@@ -1,18 +1,18 @@
+using System;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Middlewares.TypedHandler
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Threading.Tasks;
-
     internal abstract class HandlerExecutor
     {
-        private static readonly ConcurrentDictionary<Type, HandlerExecutor> Executors = new();
+        private static readonly ConcurrentDictionary<Type, HandlerExecutor> s_executors = new();
 
         public static HandlerExecutor GetExecutor(Type messageType)
         {
-            return Executors.SafeGetOrAdd(
+            return s_executors.SafeGetOrAdd(
                 messageType,
-                _ => (HandlerExecutor) Activator.CreateInstance(typeof(InnerHandlerExecutor<>).MakeGenericType(messageType)));
+                _ => (HandlerExecutor)Activator.CreateInstance(typeof(InnerHandlerExecutor<>).MakeGenericType(messageType)));
         }
 
         public abstract Task Execute(object handler, IMessageContext context, object message);
@@ -21,9 +21,9 @@ namespace KafkaFlow.Middlewares.TypedHandler
         {
             public override Task Execute(object handler, IMessageContext context, object message)
             {
-                var h = (IMessageHandler<T>) handler;
+                var h = (IMessageHandler<T>)handler;
 
-                return h.Handle(context, (T) message);
+                return h.Handle(context, (T)message);
             }
         }
     }

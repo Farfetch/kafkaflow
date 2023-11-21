@@ -1,7 +1,7 @@
-﻿namespace KafkaFlow.Configuration
-{
-    using KafkaFlow.OpenTelemetry;
+﻿using KafkaFlow.OpenTelemetry;
 
+namespace KafkaFlow.Configuration
+{
     /// <summary>
     /// Adds OpenTelemetry instrumentation
     /// </summary>

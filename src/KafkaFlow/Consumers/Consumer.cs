@@ -1,43 +1,42 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using KafkaFlow.Configuration;
+
 namespace KafkaFlow.Consumers
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-    using KafkaFlow.Configuration;
-
     internal class Consumer : IConsumer
     {
-        private readonly IDependencyResolver dependencyResolver;
-        private readonly ILogHandler logHandler;
+        private readonly IDependencyResolver _dependencyResolver;
+        private readonly ILogHandler _logHandler;
 
-        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>>>
-            partitionsAssignedHandlers = new();
+        private readonly List<Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartition>>>
+            _partitionsAssignedHandlers = new();
 
-        private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>>>
-            partitionsRevokedHandlers = new();
+        private readonly List<Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartitionOffset>>>
+            _partitionsRevokedHandlers = new();
 
-        private readonly List<Action<IConsumer<byte[], byte[]>, Error>> errorsHandlers = new();
-        private readonly List<Action<IConsumer<byte[], byte[]>, string>> statisticsHandlers = new();
-        private readonly ConcurrentDictionary<TopicPartition, long> currentPartitionsOffsets = new();
-        private readonly ConsumerFlowManager flowManager;
+        private readonly List<Action<Confluent.Kafka.IConsumer<byte[], byte[]>, Confluent.Kafka.Error>> _errorsHandlers = new();
+        private readonly List<Action<Confluent.Kafka.IConsumer<byte[], byte[]>, string>> _statisticsHandlers = new();
+        private readonly ConcurrentDictionary<Confluent.Kafka.TopicPartition, long> _currentPartitionsOffsets = new();
+        private readonly ConsumerFlowManager _flowManager;
 
-        private IConsumer<byte[], byte[]> consumer;
+        private Confluent.Kafka.IConsumer<byte[], byte[]> _consumer;
 
         public Consumer(
             IConsumerConfiguration configuration,
             IDependencyResolver dependencyResolver,
             ILogHandler logHandler)
         {
-            this.dependencyResolver = dependencyResolver;
-            this.logHandler = logHandler;
+            _dependencyResolver = dependencyResolver;
+            _logHandler = logHandler;
             this.Configuration = configuration;
-            this.flowManager = new ConsumerFlowManager(
+            _flowManager = new ConsumerFlowManager(
                 this,
-                this.logHandler);
+                _logHandler);
 
             foreach (var handler in this.Configuration.StatisticsHandlers)
             {
@@ -54,7 +53,7 @@ namespace KafkaFlow.Consumers
                 this.OnPartitionsRevoked((resolver, _, topicPartitions) => handler(resolver, topicPartitions));
             }
 
-            var middlewareContext = this.dependencyResolver.Resolve<ConsumerMiddlewareContext>();
+            var middlewareContext = _dependencyResolver.Resolve<ConsumerMiddlewareContext>();
 
             middlewareContext.Worker = null;
             middlewareContext.Consumer = this;
@@ -66,13 +65,13 @@ namespace KafkaFlow.Consumers
 
         public IReadOnlyList<string> Subscription { get; private set; } = new List<string>();
 
-        public IReadOnlyList<TopicPartition> Assignment { get; private set; } = new List<TopicPartition>();
+        public IReadOnlyList<Confluent.Kafka.TopicPartition> Assignment { get; private set; } = new List<Confluent.Kafka.TopicPartition>();
 
-        public IConsumerFlowManager FlowManager => this.flowManager;
+        public IConsumerFlowManager FlowManager => _flowManager;
 
-        public string MemberId => this.consumer?.MemberId;
+        public string MemberId => _consumer?.MemberId;
 
-        public string ClientInstanceName => this.consumer?.Name;
+        public string ClientInstanceName => _consumer?.Name;
 
         public ConsumerStatus Status
         {
@@ -94,45 +93,45 @@ namespace KafkaFlow.Consumers
             }
         }
 
-        public void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler) =>
-            this.partitionsAssignedHandlers.Add(handler);
+        public void OnPartitionsAssigned(Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartition>> handler) =>
+            _partitionsAssignedHandlers.Add(handler);
 
-        public void OnPartitionsRevoked(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartitionOffset>> handler) =>
-            this.partitionsRevokedHandlers.Add(handler);
+        public void OnPartitionsRevoked(Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartitionOffset>> handler) =>
+            _partitionsRevokedHandlers.Add(handler);
 
-        public void OnError(Action<IConsumer<byte[], byte[]>, Error> handler) =>
-            this.errorsHandlers.Add(handler);
+        public void OnError(Action<Confluent.Kafka.IConsumer<byte[], byte[]>, Confluent.Kafka.Error> handler) =>
+            _errorsHandlers.Add(handler);
 
-        public void OnStatistics(Action<IConsumer<byte[], byte[]>, string> handler) =>
-            this.statisticsHandlers.Add(handler);
+        public void OnStatistics(Action<Confluent.Kafka.IConsumer<byte[], byte[]>, string> handler) =>
+            _statisticsHandlers.Add(handler);
 
-        public Offset GetPosition(TopicPartition topicPartition) =>
-            this.consumer.Position(topicPartition);
+        public Confluent.Kafka.Offset GetPosition(Confluent.Kafka.TopicPartition topicPartition) =>
+            _consumer.Position(topicPartition);
 
-        public WatermarkOffsets GetWatermarkOffsets(TopicPartition topicPartition) =>
-            this.consumer.GetWatermarkOffsets(topicPartition);
+        public Confluent.Kafka.WatermarkOffsets GetWatermarkOffsets(Confluent.Kafka.TopicPartition topicPartition) =>
+            _consumer.GetWatermarkOffsets(topicPartition);
 
-        public WatermarkOffsets QueryWatermarkOffsets(TopicPartition topicPartition, TimeSpan timeout) =>
-            this.consumer.QueryWatermarkOffsets(topicPartition, timeout);
+        public Confluent.Kafka.WatermarkOffsets QueryWatermarkOffsets(Confluent.Kafka.TopicPartition topicPartition, TimeSpan timeout) =>
+            _consumer.QueryWatermarkOffsets(topicPartition, timeout);
 
-        public List<TopicPartitionOffset> OffsetsForTimes(
-            IEnumerable<TopicPartitionTimestamp> topicPartitions,
+        public List<Confluent.Kafka.TopicPartitionOffset> OffsetsForTimes(
+            IEnumerable<Confluent.Kafka.TopicPartitionTimestamp> topicPartitions,
             TimeSpan timeout) =>
-            this.consumer.OffsetsForTimes(topicPartitions, timeout);
+            _consumer.OffsetsForTimes(topicPartitions, timeout);
 
         public IEnumerable<TopicPartitionLag> GetTopicPartitionsLag()
         {
             return this.Assignment.Select(
                 tp =>
                 {
-                    var offset = Math.Max(0, this.currentPartitionsOffsets.GetOrAdd(tp, _ => this.GetPosition(tp)));
+                    var offset = Math.Max(0, _currentPartitionsOffsets.GetOrAdd(tp, _ => this.GetPosition(tp)));
                     var offsetEnd = Math.Max(0, this.GetWatermarkOffsets(tp).High.Value);
 
                     return new TopicPartitionLag(tp.Topic, tp.Partition.Value, offset == 0 ? 0 : offsetEnd - offset);
                 });
         }
 
-        public void Commit(IReadOnlyCollection<TopicPartitionOffset> offsets)
+        public void Commit(IReadOnlyCollection<Confluent.Kafka.TopicPartitionOffset> offsets)
         {
             var validOffsets = offsets
                 .Where(x => x.Offset.Value >= 0)
@@ -143,31 +142,31 @@ namespace KafkaFlow.Consumers
                 return;
             }
 
-            this.consumer.Commit(validOffsets);
+            _consumer.Commit(validOffsets);
 
             foreach (var offset in validOffsets)
             {
-                this.currentPartitionsOffsets[offset.TopicPartition] = offset.Offset.Value;
+                _currentPartitionsOffsets[offset.TopicPartition] = offset.Offset.Value;
             }
         }
 
-        public async ValueTask<ConsumeResult<byte[], byte[]>> ConsumeAsync(CancellationToken cancellationToken)
+        public async ValueTask<Confluent.Kafka.ConsumeResult<byte[], byte[]>> ConsumeAsync(CancellationToken cancellationToken)
         {
             while (true)
             {
                 try
                 {
                     this.EnsureConsumer();
-                    await this.flowManager.BlockHeartbeat(cancellationToken);
-                    return this.consumer.Consume(cancellationToken);
+                    await _flowManager.BlockHeartbeat(cancellationToken);
+                    return _consumer.Consume(cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
                     throw;
                 }
-                catch (KafkaException ex) when (ex.Error.IsFatal)
+                catch (Confluent.Kafka.KafkaException ex) when (ex.Error.IsFatal)
                 {
-                    this.logHandler.Error(
+                    _logHandler.Error(
                         "Kafka Consumer fatal error occurred. Recreating consumer in 5 seconds",
                         ex,
                         null);
@@ -178,11 +177,11 @@ namespace KafkaFlow.Consumers
                 }
                 catch (Exception ex)
                 {
-                    this.logHandler.Error("Kafka Consumer Error", ex, null);
+                    _logHandler.Error("Kafka Consumer Error", ex, null);
                 }
                 finally
                 {
-                    this.flowManager.ReleaseHeartbeat();
+                    _flowManager.ReleaseHeartbeat();
                 }
             }
         }
@@ -205,47 +204,47 @@ namespace KafkaFlow.Consumers
 
                     if (error.IsFatal)
                     {
-                        this.logHandler.Error("Kafka Consumer Internal Error", null, errorData);
+                        _logHandler.Error("Kafka Consumer Internal Error", null, errorData);
                     }
                     else
                     {
-                        this.logHandler.Warning("Kafka Consumer Internal Warning", errorData);
+                        _logHandler.Warning("Kafka Consumer Internal Warning", errorData);
                     }
                 });
         }
 
         private void EnsureConsumer()
         {
-            if (this.consumer != null)
+            if (_consumer != null)
             {
                 return;
             }
 
             var kafkaConfig = this.Configuration.GetKafkaConfig();
 
-            var consumerBuilder = new ConsumerBuilder<byte[], byte[]>(kafkaConfig);
+            var consumerBuilder = new Confluent.Kafka.ConsumerBuilder<byte[], byte[]>(kafkaConfig);
 
-            this.consumer =
+            _consumer =
                 consumerBuilder
                     .SetPartitionsAssignedHandler(
                         (consumer, partitions) => this.FirePartitionsAssignedHandlers(consumer, partitions))
                     .SetPartitionsRevokedHandler(
                         (consumer, partitions) =>
                         {
-                            this.Assignment = new List<TopicPartition>();
+                            this.Assignment = new List<Confluent.Kafka.TopicPartition>();
                             this.Subscription = new List<string>();
-                            this.currentPartitionsOffsets.Clear();
-                            this.flowManager.Stop();
+                            _currentPartitionsOffsets.Clear();
+                            _flowManager.Stop();
 
-                            this.partitionsRevokedHandlers.ForEach(handler => handler(this.dependencyResolver, consumer, partitions));
+                            _partitionsRevokedHandlers.ForEach(handler => handler(_dependencyResolver, consumer, partitions));
                         })
-                    .SetErrorHandler((consumer, error) => this.errorsHandlers.ForEach(x => x(consumer, error)))
-                    .SetStatisticsHandler((consumer, statistics) => this.statisticsHandlers.ForEach(x => x(consumer, statistics)))
+                    .SetErrorHandler((consumer, error) => _errorsHandlers.ForEach(x => x(consumer, error)))
+                    .SetStatisticsHandler((consumer, statistics) => _statisticsHandlers.ForEach(x => x(consumer, statistics)))
                     .Build();
 
             if (this.Configuration.Topics.Any())
             {
-                this.consumer.Subscribe(this.Configuration.Topics);
+                _consumer.Subscribe(this.Configuration.Topics);
             }
 
             if (this.Configuration.ManualAssignPartitions.Any())
@@ -257,26 +256,26 @@ namespace KafkaFlow.Consumers
         private void ManualAssign(IEnumerable<TopicPartitions> topics)
         {
             var partitions = topics
-                .SelectMany(topic => topic.Partitions.Select(partition => new TopicPartition(topic.Name, new Partition(partition))))
+                .SelectMany(topic => topic.Partitions.Select(partition => new Confluent.Kafka.TopicPartition(topic.Name, new Confluent.Kafka.Partition(partition))))
                 .ToList();
 
-            this.consumer.Assign(partitions);
-            this.FirePartitionsAssignedHandlers(this.consumer, partitions);
+            _consumer.Assign(partitions);
+            this.FirePartitionsAssignedHandlers(_consumer, partitions);
         }
 
-        private void FirePartitionsAssignedHandlers(IConsumer<byte[], byte[]> consumer, List<TopicPartition> partitions)
+        private void FirePartitionsAssignedHandlers(Confluent.Kafka.IConsumer<byte[], byte[]> consumer, List<Confluent.Kafka.TopicPartition> partitions)
         {
             this.Assignment = partitions;
             this.Subscription = consumer.Subscription;
-            this.flowManager.Start(consumer);
+            _flowManager.Start(consumer);
 
-            this.partitionsAssignedHandlers.ForEach(handler => handler(this.dependencyResolver, consumer, partitions));
+            _partitionsAssignedHandlers.ForEach(handler => handler(_dependencyResolver, consumer, partitions));
         }
 
         private void InvalidateConsumer()
         {
-            this.consumer?.Close();
-            this.consumer = null;
+            _consumer?.Close();
+            _consumer = null;
         }
     }
 }

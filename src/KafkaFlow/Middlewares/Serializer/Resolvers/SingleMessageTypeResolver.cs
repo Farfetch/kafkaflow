@@ -1,14 +1,14 @@
+using System;
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Middlewares.Serializer.Resolvers
 {
-    using System;
-    using System.Threading.Tasks;
-
     /// <summary>
     /// The message type resolver to be used when all messages are the same type
     /// </summary>
     public class SingleMessageTypeResolver : IMessageTypeResolver
     {
-        private readonly Type messageType;
+        private readonly Type _messageType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SingleMessageTypeResolver"/> class.
@@ -16,11 +16,11 @@ namespace KafkaFlow.Middlewares.Serializer.Resolvers
         /// <param name="messageType">The message type to be returned when consuming</param>
         public SingleMessageTypeResolver(Type messageType)
         {
-            this.messageType = messageType;
+            _messageType = messageType;
         }
 
         /// <inheritdoc/>
-        public ValueTask<Type> OnConsumeAsync(IMessageContext context) => new ValueTask<Type>(this.messageType);
+        public ValueTask<Type> OnConsumeAsync(IMessageContext context) => new ValueTask<Type>(_messageType);
 
         /// <inheritdoc/>
         public ValueTask OnProduceAsync(IMessageContext context)

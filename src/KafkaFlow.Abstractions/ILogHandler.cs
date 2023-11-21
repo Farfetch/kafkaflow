@@ -1,7 +1,7 @@
+using System;
+
 namespace KafkaFlow
 {
-    using System;
-
     /// <summary>
     /// An interface used to create a log handler
     /// </summary>

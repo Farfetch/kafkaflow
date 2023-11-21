@@ -1,20 +1,20 @@
+using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Threading.Tasks;
+using Confluent.Kafka;
+using Microsoft.IO;
+
 namespace KafkaFlow
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.IO;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-    using Microsoft.IO;
-
     /// <summary>
     /// A wrapper to call the typed Confluent deserializers
     /// </summary>
     public abstract class ConfluentDeserializerWrapper
     {
-        private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
+        private static readonly RecyclableMemoryStreamManager s_memoryStreamManager = new();
 
-        private static readonly ConcurrentDictionary<Type, ConfluentDeserializerWrapper> Deserializers = new();
+        private static readonly ConcurrentDictionary<Type, ConfluentDeserializerWrapper> s_deserializers = new();
 
         /// <summary>
         /// Get the deserializer based on the target message type
@@ -26,9 +26,9 @@ namespace KafkaFlow
             Type messageType,
             Func<object> deserializerFactory)
         {
-            return Deserializers.SafeGetOrAdd(
+            return s_deserializers.SafeGetOrAdd(
                 messageType,
-                _ => (ConfluentDeserializerWrapper) Activator.CreateInstance(
+                _ => (ConfluentDeserializerWrapper)Activator.CreateInstance(
                     typeof(InnerConfluentDeserializerWrapper<>).MakeGenericType(messageType),
                     deserializerFactory));
         }
@@ -43,22 +43,22 @@ namespace KafkaFlow
 
         private class InnerConfluentDeserializerWrapper<T> : ConfluentDeserializerWrapper
         {
-            private readonly IAsyncDeserializer<T> deserializer;
+            private readonly IAsyncDeserializer<T> _deserializer;
 
             public InnerConfluentDeserializerWrapper(Func<object> deserializerFactory)
             {
-                this.deserializer = (IAsyncDeserializer<T>) deserializerFactory();
+                _deserializer = (IAsyncDeserializer<T>)deserializerFactory();
             }
 
             public override async Task<object> DeserializeAsync(Stream input, ISerializerContext context)
             {
-                using var buffer = MemoryStreamManager.GetStream();
+                using var buffer = s_memoryStreamManager.GetStream();
 
                 await input.CopyToAsync(buffer).ConfigureAwait(false);
 
-                return await this.deserializer
+                return await _deserializer
                     .DeserializeAsync(
-                        new ReadOnlyMemory<byte>(buffer.GetBuffer(), 0, (int) buffer.Length),
+                        new ReadOnlyMemory<byte>(buffer.GetBuffer(), 0, (int)buffer.Length),
                         false,
                         new SerializationContext(MessageComponentType.Value, context.Topic))
                     .ConfigureAwait(false);

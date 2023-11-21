@@ -1,48 +1,48 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Confluent.Kafka;
+
 namespace KafkaFlow.Consumers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-
     internal class ConsumerFlowManager : IConsumerFlowManager
     {
-        private readonly IConsumer consumer;
-        private readonly ILogHandler logHandler;
-        private readonly List<TopicPartition> pausedPartitions = new();
-        private readonly SemaphoreSlim consumerSemaphore = new(1, 1);
+        private readonly IConsumer _consumer;
+        private readonly ILogHandler _logHandler;
+        private readonly List<TopicPartition> _pausedPartitions = new();
+        private readonly SemaphoreSlim _consumerSemaphore = new(1, 1);
 
-        private IConsumer<byte[], byte[]> clientConsumer;
-        private CancellationTokenSource heartbeatTokenSource;
-        private Task heartbeatTask;
+        private IConsumer<byte[], byte[]> _clientConsumer;
+        private CancellationTokenSource _heartbeatTokenSource;
+        private Task _heartbeatTask;
 
         public ConsumerFlowManager(
             IConsumer consumer,
             ILogHandler logHandler)
         {
-            this.consumer = consumer;
-            this.logHandler = logHandler;
+            _consumer = consumer;
+            _logHandler = logHandler;
         }
 
-        public IReadOnlyList<TopicPartition> PausedPartitions => this.pausedPartitions.AsReadOnly();
+        public IReadOnlyList<TopicPartition> PausedPartitions => _pausedPartitions.AsReadOnly();
 
         public void Pause(IReadOnlyCollection<TopicPartition> topicPartitions)
         {
-            lock (this.pausedPartitions)
+            lock (_pausedPartitions)
             {
-                topicPartitions = topicPartitions.Except(this.pausedPartitions).ToList();
+                topicPartitions = topicPartitions.Except(_pausedPartitions).ToList();
 
                 if (!topicPartitions.Any())
                 {
                     return;
                 }
 
-                this.clientConsumer.Pause(topicPartitions);
-                this.pausedPartitions.AddRange(topicPartitions);
+                _clientConsumer.Pause(topicPartitions);
+                _pausedPartitions.AddRange(topicPartitions);
 
-                if (this.consumer.Status != ConsumerStatus.Paused)
+                if (_consumer.Status != ConsumerStatus.Paused)
                 {
                     return;
                 }
@@ -53,20 +53,20 @@ namespace KafkaFlow.Consumers
 
         public Task BlockHeartbeat(CancellationToken cancellationToken)
         {
-            return this.consumerSemaphore.WaitAsync(cancellationToken);
+            return _consumerSemaphore.WaitAsync(cancellationToken);
         }
 
         public void ReleaseHeartbeat()
         {
-            if (this.consumerSemaphore.CurrentCount != 1)
+            if (_consumerSemaphore.CurrentCount != 1)
             {
-                this.consumerSemaphore.Release();
+                _consumerSemaphore.Release();
             }
         }
 
         public void Resume(IReadOnlyCollection<TopicPartition> topicPartitions)
         {
-            lock (this.pausedPartitions)
+            lock (_pausedPartitions)
             {
                 if (!topicPartitions.Any())
                 {
@@ -75,51 +75,51 @@ namespace KafkaFlow.Consumers
 
                 foreach (var topicPartition in topicPartitions)
                 {
-                    this.pausedPartitions.Remove(topicPartition);
+                    _pausedPartitions.Remove(topicPartition);
                 }
 
-                if (this.consumer.Status == ConsumerStatus.Paused)
+                if (_consumer.Status == ConsumerStatus.Paused)
                 {
                     return;
                 }
 
                 this.StopHeartbeat();
 
-                this.clientConsumer.Resume(topicPartitions);
+                _clientConsumer.Resume(topicPartitions);
             }
         }
 
         public void Start(IConsumer<byte[], byte[]> clientConsumer)
         {
-            this.clientConsumer = clientConsumer;
+            _clientConsumer = clientConsumer;
         }
 
         public void Stop()
         {
-            this.pausedPartitions.Clear();
+            _pausedPartitions.Clear();
             this.StopHeartbeat();
         }
 
         private void StartHeartbeat()
         {
-            this.heartbeatTokenSource = new CancellationTokenSource();
+            _heartbeatTokenSource = new CancellationTokenSource();
 
-            this.heartbeatTask = Task.Run(
+            _heartbeatTask = Task.Run(
                 () =>
                 {
-                    if (this.consumerSemaphore.Wait(0))
+                    if (_consumerSemaphore.Wait(0))
                     {
                         try
                         {
                             const int consumeTimeoutCall = 1000;
 
-                            while (!this.heartbeatTokenSource.IsCancellationRequested)
+                            while (!_heartbeatTokenSource.IsCancellationRequested)
                             {
-                                var result = this.clientConsumer.Consume(consumeTimeoutCall);
+                                var result = _clientConsumer.Consume(consumeTimeoutCall);
 
                                 if (result != null)
                                 {
-                                    this.logHandler.Warning(
+                                    _logHandler.Warning(
                                         "Paused consumer heartbeat process wrongly read a message, please report this issue",
                                         null);
                                 }
@@ -127,7 +127,7 @@ namespace KafkaFlow.Consumers
                         }
                         catch (Exception ex)
                         {
-                            this.logHandler.Error(
+                            _logHandler.Error(
                                 "Error executing paused consumer background heartbeat",
                                 ex,
                                 null);
@@ -142,9 +142,9 @@ namespace KafkaFlow.Consumers
 
         private void StopHeartbeat()
         {
-            this.heartbeatTokenSource?.Cancel();
-            this.heartbeatTask?.GetAwaiter().GetResult();
-            this.heartbeatTask?.Dispose();
+            _heartbeatTokenSource?.Cancel();
+            _heartbeatTask?.GetAwaiter().GetResult();
+            _heartbeatTask?.Dispose();
         }
     }
 }

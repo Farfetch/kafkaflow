@@ -1,20 +1,20 @@
-﻿namespace KafkaFlow.OpenTelemetry
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Text;
-    using System.Threading.Tasks;
-    using global::OpenTelemetry;
-    using global::OpenTelemetry.Context.Propagation;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
+using System.Threading.Tasks;
+using global::OpenTelemetry;
+using global::OpenTelemetry.Context.Propagation;
 
+namespace KafkaFlow.OpenTelemetry
+{
     internal static class OpenTelemetryConsumerEventsHandler
     {
         private const string ProcessString = "process";
         private const string AttributeMessagingSourceName = "messaging.source.name";
         private const string AttributeMessagingKafkaConsumerGroup = "messaging.kafka.consumer.group";
         private const string AttributeMessagingKafkaSourcePartition = "messaging.kafka.source.partition";
-        private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
+        private static readonly TextMapPropagator s_propagator = Propagators.DefaultTextMapPropagator;
 
         public static Task OnConsumeStarted(IMessageContext context)
         {
@@ -23,13 +23,13 @@
                 var activityName = !string.IsNullOrEmpty(context?.ConsumerContext.Topic) ? $"{context?.ConsumerContext.Topic} {ProcessString}" : ProcessString;
 
                 // Extract the PropagationContext of the upstream parent from the message headers.
-                var parentContext = Propagator.Extract(new PropagationContext(default, Baggage.Current), context, ExtractTraceContextIntoBasicProperties);
+                var parentContext = s_propagator.Extract(new PropagationContext(default, Baggage.Current), context, ExtractTraceContextIntoBasicProperties);
                 Baggage.Current = parentContext.Baggage;
 
                 // Start an activity with a name following the semantic convention of the OpenTelemetry messaging specification.
                 // The convention also defines a set of attributes (in .NET they are mapped as `tags`) to be populated in the activity.
                 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md
-                var activity = ActivitySourceAccessor.ActivitySource.StartActivity(activityName, ActivityKind.Consumer, parentContext.ActivityContext);
+                var activity = ActivitySourceAccessor.s_activitySource.StartActivity(activityName, ActivityKind.Consumer, parentContext.ActivityContext);
 
                 foreach (var item in Baggage.Current)
                 {

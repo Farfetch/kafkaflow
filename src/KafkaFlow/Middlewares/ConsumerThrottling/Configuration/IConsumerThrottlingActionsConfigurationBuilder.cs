@@ -1,7 +1,7 @@
+using System;
+
 namespace KafkaFlow.Middlewares.ConsumerThrottling.Configuration
 {
-    using System;
-
     /// <summary>
     /// Provides methods to configure throttling actions for KafkaFlow consumers.
     /// </summary>

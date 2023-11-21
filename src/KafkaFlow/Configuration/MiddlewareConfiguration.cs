@@ -1,7 +1,7 @@
+using System;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-
     /// <summary>
     /// Represents a middleware configuration
     /// </summary>

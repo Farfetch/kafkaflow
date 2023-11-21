@@ -25,7 +25,7 @@ jobs:
         shell: bash
 
       - name: .NET Publish
-        run: dotnet publish src/KafkaFlow.sln -c Release -o ./drop
+        run: dotnet publish KafkaFlow.sln -c Release -o ./drop
 
       - run: dotnet tool list --global
         shell: bash

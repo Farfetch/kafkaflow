@@ -1,7 +1,7 @@
+using System.Collections.Generic;
+
 namespace KafkaFlow
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// Represents a collection of message headers
     /// </summary>

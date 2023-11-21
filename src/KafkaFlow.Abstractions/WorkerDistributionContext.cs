@@ -1,7 +1,7 @@
-namespace KafkaFlow;
-
 using System;
 using System.Threading;
+
+namespace KafkaFlow;
 
 /// <summary>
 /// Represents a strategy context for distributing workers based on specific message and consumer details.

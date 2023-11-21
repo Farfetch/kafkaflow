@@ -1,8 +1,8 @@
-﻿namespace KafkaFlow.Compressor.Gzip
-{
-    using System.IO;
-    using System.IO.Compression;
+﻿using System.IO;
+using System.IO.Compression;
 
+namespace KafkaFlow.Compressor.Gzip
+{
     /// <summary>
     /// A GZIP message decompressor
     /// </summary>

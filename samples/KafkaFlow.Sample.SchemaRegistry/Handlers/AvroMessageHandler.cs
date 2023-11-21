@@ -1,10 +1,9 @@
-﻿namespace KafkaFlow.Sample.SchemaRegistry.Handlers
-{
-    using System;
-    using System.Threading.Tasks;
-    using KafkaFlow.Middlewares.TypedHandler;
-    using global::SchemaRegistry;
+﻿using System;
+using System.Threading.Tasks;
+using global::SchemaRegistry;
 
+namespace KafkaFlow.Sample.SchemaRegistry.Handlers
+{
     public class AvroMessageHandler : IMessageHandler<AvroLogMessage>
     {
         public Task Handle(IMessageContext context, AvroLogMessage message)

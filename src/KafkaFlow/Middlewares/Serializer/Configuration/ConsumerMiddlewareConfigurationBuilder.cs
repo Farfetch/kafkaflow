@@ -1,10 +1,10 @@
-﻿namespace KafkaFlow
-{
-    using System;
-    using KafkaFlow.Configuration;
-    using KafkaFlow.Middlewares.Serializer;
-    using KafkaFlow.Middlewares.Serializer.Resolvers;
+﻿using System;
+using KafkaFlow.Configuration;
+using KafkaFlow.Middlewares.Serializer;
+using KafkaFlow.Middlewares.Serializer.Resolvers;
 
+namespace KafkaFlow
+{
     /// <summary>
     /// No needed
     /// </summary>

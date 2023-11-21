@@ -20,7 +20,9 @@ namespace SchemaRegistry
 	{
 		public static Schema _SCHEMA = Avro.Schema.Parse("{\"type\":\"record\",\"name\":\"AvroLogMessage2\",\"doc\":\"A simple log message.\",\"namespac" +
 				"e\":\"SchemaRegistry\",\"fields\":[{\"name\":\"Message\",\"type\":\"string\"}]}");
-		private string _Message;
+
+		private string _message;
+
 		public virtual Schema Schema
 		{
 			get
@@ -32,11 +34,11 @@ namespace SchemaRegistry
 		{
 			get
 			{
-				return this._Message;
+				return _message;
 			}
 			set
 			{
-				this._Message = value;
+				_message = value;
 			}
 		}
 		public virtual object Get(int fieldPos)

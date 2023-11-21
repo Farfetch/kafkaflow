@@ -1,16 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-
     internal class ConsumerConfiguration : IConsumerConfiguration
     {
-        private readonly ConsumerConfig consumerConfig;
+        private readonly Confluent.Kafka.ConsumerConfig _consumerConfig;
 
         public ConsumerConfiguration(
-            ConsumerConfig consumerConfig,
+            Confluent.Kafka.ConsumerConfig consumerConfig,
             IReadOnlyList<string> topics,
             IReadOnlyList<TopicPartitions> manualAssignPartitions,
             string consumerName,
@@ -27,14 +26,14 @@ namespace KafkaFlow.Configuration
             ConsumerInitialState initialState,
             TimeSpan autoCommitInterval,
             IReadOnlyList<Action<string>> statisticsHandlers,
-            IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> partitionsAssignedHandlers,
-            IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionsRevokedHandlers,
+            IReadOnlyList<Action<IDependencyResolver, List<Confluent.Kafka.TopicPartition>>> partitionsAssignedHandlers,
+            IReadOnlyList<Action<IDependencyResolver, List<Confluent.Kafka.TopicPartitionOffset>>> partitionsRevokedHandlers,
             IReadOnlyList<PendingOffsetsStatisticsHandler> pendingOffsetsStatisticsHandlers,
             ConsumerCustomFactory customFactory)
         {
-            this.consumerConfig = consumerConfig ?? throw new ArgumentNullException(nameof(consumerConfig));
+            _consumerConfig = consumerConfig ?? throw new ArgumentNullException(nameof(consumerConfig));
 
-            if (string.IsNullOrEmpty(this.consumerConfig.GroupId))
+            if (string.IsNullOrEmpty(_consumerConfig.GroupId))
             {
                 throw new ArgumentNullException(nameof(consumerConfig.GroupId));
             }
@@ -87,7 +86,7 @@ namespace KafkaFlow.Configuration
 
         public TimeSpan WorkersCountEvaluationInterval { get; }
 
-        public string GroupId => this.consumerConfig.GroupId;
+        public string GroupId => _consumerConfig.GroupId;
 
         public int BufferSize { get; }
 
@@ -103,17 +102,17 @@ namespace KafkaFlow.Configuration
 
         public IReadOnlyList<Action<string>> StatisticsHandlers { get; }
 
-        public IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> PartitionsAssignedHandlers { get; }
+        public IReadOnlyList<Action<IDependencyResolver, List<Confluent.Kafka.TopicPartition>>> PartitionsAssignedHandlers { get; }
 
-        public IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
+        public IReadOnlyList<Action<IDependencyResolver, List<Confluent.Kafka.TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
 
         public IReadOnlyList<PendingOffsetsStatisticsHandler> PendingOffsetsStatisticsHandlers { get; }
 
         public ConsumerCustomFactory CustomFactory { get; }
 
-        public ConsumerConfig GetKafkaConfig()
+        public Confluent.Kafka.ConsumerConfig GetKafkaConfig()
         {
-            return this.consumerConfig;
+            return _consumerConfig;
         }
     }
 }

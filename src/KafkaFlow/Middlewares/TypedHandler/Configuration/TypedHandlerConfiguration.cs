@@ -1,7 +1,7 @@
+using System;
+
 namespace KafkaFlow.Middlewares.TypedHandler.Configuration
 {
-    using System;
-
     internal class TypedHandlerConfiguration
     {
         public HandlerTypeMapping HandlerMapping { get; } = new();

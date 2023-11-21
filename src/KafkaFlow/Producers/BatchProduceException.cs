@@ -1,8 +1,8 @@
+using System;
+using System.Collections.Generic;
+
 namespace KafkaFlow.Producers
 {
-    using System;
-    using System.Collections.Generic;
-
     /// <summary>
     /// Exception thrown by <see cref="M:BatchProduceExtension.BatchProduceAsync"/>
     /// </summary>

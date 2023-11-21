@@ -1,18 +1,17 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Confluent.Kafka;
+
 namespace KafkaFlow.Consumers
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-    using TopicPartitionOffset = KafkaFlow.TopicPartitionOffset;
-
     internal class ConsumerContext : IConsumerContext
     {
-        private readonly TaskCompletionSource<TopicPartitionOffset> completionSource = new();
-        private readonly IConsumer consumer;
-        private readonly IOffsetManager offsetManager;
-        private readonly IConsumerWorker worker;
-        private readonly IDependencyResolverScope messageDependencyScope;
+        private readonly TaskCompletionSource<TopicPartitionOffset> _completionSource = new();
+        private readonly IConsumer _consumer;
+        private readonly IOffsetManager _offsetManager;
+        private readonly IConsumerWorker _worker;
+        private readonly IDependencyResolverScope _messageDependencyScope;
 
         public ConsumerContext(
             IConsumer consumer,
@@ -23,11 +22,11 @@ namespace KafkaFlow.Consumers
             IDependencyResolver consumerDependencyResolver)
         {
             this.ConsumerDependencyResolver = consumerDependencyResolver;
-            this.consumer = consumer;
-            this.offsetManager = offsetManager;
-            this.worker = worker;
-            this.messageDependencyScope = messageDependencyScope;
-            this.AutoMessageCompletion = this.consumer.Configuration.AutoMessageCompletion;
+            _consumer = consumer;
+            _offsetManager = offsetManager;
+            _worker = worker;
+            _messageDependencyScope = messageDependencyScope;
+            this.AutoMessageCompletion = _consumer.Configuration.AutoMessageCompletion;
             this.TopicPartitionOffset = new TopicPartitionOffset(
                 kafkaResult.Topic,
                 kafkaResult.Partition.Value,
@@ -35,13 +34,13 @@ namespace KafkaFlow.Consumers
             this.MessageTimestamp = kafkaResult.Message.Timestamp.UtcDateTime;
         }
 
-        public string ConsumerName => this.consumer.Configuration.ConsumerName;
+        public string ConsumerName => _consumer.Configuration.ConsumerName;
 
-        public CancellationToken WorkerStopped => this.worker.StopCancellationToken;
+        public CancellationToken WorkerStopped => _worker.StopCancellationToken;
 
-        public int WorkerId => this.worker.Id;
+        public int WorkerId => _worker.Id;
 
-        public IDependencyResolver WorkerDependencyResolver => this.worker.WorkerDependencyResolver;
+        public IDependencyResolver WorkerDependencyResolver => _worker.WorkerDependencyResolver;
 
         public IDependencyResolver ConsumerDependencyResolver { get; }
 
@@ -53,7 +52,7 @@ namespace KafkaFlow.Consumers
 
         public TopicPartitionOffset TopicPartitionOffset { get; }
 
-        public string GroupId => this.consumer.Configuration.GroupId;
+        public string GroupId => _consumer.Configuration.GroupId;
 
         public bool AutoMessageCompletion { get; set; }
 
@@ -61,28 +60,28 @@ namespace KafkaFlow.Consumers
 
         public DateTime MessageTimestamp { get; }
 
-        public Task<TopicPartitionOffset> Completion => this.completionSource.Task;
+        public Task<TopicPartitionOffset> Completion => _completionSource.Task;
 
         public void Complete()
         {
             if (this.ShouldStoreOffset)
             {
-                this.offsetManager.MarkAsProcessed(this);
+                _offsetManager.MarkAsProcessed(this);
             }
 
-            this.messageDependencyScope.Dispose();
-            this.completionSource.TrySetResult(this.TopicPartitionOffset);
+            _messageDependencyScope.Dispose();
+            _completionSource.TrySetResult(this.TopicPartitionOffset);
         }
 
         public IOffsetsWatermark GetOffsetsWatermark() =>
             new OffsetsWatermark(
-                this.consumer.GetWatermarkOffsets(
+                _consumer.GetWatermarkOffsets(
                     new TopicPartition(
                         this.TopicPartitionOffset.Topic,
                         this.TopicPartitionOffset.Partition)));
 
-        public void Pause() => this.consumer.FlowManager.Pause(this.consumer.Assignment);
+        public void Pause() => _consumer.FlowManager.Pause(_consumer.Assignment);
 
-        public void Resume() => this.consumer.FlowManager.Resume(this.consumer.Assignment);
+        public void Resume() => _consumer.FlowManager.Resume(_consumer.Assignment);
     }
 }

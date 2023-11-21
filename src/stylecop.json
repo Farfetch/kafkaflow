@@ -11,6 +11,10 @@
 		},
 		"layoutRules": {
 			"newlineAtEndOfFile": "require"
+		},
+		"orderingRules": {
+			"systemUsingDirectivesFirst": true,
+			"usingDirectivesPlacement": "outsideNamespace"
 		}
 	}
 }

@@ -1,19 +1,19 @@
+using System;
+using System.Threading.Tasks;
+using Confluent.Kafka;
+
 namespace KafkaFlow.Producers
 {
-    using System;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-
     internal class MessageProducerWrapper<TProducer> : IMessageProducer<TProducer>
     {
-        private readonly IMessageProducer producer;
+        private readonly IMessageProducer _producer;
 
         public MessageProducerWrapper(IMessageProducer producer)
         {
-            this.producer = producer;
+            _producer = producer;
         }
 
-        public string ProducerName => this.producer.ProducerName;
+        public string ProducerName => _producer.ProducerName;
 
         public Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
             string topic,
@@ -22,7 +22,7 @@ namespace KafkaFlow.Producers
             IMessageHeaders headers = null,
             int? partition = null)
         {
-            return this.producer.ProduceAsync(
+            return _producer.ProduceAsync(
                 topic,
                 messageKey,
                 message,
@@ -36,7 +36,7 @@ namespace KafkaFlow.Producers
             IMessageHeaders headers = null,
             int? partition = null)
         {
-            return this.producer.ProduceAsync(
+            return _producer.ProduceAsync(
                 messageKey,
                 message,
                 headers,
@@ -51,7 +51,7 @@ namespace KafkaFlow.Producers
             Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
             int? partition = null)
         {
-            this.producer.Produce(
+            _producer.Produce(
                 topic,
                 messageKey,
                 message,
@@ -67,7 +67,7 @@ namespace KafkaFlow.Producers
             Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
             int? partition = null)
         {
-            this.producer.Produce(
+            _producer.Produce(
                 messageKey,
                 message,
                 headers,

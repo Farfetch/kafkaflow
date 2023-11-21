@@ -1,19 +1,18 @@
+using System.Threading.Tasks;
+using KafkaFlow.Admin.Messages;
+using KafkaFlow.Consumers;
+
 namespace KafkaFlow.Admin.Handlers
 {
-    using System.Threading.Tasks;
-    using KafkaFlow.Admin.Messages;
-    using KafkaFlow.Consumers;
-    using KafkaFlow.Middlewares.TypedHandler;
-
     internal class RestartConsumerByNameHandler : IMessageHandler<RestartConsumerByName>
     {
-        private readonly IConsumerAccessor consumerAccessor;
+        private readonly IConsumerAccessor _consumerAccessor;
 
-        public RestartConsumerByNameHandler(IConsumerAccessor consumerAccessor) => this.consumerAccessor = consumerAccessor;
+        public RestartConsumerByNameHandler(IConsumerAccessor consumerAccessor) => _consumerAccessor = consumerAccessor;
 
         public Task Handle(IMessageContext context, RestartConsumerByName message)
         {
-            var consumer = this.consumerAccessor[message.ConsumerName];
+            var consumer = _consumerAccessor[message.ConsumerName];
 
             return consumer?.RestartAsync() ?? Task.CompletedTask;
         }

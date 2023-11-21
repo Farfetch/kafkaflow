@@ -1,9 +1,9 @@
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Producers
 {
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     /// <summary>
     /// No needed
     /// </summary>

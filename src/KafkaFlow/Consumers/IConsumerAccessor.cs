@@ -1,7 +1,7 @@
+using System.Collections.Generic;
+
 namespace KafkaFlow.Consumers
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// Provides access to the configured consumers
     /// </summary>

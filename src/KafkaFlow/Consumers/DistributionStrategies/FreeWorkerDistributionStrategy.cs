@@ -1,8 +1,8 @@
-namespace KafkaFlow.Consumers.DistributionStrategies;
-
 using System.Collections.Generic;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+
+namespace KafkaFlow.Consumers.DistributionStrategies;
 
 /// <summary>
 /// This strategy chooses the first free worker to process the message. When a worker finishes the processing, it notifies the worker pool that it is free to get a new message
@@ -10,21 +10,21 @@ using System.Threading.Tasks;
 /// </summary>
 public class FreeWorkerDistributionStrategy : IWorkerDistributionStrategy
 {
-    private readonly Channel<IWorker> freeWorkers = Channel.CreateUnbounded<IWorker>();
+    private readonly Channel<IWorker> _freeWorkers = Channel.CreateUnbounded<IWorker>();
 
     /// <inheritdoc />
     public void Initialize(IReadOnlyList<IWorker> workers)
     {
         foreach (var worker in workers)
         {
-            worker.WorkerProcessingEnded.Subscribe(_ => Task.FromResult(this.freeWorkers.Writer.WriteAsync(worker)));
-            this.freeWorkers.Writer.TryWrite(worker);
+            worker.WorkerProcessingEnded.Subscribe(_ => Task.FromResult(_freeWorkers.Writer.WriteAsync(worker)));
+            _freeWorkers.Writer.TryWrite(worker);
         }
     }
 
     /// <inheritdoc />
     public ValueTask<IWorker> GetWorkerAsync(WorkerDistributionContext context)
     {
-        return this.freeWorkers.Reader.ReadAsync(context.ConsumerStoppedCancellationToken);
+        return _freeWorkers.Reader.ReadAsync(context.ConsumerStoppedCancellationToken);
     }
 }

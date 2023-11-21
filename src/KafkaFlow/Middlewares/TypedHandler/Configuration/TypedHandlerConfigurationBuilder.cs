@@ -1,22 +1,22 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
+using KafkaFlow.Middlewares.TypedHandler.Configuration;
+
 namespace KafkaFlow
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-
-    using KafkaFlow.Middlewares.TypedHandler.Configuration;
-
     /// <summary>
     /// Builder class for typed handler configuration
     /// </summary>
     public class TypedHandlerConfigurationBuilder
     {
-        private readonly IDependencyConfigurator dependencyConfigurator;
-        private readonly List<Type> handlers = new();
+        private readonly IDependencyConfigurator _dependencyConfigurator;
+        private readonly List<Type> _handlers = new();
 
-        private Action<IMessageContext> onNoHandlerFound = (_) => { };
-        private InstanceLifetime serviceLifetime = InstanceLifetime.Singleton;
+        private Action<IMessageContext> _onNoHandlerFound = (_) => { };
+        private InstanceLifetime _serviceLifetime = InstanceLifetime.Singleton;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TypedHandlerConfigurationBuilder"/> class.
@@ -24,7 +24,7 @@ namespace KafkaFlow
         /// <param name="dependencyConfigurator">Dependency injection configurator</param>
         public TypedHandlerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
-            this.dependencyConfigurator = dependencyConfigurator;
+            _dependencyConfigurator = dependencyConfigurator;
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace KafkaFlow
                 .Where(x => x.IsClass && !x.IsAbstract && typeof(IMessageHandler).IsAssignableFrom(x))
                 .Distinct();
 
-            this.handlers.AddRange(handlerTypes);
+            _handlers.AddRange(handlerTypes);
             return this;
         }
 
@@ -58,7 +58,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public TypedHandlerConfigurationBuilder AddHandlers(IEnumerable<Type> handlers)
         {
-            this.handlers.AddRange(handlers);
+            _handlers.AddRange(handlers);
             return this;
         }
 
@@ -70,7 +70,7 @@ namespace KafkaFlow
         public TypedHandlerConfigurationBuilder AddHandler<T>()
             where T : class, IMessageHandler
         {
-            this.handlers.Add(typeof(T));
+            _handlers.Add(typeof(T));
             return this;
         }
 
@@ -81,7 +81,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public TypedHandlerConfigurationBuilder WhenNoHandlerFound(Action<IMessageContext> handler)
         {
-            this.onNoHandlerFound = handler;
+            _onNoHandlerFound = handler;
             return this;
         }
 
@@ -92,7 +92,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public TypedHandlerConfigurationBuilder WithHandlerLifetime(InstanceLifetime lifetime)
         {
-            this.serviceLifetime = lifetime;
+            _serviceLifetime = lifetime;
             return this;
         }
 
@@ -100,15 +100,15 @@ namespace KafkaFlow
         {
             var configuration = new TypedHandlerConfiguration
             {
-                OnNoHandlerFound = this.onNoHandlerFound,
+                OnNoHandlerFound = _onNoHandlerFound,
             };
 
-            foreach (var handlerType in this.handlers)
+            foreach (var handlerType in _handlers)
             {
-                this.dependencyConfigurator.Add(
+                _dependencyConfigurator.Add(
                     handlerType,
                     handlerType,
-                    this.serviceLifetime);
+                    _serviceLifetime);
 
                 var messageTypes = handlerType
                     .GetInterfaces()

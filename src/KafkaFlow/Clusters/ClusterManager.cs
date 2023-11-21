@@ -1,30 +1,28 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Confluent.Kafka;
+using Confluent.Kafka.Admin;
+using KafkaFlow.Configuration;
+
 namespace KafkaFlow.Clusters
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-    using Confluent.Kafka.Admin;
-    using KafkaFlow.Configuration;
-    using TopicMetadata = KafkaFlow.TopicMetadata;
-    using TopicPartitionOffset = KafkaFlow.TopicPartitionOffset;
-
     internal class ClusterManager : IClusterManager, IDisposable
     {
-        private readonly ILogHandler logHandler;
-        private readonly Lazy<IAdminClient> lazyAdminClient;
-        private readonly ClusterConfiguration configuration;
+        private readonly ILogHandler _logHandler;
+        private readonly Lazy<IAdminClient> _lazyAdminClient;
+        private readonly ClusterConfiguration _configuration;
 
-        private readonly ConcurrentDictionary<string, TopicMetadata> topicMetadataCache = new();
+        private readonly ConcurrentDictionary<string, TopicMetadata> _topicMetadataCache = new();
 
         public ClusterManager(ILogHandler logHandler, ClusterConfiguration configuration)
         {
-            this.logHandler = logHandler;
-            this.configuration = configuration;
+            _logHandler = logHandler;
+            _configuration = configuration;
 
-            this.lazyAdminClient = new Lazy<IAdminClient>(
+            _lazyAdminClient = new Lazy<IAdminClient>(
                 () =>
                 {
                     var config = new AdminClientConfig
@@ -39,16 +37,16 @@ namespace KafkaFlow.Clusters
                 });
         }
 
-        public string ClusterName => this.configuration.Name;
+        public string ClusterName => _configuration.Name;
 
         public ValueTask<TopicMetadata> GetTopicMetadataAsync(string topicName)
         {
             return new ValueTask<TopicMetadata>(
-                this.topicMetadataCache.GetOrAdd(
+                _topicMetadataCache.GetOrAdd(
                     topicName,
                     _ =>
                     {
-                        var metadata = this.lazyAdminClient.Value.GetMetadata(topicName, TimeSpan.FromSeconds(30));
+                        var metadata = _lazyAdminClient.Value.GetMetadata(topicName, TimeSpan.FromSeconds(30));
 
                         if (!metadata.Topics.Any())
                         {
@@ -84,7 +82,7 @@ namespace KafkaFlow.Clusters
                                 new Partition(partition.Id))))
                     .ToList();
 
-            var result = await this.lazyAdminClient.Value.ListConsumerGroupOffsetsAsync(
+            var result = await _lazyAdminClient.Value.ListConsumerGroupOffsetsAsync(
                 new[] { new ConsumerGroupTopicPartitions(consumerGroup, topics) });
 
             if (!result.Any())
@@ -112,7 +110,7 @@ namespace KafkaFlow.Clusters
                         })
                     .ToArray();
 
-                await this.lazyAdminClient.Value.CreateTopicsAsync(topics);
+                await _lazyAdminClient.Value.CreateTopicsAsync(topics);
             }
             catch (CreateTopicsException exception)
             {
@@ -121,7 +119,7 @@ namespace KafkaFlow.Clusters
                 {
                     if (exceptionResult.Error.Code == ErrorCode.TopicAlreadyExists)
                     {
-                        this.logHandler.Warning(
+                        _logHandler.Warning(
                             "An error occurred creating topic {Topic}: {Reason}",
                             new
                             {
@@ -136,12 +134,12 @@ namespace KafkaFlow.Clusters
 
                 if (hasNonExpectedErrors)
                 {
-                    this.logHandler.Error(
+                    _logHandler.Error(
                         "An error occurred creating topics",
                         exception,
                         new
                         {
-                            Servers = this.configuration.Brokers,
+                            Servers = _configuration.Brokers,
                         });
                     throw;
                 }
@@ -150,9 +148,9 @@ namespace KafkaFlow.Clusters
 
         public void Dispose()
         {
-            if (this.lazyAdminClient.IsValueCreated)
+            if (_lazyAdminClient.IsValueCreated)
             {
-                this.lazyAdminClient.Value.Dispose();
+                _lazyAdminClient.Value.Dispose();
             }
         }
     }

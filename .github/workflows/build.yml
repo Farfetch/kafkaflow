@@ -47,14 +47,14 @@ jobs:
           npm run build:prod
 
       - name: Build Framework
-        run: dotnet build ./src/KafkaFlow.sln -c Release
+        run: dotnet build KafkaFlow.sln -c Release
 
       - name: UnitTest
         run: |
-          dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj -c Release --logger "console;verbosity=detailed"
+          dotnet test tests/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj -c Release --logger "console;verbosity=detailed"
 
       - name: IntegrationTest
         run: |
           make init_broker
-          dotnet test src/KafkaFlow.IntegrationTests/KafkaFlow.IntegrationTests.csproj -c Release --logger "console;verbosity=detailed"
+          dotnet test tests/KafkaFlow.IntegrationTests/KafkaFlow.IntegrationTests.csproj -c Release --logger "console;verbosity=detailed"
           make shutdown_broker

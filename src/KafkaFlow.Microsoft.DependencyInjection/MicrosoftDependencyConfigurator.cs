@@ -1,16 +1,16 @@
+using System;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace KafkaFlow
 {
-    using System;
-    using Microsoft.Extensions.DependencyInjection;
-
     internal class MicrosoftDependencyConfigurator : IDependencyConfigurator
     {
-        private readonly IServiceCollection services;
+        private readonly IServiceCollection _services;
 
         public MicrosoftDependencyConfigurator(IServiceCollection services)
         {
-            this.services = services;
-            this.services.AddSingleton<IDependencyResolver>(provider => new MicrosoftDependencyResolver(provider));
+            _services = services;
+            _services.AddSingleton<IDependencyResolver>(provider => new MicrosoftDependencyResolver(provider));
         }
 
         public IDependencyConfigurator Add(
@@ -18,7 +18,7 @@ namespace KafkaFlow
             Type implementationType,
             InstanceLifetime lifetime)
         {
-            this.services.Add(
+            _services.Add(
                 ServiceDescriptor.Describe(
                     serviceType,
                     implementationType,
@@ -31,7 +31,7 @@ namespace KafkaFlow
             where TService : class
             where TImplementation : class, TService
         {
-            this.services.Add(
+            _services.Add(
                 ServiceDescriptor.Describe(
                     typeof(TService),
                     typeof(TImplementation),
@@ -43,7 +43,7 @@ namespace KafkaFlow
         public IDependencyConfigurator Add<TService>(InstanceLifetime lifetime)
             where TService : class
         {
-            this.services.Add(
+            _services.Add(
                 ServiceDescriptor.Describe(
                     typeof(TService),
                     typeof(TService),
@@ -55,7 +55,7 @@ namespace KafkaFlow
         public IDependencyConfigurator Add<TImplementation>(TImplementation service)
             where TImplementation : class
         {
-            this.services.AddSingleton(service);
+            _services.AddSingleton(service);
             return this;
         }
 
@@ -64,7 +64,7 @@ namespace KafkaFlow
             Func<IDependencyResolver, TImplementation> factory,
             InstanceLifetime lifetime)
         {
-            this.services.Add(
+            _services.Add(
                 ServiceDescriptor.Describe(
                     serviceType,
                     provider => factory(new MicrosoftDependencyResolver(provider)),

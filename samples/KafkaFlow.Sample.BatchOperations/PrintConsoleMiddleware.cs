@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using KafkaFlow.Batching;
 
 namespace KafkaFlow.Sample.BatchOperations;
 
@@ -13,7 +12,7 @@ internal class PrintConsoleMiddleware : IMessageMiddleware
 
         var text = string.Join(
             '\n',
-            batch.Select(ctx => ((SampleBatchMessage) ctx.Message.Value).Text));
+            batch.Select(ctx => ((SampleBatchMessage)ctx.Message.Value).Text));
 
         Console.WriteLine(text);
 

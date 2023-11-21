@@ -1,5 +1,3 @@
-using KafkaFlow.Middlewares.TypedHandler;
-
 namespace KafkaFlow.Sample.PauseConsumerOnError;
 
 public class MessageHandler : IMessageHandler<WelcomeMessage>

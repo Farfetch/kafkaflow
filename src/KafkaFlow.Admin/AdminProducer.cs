@@ -1,21 +1,21 @@
+using System;
+using System.Threading.Tasks;
+using KafkaFlow.Admin.Messages;
+
 namespace KafkaFlow.Admin
 {
-    using System;
-    using System.Threading.Tasks;
-    using KafkaFlow.Admin.Messages;
-
     internal class AdminProducer : IAdminProducer
     {
-        private readonly IMessageProducer<AdminProducer> producer;
-        private readonly int topicPartition;
+        private readonly IMessageProducer<AdminProducer> _producer;
+        private readonly int _topicPartition;
 
         public AdminProducer(IMessageProducer<AdminProducer> producer, int topicPartition)
         {
-            this.producer = producer;
-            this.topicPartition = topicPartition;
+            _producer = producer;
+            _topicPartition = topicPartition;
         }
 
         public Task ProduceAsync(IAdminMessage message) =>
-            this.producer.ProduceAsync(Guid.NewGuid().ToString(), message, partition: this.topicPartition);
+            _producer.ProduceAsync(Guid.NewGuid().ToString(), message, partition: _topicPartition);
     }
 }

@@ -1,14 +1,14 @@
 ﻿extern alias SemanticConventions;
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using Conventions = SemanticConventions::OpenTelemetry.Trace.TraceSemanticConventions;
+
 namespace KafkaFlow.OpenTelemetry
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Reflection;
-    using Conventions = SemanticConventions::OpenTelemetry.Trace.TraceSemanticConventions;
-
     internal static class ActivitySourceAccessor
     {
         internal const string ActivityString = "otel_activity";
@@ -17,10 +17,10 @@ namespace KafkaFlow.OpenTelemetry
         internal const string AttributeMessagingOperation = "messaging.operation";
         internal const string AttributeMessagingKafkaMessageKey = "messaging.kafka.message.key";
         internal const string AttributeMessagingKafkaMessageOffset = "messaging.kafka.message.offset";
-        internal static readonly AssemblyName AssemblyName = typeof(ActivitySourceAccessor).Assembly.GetName();
-        internal static readonly string ActivitySourceName = AssemblyName.Name;
-        internal static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-        internal static readonly ActivitySource ActivitySource = new(ActivitySourceName, Version);
+        internal static readonly AssemblyName s_assemblyName = typeof(ActivitySourceAccessor).Assembly.GetName();
+        internal static readonly string s_activitySourceName = s_assemblyName.Name;
+        internal static readonly string s_version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        internal static readonly ActivitySource s_activitySource = new(s_activitySourceName, s_version);
 
         public static void SetGenericTags(Activity activity, IEnumerable<string> bootstrapServers)
         {

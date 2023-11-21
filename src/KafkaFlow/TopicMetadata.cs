@@ -1,7 +1,7 @@
+using System.Collections.Generic;
+
 namespace KafkaFlow
 {
-    using System.Collections.Generic;
-
     public record TopicMetadata
     {
         public TopicMetadata(string name, IReadOnlyCollection<TopicPartitionMetadata> partitions)

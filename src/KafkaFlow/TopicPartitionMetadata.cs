@@ -2,9 +2,9 @@ namespace KafkaFlow
 {
     public class TopicPartitionMetadata
     {
-        public TopicPartitionMetadata(int Id)
+        public TopicPartitionMetadata(int id)
         {
-            this.Id = Id;
+            this.Id = id;
         }
 
         public int Id { get; }

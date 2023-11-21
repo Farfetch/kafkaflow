@@ -4,13 +4,13 @@ namespace KafkaFlow.Sample.PauseConsumerOnError;
 
 public class PauseConsumerOnExceptionMiddleware : IMessageMiddleware
 {
-    private readonly IConsumerAccessor consumerAccessor;
-    private readonly ILogHandler logHandler;
+    private readonly IConsumerAccessor _consumerAccessor;
+    private readonly ILogHandler _logHandler;
 
     public PauseConsumerOnExceptionMiddleware(IConsumerAccessor consumerAccessor, ILogHandler logHandler)
     {
-        this.consumerAccessor = consumerAccessor;
-        this.logHandler = logHandler;
+        _consumerAccessor = consumerAccessor;
+        _logHandler = logHandler;
     }
 
     public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
@@ -22,7 +22,7 @@ public class PauseConsumerOnExceptionMiddleware : IMessageMiddleware
         catch (Exception exception)
         {
             context.ConsumerContext.AutoMessageCompletion = false;
-            this.logHandler.Error("Error handling message", exception,
+            _logHandler.Error("Error handling message", exception,
                 new
                 {
                     context.Message,
@@ -31,10 +31,10 @@ public class PauseConsumerOnExceptionMiddleware : IMessageMiddleware
                     context.ConsumerContext.ConsumerName,
                 });
 
-            var consumer = this.consumerAccessor[context.ConsumerContext.ConsumerName];
+            var consumer = _consumerAccessor[context.ConsumerContext.ConsumerName];
             consumer.Pause(consumer.Assignment);
 
-            this.logHandler.Warning("Consumer stopped", context.ConsumerContext.ConsumerName);
+            _logHandler.Warning("Consumer stopped", context.ConsumerContext.ConsumerName);
         }
     }
 }

@@ -1,7 +1,7 @@
+using System;
+
 namespace KafkaFlow.Middlewares.ConsumerThrottling.Configuration
 {
-    using System;
-
     internal class ConsumerThrottlingActionConfigurationBuilder
         : IConsumerThrottlingActionConfigurationBuilder,
             IConsumerThrottlingThresholdActionConfigurationBuilder

@@ -1,7 +1,7 @@
+using System.Runtime.Serialization;
+
 namespace KafkaFlow.Admin.Messages
 {
-    using System.Runtime.Serialization;
-
     /// <summary>
     /// The message that destroy and recreates the internal consumer
     /// </summary>

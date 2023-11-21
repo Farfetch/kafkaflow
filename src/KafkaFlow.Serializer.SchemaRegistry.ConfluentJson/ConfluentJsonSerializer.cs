@@ -1,20 +1,20 @@
-﻿namespace KafkaFlow.Serializer.SchemaRegistry
-{
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
-    using Confluent.SchemaRegistry;
-    using Confluent.SchemaRegistry.Serdes;
-    using NJsonSchema.Generation;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using Confluent.SchemaRegistry;
+using Confluent.SchemaRegistry.Serdes;
+using NJsonSchema.Generation;
 
+namespace KafkaFlow.Serializer.SchemaRegistry
+{
     /// <summary>
     /// A json message serializer integrated with the confluent schema registry
     /// </summary>
     public class ConfluentJsonSerializer : ISerializer
     {
-        private readonly ISchemaRegistryClient schemaRegistryClient;
-        private readonly JsonSerializerConfig serializerConfig;
-        private readonly JsonSchemaGeneratorSettings schemaGeneratorSettings;
+        private readonly ISchemaRegistryClient _schemaRegistryClient;
+        private readonly JsonSerializerConfig _serializerConfig;
+        private readonly JsonSchemaGeneratorSettings _schemaGeneratorSettings;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfluentJsonSerializer"/> class.
@@ -40,13 +40,13 @@
             JsonSerializerConfig serializerConfig,
             JsonSchemaGeneratorSettings schemaGeneratorSettings = null)
         {
-            this.schemaRegistryClient =
+            _schemaRegistryClient =
                 resolver.Resolve<ISchemaRegistryClient>() ??
                 throw new InvalidOperationException(
                     $"No schema registry configuration was found. Set it using {nameof(ClusterConfigurationBuilderExtensions.WithSchemaRegistry)} on cluster configuration");
 
-            this.serializerConfig = serializerConfig;
-            this.schemaGeneratorSettings = schemaGeneratorSettings;
+            _serializerConfig = serializerConfig;
+            _schemaGeneratorSettings = schemaGeneratorSettings;
         }
 
         /// <inheritdoc/>
@@ -57,9 +57,9 @@
                     message.GetType(),
                     () => Activator.CreateInstance(
                         typeof(JsonSerializer<>).MakeGenericType(message.GetType()),
-                        this.schemaRegistryClient,
-                        this.serializerConfig,
-                        this.schemaGeneratorSettings))
+                        _schemaRegistryClient,
+                        _serializerConfig,
+                        _schemaGeneratorSettings))
                 .SerializeAsync(message, output, context);
         }
     }

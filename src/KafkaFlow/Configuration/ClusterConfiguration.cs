@@ -1,19 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Linq;
-
     /// <summary>
     /// Represents the cluster configuration values
     /// </summary>
     public class ClusterConfiguration
     {
-        private readonly Func<SecurityInformation> securityInformationHandler;
-        private readonly List<IProducerConfiguration> producers = new();
-        private readonly List<IConsumerConfiguration> consumers = new();
-        private readonly ReadOnlyCollection<TopicConfiguration> topicsToCreateIfNotExist;
+        private readonly Func<SecurityInformation> _securityInformationHandler;
+        private readonly List<IProducerConfiguration> _producers = new();
+        private readonly List<IConsumerConfiguration> _consumers = new();
+        private readonly ReadOnlyCollection<TopicConfiguration> _topicsToCreateIfNotExist;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClusterConfiguration"/> class.
@@ -34,13 +34,13 @@ namespace KafkaFlow.Configuration
             Action<IDependencyResolver> onStoppingHandler,
             IEnumerable<TopicConfiguration> topicsToCreateIfNotExist = null)
         {
-            this.securityInformationHandler = securityInformationHandler;
-            this.Name = name ?? Guid.NewGuid().ToString();
-            this.Kafka = kafka;
-            this.Brokers = brokers.ToList();
-            this.OnStoppingHandler = onStoppingHandler;
-            this.OnStartedHandler = onStartedHandler;
-            this.topicsToCreateIfNotExist = topicsToCreateIfNotExist?.ToList().AsReadOnly() ??
+            _securityInformationHandler = securityInformationHandler;
+            Name = name ?? Guid.NewGuid().ToString();
+            Kafka = kafka;
+            Brokers = brokers.ToList();
+            OnStoppingHandler = onStoppingHandler;
+            OnStartedHandler = onStartedHandler;
+            _topicsToCreateIfNotExist = topicsToCreateIfNotExist?.ToList().AsReadOnly() ??
                                             new List<TopicConfiguration>().AsReadOnly();
         }
 
@@ -62,18 +62,18 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Gets the list of producers
         /// </summary>
-        public IReadOnlyCollection<IProducerConfiguration> Producers => this.producers.AsReadOnly();
+        public IReadOnlyCollection<IProducerConfiguration> Producers => _producers.AsReadOnly();
 
         /// <summary>
         /// Gets the list of consumers
         /// </summary>
-        public IReadOnlyCollection<IConsumerConfiguration> Consumers => this.consumers.AsReadOnly();
+        public IReadOnlyCollection<IConsumerConfiguration> Consumers => _consumers.AsReadOnly();
 
         /// <summary>
         /// Gets the list of topics to create if they do not exist
         /// </summary>
         public IReadOnlyCollection<TopicConfiguration> TopicsToCreateIfNotExist =>
-            this.topicsToCreateIfNotExist;
+            _topicsToCreateIfNotExist;
 
         /// <summary>
         /// Gets the handler to be executed when the cluster started
@@ -90,19 +90,19 @@ namespace KafkaFlow.Configuration
         /// </summary>
         /// <param name="configurations">A list of consumer configurations</param>
         public void AddConsumers(IEnumerable<IConsumerConfiguration> configurations) =>
-            this.consumers.AddRange(configurations);
+            _consumers.AddRange(configurations);
 
         /// <summary>
         /// Adds a list of producer configurations
         /// </summary>
         /// <param name="configurations">A list of producer configurations</param>
         public void AddProducers(IEnumerable<IProducerConfiguration> configurations) =>
-            this.producers.AddRange(configurations);
+            _producers.AddRange(configurations);
 
         /// <summary>
         /// Gets the kafka security information
         /// </summary>
         /// <returns></returns>
-        public SecurityInformation GetSecurityInformation() => this.securityInformationHandler?.Invoke();
+        public SecurityInformation GetSecurityInformation() => _securityInformationHandler?.Invoke();
     }
 }

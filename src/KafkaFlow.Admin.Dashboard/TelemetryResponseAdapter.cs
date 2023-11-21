@@ -1,9 +1,9 @@
+using System.Collections.Generic;
+using System.Linq;
+using KafkaFlow.Admin.Messages;
+
 namespace KafkaFlow.Admin.Dashboard
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using KafkaFlow.Admin.Messages;
-
     internal static class TelemetryResponseAdapter
     {
         internal static TelemetryResponse Adapt(this IEnumerable<ConsumerTelemetryMetric> metrics)
