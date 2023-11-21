@@ -1,21 +1,21 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using KafkaFlow.Configuration;
+
 namespace KafkaFlow
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using KafkaFlow.Configuration;
-
     internal class MiddlewareExecutor : IMiddlewareExecutor
     {
-        private readonly IReadOnlyList<MiddlewareConfiguration> configurations;
+        private readonly IReadOnlyList<MiddlewareConfiguration> _configurations;
 
-        private readonly Dictionary<int, IMessageMiddleware> consumerOrProducerMiddlewares = new();
-        private readonly Dictionary<(int, int), IMessageMiddleware> workersMiddlewares = new();
+        private readonly Dictionary<int, IMessageMiddleware> _consumerOrProducerMiddlewares = new();
+        private readonly Dictionary<(int, int), IMessageMiddleware> _workersMiddlewares = new();
 
         public MiddlewareExecutor(IReadOnlyList<MiddlewareConfiguration> configurations)
         {
-            this.configurations = configurations;
+            _configurations = configurations;
         }
 
         public Task Execute(IMessageContext context, Func<IMessageContext, Task> nextOperation)
@@ -25,7 +25,7 @@ namespace KafkaFlow
 
         internal Task OnWorkerPoolStopped()
         {
-            this.workersMiddlewares.Clear();
+            _workersMiddlewares.Clear();
             return Task.CompletedTask;
         }
 
@@ -56,12 +56,12 @@ namespace KafkaFlow
 
         private Task ExecuteDefinition(int index, IMessageContext context, Func<IMessageContext, Task> nextOperation)
         {
-            if (this.configurations.Count == index)
+            if (_configurations.Count == index)
             {
                 return nextOperation(context);
             }
 
-            var configuration = this.configurations[index];
+            var configuration = _configurations[index];
 
             return this
                 .ResolveInstance(index, context, configuration)
@@ -91,7 +91,7 @@ namespace KafkaFlow
             int index,
             MiddlewareConfiguration configuration)
         {
-            return this.consumerOrProducerMiddlewares.SafeGetOrAdd(
+            return _consumerOrProducerMiddlewares.SafeGetOrAdd(
                 index,
                 _ => CreateInstance(dependencyResolver, configuration));
         }
@@ -101,7 +101,7 @@ namespace KafkaFlow
             IMessageContext context,
             MiddlewareConfiguration configuration)
         {
-            return this.workersMiddlewares.SafeGetOrAdd(
+            return _workersMiddlewares.SafeGetOrAdd(
                 (index, context.ConsumerContext?.WorkerId ?? 0),
                 _ => CreateInstance(context.ConsumerContext.WorkerDependencyResolver, configuration));
         }

@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using KafkaFlow.Middlewares.TypedHandler;
 
 namespace KafkaFlow.Sample;
 

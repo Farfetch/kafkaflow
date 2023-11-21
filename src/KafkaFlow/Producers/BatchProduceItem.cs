@@ -1,7 +1,7 @@
+using Confluent.Kafka;
+
 namespace KafkaFlow.Producers
 {
-    using Confluent.Kafka;
-
     /// <summary>
     /// Represents a message to be produced in batch
     /// </summary>

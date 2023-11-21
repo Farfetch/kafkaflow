@@ -1,9 +1,9 @@
+using System;
+using global::Microsoft.Extensions.DependencyInjection;
+using KafkaFlow.Configuration;
+
 namespace KafkaFlow
 {
-    using System;
-    using global::Microsoft.Extensions.DependencyInjection;
-    using KafkaFlow.Configuration;
-
     /// <summary>
     /// Extension methods over IServiceCollection
     /// </summary>

@@ -1,8 +1,8 @@
-﻿namespace KafkaFlow.Middlewares.Serializer.Resolvers
-{
-    using System;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
+namespace KafkaFlow.Middlewares.Serializer.Resolvers
+{
     /// <summary>
     /// Used by the serializer middleware to resolve the type when consuming and store it when producing
     /// </summary>

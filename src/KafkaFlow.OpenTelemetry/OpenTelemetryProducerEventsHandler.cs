@@ -1,20 +1,20 @@
-﻿namespace KafkaFlow.OpenTelemetry
-{
-    using System;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using global::OpenTelemetry;
-    using global::OpenTelemetry.Context.Propagation;
-    using global::OpenTelemetry.Trace;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using global::OpenTelemetry;
+using global::OpenTelemetry.Context.Propagation;
+using global::OpenTelemetry.Trace;
 
+namespace KafkaFlow.OpenTelemetry
+{
     internal static class OpenTelemetryProducerEventsHandler
     {
         private const string PublishString = "publish";
         private const string AttributeMessagingDestinationName = "messaging.destination.name";
         private const string AttributeMessagingKafkaDestinationPartition = "messaging.kafka.destination.partition";
-        private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
+        private static readonly TextMapPropagator s_propagator = Propagators.DefaultTextMapPropagator;
 
         public static Task OnProducerStarted(IMessageContext context)
         {
@@ -25,7 +25,7 @@
                 // Start an activity with a name following the semantic convention of the OpenTelemetry messaging specification.
                 // The convention also defines a set of attributes (in .NET they are mapped as `tags`) to be populated in the activity.
                 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md
-                var activity = ActivitySourceAccessor.ActivitySource.StartActivity(activityName, ActivityKind.Producer);
+                var activity = ActivitySourceAccessor.s_activitySource.StartActivity(activityName, ActivityKind.Producer);
 
                 // Depending on Sampling (and whether a listener is registered or not), the
                 // activity above may not be created.
@@ -47,7 +47,7 @@
                 Baggage.Current = Baggage.Create(activity?.Baggage.ToDictionary(item => item.Key, item => item.Value));
 
                 // Inject the ActivityContext into the message headers to propagate trace context to the receiving service.
-                Propagator.Inject(new PropagationContext(contextToInject, Baggage.Current), context, InjectTraceContextIntoBasicProperties);
+                s_propagator.Inject(new PropagationContext(contextToInject, Baggage.Current), context, InjectTraceContextIntoBasicProperties);
 
                 ActivitySourceAccessor.SetGenericTags(activity, context?.Brokers);
 

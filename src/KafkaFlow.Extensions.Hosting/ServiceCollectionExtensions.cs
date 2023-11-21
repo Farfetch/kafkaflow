@@ -1,9 +1,9 @@
-﻿namespace KafkaFlow
-{
-    using System;
-    using global::Microsoft.Extensions.DependencyInjection;
-    using KafkaFlow.Configuration;
+﻿using System;
+using global::Microsoft.Extensions.DependencyInjection;
+using KafkaFlow.Configuration;
 
+namespace KafkaFlow
+{
     /// <summary>
     /// No needed
     /// </summary>

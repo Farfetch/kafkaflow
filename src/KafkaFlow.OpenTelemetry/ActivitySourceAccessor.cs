@@ -1,10 +1,12 @@
 ﻿extern alias SemanticConventions;
 
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using Conventions = SemanticConventions::OpenTelemetry.Trace.TraceSemanticConventions;
+
 namespace KafkaFlow.OpenTelemetry
 {
-    using System.Diagnostics;
-    using Conventions = SemanticConventions::OpenTelemetry.Trace.TraceSemanticConventions;
-
     internal static class ActivitySourceAccessor
     {
         internal const string ActivityString = "otel_activity";
@@ -13,9 +15,9 @@ namespace KafkaFlow.OpenTelemetry
         internal const string AttributeMessagingKafkaMessageKey = "messaging.kafka.message.key";
         internal const string AttributeMessagingKafkaMessageOffset = "messaging.kafka.message.offset";
 
-        internal static readonly ActivitySource ActivitySource = new(KafkaFlowInstrumentation.ActivitySourceName, KafkaFlowInstrumentation.Version);
+        internal static readonly ActivitySource s_activitySource = new(KafkaFlowInstrumentation.ActivitySourceName, KafkaFlowInstrumentation.Version);
 
-        internal static void SetGenericTags(Activity activity)
+        internal static void SetGenericTags(Activity activity, IEnumerable<string> bootstrapServers)
         {
             activity?.SetTag(Conventions.AttributeMessagingSystem, MessagingSystemId);
             activity?.SetTag(Conventions.AttributePeerService, string.Join(",", bootstrapServers ?? Enumerable.Empty<string>()));

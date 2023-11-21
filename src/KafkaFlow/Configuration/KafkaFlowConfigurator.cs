@@ -1,16 +1,16 @@
+using System;
+using KafkaFlow.Clusters;
+using KafkaFlow.Consumers;
+using KafkaFlow.Producers;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-    using KafkaFlow.Clusters;
-    using KafkaFlow.Consumers;
-    using KafkaFlow.Producers;
-
     /// <summary>
     /// A class to configure KafkaFlow
     /// </summary>
     public class KafkaFlowConfigurator
     {
-        private readonly KafkaConfiguration configuration;
+        private readonly KafkaConfiguration _configuration;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KafkaFlowConfigurator"/> class.
@@ -25,7 +25,7 @@ namespace KafkaFlow.Configuration
 
             kafka(builder);
 
-            this.configuration = builder.Build();
+            _configuration = builder.Build();
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace KafkaFlow.Configuration
 
             return new KafkaBus(
                 scope.Resolver,
-                this.configuration,
+                _configuration,
                 scope.Resolver.Resolve<IConsumerManagerFactory>(),
                 scope.Resolver.Resolve<IConsumerAccessor>(),
                 scope.Resolver.Resolve<IProducerAccessor>(),

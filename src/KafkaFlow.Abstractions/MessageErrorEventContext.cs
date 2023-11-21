@@ -1,7 +1,7 @@
-﻿namespace KafkaFlow
-{
-    using System;
+﻿using System;
 
+namespace KafkaFlow
+{
     /// <summary>
     /// Represents the errors in message context used in the events
     /// </summary>

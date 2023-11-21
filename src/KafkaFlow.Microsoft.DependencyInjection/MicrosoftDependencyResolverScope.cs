@@ -1,14 +1,14 @@
+using global::Microsoft.Extensions.DependencyInjection;
+
 namespace KafkaFlow
 {
-    using global::Microsoft.Extensions.DependencyInjection;
-
     internal class MicrosoftDependencyResolverScope : IDependencyResolverScope
     {
-        private readonly IServiceScope scope;
+        private readonly IServiceScope _scope;
 
         public MicrosoftDependencyResolverScope(IServiceScope scope)
         {
-            this.scope = scope;
+            _scope = scope;
             this.Resolver = new MicrosoftDependencyResolver(scope.ServiceProvider);
         }
 
@@ -16,7 +16,7 @@ namespace KafkaFlow
 
         public void Dispose()
         {
-            this.scope.Dispose();
+            _scope.Dispose();
         }
     }
 }

@@ -1,7 +1,7 @@
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Consumers
 {
-    using System.Threading.Tasks;
-
     internal class NullOffsetManager : IOffsetManager
     {
         public void Enqueue(IConsumerContext context)

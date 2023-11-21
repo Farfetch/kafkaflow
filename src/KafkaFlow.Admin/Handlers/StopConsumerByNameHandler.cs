@@ -1,19 +1,18 @@
+using System.Threading.Tasks;
+using KafkaFlow.Admin.Messages;
+using KafkaFlow.Consumers;
+
 namespace KafkaFlow.Admin.Handlers
 {
-    using System.Threading.Tasks;
-    using KafkaFlow.Admin.Messages;
-    using KafkaFlow.Consumers;
-    using KafkaFlow.Middlewares.TypedHandler;
-
     internal class StopConsumerByNameHandler : IMessageHandler<StopConsumerByName>
     {
-        private readonly IConsumerAccessor consumerAccessor;
+        private readonly IConsumerAccessor _consumerAccessor;
 
-        public StopConsumerByNameHandler(IConsumerAccessor consumerAccessor) => this.consumerAccessor = consumerAccessor;
+        public StopConsumerByNameHandler(IConsumerAccessor consumerAccessor) => _consumerAccessor = consumerAccessor;
 
         public async Task Handle(IMessageContext context, StopConsumerByName message)
         {
-            var consumer = this.consumerAccessor[message.ConsumerName];
+            var consumer = _consumerAccessor[message.ConsumerName];
 
             await consumer.StopAsync();
         }

@@ -1,28 +1,28 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Confluent.Kafka;
+
 namespace KafkaFlow.Consumers
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-
     internal class OffsetManager : IOffsetManager
     {
-        private readonly IOffsetCommitter committer;
-        private readonly Dictionary<(string, int), PartitionOffsets> partitionsOffsets;
+        private readonly IOffsetCommitter _committer;
+        private readonly Dictionary<(string, int), PartitionOffsets> _partitionsOffsets;
 
         public OffsetManager(
             IOffsetCommitter committer,
             IEnumerable<TopicPartition> partitions)
         {
-            this.committer = committer;
-            this.partitionsOffsets = partitions.ToDictionary(
+            _committer = committer;
+            _partitionsOffsets = partitions.ToDictionary(
                 partition => (partition.Topic, partition.Partition.Value),
                 _ => new PartitionOffsets());
         }
 
         public void MarkAsProcessed(IConsumerContext context)
         {
-            if (!this.partitionsOffsets.TryGetValue((context.Topic, context.Partition), out var offsets))
+            if (!_partitionsOffsets.TryGetValue((context.Topic, context.Partition), out var offsets))
             {
                 return;
             }
@@ -31,14 +31,14 @@ namespace KafkaFlow.Consumers
             {
                 if (offsets.TryDequeue(context))
                 {
-                    this.committer.MarkAsProcessed(offsets.DequeuedContext.TopicPartitionOffset);
+                    _committer.MarkAsProcessed(offsets.DequeuedContext.TopicPartitionOffset);
                 }
             }
         }
 
         public void Enqueue(IConsumerContext context)
         {
-            if (this.partitionsOffsets.TryGetValue(
+            if (_partitionsOffsets.TryGetValue(
                     (context.Topic, context.Partition),
                     out var offsets))
             {
@@ -48,7 +48,7 @@ namespace KafkaFlow.Consumers
 
         public Task WaitContextsCompletionAsync() =>
             Task.WhenAll(
-                this.partitionsOffsets
+                _partitionsOffsets
                     .Select(x => x.Value.WaitContextsCompletionAsync())
                     .ToList());
     }

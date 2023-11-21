@@ -1,9 +1,9 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using KafkaFlow.Configuration;
+
 namespace KafkaFlow.Clusters
 {
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using KafkaFlow.Configuration;
-
     /// <summary>
     /// Provides access to Cluster administration
     /// </summary>

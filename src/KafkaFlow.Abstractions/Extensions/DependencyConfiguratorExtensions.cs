@@ -1,7 +1,7 @@
+using System;
+
 namespace KafkaFlow
 {
-    using System;
-
     /// <summary>
     /// Provides extension methods over <see cref="IDependencyConfigurator"/>
     /// </summary>

@@ -1,14 +1,14 @@
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Middlewares.ConsumerThrottling
 {
-    using System.Threading.Tasks;
-
     internal class ConsumerThrottlingThreshold : IConsumerThrottlingThreshold
     {
-        private readonly IConsumerThrottlingAction action;
+        private readonly IConsumerThrottlingAction _action;
 
         public ConsumerThrottlingThreshold(long thresholdValue, IConsumerThrottlingAction action)
         {
-            this.action = action;
+            _action = action;
             this.ThresholdValue = thresholdValue;
         }
 
@@ -21,7 +21,7 @@ namespace KafkaFlow.Middlewares.ConsumerThrottling
                 return false;
             }
 
-            await this.action.ExecuteAsync();
+            await _action.ExecuteAsync();
 
             return true;
         }

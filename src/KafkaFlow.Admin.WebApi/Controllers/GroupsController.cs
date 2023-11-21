@@ -1,13 +1,13 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using KafkaFlow.Admin.WebApi.Adapters;
+using KafkaFlow.Admin.WebApi.Contracts;
+using KafkaFlow.Consumers;
+using Microsoft.AspNetCore.Mvc;
+
 namespace KafkaFlow.Admin.WebApi.Controllers
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using KafkaFlow.Admin.WebApi.Adapters;
-    using KafkaFlow.Admin.WebApi.Contracts;
-    using KafkaFlow.Consumers;
-    using Microsoft.AspNetCore.Mvc;
-
     /// <summary>
     /// Groups controller
     /// </summary>
@@ -15,8 +15,8 @@ namespace KafkaFlow.Admin.WebApi.Controllers
     [ApiController]
     public class GroupsController : ControllerBase
     {
-        private readonly IConsumerAccessor consumers;
-        private readonly IConsumerAdmin consumerAdmin;
+        private readonly IConsumerAccessor _consumers;
+        private readonly IConsumerAdmin _consumerAdmin;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupsController"/> class.
@@ -25,8 +25,8 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="consumerAdmin">The admin messages consumer</param>
         public GroupsController(IConsumerAccessor consumers, IConsumerAdmin consumerAdmin)
         {
-            this.consumers = consumers;
-            this.consumerAdmin = consumerAdmin;
+            _consumers = consumers;
+            _consumerAdmin = consumerAdmin;
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             return this.Ok(
                 new GroupsResponse
                 {
-                    Groups = this.consumers.All
+                    Groups = _consumers.All
                         .GroupBy(x => x.GroupId)
                         .Select(
                             x => new GroupResponse
@@ -64,7 +64,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             [FromRoute] string groupId,
             [FromQuery] IList<string> topics)
         {
-            await this.consumerAdmin.PauseConsumerGroupAsync(groupId, topics);
+            await _consumerAdmin.PauseConsumerGroupAsync(groupId, topics);
 
             return this.Accepted();
         }
@@ -82,7 +82,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             [FromRoute] string groupId,
             [FromQuery] IList<string> topics)
         {
-            await this.consumerAdmin.ResumeConsumerGroupAsync(groupId, topics);
+            await _consumerAdmin.ResumeConsumerGroupAsync(groupId, topics);
 
             return this.Accepted();
         }

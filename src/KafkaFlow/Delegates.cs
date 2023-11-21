@@ -1,8 +1,8 @@
+using Confluent.Kafka;
+using KafkaFlow.Consumers;
+
 namespace KafkaFlow
 {
-    using Confluent.Kafka;
-    using KafkaFlow.Consumers;
-
     /// <summary>
     /// A factory to decorates the consumer created by KafkaFlow
     /// </summary>

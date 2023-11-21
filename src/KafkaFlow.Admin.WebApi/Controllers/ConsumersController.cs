@@ -1,13 +1,13 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using KafkaFlow.Admin.WebApi.Adapters;
+using KafkaFlow.Admin.WebApi.Contracts;
+using KafkaFlow.Consumers;
+using Microsoft.AspNetCore.Mvc;
+
 namespace KafkaFlow.Admin.WebApi.Controllers
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using KafkaFlow.Admin.WebApi.Adapters;
-    using KafkaFlow.Admin.WebApi.Contracts;
-    using KafkaFlow.Consumers;
-    using Microsoft.AspNetCore.Mvc;
-
     /// <summary>
     /// Consumers controller
     /// </summary>
@@ -15,8 +15,8 @@ namespace KafkaFlow.Admin.WebApi.Controllers
     [ApiController]
     public class ConsumersController : ControllerBase
     {
-        private readonly IConsumerAccessor consumers;
-        private readonly IConsumerAdmin consumerAdmin;
+        private readonly IConsumerAccessor _consumers;
+        private readonly IConsumerAdmin _consumerAdmin;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsumersController"/> class.
@@ -25,8 +25,8 @@ namespace KafkaFlow.Admin.WebApi.Controllers
         /// <param name="consumerAdmin">The admin messages consumer</param>
         public ConsumersController(IConsumerAccessor consumers, IConsumerAdmin consumerAdmin)
         {
-            this.consumers = consumers;
-            this.consumerAdmin = consumerAdmin;
+            _consumers = consumers;
+            _consumerAdmin = consumerAdmin;
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             return this.Ok(
                 new ConsumersResponse
                 {
-                    Consumers = this.consumers
+                    Consumers = _consumers
                         .All
                         .Where(x => x.GroupId == groupId)
                         .Select(x => x.Adapt()),
@@ -62,7 +62,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             [FromRoute] string groupId,
             [FromRoute] string consumerName)
         {
-            var consumer = this.consumers.All
+            var consumer = _consumers.All
                 .FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
 
             if (consumer is null)
@@ -89,7 +89,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             [FromRoute] string consumerName,
             [FromQuery] IList<string> topics)
         {
-            var consumer = this.consumers.All
+            var consumer = _consumers.All
                 .FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
 
             if (consumer is null)
@@ -97,7 +97,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            await this.consumerAdmin.PauseConsumerAsync(consumerName, topics);
+            await _consumerAdmin.PauseConsumerAsync(consumerName, topics);
 
             return this.Accepted();
         }
@@ -118,7 +118,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             [FromRoute] string consumerName,
             [FromQuery] IList<string> topics)
         {
-            var consumer = this.consumers.All
+            var consumer = _consumers.All
                 .FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
 
             if (consumer is null)
@@ -126,7 +126,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            await this.consumerAdmin.ResumeConsumerAsync(consumerName, topics);
+            await _consumerAdmin.ResumeConsumerAsync(consumerName, topics);
 
             return this.Accepted();
         }
@@ -145,14 +145,14 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             [FromRoute] string groupId,
             [FromRoute] string consumerName)
         {
-            var consumer = this.consumers.All.FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
+            var consumer = _consumers.All.FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
 
             if (consumer is null)
             {
                 return this.NotFound();
             }
 
-            await this.consumerAdmin.StartConsumerAsync(consumerName);
+            await _consumerAdmin.StartConsumerAsync(consumerName);
 
             return this.Accepted();
         }
@@ -171,14 +171,14 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             [FromRoute] string groupId,
             [FromRoute] string consumerName)
         {
-            var consumer = this.consumers.All.FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
+            var consumer = _consumers.All.FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
 
             if (consumer is null)
             {
                 return this.NotFound();
             }
 
-            await this.consumerAdmin.StopConsumerAsync(consumerName);
+            await _consumerAdmin.StopConsumerAsync(consumerName);
 
             return this.Accepted();
         }
@@ -197,7 +197,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
             [FromRoute] string groupId,
             [FromRoute] string consumerName)
         {
-            var consumer = this.consumers.All
+            var consumer = _consumers.All
                 .FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
 
             if (consumer is null)
@@ -205,7 +205,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            await this.consumerAdmin.RestartConsumerAsync(consumerName);
+            await _consumerAdmin.RestartConsumerAsync(consumerName);
 
             return this.Accepted();
         }
@@ -234,7 +234,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.BadRequest();
             }
 
-            var consumer = this.consumers.All
+            var consumer = _consumers.All
                 .FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
 
             if (consumer is null)
@@ -242,7 +242,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            await this.consumerAdmin.ResetOffsetsAsync(consumerName, topics);
+            await _consumerAdmin.ResetOffsetsAsync(consumerName, topics);
 
             return this.Accepted();
         }
@@ -271,7 +271,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.BadRequest();
             }
 
-            var consumer = this.consumers.All
+            var consumer = _consumers.All
                 .FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
 
             if (consumer is null)
@@ -279,7 +279,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            await this.consumerAdmin.RewindOffsetsAsync(consumerName, request.Date, topics);
+            await _consumerAdmin.RewindOffsetsAsync(consumerName, request.Date, topics);
 
             return this.Accepted();
         }
@@ -306,7 +306,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.BadRequest();
             }
 
-            var consumer = this.consumers.All
+            var consumer = _consumers.All
                 .FirstOrDefault(x => x.GroupId == groupId && x.ConsumerName == consumerName);
 
             if (consumer is null)
@@ -314,7 +314,7 @@ namespace KafkaFlow.Admin.WebApi.Controllers
                 return this.NotFound();
             }
 
-            await this.consumerAdmin.ChangeWorkersCountAsync(consumerName, request.WorkersCount);
+            await _consumerAdmin.ChangeWorkersCountAsync(consumerName, request.WorkersCount);
 
             return this.Accepted();
         }

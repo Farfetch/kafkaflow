@@ -1,7 +1,7 @@
+using System.Collections.Generic;
+
 namespace KafkaFlow.Clusters
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// Provides access to the configured cluster manager
     /// </summary>

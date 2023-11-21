@@ -1,8 +1,8 @@
-namespace KafkaFlow.Consumers.DistributionStrategies;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
+namespace KafkaFlow.Consumers.DistributionStrategies;
 
 /// <summary>
 /// This strategy sums all bytes in the partition key and apply a mod operator with the total number of workers, the resulting number is the worker ID to be chosen
@@ -11,20 +11,20 @@ using System.Threading.Tasks;
 /// </summary>
 public class BytesSumDistributionStrategy : IWorkerDistributionStrategy
 {
-    private IReadOnlyList<IWorker> workers;
+    private IReadOnlyList<IWorker> _workers;
 
     /// <inheritdoc />
     public void Initialize(IReadOnlyList<IWorker> workers)
     {
-        this.workers = workers;
+        _workers = workers;
     }
 
     /// <inheritdoc />
     public ValueTask<IWorker> GetWorkerAsync(WorkerDistributionContext context)
     {
-        if (context.RawMessageKey is null || this.workers.Count == 1)
+        if (context.RawMessageKey is null || _workers.Count == 1)
         {
-            return new ValueTask<IWorker>(this.workers[0]);
+            return new ValueTask<IWorker>(_workers[0]);
         }
 
         var bytesSum = 0;
@@ -37,6 +37,6 @@ public class BytesSumDistributionStrategy : IWorkerDistributionStrategy
         return new ValueTask<IWorker>(
             context.ConsumerStoppedCancellationToken.IsCancellationRequested
                 ? null
-                : this.workers.ElementAtOrDefault(bytesSum % this.workers.Count));
+                : _workers.ElementAtOrDefault(bytesSum % _workers.Count));
     }
 }

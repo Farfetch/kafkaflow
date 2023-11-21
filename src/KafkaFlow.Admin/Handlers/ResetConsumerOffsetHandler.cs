@@ -1,23 +1,22 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Confluent.Kafka;
+using KafkaFlow.Admin.Extensions;
+using KafkaFlow.Admin.Messages;
+using KafkaFlow.Consumers;
+
 namespace KafkaFlow.Admin.Handlers
 {
-    using System;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-    using KafkaFlow.Admin.Extensions;
-    using KafkaFlow.Admin.Messages;
-    using KafkaFlow.Consumers;
-    using KafkaFlow.Middlewares.TypedHandler;
-
     internal class ResetConsumerOffsetHandler : IMessageHandler<ResetConsumerOffset>
     {
-        private readonly IConsumerAccessor consumerAccessor;
+        private readonly IConsumerAccessor _consumerAccessor;
 
-        public ResetConsumerOffsetHandler(IConsumerAccessor consumerAccessor) => this.consumerAccessor = consumerAccessor;
+        public ResetConsumerOffsetHandler(IConsumerAccessor consumerAccessor) => _consumerAccessor = consumerAccessor;
 
         public Task Handle(IMessageContext context, ResetConsumerOffset message)
         {
-            var consumer = this.consumerAccessor[message.ConsumerName];
+            var consumer = _consumerAccessor[message.ConsumerName];
 
             if (consumer is null)
             {

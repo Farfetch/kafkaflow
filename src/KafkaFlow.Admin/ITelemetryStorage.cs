@@ -1,8 +1,8 @@
+using System.Collections.Generic;
+using KafkaFlow.Admin.Messages;
+
 namespace KafkaFlow.Admin
 {
-    using System.Collections.Generic;
-    using KafkaFlow.Admin.Messages;
-
     /// <summary>
     /// Used to implement a telemetry data storage provider
     /// </summary>

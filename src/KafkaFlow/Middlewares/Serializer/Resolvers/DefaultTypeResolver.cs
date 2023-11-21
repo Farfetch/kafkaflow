@@ -1,8 +1,8 @@
+using System;
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Middlewares.Serializer.Resolvers
 {
-    using System;
-    using System.Threading.Tasks;
-
     internal class DefaultTypeResolver : IMessageTypeResolver
     {
         private const string MessageType = "Message-Type";
@@ -12,7 +12,7 @@ namespace KafkaFlow.Middlewares.Serializer.Resolvers
             var typeName = context.Headers.GetString(MessageType);
 
             return typeName is null ?
-                new ValueTask<Type>((Type) null) :
+                new ValueTask<Type>((Type)null) :
                 new ValueTask<Type>(Type.GetType(typeName));
         }
 

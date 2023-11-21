@@ -1,7 +1,7 @@
+using System.Collections.Generic;
+
 namespace KafkaFlow.Admin.WebApi.Contracts
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// The response of the consumer groups
     /// </summary>

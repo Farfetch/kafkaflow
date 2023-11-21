@@ -1,8 +1,8 @@
-﻿namespace KafkaFlow
-{
-    using System;
-    using System.Text.Json;
+﻿using System;
+using System.Text.Json;
 
+namespace KafkaFlow
+{
     internal class ConsoleLogHandler : ILogHandler
     {
         public void Error(string message, Exception ex, object data)

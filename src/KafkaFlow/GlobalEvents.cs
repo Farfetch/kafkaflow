@@ -1,56 +1,55 @@
-﻿namespace KafkaFlow
-{
-    using System.Threading.Tasks;
-    using KafkaFlow.Configuration;
+﻿using System.Threading.Tasks;
+using KafkaFlow.Configuration;
 
+namespace KafkaFlow
+{
     internal class GlobalEvents : IGlobalEvents
     {
-        private readonly Event<MessageEventContext> messageConsumeCompleted;
-        private readonly Event<MessageErrorEventContext> messageConsumeError;
-        private readonly Event<MessageEventContext> messageConsumeStarted;
-        private readonly Event<MessageEventContext> messageProduceCompleted;
-        private readonly Event<MessageErrorEventContext> messageProduceError;
-        private readonly Event<MessageEventContext> messageProduceStarted;
+        private readonly Event<MessageEventContext> _messageConsumeCompleted;
+        private readonly Event<MessageErrorEventContext> _messageConsumeError;
+        private readonly Event<MessageEventContext> _messageConsumeStarted;
+        private readonly Event<MessageEventContext> _messageProduceCompleted;
+        private readonly Event<MessageErrorEventContext> _messageProduceError;
+        private readonly Event<MessageEventContext> _messageProduceStarted;
 
         public GlobalEvents(ILogHandler log)
         {
-            this.messageConsumeCompleted = new(log);
-            this.messageConsumeError = new(log);
-            this.messageConsumeStarted = new(log);
-            this.messageProduceCompleted = new(log);
-            this.messageProduceError = new(log);
-            this.messageProduceStarted = new(log);
+            _messageConsumeCompleted = new(log);
+            _messageConsumeError = new(log);
+            _messageConsumeStarted = new(log);
+            _messageProduceCompleted = new(log);
+            _messageProduceError = new(log);
+            _messageProduceStarted = new(log);
         }
 
-        public IEvent<MessageEventContext> MessageConsumeCompleted => this.messageConsumeCompleted;
+        public IEvent<MessageEventContext> MessageConsumeCompleted => _messageConsumeCompleted;
 
-        public IEvent<MessageErrorEventContext> MessageConsumeError => this.messageConsumeError;
+        public IEvent<MessageErrorEventContext> MessageConsumeError => _messageConsumeError;
 
-        public IEvent<MessageEventContext> MessageConsumeStarted => this.messageConsumeStarted;
+        public IEvent<MessageEventContext> MessageConsumeStarted => _messageConsumeStarted;
 
-        public IEvent<MessageEventContext> MessageProduceCompleted => this.messageProduceCompleted;
+        public IEvent<MessageEventContext> MessageProduceCompleted => _messageProduceCompleted;
 
-        public IEvent<MessageErrorEventContext> MessageProduceError => this.messageProduceError;
+        public IEvent<MessageErrorEventContext> MessageProduceError => _messageProduceError;
 
-        public IEvent<MessageEventContext> MessageProduceStarted => this.messageProduceStarted;
+        public IEvent<MessageEventContext> MessageProduceStarted => _messageProduceStarted;
 
         public Task FireMessageConsumeStartedAsync(MessageEventContext context)
-            => this.messageConsumeStarted.FireAsync(context);
+            => _messageConsumeStarted.FireAsync(context);
 
         public Task FireMessageConsumeErrorAsync(MessageErrorEventContext context)
-            => this.messageConsumeError.FireAsync(context);
+            => _messageConsumeError.FireAsync(context);
 
         public Task FireMessageConsumeCompletedAsync(MessageEventContext context)
-            => this.messageConsumeCompleted.FireAsync(context);
+            => _messageConsumeCompleted.FireAsync(context);
 
         public Task FireMessageProduceStartedAsync(MessageEventContext context)
-            => this.messageProduceStarted.FireAsync(context);
+            => _messageProduceStarted.FireAsync(context);
 
         public Task FireMessageProduceErrorAsync(MessageErrorEventContext context)
-           => this.messageProduceError.FireAsync(context);
+           => _messageProduceError.FireAsync(context);
 
         public Task FireMessageProduceCompletedAsync(MessageEventContext context)
-            => this.messageProduceCompleted.FireAsync(context);
-
+            => _messageProduceCompleted.FireAsync(context);
     }
 }

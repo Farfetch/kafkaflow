@@ -1,17 +1,17 @@
-﻿namespace KafkaFlow.Middlewares.Serializer
-{
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
-    using KafkaFlow.Middlewares.Serializer.Resolvers;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using KafkaFlow.Middlewares.Serializer.Resolvers;
 
+namespace KafkaFlow.Middlewares.Serializer
+{
     /// <summary>
     /// Middleware to deserialize messages when consuming
     /// </summary>
     public class DeserializerConsumerMiddleware : IMessageMiddleware
     {
-        private readonly IDeserializer deserializer;
-        private readonly IMessageTypeResolver typeResolver;
+        private readonly IDeserializer _deserializer;
+        private readonly IMessageTypeResolver _typeResolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeserializerConsumerMiddleware"/> class.
@@ -22,8 +22,8 @@
             IDeserializer deserializer,
             IMessageTypeResolver typeResolver)
         {
-            this.deserializer = deserializer;
-            this.typeResolver = typeResolver;
+            _deserializer = deserializer;
+            _typeResolver = typeResolver;
         }
 
         /// <summary>
@@ -53,7 +53,7 @@
                 return;
             }
 
-            var messageType = await this.typeResolver.OnConsumeAsync(context);
+            var messageType = await _typeResolver.OnConsumeAsync(context);
 
             if (messageType is null)
             {
@@ -62,7 +62,7 @@
 
             using var stream = new MemoryStream(rawData);
 
-            var data = await this.deserializer
+            var data = await _deserializer
                 .DeserializeAsync(
                     stream,
                     messageType,

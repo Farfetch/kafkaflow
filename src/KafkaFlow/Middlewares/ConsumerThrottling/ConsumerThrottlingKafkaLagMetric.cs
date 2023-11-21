@@ -1,17 +1,17 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using KafkaFlow.Consumers;
+
 namespace KafkaFlow.Middlewares.ConsumerThrottling
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using KafkaFlow.Consumers;
-
     internal class ConsumerThrottlingKafkaLagMetric : IConsumerThrottlingMetric
     {
-        private readonly IReadOnlyList<IMessageConsumer> consumers;
+        private readonly IReadOnlyList<IMessageConsumer> _consumers;
 
         public ConsumerThrottlingKafkaLagMetric(IConsumerAccessor consumerAccessor, IEnumerable<string> consumersNames)
         {
-            this.consumers = consumerAccessor.All
+            _consumers = consumerAccessor.All
                 .Where(consumer => consumersNames.Contains(consumer.ConsumerName))
                 .ToList()
                 .AsReadOnly();
@@ -19,7 +19,7 @@ namespace KafkaFlow.Middlewares.ConsumerThrottling
 
         public Task<long> GetValueAsync()
         {
-            var lag = this.consumers
+            var lag = _consumers
                 .SelectMany(x => x.GetTopicPartitionsLag())
                 .Select(x => x.Lag)
                 .Sum();

@@ -1,7 +1,7 @@
+using System.Collections.Generic;
+
 namespace KafkaFlow.Producers
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// Provides access to the configured producers
     /// </summary>

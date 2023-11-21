@@ -1,10 +1,10 @@
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Confluent.Kafka;
+
 namespace KafkaFlow.Consumers
 {
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-
     internal interface IConsumerWorkerPool
     {
         int CurrentWorkersCount { get; }

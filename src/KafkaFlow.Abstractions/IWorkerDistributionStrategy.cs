@@ -1,7 +1,7 @@
-namespace KafkaFlow;
-
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
+namespace KafkaFlow;
 
 /// <summary>
 /// An interface used to create a distribution strategy

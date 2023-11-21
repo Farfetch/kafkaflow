@@ -1,9 +1,8 @@
-﻿namespace KafkaFlow.Serializer
-{
-    using System.IO;
-    using System.Threading.Tasks;
-    using ProtoBuf;
+﻿using System.IO;
+using System.Threading.Tasks;
 
+namespace KafkaFlow.Serializer
+{
     /// <summary>
     /// A message serializer using protobuf-net library
     /// </summary>
@@ -12,7 +11,7 @@
         /// <inheritdoc/>
         public Task SerializeAsync(object message, Stream output, ISerializerContext context)
         {
-            Serializer.Serialize(output, message);
+            ProtoBuf.Serializer.Serialize(output, message);
 
             return Task.CompletedTask;
         }

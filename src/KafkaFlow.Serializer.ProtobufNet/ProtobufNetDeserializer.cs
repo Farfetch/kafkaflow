@@ -1,10 +1,9 @@
-﻿namespace KafkaFlow.Serializer
-{
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
-    using ProtoBuf;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
 
+namespace KafkaFlow.Serializer
+{
     /// <summary>
     /// A message deserializer using protobuf-net library
     /// </summary>
@@ -13,7 +12,7 @@
         /// <inheritdoc/>
         public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
         {
-            return Task.FromResult(Serializer.Deserialize(type, input));
+            return Task.FromResult(ProtoBuf.Serializer.Deserialize(type, input));
         }
     }
 }

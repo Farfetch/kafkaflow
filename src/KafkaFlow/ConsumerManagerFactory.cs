@@ -1,8 +1,8 @@
+using KafkaFlow.Configuration;
+using KafkaFlow.Consumers;
+
 namespace KafkaFlow
 {
-    using KafkaFlow.Configuration;
-    using KafkaFlow.Consumers;
-
     internal class ConsumerManagerFactory : IConsumerManagerFactory
     {
         public IConsumerManager Create(IConsumerConfiguration configuration, IDependencyResolver consumerDependencyResolver)

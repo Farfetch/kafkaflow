@@ -1,17 +1,16 @@
-﻿namespace KafkaFlow.Unity
-{
-    using System;
-    using System.Linq;
-    using global::Unity;
-    using global::Unity.Lifetime;
-    using InstanceLifetime = KafkaFlow.InstanceLifetime;
+﻿using System;
+using System.Linq;
+using global::Unity;
+using global::Unity.Lifetime;
 
+namespace KafkaFlow.Unity
+{
     /// <summary>
     /// The Unity implementation of <see cref="IDependencyConfigurator"/>
     /// </summary>
     public class UnityDependencyConfigurator : IDependencyConfigurator
     {
-        private readonly IUnityContainer container;
+        private readonly IUnityContainer _container;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UnityDependencyConfigurator"/> class.
@@ -19,7 +18,7 @@
         /// <param name="container">The Unity container instance</param>
         public UnityDependencyConfigurator(IUnityContainer container)
         {
-            this.container = container;
+            _container = container;
         }
 
         /// <inheritdoc />
@@ -28,7 +27,7 @@
             Type implementationType,
             InstanceLifetime lifetime)
         {
-            this.container.RegisterType(
+            _container.RegisterType(
                 serviceType,
                 implementationType,
                 (ITypeLifetimeManager)ParseLifetime(lifetime));
@@ -40,7 +39,7 @@
             where TService : class
             where TImplementation : class, TService
         {
-            this.container.RegisterType<TService, TImplementation>((ITypeLifetimeManager)ParseLifetime(lifetime));
+            _container.RegisterType<TService, TImplementation>((ITypeLifetimeManager)ParseLifetime(lifetime));
             return this;
         }
 
@@ -48,7 +47,7 @@
         public IDependencyConfigurator Add<TService>(InstanceLifetime lifetime)
             where TService : class
         {
-            this.container.RegisterType<TService>((ITypeLifetimeManager)ParseLifetime(lifetime));
+            _container.RegisterType<TService>((ITypeLifetimeManager)ParseLifetime(lifetime));
             return this;
         }
 
@@ -56,7 +55,7 @@
         public IDependencyConfigurator Add<TImplementation>(TImplementation service)
             where TImplementation : class
         {
-            this.container.RegisterInstance(service);
+            _container.RegisterInstance(service);
             return this;
         }
 
@@ -73,18 +72,13 @@
                 name = Guid.NewGuid().ToString();
             }
 
-            this.container.RegisterFactory(
+            _container.RegisterFactory(
                 serviceType,
                 name,
                 c => factory(new UnityDependencyResolver(c)),
                 (IFactoryLifetimeManager)ParseLifetime(lifetime));
 
             return this;
-        }
-
-        private bool AlreadyRegistered(Type registeredType)
-        {
-            return this.container.Registrations.Any(x => x.RegisteredType == registeredType);
         }
 
         private static object ParseLifetime(InstanceLifetime lifetime) =>
@@ -95,5 +89,10 @@
                 InstanceLifetime.Transient => new TransientLifetimeManager(),
                 _ => throw new InvalidCastException($"There is not mapping defined to {lifetime}")
             };
+
+        private bool AlreadyRegistered(Type registeredType)
+        {
+            return _container.Registrations.Any(x => x.RegisteredType == registeredType);
+        }
     }
 }

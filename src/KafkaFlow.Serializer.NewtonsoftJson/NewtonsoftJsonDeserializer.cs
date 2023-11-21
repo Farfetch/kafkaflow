@@ -1,11 +1,11 @@
-﻿namespace KafkaFlow.Serializer
-{
-    using System;
-    using System.IO;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Newtonsoft.Json;
+﻿using System;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 
+namespace KafkaFlow.Serializer
+{
     /// <summary>
     /// A message deserializer using NewtonsoftJson library
     /// </summary>
@@ -13,8 +13,9 @@
     {
         private const int DefaultBufferSize = 1024;
 
-        private static readonly UTF8Encoding UTF8NoBom = new (false);
-        private readonly JsonSerializerSettings settings;
+        private static readonly UTF8Encoding s_uTF8NoBom = new(false);
+
+        private readonly JsonSerializerSettings _settings;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NewtonsoftJsonDeserializer"/> class.
@@ -22,7 +23,7 @@
         /// <param name="settings">Json serializer settings</param>
         public NewtonsoftJsonDeserializer(JsonSerializerSettings settings)
         {
-            this.settings = settings;
+            _settings = settings;
         }
 
         /// <summary>
@@ -38,12 +39,12 @@
         {
             using var sr = new StreamReader(
                 input,
-                UTF8NoBom,
+                s_uTF8NoBom,
                 true,
                 DefaultBufferSize,
                 true);
 
-            var serializer = JsonSerializer.CreateDefault(this.settings);
+            var serializer = JsonSerializer.CreateDefault(_settings);
 
             return Task.FromResult(serializer.Deserialize(sr, type));
         }

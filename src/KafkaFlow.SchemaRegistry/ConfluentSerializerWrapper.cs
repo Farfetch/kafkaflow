@@ -1,17 +1,17 @@
+using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Threading.Tasks;
+using Confluent.Kafka;
+
 namespace KafkaFlow
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.IO;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-
     /// <summary>
     /// A wrapper to call the typed Confluent serializers and deserializers
     /// </summary>
     public abstract class ConfluentSerializerWrapper
     {
-        private static readonly ConcurrentDictionary<Type, ConfluentSerializerWrapper> Serializers = new();
+        private static readonly ConcurrentDictionary<Type, ConfluentSerializerWrapper> s_serializers = new();
 
         /// <summary>
         /// Get the serializer based on the target message type
@@ -23,9 +23,9 @@ namespace KafkaFlow
             Type messageType,
             Func<object> serializerFactory)
         {
-            return Serializers.SafeGetOrAdd(
+            return s_serializers.SafeGetOrAdd(
                 messageType,
-                _ => (ConfluentSerializerWrapper) Activator.CreateInstance(
+                _ => (ConfluentSerializerWrapper)Activator.CreateInstance(
                     typeof(InnerConfluentSerializerWrapper<>).MakeGenericType(messageType),
                     serializerFactory));
         }
@@ -41,17 +41,17 @@ namespace KafkaFlow
 
         private class InnerConfluentSerializerWrapper<T> : ConfluentSerializerWrapper
         {
-            private readonly IAsyncSerializer<T> serializer;
+            private readonly IAsyncSerializer<T> _serializer;
 
             public InnerConfluentSerializerWrapper(Func<object> serializerFactory)
             {
-                this.serializer = (IAsyncSerializer<T>) serializerFactory();
+                _serializer = (IAsyncSerializer<T>)serializerFactory();
             }
 
             public override async Task SerializeAsync(object message, Stream output, ISerializerContext context)
             {
-                var data = await this.serializer
-                    .SerializeAsync((T) message, new SerializationContext(MessageComponentType.Value, context.Topic))
+                var data = await _serializer
+                    .SerializeAsync((T)message, new SerializationContext(MessageComponentType.Value, context.Topic))
                     .ConfigureAwait(false);
 
                 await output

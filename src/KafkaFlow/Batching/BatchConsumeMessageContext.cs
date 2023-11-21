@@ -1,11 +1,11 @@
+using System;
+using System.Collections.Generic;
+
 namespace KafkaFlow.Batching
 {
-    using System;
-    using System.Collections.Generic;
-
     internal class BatchConsumeMessageContext : IMessageContext, IDisposable
     {
-        private readonly IDependencyResolverScope batchDependencyScope;
+        private readonly IDependencyResolverScope _batchDependencyScope;
 
         public BatchConsumeMessageContext(
             IConsumerContext consumer,
@@ -14,7 +14,7 @@ namespace KafkaFlow.Batching
         {
             this.ConsumerContext = consumer;
             this.Message = new Message(null, batchMessage);
-            this.batchDependencyScope = consumer.WorkerDependencyResolver.CreateScope();
+            _batchDependencyScope = consumer.WorkerDependencyResolver.CreateScope();
             this.Items = new Dictionary<string, object>();
             this.Brokers = brokers;
         }
@@ -27,7 +27,7 @@ namespace KafkaFlow.Batching
 
         public IProducerContext ProducerContext => null;
 
-        public IDependencyResolver DependencyResolver => this.batchDependencyScope.Resolver;
+        public IDependencyResolver DependencyResolver => _batchDependencyScope.Resolver;
 
         public IDictionary<string, object> Items { get; }
 
@@ -36,6 +36,6 @@ namespace KafkaFlow.Batching
         public IMessageContext SetMessage(object key, object value) =>
             throw new NotSupportedException($"{nameof(BatchConsumeMessageContext)} does not allow to change the message");
 
-        public void Dispose() => this.batchDependencyScope.Dispose();
+        public void Dispose() => _batchDependencyScope.Dispose();
     }
 }

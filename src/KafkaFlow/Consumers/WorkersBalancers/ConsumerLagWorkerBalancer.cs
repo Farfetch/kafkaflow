@@ -1,12 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using KafkaFlow.Clusters;
+using KafkaFlow.Configuration;
+
 namespace KafkaFlow.Consumers.WorkersBalancers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using KafkaFlow.Clusters;
-    using KafkaFlow.Configuration;
-
     /// <summary>
     /// Represents a balancer that dynamically calculates the number of workers for a consumer based on the current lag.
     /// The calculation employs a simple rule of three considering the total lag across all application instances,
@@ -16,12 +16,12 @@ namespace KafkaFlow.Consumers.WorkersBalancers
     {
         private const int DefaultWorkersCount = 1;
 
-        private readonly IClusterManager clusterManager;
-        private readonly IConsumerAccessor consumerAccessor;
-        private readonly ILogHandler logHandler;
-        private readonly int totalConsumerWorkers;
-        private readonly int minInstanceWorkers;
-        private readonly int maxInstanceWorkers;
+        private readonly IClusterManager _clusterManager;
+        private readonly IConsumerAccessor _consumerAccessor;
+        private readonly ILogHandler _logHandler;
+        private readonly int _totalConsumerWorkers;
+        private readonly int _minInstanceWorkers;
+        private readonly int _maxInstanceWorkers;
 
         public ConsumerLagWorkerBalancer(
             IClusterManager clusterManager,
@@ -31,19 +31,19 @@ namespace KafkaFlow.Consumers.WorkersBalancers
             int minInstanceWorkers,
             int maxInstanceWorkers)
         {
-            this.clusterManager = clusterManager;
-            this.consumerAccessor = consumerAccessor;
-            this.logHandler = logHandler;
-            this.totalConsumerWorkers = totalConsumerWorkers;
-            this.minInstanceWorkers = minInstanceWorkers;
-            this.maxInstanceWorkers = maxInstanceWorkers;
+            _clusterManager = clusterManager;
+            _consumerAccessor = consumerAccessor;
+            _logHandler = logHandler;
+            _totalConsumerWorkers = totalConsumerWorkers;
+            _minInstanceWorkers = minInstanceWorkers;
+            _maxInstanceWorkers = maxInstanceWorkers;
         }
 
         public async Task<int> GetWorkersCountAsync(WorkersCountContext context)
         {
             var workers = await this.CalculateAsync(context);
 
-            this.logHandler.Info(
+            _logHandler.Info(
                 "New workers count calculated",
                 new
                 {
@@ -101,7 +101,7 @@ namespace KafkaFlow.Consumers.WorkersBalancers
 
                 var lastOffsets = this.GetPartitionsLastOffset(context.ConsumerName, topicsMetadata);
 
-                var partitionsOffset = await this.clusterManager.GetConsumerGroupOffsetsAsync(
+                var partitionsOffset = await _clusterManager.GetConsumerGroupOffsetsAsync(
                     context.ConsumerGroupId,
                     context.AssignedTopicsPartitions.Select(t => t.Name));
 
@@ -112,16 +112,16 @@ namespace KafkaFlow.Consumers.WorkersBalancers
 
                 var ratio = instanceLag / Math.Max(1, totalConsumerLag);
 
-                var workers = (int)Math.Round(this.totalConsumerWorkers * ratio);
+                var workers = (int)Math.Round(_totalConsumerWorkers * ratio);
 
-                workers = Math.Min(workers, this.maxInstanceWorkers);
-                workers = Math.Max(workers, this.minInstanceWorkers);
+                workers = Math.Min(workers, _maxInstanceWorkers);
+                workers = Math.Max(workers, _minInstanceWorkers);
 
                 return workers;
             }
             catch (Exception e)
             {
-                this.logHandler.Error(
+                _logHandler.Error(
                     "Error calculating new workers count, using 1 as fallback",
                     e,
                     new
@@ -137,7 +137,7 @@ namespace KafkaFlow.Consumers.WorkersBalancers
             string consumerName,
             IEnumerable<(string Name, TopicMetadata Metadata)> topicsMetadata)
         {
-            var consumer = this.consumerAccessor[consumerName];
+            var consumer = _consumerAccessor[consumerName];
 
             return topicsMetadata.SelectMany(
                 topic => topic.Metadata.Partitions.Select(
@@ -156,7 +156,7 @@ namespace KafkaFlow.Consumers.WorkersBalancers
 
             foreach (var topic in context.AssignedTopicsPartitions)
             {
-                topicsMetadata.Add((topic.Name, await this.clusterManager.GetTopicMetadataAsync(topic.Name)));
+                topicsMetadata.Add((topic.Name, await _clusterManager.GetTopicMetadataAsync(topic.Name)));
             }
 
             return topicsMetadata;
