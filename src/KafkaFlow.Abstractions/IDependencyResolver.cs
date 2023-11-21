@@ -1,8 +1,8 @@
+using System;
+using System.Collections.Generic;
+
 namespace KafkaFlow
 {
-    using System;
-    using System.Collections.Generic;
-
     /// <summary>
     /// Represents the interface of a dependency injection resolver
     /// </summary>

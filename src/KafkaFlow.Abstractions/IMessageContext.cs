@@ -1,7 +1,7 @@
+using System.Collections.Generic;
+
 namespace KafkaFlow
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// A context that contains the message and metadata
     /// </summary>

@@ -1,7 +1,7 @@
+using System;
+
 namespace KafkaFlow.Admin.WebApi.Contracts
 {
-    using System;
-
     /// <summary>
     /// The request to rewind offsets to a point in time
     /// </summary>

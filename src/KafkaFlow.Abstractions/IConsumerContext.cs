@@ -1,9 +1,9 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace KafkaFlow
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     /// <summary>
     /// Represents the message consumer
     /// </summary>

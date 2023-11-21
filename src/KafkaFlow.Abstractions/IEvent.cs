@@ -1,8 +1,8 @@
-﻿namespace KafkaFlow
-{
-    using System;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
+namespace KafkaFlow
+{
     /// <summary>
     /// Represents an Event to be subscribed.
     /// </summary>

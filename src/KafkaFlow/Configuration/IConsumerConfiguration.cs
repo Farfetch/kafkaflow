@@ -1,10 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-
     /// <summary>
     /// Represents the Consumer configuration values
     /// </summary>
@@ -77,7 +76,7 @@ namespace KafkaFlow.Configuration
         bool AutoMessageCompletion { get; }
 
         /// <summary>
-        /// Gets a value indicating that no offsets will be stored on Kafka
+        /// Gets a value indicating whether gets a value indicating that no offsets will be stored on Kafka
         /// </summary>
         bool NoStoreOffsets { get; }
 
@@ -94,12 +93,12 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Gets the handlers that will be called when the partitions are assigned
         /// </summary>
-        IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> PartitionsAssignedHandlers { get; }
+        IReadOnlyList<Action<IDependencyResolver, List<Confluent.Kafka.TopicPartition>>> PartitionsAssignedHandlers { get; }
 
         /// <summary>
         /// Gets the handlers that will be called when the partitions are revoked
         /// </summary>
-        IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
+        IReadOnlyList<Action<IDependencyResolver, List<Confluent.Kafka.TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
 
         /// <summary>
         /// Gets the handlers that will be called when there are pending offsets
@@ -120,6 +119,6 @@ namespace KafkaFlow.Configuration
         /// Parses KafkaFlow configuration to Confluent configuration
         /// </summary>
         /// <returns></returns>
-        ConsumerConfig GetKafkaConfig();
+        Confluent.Kafka.ConsumerConfig GetKafkaConfig();
     }
 }

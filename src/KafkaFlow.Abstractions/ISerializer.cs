@@ -1,8 +1,8 @@
+using System.IO;
+using System.Threading.Tasks;
+
 namespace KafkaFlow
 {
-    using System.IO;
-    using System.Threading.Tasks;
-
     /// <summary>
     /// Used to implement a message serializer
     /// </summary>

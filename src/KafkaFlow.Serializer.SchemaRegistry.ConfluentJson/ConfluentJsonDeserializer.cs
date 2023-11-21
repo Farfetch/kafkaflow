@@ -1,17 +1,17 @@
-﻿namespace KafkaFlow.Serializer.SchemaRegistry
-{
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
-    using Confluent.SchemaRegistry.Serdes;
-    using NJsonSchema.Generation;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using Confluent.SchemaRegistry.Serdes;
+using NJsonSchema.Generation;
 
+namespace KafkaFlow.Serializer.SchemaRegistry
+{
     /// <summary>
     /// A json message serializer integrated with the confluent schema registry
     /// </summary>
     public class ConfluentJsonDeserializer : IDeserializer
     {
-        private readonly JsonSchemaGeneratorSettings schemaGeneratorSettings;
+        private readonly JsonSchemaGeneratorSettings _schemaGeneratorSettings;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfluentJsonDeserializer"/> class.
@@ -19,7 +19,7 @@
         /// <param name="schemaGeneratorSettings">An instance of <see cref="JsonSchemaGeneratorSettings"/></param>
         public ConfluentJsonDeserializer(JsonSchemaGeneratorSettings schemaGeneratorSettings = null)
         {
-            this.schemaGeneratorSettings = schemaGeneratorSettings;
+            _schemaGeneratorSettings = schemaGeneratorSettings;
         }
 
         /// <inheritdoc/>
@@ -32,7 +32,7 @@
                         .CreateInstance(
                             typeof(JsonDeserializer<>).MakeGenericType(type),
                             null,
-                            this.schemaGeneratorSettings))
+                            _schemaGeneratorSettings))
                 .DeserializeAsync(input, context);
         }
     }

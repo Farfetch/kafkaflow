@@ -1,37 +1,37 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using KafkaFlow.Admin.Messages;
+
 namespace KafkaFlow.Admin
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Runtime.CompilerServices;
-    using KafkaFlow.Admin.Messages;
-
     internal class MemoryTelemetryStorage : ITelemetryStorage
     {
-        private readonly IDateTimeProvider dateTimeProvider;
-        private readonly TimeSpan cleanRunInterval;
-        private readonly TimeSpan expiryTime;
-        private readonly object cleanSyncRoot = new();
+        private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly TimeSpan _cleanRunInterval;
+        private readonly TimeSpan _expiryTime;
+        private readonly object _cleanSyncRoot = new();
 
-        private readonly ConcurrentDictionary<(string, string, string, string), ConsumerTelemetryMetric> metrics = new();
+        private readonly ConcurrentDictionary<(string, string, string, string), ConsumerTelemetryMetric> _metrics = new();
 
-        private DateTime lastCleanDate;
+        private DateTime _lastCleanDate;
 
         public MemoryTelemetryStorage(TimeSpan cleanRunInterval, TimeSpan expiryTime, IDateTimeProvider dateTimeProvider)
         {
-            this.cleanRunInterval = cleanRunInterval;
-            this.expiryTime = expiryTime;
-            this.dateTimeProvider = dateTimeProvider;
-            this.lastCleanDate = dateTimeProvider.MinValue;
+            _cleanRunInterval = cleanRunInterval;
+            _expiryTime = expiryTime;
+            _dateTimeProvider = dateTimeProvider;
+            _lastCleanDate = dateTimeProvider.MinValue;
         }
 
-        public IEnumerable<ConsumerTelemetryMetric> Get() => this.metrics.Values;
+        public IEnumerable<ConsumerTelemetryMetric> Get() => _metrics.Values;
 
         public void Put(ConsumerTelemetryMetric telemetryMetric)
         {
             this.TryCleanItems();
-            this.metrics[BuildKey(telemetryMetric)] = telemetryMetric;
+            _metrics[BuildKey(telemetryMetric)] = telemetryMetric;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -45,14 +45,14 @@ namespace KafkaFlow.Admin
                 return;
             }
 
-            lock (this.cleanSyncRoot)
+            lock (_cleanSyncRoot)
             {
                 if (!this.NeedsCleaning())
                 {
                     return;
                 }
 
-                this.lastCleanDate = this.dateTimeProvider.UtcNow;
+                _lastCleanDate = _dateTimeProvider.UtcNow;
 
                 this.CleanExpiredItems();
             }
@@ -60,16 +60,16 @@ namespace KafkaFlow.Admin
 
         private void CleanExpiredItems()
         {
-            foreach (var (key, metric) in this.metrics.Select(x=> (x.Key, x.Value)))
+            foreach (var (key, metric) in _metrics.Select(x => (x.Key, x.Value)))
             {
-                if (this.dateTimeProvider.UtcNow - metric.SentAt > this.expiryTime)
+                if (_dateTimeProvider.UtcNow - metric.SentAt > _expiryTime)
                 {
-                    this.metrics.TryRemove(key, out _);
+                    _metrics.TryRemove(key, out _);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool NeedsCleaning() => this.dateTimeProvider.UtcNow - this.lastCleanDate > this.cleanRunInterval;
+        private bool NeedsCleaning() => _dateTimeProvider.UtcNow - _lastCleanDate > _cleanRunInterval;
     }
 }

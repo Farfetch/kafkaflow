@@ -1,7 +1,7 @@
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Middlewares.ConsumerThrottling
 {
-    using System.Threading.Tasks;
-
     internal interface IConsumerThrottlingThreshold
     {
         long ThresholdValue { get; }

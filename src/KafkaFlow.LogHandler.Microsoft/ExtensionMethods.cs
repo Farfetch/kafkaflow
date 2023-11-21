@@ -1,7 +1,7 @@
+using KafkaFlow.Configuration;
+
 namespace KafkaFlow
 {
-    using KafkaFlow.Configuration;
-
     /// <summary>
     /// No needed
     /// </summary>

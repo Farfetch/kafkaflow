@@ -44,4 +44,3 @@ var kafkaBus = app.Services.CreateKafkaBus();
 await kafkaBus.StartAsync();
 
 await app.RunAsync();
-        

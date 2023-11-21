@@ -1,11 +1,11 @@
-﻿namespace KafkaFlow.Serializer.SchemaRegistry
-{
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Threading.Tasks;
-    using Confluent.SchemaRegistry.Serdes;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using Confluent.SchemaRegistry.Serdes;
 
+namespace KafkaFlow.Serializer.SchemaRegistry
+{
     /// <summary>
     /// A protobuf message serializer integrated with the confluent schema registry
     /// </summary>

@@ -1,10 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+using KafkaFlow.Consumers;
+
 namespace KafkaFlow.Admin.Messages
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Runtime.Serialization;
-    using KafkaFlow.Consumers;
-
     /// <summary>
     /// A message that contains data related to consumers partition assigment
     /// </summary>

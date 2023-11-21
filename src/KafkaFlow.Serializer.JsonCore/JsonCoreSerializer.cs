@@ -1,16 +1,16 @@
-﻿namespace KafkaFlow.Serializer
-{
-    using System.IO;
-    using System.Text.Json;
-    using System.Threading.Tasks;
+﻿using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
 
+namespace KafkaFlow.Serializer
+{
     /// <summary>
     /// A message serializer using System.Text.Json library
     /// </summary>
     public class JsonCoreSerializer : ISerializer
     {
-        private readonly JsonSerializerOptions serializerOptions;
-        private readonly JsonWriterOptions writerOptions;
+        private readonly JsonSerializerOptions _serializerOptions;
+        private readonly JsonWriterOptions _writerOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JsonCoreSerializer"/> class.
@@ -18,7 +18,7 @@
         /// <param name="options">Json serializer options</param>
         public JsonCoreSerializer(JsonSerializerOptions options)
         {
-            this.serializerOptions = options;
+            _serializerOptions = options;
         }
 
         /// <summary>
@@ -27,7 +27,7 @@
         /// <param name="writerOptions">Json writer options</param>
         public JsonCoreSerializer(JsonWriterOptions writerOptions)
         {
-            this.writerOptions = writerOptions;
+            _writerOptions = writerOptions;
         }
 
         /// <summary>
@@ -37,8 +37,8 @@
         /// <param name="writerOptions">Json writer options</param>
         public JsonCoreSerializer(JsonSerializerOptions serializerOptions, JsonWriterOptions writerOptions)
         {
-            this.serializerOptions = serializerOptions;
-            this.writerOptions = writerOptions;
+            _serializerOptions = serializerOptions;
+            _writerOptions = writerOptions;
         }
 
         /// <summary>
@@ -52,9 +52,9 @@
         /// <inheritdoc/>
         public Task SerializeAsync(object message, Stream output, ISerializerContext context)
         {
-            using var writer = new Utf8JsonWriter(output, this.writerOptions);
+            using var writer = new Utf8JsonWriter(output, _writerOptions);
 
-            JsonSerializer.Serialize(writer, message, this.serializerOptions);
+            JsonSerializer.Serialize(writer, message, _serializerOptions);
 
             return Task.CompletedTask;
         }

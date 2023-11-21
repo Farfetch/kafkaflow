@@ -1,11 +1,11 @@
+using System;
+using System.Collections.Generic;
+using KafkaFlow.Batching;
+using KafkaFlow.Configuration;
+using KafkaFlow.Consumers;
+
 namespace KafkaFlow
 {
-    using System;
-    using System.Collections.Generic;
-    using KafkaFlow.Batching;
-    using KafkaFlow.Configuration;
-    using KafkaFlow.Consumers;
-
     /// <summary>
     /// no needed
     /// </summary>

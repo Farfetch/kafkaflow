@@ -1,9 +1,8 @@
-﻿namespace KafkaFlow.Sample.SchemaRegistry.Handlers;
-
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using global::SchemaRegistry;
-using KafkaFlow.Middlewares.TypedHandler;
+
+namespace KafkaFlow.Sample.SchemaRegistry.Handlers;
 
 public class JsonMessageHandler : IMessageHandler<JsonLogMessage>
 {

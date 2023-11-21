@@ -1,20 +1,20 @@
+using System;
+using System.Collections.Generic;
+
 namespace KafkaFlow.Middlewares.TypedHandler
 {
-    using System;
-    using System.Collections.Generic;
-
     internal class HandlerTypeMapping
     {
-        private static readonly IReadOnlyList<Type> EmptyList = new List<Type>().AsReadOnly();
+        private static readonly IReadOnlyList<Type> s_emptyList = new List<Type>().AsReadOnly();
 
-        private readonly Dictionary<Type, List<Type>> mapping = new();
+        private readonly Dictionary<Type, List<Type>> _mapping = new();
 
         public void AddMapping(Type messageType, Type handlerType)
         {
-            if (!this.mapping.TryGetValue(messageType, out var handlers))
+            if (!_mapping.TryGetValue(messageType, out var handlers))
             {
                 handlers = new List<Type>();
-                this.mapping.Add(messageType, handlers);
+                _mapping.Add(messageType, handlers);
             }
 
             handlers.Add(handlerType);
@@ -24,12 +24,12 @@ namespace KafkaFlow.Middlewares.TypedHandler
         {
             if (messageType is null)
             {
-                return EmptyList;
+                return s_emptyList;
             }
 
-            return this.mapping.TryGetValue(messageType, out var handlerType) ?
+            return _mapping.TryGetValue(messageType, out var handlerType) ?
                 handlerType :
-                EmptyList;
+                s_emptyList;
         }
     }
 }

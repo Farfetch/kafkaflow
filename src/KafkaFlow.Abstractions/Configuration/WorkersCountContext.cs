@@ -1,7 +1,7 @@
+using System.Collections.Generic;
+
 namespace KafkaFlow.Configuration
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// A metadata class with some context information help to calculate the number of workers
     /// </summary>

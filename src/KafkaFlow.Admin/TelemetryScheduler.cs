@@ -1,45 +1,45 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using KafkaFlow.Admin.Messages;
+using KafkaFlow.Consumers;
+using KafkaFlow.Producers;
+
 namespace KafkaFlow.Admin
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Threading;
-    using KafkaFlow.Admin.Messages;
-    using KafkaFlow.Consumers;
-    using KafkaFlow.Producers;
-
     internal class TelemetryScheduler : ITelemetryScheduler
     {
-        private static readonly int ProcessId = Process.GetCurrentProcess().Id;
-        private readonly Dictionary<string, Timer> timers = new();
-        private readonly IDependencyResolver dependencyResolver;
-        private readonly ILogHandler logHandler;
+        private static readonly int s_processId = Process.GetCurrentProcess().Id;
+        private readonly Dictionary<string, Timer> _timers = new();
+        private readonly IDependencyResolver _dependencyResolver;
+        private readonly ILogHandler _logHandler;
 
         public TelemetryScheduler(IDependencyResolver dependencyResolver)
         {
-            this.dependencyResolver = dependencyResolver;
-            this.logHandler = dependencyResolver.Resolve<ILogHandler>();
+            _dependencyResolver = dependencyResolver;
+            _logHandler = dependencyResolver.Resolve<ILogHandler>();
         }
 
         public void Start(string telemetryId, string topicName, int topicPartition)
         {
             this.Stop(telemetryId);
 
-            var consumers = this.dependencyResolver
+            var consumers = _dependencyResolver
                 .Resolve<IConsumerAccessor>()
                 .All
                 .Where(
                     c => !c.ManagementDisabled &&
                          c.ClusterName.Equals(
-                             this.dependencyResolver
+                             _dependencyResolver
                                  .Resolve<IConsumerAccessor>()[telemetryId]
                                  .ClusterName))
                 .ToList();
 
-            var producer = this.dependencyResolver.Resolve<IProducerAccessor>().GetProducer(telemetryId);
+            var producer = _dependencyResolver.Resolve<IProducerAccessor>().GetProducer(telemetryId);
 
-            this.timers[telemetryId] = new Timer(
+            _timers[telemetryId] = new Timer(
                 _ => ProduceTelemetry(topicName, topicPartition, consumers, producer),
                 null,
                 TimeSpan.Zero,
@@ -48,10 +48,10 @@ namespace KafkaFlow.Admin
 
         public void Stop(string telemetryId)
         {
-            if (this.timers.TryGetValue(telemetryId, out var timer))
+            if (_timers.TryGetValue(telemetryId, out var timer))
             {
                 timer.Dispose();
-                this.timers.Remove(telemetryId);
+                _timers.Remove(telemetryId);
             }
         }
 
@@ -75,7 +75,7 @@ namespace KafkaFlow.Admin
                                     ConsumerName = c.ConsumerName,
                                     Topic = topic,
                                     GroupId = c.GroupId,
-                                    InstanceName = $"{Environment.MachineName}-{ProcessId}",
+                                    InstanceName = $"{Environment.MachineName}-{s_processId}",
                                     PausedPartitions = c.PausedPartitions
                                         .Where(p => p.Topic == topic)
                                         .Select(p => p.Partition.Value),
@@ -96,7 +96,7 @@ namespace KafkaFlow.Admin
             }
             catch (Exception e)
             {
-                this.logHandler.Warning("Error producing telemetry data", new { Exception = e });
+                _logHandler.Warning("Error producing telemetry data", new { Exception = e });
             }
         }
     }

@@ -1,40 +1,40 @@
+using System;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-
     internal class MiddlewareInstanceContainer<T> : IMiddlewareInstanceContainer
     {
-        private readonly object sync = new();
-        private readonly Factory<IMessageMiddleware> factory;
+        private readonly object _sync = new();
+        private readonly Factory<IMessageMiddleware> _factory;
 
-        private IMessageMiddleware instance;
+        private IMessageMiddleware _instance;
 
         public MiddlewareInstanceContainer(Guid id, Factory<IMessageMiddleware> factory)
         {
             this.Id = id;
-            this.factory = factory;
+            _factory = factory;
         }
 
         public Guid Id { get; }
 
         public IMessageMiddleware GetInstance(IDependencyResolver resolver)
         {
-            if (this.instance is not null)
+            if (_instance is not null)
             {
-                return this.instance;
+                return _instance;
             }
 
-            lock (this.sync)
+            lock (_sync)
             {
-                if (this.instance is not null)
+                if (_instance is not null)
                 {
-                    return this.instance;
+                    return _instance;
                 }
 
-                this.instance = this.factory(resolver);
+                _instance = _factory(resolver);
             }
 
-            return this.instance;
+            return _instance;
         }
     }
 }

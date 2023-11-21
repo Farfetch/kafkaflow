@@ -18,8 +18,10 @@ namespace SchemaRegistry
 	/// </summary>
 	public partial class AvroLogMessage : ISpecificRecord
 	{
-		public static Schema _SCHEMA = Avro.Schema.Parse(@"{""type"":""record"",""name"":""AvroLogMessage"",""doc"":""A simple log message."",""namespace"":""SchemaRegistry"",""fields"":[{""name"":""Severity"",""type"":{""type"":""enum"",""name"":""LogLevel"",""doc"":""Enumerates the set of allowable log levels."",""namespace"":""SchemaRegistry"",""symbols"":[""None"",""Verbose"",""Info"",""Warning"",""Error""]}}]}");
-		private SchemaRegistry.LogLevel _Severity;
+		public static Schema _SCHEMA = Avro.Schema.Parse(@"{""type"":""record"",""name"":""AvroLogMessage"",""doc"":""A simple log message."",""namespace"":""SchemaRegistry"",""fields"":[{""name"":""Severity"",""type"":{""type"":""enum"",""name"":""LogLevel"",""doc"":""Enumerates the set of allowable log levels."",""namespace"":""SchemaRegistry"",""symbols"":[""None"",""Verbose"",""Info"",""Warning"",""Error""]}}]}")
+			;
+		private SchemaRegistry.LogLevel _severity;
+
 		public virtual Schema Schema
 		{
 			get
@@ -31,11 +33,11 @@ namespace SchemaRegistry
 		{
 			get
 			{
-				return this._Severity;
+				return _severity;
 			}
 			set
 			{
-				this._Severity = value;
+				_severity = value;
 			}
 		}
 		public virtual object Get(int fieldPos)

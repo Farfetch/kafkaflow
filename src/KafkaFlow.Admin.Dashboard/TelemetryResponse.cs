@@ -1,10 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
+
 namespace KafkaFlow.Admin.Dashboard
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using Newtonsoft.Json;
-
     /// <summary>
     /// The response of telemetry data
     /// </summary>

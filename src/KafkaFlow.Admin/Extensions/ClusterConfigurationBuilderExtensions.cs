@@ -1,12 +1,12 @@
-﻿namespace KafkaFlow
-{
-    using System;
-    using System.Reflection;
-    using KafkaFlow.Admin;
-    using KafkaFlow.Admin.Handlers;
-    using KafkaFlow.Configuration;
-    using KafkaFlow.Serializer;
+﻿using System;
+using System.Reflection;
+using KafkaFlow.Admin;
+using KafkaFlow.Admin.Handlers;
+using KafkaFlow.Configuration;
+using KafkaFlow.Serializer;
 
+namespace KafkaFlow
+{
     /// <summary>
     /// No needed
     /// </summary>

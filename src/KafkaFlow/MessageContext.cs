@@ -1,7 +1,7 @@
+using System.Collections.Generic;
+
 namespace KafkaFlow
 {
-    using System.Collections.Generic;
-
     internal class MessageContext : IMessageContext
     {
         public MessageContext(

@@ -1,7 +1,7 @@
+using System.Runtime.Serialization;
+
 namespace KafkaFlow.Admin.Messages
 {
-    using System.Runtime.Serialization;
-
     /// <summary>
     /// The message that starts a consumer
     /// </summary>

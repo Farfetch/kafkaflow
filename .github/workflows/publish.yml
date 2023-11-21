@@ -29,7 +29,7 @@ jobs:
           npm run build:prod
 
       - name: Pack
-        run: dotnet pack ./src/KafkaFlow.sln -c Release /p:Version=${{ github.event.release.tag_name }} -o ./drop
+        run: dotnet pack ./KafkaFlow.sln -c Release /p:Version=${{ github.event.release.tag_name }} -o ./drop
 
       - name: Publish
         run: dotnet nuget push ./drop/**/*.nupkg -k ${{ secrets.NUGET_PUBLISH_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate

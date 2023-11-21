@@ -1,9 +1,9 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Consumers
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     internal interface IConsumerWorker : IWorker, IDisposable
     {
         CancellationToken StopCancellationToken { get; }

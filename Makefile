@@ -11,20 +11,20 @@ shutdown_broker:
 	docker-compose -f docker-compose.yml down
 
 restore:
-	dotnet restore src/KafkaFlow.sln
+	dotnet restore KafkaFlow.sln
 
 build:
-	dotnet build src/KafkaFlow.sln
+	dotnet build KafkaFlow.sln
 
 unit_tests:
 	@echo command | date
 	@echo Running unit tests
-	dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj --framework netcoreapp2.1 --logger "console;verbosity=detailed"
-	dotnet test src/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj --framework netcoreapp3.1 --logger "console;verbosity=detailed"
+	dotnet test tests/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj --framework netcoreapp2.1 --logger "console;verbosity=detailed"
+	dotnet test tests/KafkaFlow.UnitTests/KafkaFlow.UnitTests.csproj --framework netcoreapp3.1 --logger "console;verbosity=detailed"
 
 integration_tests:
 	@echo command | date
 	make init_broker
 	@echo Running integration tests
-	dotnet test src/KafkaFlow.IntegrationTests/KafkaFlow.IntegrationTests.csproj -c Release --framework netcoreapp3.1 --logger "console;verbosity=detailed"
+	dotnet test tests/KafkaFlow.IntegrationTests/KafkaFlow.IntegrationTests.csproj -c Release --framework netcoreapp3.1 --logger "console;verbosity=detailed"
 	make shutdown_broker

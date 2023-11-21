@@ -1,10 +1,10 @@
-﻿namespace KafkaFlow
-{
-    using Confluent.SchemaRegistry.Serdes;
-    using KafkaFlow.Configuration;
-    using KafkaFlow.Middlewares.Serializer.Resolvers;
-    using KafkaFlow.Serializer.SchemaRegistry;
+﻿using Confluent.SchemaRegistry.Serdes;
+using KafkaFlow.Configuration;
+using KafkaFlow.Middlewares.Serializer.Resolvers;
+using KafkaFlow.Serializer.SchemaRegistry;
 
+namespace KafkaFlow
+{
     /// <summary>
     /// No needed
     /// </summary>

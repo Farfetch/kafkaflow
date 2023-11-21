@@ -1,106 +1,105 @@
+using System;
+using System.Collections.Generic;
+using Confluent.Kafka;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using Confluent.Kafka;
-    using Acks = KafkaFlow.Acks;
-
     internal class ProducerConfigurationBuilder : IProducerConfigurationBuilder
     {
-        private readonly string name;
-        private readonly ProducerMiddlewareConfigurationBuilder middlewareConfigurationBuilder;
-        private readonly List<Action<string>> statisticsHandlers = new();
+        private readonly string _name;
+        private readonly ProducerMiddlewareConfigurationBuilder _middlewareConfigurationBuilder;
+        private readonly List<Action<string>> _statisticsHandlers = new();
 
-        private string topic;
-        private ProducerConfig producerConfig;
-        private Acks? acks;
-        private int statisticsInterval;
-        private double? lingerMs;
-        private ProducerCustomFactory customFactory = (producer, _) => producer;
+        private string _topic;
+        private ProducerConfig _producerConfig;
+        private Acks? _acks;
+        private int _statisticsInterval;
+        private double? _lingerMs;
+        private ProducerCustomFactory _customFactory = (producer, _) => producer;
 
         public ProducerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator, string name)
         {
-            this.name = name;
+            _name = name;
             this.DependencyConfigurator = dependencyConfigurator;
-            this.middlewareConfigurationBuilder = new ProducerMiddlewareConfigurationBuilder(dependencyConfigurator);
+            _middlewareConfigurationBuilder = new ProducerMiddlewareConfigurationBuilder(dependencyConfigurator);
         }
 
         public IDependencyConfigurator DependencyConfigurator { get; }
 
         public IProducerConfigurationBuilder AddMiddlewares(Action<IProducerMiddlewareConfigurationBuilder> middlewares)
         {
-            middlewares(this.middlewareConfigurationBuilder);
+            middlewares(_middlewareConfigurationBuilder);
             return this;
         }
 
         public IProducerConfigurationBuilder DefaultTopic(string topic)
         {
-            this.topic = topic;
+            _topic = topic;
             return this;
         }
 
         public IProducerConfigurationBuilder WithProducerConfig(ProducerConfig config)
         {
-            this.producerConfig = config;
+            _producerConfig = config;
             return this;
         }
 
         public IProducerConfigurationBuilder WithCompression(CompressionType compressionType, int? compressionLevel)
         {
-            this.producerConfig ??= new ProducerConfig();
-            this.producerConfig.CompressionType = compressionType;
-            this.producerConfig.CompressionLevel = compressionLevel;
+            _producerConfig ??= new ProducerConfig();
+            _producerConfig.CompressionType = compressionType;
+            _producerConfig.CompressionLevel = compressionLevel;
             return this;
         }
 
         public IProducerConfigurationBuilder WithAcks(Acks acks)
         {
-            this.acks = acks;
+            _acks = acks;
             return this;
         }
 
         public IProducerConfigurationBuilder WithLingerMs(double lingerMs)
         {
-            this.lingerMs = lingerMs;
+            _lingerMs = lingerMs;
             return this;
         }
 
         public IProducerConfigurationBuilder WithStatisticsHandler(Action<string> statisticsHandler)
         {
-            this.statisticsHandlers.Add(statisticsHandler);
+            _statisticsHandlers.Add(statisticsHandler);
             return this;
         }
 
         public IProducerConfigurationBuilder WithStatisticsIntervalMs(int statisticsIntervalMs)
         {
-            this.statisticsInterval = statisticsIntervalMs;
+            _statisticsInterval = statisticsIntervalMs;
             return this;
         }
 
         public IProducerConfigurationBuilder WithCustomFactory(ProducerCustomFactory customFactory)
         {
-            this.customFactory = customFactory;
+            _customFactory = customFactory;
             return this;
         }
 
         public IProducerConfiguration Build(ClusterConfiguration clusterConfiguration)
         {
-            this.producerConfig ??= new ProducerConfig();
+            _producerConfig ??= new ProducerConfig();
 
-            this.producerConfig.StatisticsIntervalMs = this.statisticsInterval;
-            this.producerConfig.LingerMs = this.lingerMs;
+            _producerConfig.StatisticsIntervalMs = _statisticsInterval;
+            _producerConfig.LingerMs = _lingerMs;
 
-            this.producerConfig.ReadSecurityInformationFrom(clusterConfiguration);
+            _producerConfig.ReadSecurityInformationFrom(clusterConfiguration);
 
             var configuration = new ProducerConfiguration(
                 clusterConfiguration,
-                this.name,
-                this.topic,
-                this.acks,
-                this.middlewareConfigurationBuilder.Build(),
-                this.producerConfig,
-                this.statisticsHandlers,
-                this.customFactory);
+                _name,
+                _topic,
+                _acks,
+                _middlewareConfigurationBuilder.Build(),
+                _producerConfig,
+                _statisticsHandlers,
+                _customFactory);
 
             return configuration;
         }

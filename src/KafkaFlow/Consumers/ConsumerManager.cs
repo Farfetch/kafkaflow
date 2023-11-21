@@ -1,19 +1,18 @@
-﻿namespace KafkaFlow.Consumers
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-    using KafkaFlow.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using KafkaFlow.Configuration;
 
+namespace KafkaFlow.Consumers
+{
     internal class ConsumerManager : IConsumerManager
     {
-        private readonly IDependencyResolver dependencyResolver;
-        private readonly ILogHandler logHandler;
+        private readonly IDependencyResolver _dependencyResolver;
+        private readonly ILogHandler _logHandler;
 
-        private Timer evaluateWorkersCountTimer;
+        private Timer _evaluateWorkersCountTimer;
 
         public ConsumerManager(
             IConsumer consumer,
@@ -22,8 +21,8 @@
             IDependencyResolver dependencyResolver,
             ILogHandler logHandler)
         {
-            this.dependencyResolver = dependencyResolver;
-            this.logHandler = logHandler;
+            _dependencyResolver = dependencyResolver;
+            _logHandler = logHandler;
             this.Consumer = consumer;
             this.WorkerPool = consumerWorkerPool;
             this.Feeder = feeder;
@@ -42,7 +41,7 @@
         {
             this.Feeder.Start();
 
-            this.evaluateWorkersCountTimer = new Timer(
+            _evaluateWorkersCountTimer = new Timer(
                 state => _ = this.EvaluateWorkersCountAsync(),
                 null,
                 this.Consumer.Configuration.WorkersCountEvaluationInterval,
@@ -58,14 +57,14 @@
             await this.Feeder.StopAsync().ConfigureAwait(false);
             await this.WorkerPool.StopAsync().ConfigureAwait(false);
 
-            this.evaluateWorkersCountTimer?.Dispose();
-            this.evaluateWorkersCountTimer = null;
+            _evaluateWorkersCountTimer?.Dispose();
+            _evaluateWorkersCountTimer = null;
             this.Consumer.Dispose();
         }
 
-        private void StopEvaluateWorkerCountTimer() => this.evaluateWorkersCountTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+        private void StopEvaluateWorkerCountTimer() => _evaluateWorkersCountTimer?.Change(Timeout.Infinite, Timeout.Infinite);
 
-        private void StartEvaluateWorkerCountTimer() => this.evaluateWorkersCountTimer?.Change(
+        private void StartEvaluateWorkerCountTimer() => _evaluateWorkersCountTimer?.Change(
             this.Consumer.Configuration.WorkersCountEvaluationInterval,
             this.Consumer.Configuration.WorkersCountEvaluationInterval);
 
@@ -97,22 +96,22 @@
             }
             catch (Exception e)
             {
-                this.logHandler.Error("Error changing workers count", e, null);
+                _logHandler.Error("Error changing workers count", e, null);
             }
         }
 
-        private void OnPartitionRevoked(IEnumerable<TopicPartitionOffset> topicPartitions)
+        private void OnPartitionRevoked(IEnumerable<Confluent.Kafka.TopicPartitionOffset> topicPartitions)
         {
-            this.logHandler.Warning(
+            _logHandler.Warning(
                 "Partitions revoked",
                 this.GetConsumerLogInfo(topicPartitions.Select(x => x.TopicPartition)));
 
             this.WorkerPool.StopAsync().GetAwaiter().GetResult();
         }
 
-        private void OnPartitionAssigned(IReadOnlyCollection<TopicPartition> partitions)
+        private void OnPartitionAssigned(IReadOnlyCollection<Confluent.Kafka.TopicPartition> partitions)
         {
-            this.logHandler.Info(
+            _logHandler.Info(
                 "Partitions assigned",
                 this.GetConsumerLogInfo(partitions));
 
@@ -124,7 +123,7 @@
                 .GetResult();
         }
 
-        private object GetConsumerLogInfo(IEnumerable<TopicPartition> partitions) => new
+        private object GetConsumerLogInfo(IEnumerable<Confluent.Kafka.TopicPartition> partitions) => new
         {
             this.Consumer.Configuration.GroupId,
             this.Consumer.Configuration.ConsumerName,
@@ -139,7 +138,7 @@
                     }),
         };
 
-        private async Task<int> CalculateWorkersCount(IEnumerable<TopicPartition> partitions)
+        private async Task<int> CalculateWorkersCount(IEnumerable<Confluent.Kafka.TopicPartition> partitions)
         {
             try
             {
@@ -156,11 +155,11 @@
                                         .Select(x => x.Partition.Value)
                                         .ToList()))
                             .ToList()),
-                    this.dependencyResolver);
+                    _dependencyResolver);
             }
             catch (Exception e)
             {
-                this.logHandler.Error("Error calculating new workers count, using one worker as fallback", e, null);
+                _logHandler.Error("Error calculating new workers count, using one worker as fallback", e, null);
 
                 return 1;
             }

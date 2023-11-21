@@ -1,7 +1,7 @@
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Middlewares.ConsumerThrottling
 {
-    using System.Threading.Tasks;
-
     /// <summary>
     /// Defines a metric that is used by the KafkaFlow consumer throttling feature.
     /// </summary>

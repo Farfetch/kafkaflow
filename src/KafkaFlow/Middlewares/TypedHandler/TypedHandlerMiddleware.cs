@@ -1,31 +1,31 @@
+using System.Linq;
+using System.Threading.Tasks;
+using KafkaFlow.Middlewares.TypedHandler.Configuration;
+
 namespace KafkaFlow.Middlewares.TypedHandler
 {
-    using System.Linq;
-    using System.Threading.Tasks;
-    using KafkaFlow.Middlewares.TypedHandler.Configuration;
-
     internal class TypedHandlerMiddleware : IMessageMiddleware
     {
-        private readonly IDependencyResolver dependencyResolver;
-        private readonly TypedHandlerConfiguration configuration;
+        private readonly IDependencyResolver _dependencyResolver;
+        private readonly TypedHandlerConfiguration _configuration;
 
         public TypedHandlerMiddleware(
             IDependencyResolver dependencyResolver,
             TypedHandlerConfiguration configuration)
         {
-            this.dependencyResolver = dependencyResolver;
-            this.configuration = configuration;
+            _dependencyResolver = dependencyResolver;
+            _configuration = configuration;
         }
 
         public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
         {
-            var handlers = this.configuration
+            var handlers = _configuration
                 .HandlerMapping
                 .GetHandlersTypes(context.Message.Value?.GetType());
 
             if (!handlers.Any())
             {
-                this.configuration.OnNoHandlerFound(context);
+                _configuration.OnNoHandlerFound(context);
             }
             else
             {
@@ -36,7 +36,7 @@ namespace KafkaFlow.Middlewares.TypedHandler
                                     HandlerExecutor
                                         .GetExecutor(context.Message.Value.GetType())
                                         .Execute(
-                                            this.dependencyResolver.Resolve(handler),
+                                            _dependencyResolver.Resolve(handler),
                                             context,
                                             context.Message.Value)))
                     .ConfigureAwait(false);

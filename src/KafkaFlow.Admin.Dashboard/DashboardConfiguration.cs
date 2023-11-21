@@ -1,9 +1,9 @@
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
 namespace KafkaFlow.Admin.Dashboard
 {
-    using System;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Http;
-
     internal class DashboardConfiguration
     {
         public DashboardConfiguration(
