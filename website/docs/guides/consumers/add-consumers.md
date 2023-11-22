@@ -45,7 +45,6 @@ Using the `Topic()` or `Topics()` methods, the consumer will trigger the automat
 using KafkaFlow;
 using KafkaFlow.Serializer;
 using Microsoft.Extensions.DependencyInjection;
-using KafkaFlow.TypedHandler;
 
 services.AddKafka(kafka => kafka
     .AddCluster(cluster => cluster
@@ -68,7 +67,6 @@ The client application can specify the topic partitions manually using the `Manu
 using KafkaFlow;
 using KafkaFlow.Serializer;
 using Microsoft.Extensions.DependencyInjection;
-using KafkaFlow.TypedHandler;
 
 services.AddKafka(kafka => kafka
     .AddCluster(cluster => cluster

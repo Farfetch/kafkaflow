@@ -15,21 +15,15 @@ You can use one of the following common serializers or build your own:
 
 ## How to use it
 
-Install the [KafkaFlow.Serializer](https://www.nuget.org/packages/KafkaFlow.Serializer) package. 
+On the configuration, add the `AddSerializer`/`AddDeserializer` extension method to your producer/consumer middlewares to use it. 
 
-```bash
-dotnet add package KafkaFlow.Serializer
-```
-
-On the configuration, add the `AddSerializer` extension method to your producer/consumer middlewares to use it. 
-
-The `AddSerializer` method has two arguments: 
- - The first one must implement the `IMessageSerializer` interface. 
+The `AddSerializer`/`AddDeserializer` method has two arguments: 
+ - The first one must implement the `ISerializer`/`IDeserializer` interface. 
  - The second one is optional and must implement the `IMessageTypeResolver` interface. If the parameter is not provided, then the `DefaultTypeResolver` will be used. 
 Both classes can be provided as an argument through a factory method too. 
 
 :::tip
-For topics that have just one message type, use the `AddSingleTypeSerializer` method.
+For topics that have just one message type, use the `AddSingleTypeSerializer`/`AddSingleTypeDeserializer` method.
 :::tip
 
 
@@ -87,7 +81,7 @@ public class Startup
                         )
                        .AddConsumer(
                             ...
-                            .AddMiddlewares(middlewares => middlewares.AddSchemaRegistryAvroSerializer()
+                            .AddMiddlewares(middlewares => middlewares.AddSchemaRegistryAvroDeserializer()
                         )
                     )
             );
@@ -108,7 +102,7 @@ You can see a detailed explanation [here](https://docs.confluent.io/platform/cur
 
 A type resolver is needed to instruct the middleware where to find the destination message type in the message metadata when consuming and where to store it when producing. 
 
-The framework has the `DefaultTypeResolver` that will be used omitting the second type parameter in the `AddSerializer` method. You can create your own implementation of `IMessageTypeResolver` to allow communication with other frameworks.
+The framework has the `DefaultTypeResolver` that will be used omitting the second type parameter in the `AddSerializer`/`AddDeserializer` method. You can create your own implementation of `IMessageTypeResolver` to allow communication with other frameworks.
 
 ```csharp
 public class SampleMessageTypeResolver : IMessageTypeResolver

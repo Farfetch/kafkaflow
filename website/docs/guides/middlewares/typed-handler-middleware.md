@@ -24,7 +24,7 @@ When using a Schema Registry, the schema is read from it, and the first 5 bytes 
 #### Without Schema Registry
 Using other serializers with no Schema Registry, the `DefaultTypeResolver` is used by default. The `DefaultTypeResolver` uses the header `Message-Type` to identify the message type based on the Type fully qualified name. 
 
-It's also possible to write your own `TypeResolver` implementing the `IMessageTypeResolver` interface and using it in the `AddSerializer` method in the consumer/producer middleware. 
+It's also possible to write your own `TypeResolver` implementing the `IMessageTypeResolver` interface and using it in the `AddSerializer`/`AddDeserializer` method in the consumer/producer middleware. 
 
 ## Configure Typed Handler
 
