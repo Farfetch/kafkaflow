@@ -30,7 +30,7 @@ Configuring Consumer Throttling is straightforward with the fluent interface pro
                         .AddAction(a => a.AboveThreshold(10).ApplyDelay(100))
                         .AddAction(a => a.AboveThreshold(100).ApplyDelay(1_000))
                         .AddAction(a => a.AboveThreshold(1_000).ApplyDelay(10_000)))
-                .AddSerializer<JsonCoreSerializer>()
+                .AddDeserializer<JsonCoreDeserializer>()
         )
 )
 ```

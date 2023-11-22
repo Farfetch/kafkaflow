@@ -14,13 +14,13 @@ If you want to build your own way of compress and decompress messages, you can f
 
 ## Add a Compressor Middleware
 
-Install the [KafkaFlow.Compressor](https://www.nuget.org/packages/KafkaFlow.Compressor/) package and add the `AddCompressor` extension method to your producer/consumer middlewares to use it. 
+Add the `AddCompressor`/`AddDecompressor` extension method to your producer/consumer middlewares to use it. 
 
-The method receives a class that implements the `IMessageCompressor` interface as a generic argument. This class will be used in the compress/decompress process. 
+The method receives a class that implements the `ICompressor`/`IDecompressor` interface as a generic argument. This class will be used in the compress/decompress process. 
 
 A class instance can be provided as an argument through a factory method too. 
 
-Install the [KafkaFlow.Compressor.Gzip](https://www.nuget.org/packages/KafkaFlow.Compressor.Gzip/) package to use the `GzipMessageCompressor` that uses the GZIP algorithm.
+Install the [KafkaFlow.Compressor.Gzip](https://www.nuget.org/packages/KafkaFlow.Compressor.Gzip/) package to use the `GzipMessageCompressor`/`GzipMessageDecompressor` that uses the GZIP algorithm.
 
 ```csharp
 public class Startup

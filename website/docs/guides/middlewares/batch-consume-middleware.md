@@ -10,15 +10,9 @@ The Batch Consume Middleware is used to accumulate a number of messages or wait 
 
 ## How to use it
 
-Install the [KafkaFlow.BatchConsume](https://www.nuget.org/packages/KafkaFlow.BatchConsume) package. 
+On the configuration, use the `AddBatching` extension method to add the middleware to your consumer middlewares. 
 
-```bash
-dotnet add package KafkaFlow.BatchConsume
-```
-
-On the configuration, use the `BatchConsume` extension method to add the middleware to your consumer middlewares. 
-
-The `BatchConsume` method has two arguments: 
+The `AddBatching` method has two arguments: 
  - The first one must define the maximum batch size. 
  - The second one defines the `TimeSpan` that the Middleware waits for new messages to be part of the batch.
 
@@ -33,7 +27,7 @@ services.AddKafka(kafka => kafka
             .AddMiddlewares(
                 middlewares => middlewares
                     ...
-                    .BatchConsume(100, TimeSpan.FromSeconds(10)) // Configuration of the BatchConsumeMiddleware
+                    .AddBatching(100, TimeSpan.FromSeconds(10)) // Configuration of the BatchConsumeMiddleware
                     .Add<HandlingMiddleware>() // Middleware to process the batch
             )
         )
@@ -48,7 +42,7 @@ When using the `Batch Consume` middleware, the `IServiceScopeFactory` should be 
 :::
 
 ```csharp
-using KafkaFlow.BatchConsume;
+using KafkaFlow;
 
 internal class HandlingMiddleware : IMessageMiddleware
 {
