@@ -127,7 +127,7 @@ namespace KafkaFlow.Consumers
                         message.TopicPartitionOffset,
                         () => scope.Dispose());
 
-                    await this.globalEvents.FireMessageConsumeStartedAsync(new MessageEventContext(context));
+                    this.globalEvents.FireMessageConsumeStarted(new MessageEventContext(context));
 
                     await this.middlewareExecutor
                         .Execute(scope.Resolver, context, _ => Task.CompletedTask)

@@ -29,8 +29,12 @@
 
         internal Task FireAsync(TArg arg)
         {
-            this.InvokeSyncHandlers(arg);
             return this.InvokeAsyncHandlers(arg);
+        }
+
+        internal void Fire(TArg arg)
+        {
+            this.InvokeSyncHandlers(arg);
         }
 
         private IEventSubscription Subscribe<T>(List<T> handlersList, T handler)
