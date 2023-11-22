@@ -9,8 +9,7 @@
     {
         private readonly ILogHandler logHandler;
 
-        private readonly List<Func<TArg, Task>> asyncHandlers = new();
-        private readonly List<Action<TArg>> syncHandlers = new();
+        private readonly List<Func<TArg, Task>> handlers = new();
 
         public Event(ILogHandler logHandler)
         {
@@ -19,61 +18,43 @@
 
         public IEventSubscription Subscribe(Func<TArg, Task> handler)
         {
-            return this.Subscribe(this.asyncHandlers, handler);
-        }
+            if (handler is null)
+            {
+                throw new ArgumentNullException("Handler cannot be null");
+            }
 
-        public IEventSubscription Subscribe(Action<TArg> handler)
-        {
-            return this.Subscribe(this.syncHandlers, handler);
+            if (!this.handlers.Contains(handler))
+            {
+                this.handlers.Add(handler);
+            }
+
+            return new EventSubscription(() => this.handlers.Remove(handler));
         }
 
         internal Task FireAsync(TArg arg)
         {
-            return this.InvokeAsyncHandlers(arg);
+            var tasks = this.handlers
+                .Select(handler => this.ProcessHandler(handler, arg));
+
+            return Task.WhenAll(tasks);
         }
 
-        internal void Fire(TArg arg)
+        private Task ProcessHandler(Func<TArg, Task> handler, TArg arg)
         {
-            this.InvokeSyncHandlers(arg);
-        }
-
-        private IEventSubscription Subscribe<T>(List<T> handlersList, T handler)
-        {
-            if (!handlersList.Contains(handler))
+            try
             {
-                handlersList.Add(handler);
+                return handler.Invoke(arg).ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        this.LogHandlerOnError(t.Exception);
+                    }
+                });
             }
-
-            return new EventSubscription(() => handlersList.Remove(handler));
-        }
-
-        private async Task InvokeAsyncHandlers(TArg arg)
-        {
-            foreach (var handler in this.asyncHandlers.Where(h => h is not null))
+            catch (Exception ex)
             {
-                try
-                {
-                    await handler.Invoke(arg);
-                }
-                catch (Exception ex)
-                {
-                    this.LogHandlerOnError(ex);
-                }
-            }
-        }
-
-        private void InvokeSyncHandlers(TArg arg)
-        {
-            foreach (var handler in this.syncHandlers.Where(h => h is not null))
-            {
-                try
-                {
-                    handler.Invoke(arg);
-                }
-                catch (Exception ex)
-                {
-                    this.LogHandlerOnError(ex);
-                }
+                this.LogHandlerOnError(ex);
+                return Task.CompletedTask;
             }
         }
 
@@ -93,8 +74,6 @@
         }
 
         public IEventSubscription Subscribe(Func<Task> handler) => this.evt.Subscribe(_ => handler.Invoke());
-
-        public IEventSubscription Subscribe(Action handler) => this.evt.Subscribe(_ => handler.Invoke());
 
         internal Task FireAsync() => this.evt.FireAsync(null);
     }
