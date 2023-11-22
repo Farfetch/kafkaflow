@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
     using global::OpenTelemetry;
     using global::OpenTelemetry.Context.Propagation;
+    using global::OpenTelemetry.Trace;
 
     internal static class OpenTelemetryConsumerEventsHandler
     {
@@ -67,9 +68,8 @@
         {
             if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityString, out var value) && value is Activity activity)
             {
-                var exceptionEvent = ActivitySourceAccessor.CreateExceptionEvent(ex);
-
-                activity?.AddEvent(exceptionEvent);
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                activity?.RecordException(ex);
 
                 activity?.Dispose();
             }

@@ -16,6 +16,7 @@
     using KafkaFlow.IntegrationTests.Core.Handlers;
     using KafkaFlow.IntegrationTests.Core.Middlewares;
     using KafkaFlow.IntegrationTests.Core.Producers;
+    using KafkaFlow.OpenTelemetry;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -45,7 +46,7 @@
             MessageStorage.Clear();
 
             using var tracerProvider = Sdk.CreateTracerProviderBuilder()
-            .AddSource("KafkaFlow.OpenTelemetry")
+            .AddSource(KafkaFlowInstrumentation.ActivitySourceName)
             .AddInMemoryExporter(this.exportedItems)
             .Build();
 
@@ -78,7 +79,7 @@
             var baggageValue2 = "TestBaggageValue2";
 
             using var tracerProvider = Sdk.CreateTracerProviderBuilder()
-            .AddSource("KafkaFlow.OpenTelemetry")
+            .AddSource(KafkaFlowInstrumentation.ActivitySourceName)
             .AddSource(kafkaFlowTestString)
             .AddInMemoryExporter(this.exportedItems)
             .Build();
