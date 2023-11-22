@@ -20,12 +20,14 @@
         /// <param name="topic">The topic to be used by the admin commands</param>
         /// <param name="consumerGroup">The consumer group prefix</param>
         /// <param name="topicPartition">The partition used to produce and consumer admin messages</param>
+        /// <param name="producerOnly">To produce admin messages only</param>
         /// <returns></returns>
         public static IClusterConfigurationBuilder EnableAdminMessages(
             this IClusterConfigurationBuilder cluster,
             string topic,
             string consumerGroup = null,
-            int topicPartition = 0)
+            int topicPartition = 0,
+            bool producerOnly = false)
         {
             consumerGroup ??= $"Admin-{Assembly.GetEntryAssembly()!.GetName().Name}";
 
@@ -33,45 +35,54 @@
                 .AddSingleton<IAdminProducer>(
                     resolver => new AdminProducer(
                         resolver.Resolve<IMessageProducer<AdminProducer>>(),
-                        topicPartition))
-                .AddSingleton<IConsumerAdmin, ConsumerAdmin>();
+                        topicPartition));
 
-            return cluster
+            cluster
                 .AddProducer<AdminProducer>(
                     producer => producer
                         .DefaultTopic(topic)
                         .AddMiddlewares(
                             middlewares => middlewares
-                                .AddSerializer<ProtobufNetSerializer>()))
-                .AddConsumer(
-                    consumer => consumer
-                        .ManualAssignPartitions(topic, new[] { topicPartition })
-                        .WithGroupId(consumerGroup)
-                        .WithoutStoringOffsets()
-                        .WithWorkersCount(1)
-                        .WithBufferSize(1)
-                        .WithAutoOffsetReset(AutoOffsetReset.Latest)
-                        .DisableManagement()
-                        .AddMiddlewares(
-                            middlewares => middlewares
-                                .AddSerializer<ProtobufNetSerializer>()
-                                .AddTypedHandlers(
-                                    handlers => handlers
-                                        .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                        .AddHandlers(
-                                            new[]
-                                            {
-                                                typeof(ChangeConsumerWorkersCountHandler),
-                                                typeof(PauseConsumerByNameHandler),
-                                                typeof(PauseConsumersByGroupHandler),
-                                                typeof(ResetConsumerOffsetHandler),
-                                                typeof(RestartConsumerByNameHandler),
-                                                typeof(ResumeConsumerByNameHandler),
-                                                typeof(ResumeConsumersByGroupHandler),
-                                                typeof(RewindConsumerOffsetToDateTimeHandler),
-                                                typeof(StartConsumerByNameHandler),
-                                                typeof(StopConsumerByNameHandler),
-                                            }))));
+                                .AddSerializer<ProtobufNetSerializer>()));
+
+            if (!producerOnly)
+            {
+                cluster.DependencyConfigurator
+                    .AddSingleton<IConsumerAdmin, ConsumerAdmin>();
+
+                cluster
+                    .AddConsumer(
+                        consumer => consumer
+                            .ManualAssignPartitions(topic, new[] { topicPartition })
+                            .WithGroupId(consumerGroup)
+                            .WithoutStoringOffsets()
+                            .WithWorkersCount(1)
+                            .WithBufferSize(1)
+                            .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                            .DisableManagement()
+                            .AddMiddlewares(
+                                middlewares => middlewares
+                                    .AddSerializer<ProtobufNetSerializer>()
+                                    .AddTypedHandlers(
+                                        handlers => handlers
+                                            .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                            .AddHandlers(
+                                                new[]
+                                                {
+                                                    typeof(ChangeConsumerWorkersCountHandler),
+                                                    typeof(PauseConsumerByNameHandler),
+                                                    typeof(PauseConsumersByGroupHandler),
+                                                    typeof(ResetConsumerOffsetHandler),
+                                                    typeof(RestartConsumerByNameHandler),
+                                                    typeof(ResumeConsumerByNameHandler),
+                                                    typeof(ResumeConsumersByGroupHandler),
+                                                    typeof(RewindConsumerOffsetToDateTimeHandler),
+                                                    typeof(StartConsumerByNameHandler),
+                                                    typeof(StopConsumerByNameHandler),
+                                                }))));
+            }
+
+            return cluster;
         }
 
         /// <summary>
