@@ -60,7 +60,7 @@ public void ConfigureServices(IServiceCollection services)
                 .WithBufferSize(100)
                 .WithWorkersCount(10)
                 .AddMiddlewares(middlewares => middlewares
-                    .AddDeserializer<JsonCoreDeserializer>()
+                    .AddSerializer<JsonCoreSerializer>()
                     .AddTypedHandlers(handlers => handlers
                         .AddHandler<SampleMessageHandler>())
                 )
