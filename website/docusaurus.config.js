@@ -75,6 +75,11 @@ const config = {
             position: 'right'
           },
           {
+            to: 'community', 
+            label: 'Community', 
+            position: 'right'
+          },
+          {
             href: 'https://github.com/farfetch/kafkaflow',
             label: 'GitHub',
             position: 'right',
