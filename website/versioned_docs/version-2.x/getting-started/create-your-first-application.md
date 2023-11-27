@@ -33,7 +33,7 @@ Create a new folder with the name _KafkaFlowQuickstart_.
 
 ### 2. Setup Apache Kafka
 
-Inside the folder from step 1, create a `docker-compose.yml` file. You can download it from [here](../../../docker-compose.yml).
+Inside the folder from step 1, create a `docker-compose.yml` file. You can download it from [here](https://github.com/Farfetch/kafkaflow/blob/master/docker-compose.yml).
 
 ### 3. Start the cluster
 
