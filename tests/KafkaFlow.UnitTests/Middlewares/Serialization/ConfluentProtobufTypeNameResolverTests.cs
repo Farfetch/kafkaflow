@@ -1,11 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using Confluent.SchemaRegistry;
-
 using FluentAssertions;
-
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
+using KafkaFlow.Serializer.SchemaRegistry;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 

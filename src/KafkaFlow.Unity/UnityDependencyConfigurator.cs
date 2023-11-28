@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
-using global::Unity;
-using global::Unity.Lifetime;
+using Unity;
+using Unity.Lifetime;
 
 namespace KafkaFlow.Unity
 {
@@ -10,7 +10,7 @@ namespace KafkaFlow.Unity
     /// </summary>
     public class UnityDependencyConfigurator : IDependencyConfigurator
     {
-        private readonly IUnityContainer container;
+        private readonly IUnityContainer _container;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UnityDependencyConfigurator"/> class.
@@ -18,7 +18,7 @@ namespace KafkaFlow.Unity
         /// <param name="container">The Unity container instance</param>
         public UnityDependencyConfigurator(IUnityContainer container)
         {
-            this.container = container;
+            _container = container;
         }
 
         /// <inheritdoc />
@@ -27,7 +27,7 @@ namespace KafkaFlow.Unity
             Type implementationType,
             InstanceLifetime lifetime)
         {
-            this.container.RegisterType(
+            _container.RegisterType(
                 serviceType,
                 implementationType,
                 (ITypeLifetimeManager)ParseLifetime(lifetime));
@@ -39,7 +39,7 @@ namespace KafkaFlow.Unity
             where TService : class
             where TImplementation : class, TService
         {
-            this.container.RegisterType<TService, TImplementation>((ITypeLifetimeManager)ParseLifetime(lifetime));
+            _container.RegisterType<TService, TImplementation>((ITypeLifetimeManager)ParseLifetime(lifetime));
             return this;
         }
 
@@ -47,7 +47,7 @@ namespace KafkaFlow.Unity
         public IDependencyConfigurator Add<TService>(InstanceLifetime lifetime)
             where TService : class
         {
-            this.container.RegisterType<TService>((ITypeLifetimeManager)ParseLifetime(lifetime));
+            _container.RegisterType<TService>((ITypeLifetimeManager)ParseLifetime(lifetime));
             return this;
         }
 
@@ -55,7 +55,7 @@ namespace KafkaFlow.Unity
         public IDependencyConfigurator Add<TImplementation>(TImplementation service)
             where TImplementation : class
         {
-            this.container.RegisterInstance(service);
+            _container.RegisterInstance(service);
             return this;
         }
 
@@ -67,12 +67,12 @@ namespace KafkaFlow.Unity
         {
             string name = null;
 
-            if (this.AlreadyRegistered(serviceType))
+            if (AlreadyRegistered(serviceType))
             {
                 name = Guid.NewGuid().ToString();
             }
 
-            this.container.RegisterFactory(
+            _container.RegisterFactory(
                 serviceType,
                 name,
                 c => factory(new UnityDependencyResolver(c)),
@@ -84,7 +84,7 @@ namespace KafkaFlow.Unity
         /// <inheritdoc />
         public bool AlreadyRegistered(Type registeredType)
         {
-            return this.container.Registrations.Any(x => x.RegisteredType == registeredType);
+            return _container.Registrations.Any(x => x.RegisteredType == registeredType);
         }
 
         private static object ParseLifetime(InstanceLifetime lifetime) =>

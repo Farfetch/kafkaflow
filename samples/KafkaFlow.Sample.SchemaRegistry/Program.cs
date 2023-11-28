@@ -73,7 +73,7 @@ services.AddKafka(
                         .WithAutoOffsetReset(AutoOffsetReset.Latest)
                         .AddMiddlewares(
                             middlewares => middlewares
-                                .AddSchemaRegistryAvroSerializer()
+                                .AddSchemaRegistryAvroDeserializer()
                                 .AddTypedHandlers(
                                     handlers => handlers
                                         .AddHandler<AvroMessageHandler>()
@@ -102,7 +102,7 @@ services.AddKafka(
                         .WithAutoOffsetReset(AutoOffsetReset.Latest)
                         .AddMiddlewares(
                             middlewares => middlewares
-                                .AddSchemaRegistryProtobufSerializer()
+                                .AddSchemaRegistryProtobufDeserializer()
                                 .AddTypedHandlers(handlers => handlers.AddHandler<ProtobufMessageHandler>())
                         )
                 )

@@ -4,7 +4,7 @@ using Confluent.SchemaRegistry;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 
-namespace KafkaFlow
+namespace KafkaFlow.Serializer.SchemaRegistry
 {
     internal class ConfluentProtobufTypeNameResolver : IConfluentProtobufTypeNameResolver
     {

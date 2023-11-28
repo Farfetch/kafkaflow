@@ -40,15 +40,6 @@
         <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro\KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow\KafkaFlow.csproj" />
-        <ProjectReference Include="..\..\src\KafkaFlow.Admin.WebApi\KafkaFlow.Admin.WebApi.csproj" />
-        <ProjectReference Include="..\..\src\KafkaFlow.Admin\KafkaFlow.Admin.csproj" />
-        <ProjectReference Include="..\..\src\KafkaFlow.LogHandler.Microsoft\KafkaFlow.LogHandler.Microsoft.csproj" />
-        <ProjectReference Include="..\..\src\KafkaFlow.SchemaRegistry\KafkaFlow.SchemaRegistry.csproj" />
-        <ProjectReference Include="..\..\src\KafkaFlow.Serializer.JsonCore\KafkaFlow.Serializer.JsonCore.csproj" />
-        <ProjectReference Include="..\..\src\KafkaFlow.Serializer.NewtonsoftJson\KafkaFlow.Serializer.NewtonsoftJson.csproj" />
-        <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro\KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro.csproj" />
-        <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf.csproj" />
-        <ProjectReference Include="..\..\src\KafkaFlow\KafkaFlow.csproj" />
     </ItemGroup>
 
 </Project>

@@ -14,7 +14,7 @@ namespace KafkaFlow
         /// </summary>
         /// <param name="middlewares">The middleware configuration builder</param>
         /// <returns></returns>
-        public static IConsumerMiddlewareConfigurationBuilder AddSchemaRegistryProtobufSerializer(
+        public static IConsumerMiddlewareConfigurationBuilder AddSchemaRegistryProtobufDeserializer(
             this IConsumerMiddlewareConfigurationBuilder middlewares)
         {
             middlewares.DependencyConfigurator.TryAddTransient<IConfluentProtobufTypeNameResolver, ConfluentProtobufTypeNameResolver>();

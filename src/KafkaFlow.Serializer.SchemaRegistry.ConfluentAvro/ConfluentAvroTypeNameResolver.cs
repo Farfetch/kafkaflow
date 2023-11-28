@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Confluent.SchemaRegistry;
 using Newtonsoft.Json;
 
-namespace KafkaFlow
+namespace KafkaFlow.Serializer.SchemaRegistry
 {
     internal sealed class ConfluentAvroTypeNameResolver : IConfluentAvroTypeNameResolver
     {
