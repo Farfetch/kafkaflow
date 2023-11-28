@@ -1,13 +1,15 @@
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Confluent.Kafka;
+
 namespace KafkaFlow.Consumers
 {
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-
     internal interface IConsumerWorkerPool
     {
-        Task StartAsync(IEnumerable<TopicPartition> partitions);
+        int CurrentWorkersCount { get; }
+
+        Task StartAsync(IReadOnlyCollection<TopicPartition> partitions, int workersCount);
 
         Task StopAsync();
 

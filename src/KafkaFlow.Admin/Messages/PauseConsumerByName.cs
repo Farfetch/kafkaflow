@@ -1,8 +1,8 @@
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+
 namespace KafkaFlow.Admin.Messages
 {
-    using System.Collections.Generic;
-    using System.Runtime.Serialization;
-
     /// <summary>
     /// A message that pauses a consumer
     /// </summary>

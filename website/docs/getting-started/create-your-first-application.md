@@ -33,7 +33,7 @@ Create a new folder with the name _KafkaFlowQuickstart_.
 
 ### 2. Setup Apache Kafka
 
-Inside the folder from step 1, create a `docker-compose.yml` file. You can download it from [here](../../../docker-compose.yml).
+Inside the folder from step 1, create a `docker-compose.yml` file. You can download it from [here](https://github.com/Farfetch/kafkaflow/blob/master/docker-compose.yml).
 
 ### 3. Start the cluster
 
@@ -58,8 +58,6 @@ Inside the _Producer_ project directory, run the following commands to install t
 dotnet add package KafkaFlow
 dotnet add package KafkaFlow.Microsoft.DependencyInjection
 dotnet add package KafkaFlow.LogHandler.Console
-dotnet add package KafkaFlow.TypedHandler
-dotnet add package KafkaFlow.Serializer
 dotnet add package KafkaFlow.Serializer.JsonCore
 dotnet add package Microsoft.Extensions.DependencyInjection
 ```
@@ -153,8 +151,6 @@ Inside the _Consumer_ project directory, run the following commands to install t
 dotnet add package KafkaFlow
 dotnet add package KafkaFlow.Microsoft.DependencyInjection
 dotnet add package KafkaFlow.LogHandler.Console
-dotnet add package KafkaFlow.TypedHandler
-dotnet add package KafkaFlow.Serializer
 dotnet add package KafkaFlow.Serializer.JsonCore
 dotnet add package Microsoft.Extensions.DependencyInjection
 ```
@@ -165,7 +161,6 @@ Create a new class file named _HelloMessageHandler.cs_ and add the following exa
 
 ```csharp
 using KafkaFlow;
-using KafkaFlow.TypedHandler;
 using Producer;
 
 namespace Consumer;
@@ -193,7 +188,6 @@ Replace the content of the _Program.cs_ with the following example.
 using KafkaFlow;
 using KafkaFlow.Serializer;
 using Microsoft.Extensions.DependencyInjection;
-using KafkaFlow.TypedHandler;
 using Consumer;
 
 const string topicName = "sample-topic";
@@ -210,7 +204,7 @@ services.AddKafka(kafka => kafka
             .WithBufferSize(100)
             .WithWorkersCount(10)
             .AddMiddlewares(middlewares => middlewares
-                .AddSerializer<JsonCoreSerializer>()
+                .AddDeserializer<JsonCoreDeserializer>()
                 .AddTypedHandlers(h => h.AddHandler<HelloMessageHandler>())
             )
         )

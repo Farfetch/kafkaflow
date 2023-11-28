@@ -5,7 +5,6 @@ using Confluent.SchemaRegistry.Serdes;
 using KafkaFlow;
 using KafkaFlow.Producers;
 using KafkaFlow.Sample.SchemaRegistry.Handlers;
-using KafkaFlow.TypedHandler;
 using Microsoft.Extensions.DependencyInjection;
 using SchemaRegistry;
 
@@ -23,7 +22,7 @@ services.AddKafka(
         .UseConsoleLog()
         .AddCluster(
             cluster => cluster
-                .WithBrokers(new[] {"localhost:9092"})
+                .WithBrokers(new[] { "localhost:9092" })
                 .WithSchemaRegistry(config => config.Url = "localhost:8081")
                 .CreateTopicIfNotExists(avroTopic, 1, 1)
                 .CreateTopicIfNotExists(jsonTopic, 1, 1)
@@ -80,7 +79,7 @@ services.AddKafka(
                                         .AddHandler<AvroMessageHandler>()
                                         .AddHandler<AvroMessageHandler2>())
                         )
-                ) 
+                )
                 .AddConsumer(
                     consumer => consumer
                         .Topic(jsonTopic)
@@ -129,16 +128,16 @@ while (true)
                 await Task.WhenAll(
                     producers[avroProducerName].ProduceAsync(
                         Guid.NewGuid().ToString(),
-                        new AvroLogMessage {Severity = LogLevel.Info}),
+                        new AvroLogMessage { Severity = LogLevel.Info }),
                     producers[avroProducerName].ProduceAsync(
                         Guid.NewGuid().ToString(),
-                        new AvroLogMessage2 {Message = Guid.NewGuid().ToString()}),
+                        new AvroLogMessage2 { Message = Guid.NewGuid().ToString() }),
                     producers[jsonProducerName].ProduceAsync(
                         Guid.NewGuid().ToString(),
-                        new JsonLogMessage {Message = Guid.NewGuid().ToString()}),
+                        new JsonLogMessage { Message = Guid.NewGuid().ToString() }),
                     producers[protobufProducerName].ProduceAsync(
                         Guid.NewGuid().ToString(),
-                        new ProtobufLogMessage {Message = Guid.NewGuid().ToString()})
+                        new ProtobufLogMessage { Message = Guid.NewGuid().ToString() })
                 );
             }
 

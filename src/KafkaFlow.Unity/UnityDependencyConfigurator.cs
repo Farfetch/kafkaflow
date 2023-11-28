@@ -1,11 +1,10 @@
-﻿namespace KafkaFlow.Unity
-{
-    using System;
-    using System.Linq;
-    using global::Unity;
-    using global::Unity.Lifetime;
-    using InstanceLifetime = KafkaFlow.InstanceLifetime;
+﻿using System;
+using System.Linq;
+using global::Unity;
+using global::Unity.Lifetime;
 
+namespace KafkaFlow.Unity
+{
     /// <summary>
     /// The Unity implementation of <see cref="IDependencyConfigurator"/>
     /// </summary>

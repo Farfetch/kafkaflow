@@ -1,7 +1,7 @@
+using System;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-
     /// <summary>
     /// Used to build the producer configuration
     /// </summary>

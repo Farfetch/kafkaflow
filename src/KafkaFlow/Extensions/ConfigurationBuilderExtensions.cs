@@ -1,10 +1,15 @@
+using System;
+using System.Collections.Generic;
+using Confluent.Kafka;
+using KafkaFlow.Clusters;
+using KafkaFlow.Configuration;
+using KafkaFlow.Consumers;
+using KafkaFlow.Consumers.WorkersBalancers;
+using KafkaFlow.Middlewares.Compressor;
+using KafkaFlow.Middlewares.TypedHandler;
+
 namespace KafkaFlow
 {
-    using System;
-    using System.Collections.Generic;
-    using Confluent.Kafka;
-    using KafkaFlow.Configuration;
-
     /// <summary>
     /// Provides extension methods over <see cref="IConsumerConfigurationBuilder"/> and <see cref="IProducerConfigurationBuilder"/>
     /// </summary>
@@ -18,7 +23,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IProducerConfigurationBuilder WithProducerConfig(this IProducerConfigurationBuilder builder, ProducerConfig config)
         {
-            return ((ProducerConfigurationBuilder) builder).WithProducerConfig(config);
+            return ((ProducerConfigurationBuilder)builder).WithProducerConfig(config);
         }
 
         /// <summary>
@@ -40,7 +45,7 @@ namespace KafkaFlow
             CompressionType compressionType,
             int? compressionLevel = -1)
         {
-            return ((ProducerConfigurationBuilder) builder).WithCompression(compressionType, compressionLevel);
+            return ((ProducerConfigurationBuilder)builder).WithCompression(compressionType, compressionLevel);
         }
 
         /// <summary>
@@ -51,7 +56,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IConsumerConfigurationBuilder WithConsumerConfig(this IConsumerConfigurationBuilder builder, ConsumerConfig config)
         {
-            return ((ConsumerConfigurationBuilder) builder).WithConsumerConfig(config);
+            return ((ConsumerConfigurationBuilder)builder).WithConsumerConfig(config);
         }
 
         /// <summary>
@@ -75,7 +80,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IConsumerConfigurationBuilder WithPartitionsRevokedHandler(
             this IConsumerConfigurationBuilder builder,
-            Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler)
+            Action<IDependencyResolver, List<Confluent.Kafka.TopicPartitionOffset>> partitionsRevokedHandler)
         {
             return ((ConsumerConfigurationBuilder)builder).WithPartitionsRevokedHandler(partitionsRevokedHandler);
         }
@@ -89,7 +94,7 @@ namespace KafkaFlow
         /// <returns></returns>
         public static IConsumerConfigurationBuilder WithPendingOffsetsStatisticsHandler(
             this IConsumerConfigurationBuilder builder,
-            Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> pendingOffsetsHandler,
+            Action<IDependencyResolver, IEnumerable<Confluent.Kafka.TopicPartitionOffset>> pendingOffsetsHandler,
             TimeSpan interval)
         {
             return ((ConsumerConfigurationBuilder)builder).WithPendingOffsetsStatisticsHandler(pendingOffsetsHandler, interval);
@@ -105,7 +110,7 @@ namespace KafkaFlow
             this IConsumerConfigurationBuilder builder,
             ConsumerCustomFactory decoratorFactory)
         {
-            return ((ConsumerConfigurationBuilder) builder).WithCustomFactory(decoratorFactory);
+            return ((ConsumerConfigurationBuilder)builder).WithCustomFactory(decoratorFactory);
         }
 
         /// <summary>
@@ -118,7 +123,139 @@ namespace KafkaFlow
             this IProducerConfigurationBuilder builder,
             ProducerCustomFactory decoratorFactory)
         {
-            return ((ProducerConfigurationBuilder) builder).WithCustomFactory(decoratorFactory);
+            return ((ProducerConfigurationBuilder)builder).WithCustomFactory(decoratorFactory);
+        }
+
+        /// <summary>
+        /// Configures the consumer to use the consumer's lag as a metric for dynamically calculating the number of workers for each application instance.
+        /// </summary>
+        /// <param name="builder">The consumer's configuration builder.</param>
+        /// <param name="totalWorkers">The total number of workers to be distributed across all application instances. The sum of workers across all instances will approximate this number.</param>
+        /// <param name="minInstanceWorkers">The minimum number of workers for each application instance.</param>
+        /// <param name="maxInstanceWorkers">The maximum number of workers for each application instance.</param>
+        /// <param name="evaluationInterval">The interval at which the number of workers will be recalculated based on consumer's lag.</param>
+        /// <returns></returns>
+        public static IConsumerConfigurationBuilder WithConsumerLagWorkerBalancer(
+            this IConsumerConfigurationBuilder builder,
+            int totalWorkers,
+            int minInstanceWorkers,
+            int maxInstanceWorkers,
+            TimeSpan evaluationInterval)
+        {
+            return builder.WithWorkersCount(
+                (context, resolver) =>
+                    new ConsumerLagWorkerBalancer(
+                            resolver.Resolve<IClusterManager>(),
+                            resolver.Resolve<IConsumerAccessor>(),
+                            resolver.Resolve<ILogHandler>(),
+                            totalWorkers,
+                            minInstanceWorkers,
+                            maxInstanceWorkers)
+                        .GetWorkersCountAsync(context),
+                evaluationInterval);
+        }
+
+        /// <summary>
+        /// Configures the consumer to use the consumer's lag as a metric for dynamically calculating the number of workers for each application instance.
+        /// The number of workers will be re-evaluated every 5 minutes.
+        /// </summary>
+        /// <param name="builder">The consumer's configuration builder.</param>
+        /// <param name="totalWorkers">The total number of workers to be distributed across all application instances. The sum of workers across all instances will approximate this number.</param>
+        /// <param name="minInstanceWorkers">The minimum number of workers for each application instance.</param>
+        /// <param name="maxInstanceWorkers">The maximum number of workers for each application instance.</param>
+        /// <returns></returns>
+        public static IConsumerConfigurationBuilder WithConsumerLagWorkerBalancer(
+            this IConsumerConfigurationBuilder builder,
+            int totalWorkers,
+            int minInstanceWorkers,
+            int maxInstanceWorkers)
+        {
+            return builder.WithConsumerLagWorkerBalancer(
+                totalWorkers,
+                minInstanceWorkers,
+                maxInstanceWorkers,
+                TimeSpan.FromMinutes(5));
+        }
+
+        /// <summary>
+        /// Adds typed handler middleware
+        /// </summary>
+        /// <param name="builder">Instance of <see cref="IConsumerMiddlewareConfigurationBuilder"/></param>
+        /// <param name="configure">A handler to configure the middleware</param>
+        /// <returns></returns>
+        public static IConsumerMiddlewareConfigurationBuilder AddTypedHandlers(
+            this IConsumerMiddlewareConfigurationBuilder builder,
+            Action<TypedHandlerConfigurationBuilder> configure)
+        {
+            var typedHandlerBuilder = new TypedHandlerConfigurationBuilder(builder.DependencyConfigurator);
+
+            configure(typedHandlerBuilder);
+
+            var configuration = typedHandlerBuilder.Build();
+
+            builder.Add(
+                resolver => new TypedHandlerMiddleware(resolver, configuration),
+                MiddlewareLifetime.Message);
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Registers a middleware to decompress the message
+        /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
+        /// <typeparam name="T">The compressor type</typeparam>
+        /// <returns></returns>
+        public static IConsumerMiddlewareConfigurationBuilder AddDecompressor<T>(this IConsumerMiddlewareConfigurationBuilder middlewares)
+            where T : class, IDecompressor
+        {
+            middlewares.DependencyConfigurator.AddTransient<T>();
+            return middlewares.AddDecompressor(resolver => resolver.Resolve<T>());
+        }
+
+        /// <summary>
+        /// Registers a middleware to decompress the message
+        /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
+        /// <typeparam name="T">The decompressor type that implements <see cref="IDecompressor"/></typeparam>
+        /// <param name="factory">A factory to create the <see cref="IDecompressor"/> instance</param>
+        /// <returns></returns>
+        public static IConsumerMiddlewareConfigurationBuilder AddDecompressor<T>(
+            this IConsumerMiddlewareConfigurationBuilder middlewares,
+            Factory<T> factory)
+            where T : class, IDecompressor
+        {
+            return middlewares.Add(resolver => new DecompressorConsumerMiddleware(factory(resolver)));
+        }
+
+        /// <summary>
+        /// Registers a middleware to compress the message
+        /// It is highly recommended to use the producer native compression ('WithCompression()' method) instead of using the compressor middleware
+        /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
+        /// <typeparam name="T">The compressor type that implements <see cref="ICompressor"/></typeparam>
+        /// <returns></returns>
+        public static IProducerMiddlewareConfigurationBuilder AddCompressor<T>(this IProducerMiddlewareConfigurationBuilder middlewares)
+            where T : class, ICompressor
+        {
+            middlewares.DependencyConfigurator.AddTransient<T>();
+            return middlewares.AddCompressor(resolver => resolver.Resolve<T>());
+        }
+
+        /// <summary>
+        /// Registers a middleware to compress the message
+        /// It is highly recommended to use the producer native compression ('WithCompression()' method) instead of using the compressor middleware
+        /// </summary>
+        /// <param name="middlewares">The middleware configuration builder</param>
+        /// <typeparam name="T">The compressor type that implements <see cref="ICompressor"/></typeparam>
+        /// <param name="factory">A factory to create the <see cref="ICompressor"/> instance</param>
+        /// <returns></returns>
+        public static IProducerMiddlewareConfigurationBuilder AddCompressor<T>(
+            this IProducerMiddlewareConfigurationBuilder middlewares,
+            Factory<T> factory)
+            where T : class, ICompressor
+        {
+            return middlewares.Add(resolver => new CompressorProducerMiddleware(factory(resolver)));
         }
     }
 }

@@ -1,13 +1,13 @@
+using System;
+using System.Collections.Generic;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-
     internal class MiddlewareConfigurationBuilder<TBuilder>
         : IMiddlewareConfigurationBuilder<TBuilder>
         where TBuilder : class, IMiddlewareConfigurationBuilder<TBuilder>
     {
-        private readonly List<MiddlewareConfiguration> middlewaresConfigurations = new();
+        private readonly List<MiddlewareConfiguration> _middlewaresConfigurations = new();
 
         protected MiddlewareConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
@@ -21,7 +21,7 @@ namespace KafkaFlow.Configuration
             MiddlewareLifetime lifetime = MiddlewareLifetime.ConsumerOrProducer)
             where T : class, IMessageMiddleware
         {
-            return this.AddAt(this.middlewaresConfigurations.Count, factory, lifetime);
+            return this.AddAt(_middlewaresConfigurations.Count, factory, lifetime);
         }
 
         public TBuilder AddAtBeginning<T>(
@@ -35,7 +35,7 @@ namespace KafkaFlow.Configuration
         public TBuilder Add<T>(MiddlewareLifetime lifetime = MiddlewareLifetime.ConsumerOrProducer)
             where T : class, IMessageMiddleware
         {
-            return this.AddAt<T>(this.middlewaresConfigurations.Count, lifetime);
+            return this.AddAt<T>(_middlewaresConfigurations.Count, lifetime);
         }
 
         public TBuilder AddAtBeginning<T>(MiddlewareLifetime lifetime = MiddlewareLifetime.ConsumerOrProducer)
@@ -44,13 +44,13 @@ namespace KafkaFlow.Configuration
             return this.AddAt<T>(0, lifetime);
         }
 
-        public IReadOnlyList<MiddlewareConfiguration> Build() => this.middlewaresConfigurations;
+        public IReadOnlyList<MiddlewareConfiguration> Build() => _middlewaresConfigurations;
 
         private static InstanceLifetime ParseLifetime(MiddlewareLifetime lifetime)
         {
             return lifetime switch
             {
-                MiddlewareLifetime.Scoped => InstanceLifetime.Scoped,
+                MiddlewareLifetime.Message => InstanceLifetime.Scoped,
                 MiddlewareLifetime.Singleton => InstanceLifetime.Singleton,
                 MiddlewareLifetime.Transient or
                     MiddlewareLifetime.Worker or
@@ -72,7 +72,7 @@ namespace KafkaFlow.Configuration
                 _ => new MiddlewareInstanceContainer<T>(containerId, factory),
                 ParseLifetime(lifetime));
 
-            this.middlewaresConfigurations.Insert(
+            _middlewaresConfigurations.Insert(
                 position,
                 new MiddlewareConfiguration(typeof(T), lifetime, containerId));
 
@@ -86,7 +86,7 @@ namespace KafkaFlow.Configuration
         {
             this.DependencyConfigurator.Add<T>(ParseLifetime(lifetime));
 
-            this.middlewaresConfigurations.Insert(
+            _middlewaresConfigurations.Insert(
                 position,
                 new MiddlewareConfiguration(typeof(T), lifetime));
 

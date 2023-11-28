@@ -1,8 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-
     /// <summary>
     /// Used to build the consumer configuration
     /// </summary>
@@ -14,7 +15,8 @@ namespace KafkaFlow.Configuration
         IDependencyConfigurator DependencyConfigurator { get; }
 
         /// <summary>
-        /// Sets the topic that will be used to read the messages, the partitions will be automatically assigned
+        /// Sets the topic that will be used to read the messages, the partitions will be automatically assigned.
+        /// librdkafka patterns are accepted.
         /// </summary>
         /// <param name="topicName">Topic name</param>
         /// <returns></returns>
@@ -92,6 +94,24 @@ namespace KafkaFlow.Configuration
         IConsumerConfigurationBuilder WithWorkersCount(int workersCount);
 
         /// <summary>
+        /// Configures a custom function to dynamically calculate the number of workers.
+        /// </summary>
+        /// <param name="calculator">A function that takes a WorkersCountContext object and returns a Task yielding the new workers count</param>
+        /// <param name="evaluationInterval">The interval that the calculator will be called</param>
+        /// <returns>The IConsumerConfigurationBuilder instance for method chaining</returns>
+        IConsumerConfigurationBuilder WithWorkersCount(
+            Func<WorkersCountContext, IDependencyResolver, Task<int>> calculator,
+            TimeSpan evaluationInterval);
+
+        /// <summary>
+        /// Configures a custom function to dynamically calculate the number of workers.
+        /// By default, this function is called every 5 minutes.
+        /// </summary>
+        /// <param name="calculator">A function that takes a WorkersCountContext object and returns a Task yielding the new workers count</param>
+        /// <returns>The IConsumerConfigurationBuilder instance for method chaining</returns>
+        IConsumerConfigurationBuilder WithWorkersCount(Func<WorkersCountContext, IDependencyResolver, Task<int>> calculator);
+
+        /// <summary>
         /// Sets how many messages will be buffered for each worker
         /// </summary>
         /// <param name="size">The buffer size</param>
@@ -117,31 +137,26 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Sets the strategy to choose a worker when a message arrives
         /// </summary>
-        /// <typeparam name="T">A class that implements the <see cref="IDistributionStrategy"/> interface</typeparam>
+        /// <typeparam name="T">A class that implements the <see cref="IWorkerDistributionStrategy"/> interface</typeparam>
         /// <param name="factory">A factory to create the instance</param>
         /// <returns></returns>
-        IConsumerConfigurationBuilder WithWorkDistributionStrategy<T>(Factory<T> factory)
-            where T : class, IDistributionStrategy;
+        IConsumerConfigurationBuilder WithWorkerDistributionStrategy<T>(Factory<T> factory)
+            where T : class, IWorkerDistributionStrategy;
 
         /// <summary>
         /// Sets the strategy to choose a worker when a message arrives
         /// </summary>
-        /// <typeparam name="T">A class that implements the <see cref="IDistributionStrategy"/> interface</typeparam>
+        /// <typeparam name="T">A class that implements the <see cref="IWorkerDistributionStrategy"/> interface</typeparam>
         /// <returns></returns>
-        IConsumerConfigurationBuilder WithWorkDistributionStrategy<T>()
-            where T : class, IDistributionStrategy;
+        IConsumerConfigurationBuilder WithWorkerDistributionStrategy<T>()
+            where T : class, IWorkerDistributionStrategy;
 
         /// <summary>
-        /// Offsets will be stored after the execution of the handler and middlewares automatically, this is the default behaviour
+        /// Configures the consumer for manual message completion.
+        /// The client should call the <see cref="IConsumerContext.Complete"/> to mark the message processing as finished
         /// </summary>
         /// <returns></returns>
-        IConsumerConfigurationBuilder WithAutoStoreOffsets();
-
-        /// <summary>
-        /// The client should call the <see cref="IConsumerContext.StoreOffset()"/>
-        /// </summary>
-        /// <returns></returns>
-        IConsumerConfigurationBuilder WithManualStoreOffsets();
+        IConsumerConfigurationBuilder WithManualMessageCompletion();
 
         /// <summary>
         /// No offsets will be stored on Kafka

@@ -1,9 +1,13 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using KafkaFlow.Configuration;
+
 namespace KafkaFlow.Consumers
 {
-    using Confluent.Kafka;
-
     internal class NullOffsetCommitter : IOffsetCommitter
     {
+        public List<PendingOffsetsStatisticsHandler> PendingOffsetsStatisticsHandlers { get; } = new();
+
         public void Dispose()
         {
             // Do nothing
@@ -13,5 +17,9 @@ namespace KafkaFlow.Consumers
         {
             // Do nothing
         }
+
+        public Task StartAsync() => Task.CompletedTask;
+
+        public Task StopAsync() => Task.CompletedTask;
     }
 }

@@ -1,41 +1,41 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Consumers
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     internal class WorkerPoolFeeder : IWorkerPoolFeeder
     {
-        private readonly IConsumer consumer;
-        private readonly IConsumerWorkerPool workerPool;
-        private readonly ILogHandler logHandler;
+        private readonly IConsumer _consumer;
+        private readonly IConsumerWorkerPool _workerPool;
+        private readonly ILogHandler _logHandler;
 
-        private CancellationTokenSource stopTokenSource;
-        private Task feederTask;
+        private CancellationTokenSource _stopTokenSource;
+        private Task _feederTask;
 
         public WorkerPoolFeeder(
             IConsumer consumer,
             IConsumerWorkerPool workerPool,
             ILogHandler logHandler)
         {
-            this.consumer = consumer;
-            this.workerPool = workerPool;
-            this.logHandler = logHandler;
+            _consumer = consumer;
+            _workerPool = workerPool;
+            _logHandler = logHandler;
         }
 
         public void Start()
         {
-            this.stopTokenSource = new CancellationTokenSource();
-            var token = this.stopTokenSource.Token;
+            _stopTokenSource = new CancellationTokenSource();
+            var token = _stopTokenSource.Token;
 
-            this.feederTask = Task.Run(
+            _feederTask = Task.Run(
                 async () =>
                 {
                     while (!token.IsCancellationRequested)
                     {
                         try
                         {
-                            var message = await this.consumer
+                            var message = await _consumer
                                 .ConsumeAsync(token)
                                 .ConfigureAwait(false);
 
@@ -44,7 +44,7 @@ namespace KafkaFlow.Consumers
                                 continue;
                             }
 
-                            await this.workerPool
+                            await _workerPool
                                 .EnqueueAsync(message, token)
                                 .ConfigureAwait(false);
                         }
@@ -54,7 +54,7 @@ namespace KafkaFlow.Consumers
                         }
                         catch (Exception ex)
                         {
-                            this.logHandler.Error(
+                            _logHandler.Error(
                                 "Error consuming message from Kafka",
                                 ex,
                                 null);
@@ -66,13 +66,13 @@ namespace KafkaFlow.Consumers
 
         public async Task StopAsync()
         {
-            if (this.stopTokenSource is { IsCancellationRequested: false })
+            if (_stopTokenSource is { IsCancellationRequested: false })
             {
-                this.stopTokenSource.Cancel();
-                this.stopTokenSource.Dispose();
+                _stopTokenSource.Cancel();
+                _stopTokenSource.Dispose();
             }
 
-            await (this.feederTask ?? Task.CompletedTask);
+            await (_feederTask ?? Task.CompletedTask);
         }
     }
 }

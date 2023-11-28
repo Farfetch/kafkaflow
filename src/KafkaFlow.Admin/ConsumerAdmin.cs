@@ -1,24 +1,24 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using KafkaFlow.Admin.Messages;
+
 namespace KafkaFlow.Admin
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using KafkaFlow.Admin.Messages;
-
     internal class ConsumerAdmin
         : IConsumerAdmin
     {
-        private readonly IAdminProducer producer;
+        private readonly IAdminProducer _producer;
 
         public ConsumerAdmin(IAdminProducer producer)
         {
-            this.producer = producer;
+            _producer = producer;
         }
 
         public async Task PauseConsumerGroupAsync(string groupId, IEnumerable<string> topics)
         {
-            await this.producer.ProduceAsync(
+            await _producer.ProduceAsync(
                 new PauseConsumersByGroup
                 {
                     GroupId = groupId,
@@ -28,7 +28,7 @@ namespace KafkaFlow.Admin
 
         public async Task ResumeConsumerGroupAsync(string groupId, IEnumerable<string> topics)
         {
-            await this.producer.ProduceAsync(
+            await _producer.ProduceAsync(
                 new ResumeConsumersByGroup
                 {
                     GroupId = groupId,
@@ -38,7 +38,7 @@ namespace KafkaFlow.Admin
 
         public async Task PauseConsumerAsync(string consumerName, IEnumerable<string> topics)
         {
-            await this.producer.ProduceAsync(
+            await _producer.ProduceAsync(
                 new PauseConsumerByName
                 {
                     ConsumerName = consumerName,
@@ -48,7 +48,7 @@ namespace KafkaFlow.Admin
 
         public async Task ResumeConsumerAsync(string consumerName, IEnumerable<string> topics)
         {
-            await this.producer.ProduceAsync(
+            await _producer.ProduceAsync(
                 new ResumeConsumerByName
                 {
                     ConsumerName = consumerName,
@@ -58,22 +58,22 @@ namespace KafkaFlow.Admin
 
         public async Task StartConsumerAsync(string consumerName)
         {
-            await this.producer.ProduceAsync(new StartConsumerByName { ConsumerName = consumerName });
+            await _producer.ProduceAsync(new StartConsumerByName { ConsumerName = consumerName });
         }
 
         public async Task StopConsumerAsync(string consumerName)
         {
-            await this.producer.ProduceAsync(new StopConsumerByName { ConsumerName = consumerName });
+            await _producer.ProduceAsync(new StopConsumerByName { ConsumerName = consumerName });
         }
 
         public async Task RestartConsumerAsync(string consumerName)
         {
-            await this.producer.ProduceAsync(new RestartConsumerByName { ConsumerName = consumerName });
+            await _producer.ProduceAsync(new RestartConsumerByName { ConsumerName = consumerName });
         }
 
         public async Task ResetOffsetsAsync(string consumerName, IEnumerable<string> topics)
         {
-            await this.producer.ProduceAsync(
+            await _producer.ProduceAsync(
                 new ResetConsumerOffset
                 {
                     ConsumerName = consumerName,
@@ -83,7 +83,7 @@ namespace KafkaFlow.Admin
 
         public async Task RewindOffsetsAsync(string consumerName, DateTime pointInTime, IEnumerable<string> topics)
         {
-            await this.producer.ProduceAsync(
+            await _producer.ProduceAsync(
                 new RewindConsumerOffsetToDateTime
                 {
                     ConsumerName = consumerName,
@@ -94,7 +94,7 @@ namespace KafkaFlow.Admin
 
         public async Task ChangeWorkersCountAsync(string consumerName, int workersCount)
         {
-            await this.producer.ProduceAsync(
+            await _producer.ProduceAsync(
                 new ChangeConsumerWorkersCount
                 {
                     ConsumerName = consumerName,

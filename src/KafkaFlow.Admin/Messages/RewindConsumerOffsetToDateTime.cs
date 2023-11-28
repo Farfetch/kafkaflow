@@ -1,9 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+
 namespace KafkaFlow.Admin.Messages
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Runtime.Serialization;
-
     /// <summary>
     /// The message that rewind a consumer to a point in time
     /// </summary>

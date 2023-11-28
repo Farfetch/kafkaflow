@@ -1,18 +1,17 @@
+using System.Threading.Tasks;
+using KafkaFlow.Admin.Messages;
+
 namespace KafkaFlow.Admin.Handlers
 {
-    using System.Threading.Tasks;
-    using KafkaFlow.Admin.Messages;
-    using KafkaFlow.TypedHandler;
-
     internal class ConsumerTelemetryMetricHandler : IMessageHandler<ConsumerTelemetryMetric>
     {
-        private readonly ITelemetryStorage storage;
+        private readonly ITelemetryStorage _storage;
 
-        public ConsumerTelemetryMetricHandler(ITelemetryStorage storage) => this.storage = storage;
+        public ConsumerTelemetryMetricHandler(ITelemetryStorage storage) => _storage = storage;
 
         public Task Handle(IMessageContext context, ConsumerTelemetryMetric message)
         {
-            this.storage.Put(message);
+            _storage.Put(message);
             return Task.CompletedTask;
         }
     }

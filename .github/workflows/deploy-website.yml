@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '6.0.x'
 
@@ -25,7 +25,7 @@ jobs:
         shell: bash
 
       - name: .NET Publish
-        run: dotnet publish src/KafkaFlow.sln -c Release -o ./drop
+        run: dotnet publish KafkaFlow.sln -c Release -o ./drop
 
       - run: dotnet tool list --global
         shell: bash
@@ -34,12 +34,6 @@ jobs:
         shell: bash
 
       - run: xmldocmd-docusaurus ./drop/KafkaFlow.Admin.dll website/docs/reference/KafkaFlow.Admin --type-folders
-        shell: bash
-
-      - run: xmldocmd-docusaurus ./drop/KafkaFlow.BatchConsume.dll website/docs/reference/KafkaFlow.BatchConsume --type-folders
-        shell: bash
-
-      - run: xmldocmd-docusaurus ./drop/KafkaFlow.Compressor.dll website/docs/reference/KafkaFlow.Compressor --type-folders
         shell: bash
 
       - run: xmldocmd-docusaurus ./drop/KafkaFlow.Extensions.Hosting.dll website/docs/reference/KafkaFlow.Extensions.Hosting --type-folders
@@ -55,9 +49,6 @@ jobs:
         shell: bash
 
       - run: xmldocmd-docusaurus ./drop/KafkaFlow.SchemaRegistry.dll website/docs/reference/KafkaFlow.SchemaRegistry --type-folders
-        shell: bash
-
-      - run: xmldocmd-docusaurus ./drop/KafkaFlow.Serializer.dll website/docs/reference/KafkaFlow.Serializer --type-folders
         shell: bash
 
       - run: xmldocmd-docusaurus ./drop/KafkaFlow.Serializer.JsonCore.dll website/docs/reference/KafkaFlow.Serializer.JsonCore --type-folders
@@ -76,9 +67,6 @@ jobs:
         shell: bash
 
       - run: xmldocmd-docusaurus ./drop/KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf.dll website/docs/reference/KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf --type-folders
-        shell: bash
-
-      - run: xmldocmd-docusaurus ./drop/KafkaFlow.TypedHandler.dll website/docs/reference/KafkaFlow.TypedHandler --type-folders
         shell: bash
 
       - run: xmldocmd-docusaurus ./drop/KafkaFlow.Unity.dll website/docs/reference/KafkaFlow.Unity --type-folders

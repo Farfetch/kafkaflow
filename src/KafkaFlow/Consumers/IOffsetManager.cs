@@ -1,12 +1,13 @@
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Consumers
 {
-    using System;
-    using Confluent.Kafka;
-
     internal interface IOffsetManager
     {
-        void MarkAsProcessed(TopicPartitionOffset offset);
+        void Enqueue(IConsumerContext context);
 
-        void OnOffsetProcessed(TopicPartitionOffset offset, Action action);
+        void MarkAsProcessed(IConsumerContext offset);
+
+        Task WaitContextsCompletionAsync();
     }
 }

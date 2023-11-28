@@ -1,8 +1,9 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace KafkaFlow
 {
-    using System;
-    using System.Threading;
-
     /// <summary>
     /// Represents the message consumer
     /// </summary>
@@ -39,6 +40,11 @@ namespace KafkaFlow
         long Offset { get; }
 
         /// <summary>
+        /// Gets the <see cref="TopicPartitionOffset"/> object associated with the message
+        /// </summary>
+        TopicPartitionOffset TopicPartitionOffset { get; }
+
+        /// <summary>
         /// Gets the consumer group id from kafka consumer that received the message
         /// </summary>
         string GroupId { get; }
@@ -49,14 +55,43 @@ namespace KafkaFlow
         DateTime MessageTimestamp { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether if the framework should store the current offset in the end when auto store offset is used
+        /// Gets or sets a value indicating whether if the framework should invoke the <see cref="Complete"/> method after the message has been processed
+        /// </summary>
+        bool AutoMessageCompletion { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether if the message offset must be stored when the message is marked as completed
         /// </summary>
         bool ShouldStoreOffset { get; set; }
 
         /// <summary>
-        /// Store the message offset when manual store option is used
+        /// Gets an instance of IDependencyResolver which provides methods to resolve dependencies.
+        /// This instance is tied to the consumer scope, meaning it is capable of resolving dependencies
+        /// that are scoped to the lifecycle of a single consumer.
         /// </summary>
-        void StoreOffset();
+        IDependencyResolver ConsumerDependencyResolver { get; }
+
+        /// <summary>
+        /// Gets an instance of IDependencyResolver which provides methods to resolve dependencies.
+        /// This instance is tied to the worker scope, meaning it is capable of resolving dependencies
+        /// that are scoped to the lifecycle of a single worker.
+        /// </summary>
+        IDependencyResolver WorkerDependencyResolver { get; }
+
+        /// <summary>
+        /// Gets a Task that completes when the <see cref="Complete"/> method is invoked,
+        /// indicating the end of message processing. This allows async operations
+        /// to wait for the message to be fully processed and its offset stored.
+        /// </summary>
+        Task<TopicPartitionOffset> Completion { get; }
+
+        /// <summary>
+        /// Signals the completion of message processing and stores the message offset to eventually be committed.
+        /// After this call, the framework marks the message processing as finished and releases resources associated with the message.
+        /// By default, this method is automatically invoked when message processing concludes, unless
+        /// the consumer is configured for manual message completion or the <see cref="AutoMessageCompletion"/> flag is set to false.
+        /// </summary>
+        void Complete();
 
         /// <summary>
         /// Get offset watermark data

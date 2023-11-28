@@ -1,9 +1,9 @@
+using System.Collections.Generic;
+using System.Linq;
+using KafkaFlow.Admin.Messages;
+
 namespace KafkaFlow.Admin.Dashboard
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using KafkaFlow.Admin.Messages;
-
     internal static class TelemetryResponseAdapter
     {
         internal static TelemetryResponse Adapt(this IEnumerable<ConsumerTelemetryMetric> metrics)
@@ -28,10 +28,6 @@ namespace KafkaFlow.Admin.Dashboard
                                         return new TelemetryResponse.Consumer
                                         {
                                             Name = consumerName,
-                                            WorkersCount = consumerMetricsList
-                                                .OrderByDescending(x => x.SentAt)
-                                                .First()
-                                                .WorkersCount,
                                             Assignments = consumerMetricsList
                                                 .OrderBy(x => x.Topic)
                                                 .Select(
@@ -40,6 +36,7 @@ namespace KafkaFlow.Admin.Dashboard
                                                         InstanceName = m.InstanceName,
                                                         TopicName = m.Topic,
                                                         Status = m.Status.ToString(),
+                                                        Workers = m.WorkersCount,
                                                         LastUpdate = m.SentAt,
                                                         PausedPartitions = m.PausedPartitions,
                                                         RunningPartitions = m.RunningPartitions,

@@ -1,10 +1,10 @@
+using System.Threading;
+using System.Threading.Tasks;
+using KafkaFlow.Consumers;
+using KafkaFlow.Producers;
+
 namespace KafkaFlow
 {
-    using System.Threading;
-    using System.Threading.Tasks;
-    using KafkaFlow.Consumers;
-    using KafkaFlow.Producers;
-
     /// <summary>
     /// Provides access to the kafka bus operations
     /// </summary>

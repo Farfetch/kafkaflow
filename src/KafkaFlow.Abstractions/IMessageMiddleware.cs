@@ -1,7 +1,7 @@
+using System.Threading.Tasks;
+
 namespace KafkaFlow
 {
-    using System.Threading.Tasks;
-
     /// <summary>
     /// Used to create a message middleware
     /// </summary>

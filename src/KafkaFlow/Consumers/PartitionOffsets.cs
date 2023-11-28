@@ -1,49 +1,57 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Consumers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Runtime.CompilerServices;
-
     internal class PartitionOffsets
     {
-        private readonly SortedSet<long> processedOffsets = new();
-        private readonly LinkedList<long> receivedOffsets = new();
+        private readonly SortedDictionary<long, IConsumerContext> _processedContexts = new();
+        private readonly LinkedList<IConsumerContext> _receivedContexts = new();
 
-        public void Enqueue(long offset)
+        public IConsumerContext DequeuedContext { get; private set; }
+
+        public void Enqueue(IConsumerContext context)
         {
-            lock (this.receivedOffsets)
+            lock (_receivedContexts)
             {
-                this.receivedOffsets.AddLast(offset);
+                _receivedContexts.AddLast(context);
             }
         }
 
-        public bool ShouldCommit(long offset, out long lastProcessedOffset)
+        public bool TryDequeue(IConsumerContext context)
         {
-            lastProcessedOffset = -1;
-            lock (this.receivedOffsets)
+            this.DequeuedContext = null;
+
+            lock (_receivedContexts)
             {
-                if (!this.receivedOffsets.Any())
+                if (!_receivedContexts.Any())
                 {
                     throw new InvalidOperationException(
                         $"There is no offsets in the received queue. Call {nameof(this.Enqueue)} first");
                 }
 
-                if (offset != this.receivedOffsets.First.Value)
+                if (context.Offset != _receivedContexts.First.Value.Offset)
                 {
-                    this.processedOffsets.Add(offset);
+                    _processedContexts.Add(context.Offset, context);
                     return false;
                 }
 
                 do
                 {
-                    lastProcessedOffset = this.receivedOffsets.First.Value;
-                    this.receivedOffsets.RemoveFirst();
+                    this.DequeuedContext = _receivedContexts.First.Value;
+                    _receivedContexts.RemoveFirst();
                 }
-                while (this.receivedOffsets.Count > 0 && this.processedOffsets.Remove(this.receivedOffsets.First.Value));
+                while (_receivedContexts.Count > 0 && _processedContexts.Remove(_receivedContexts.First.Value.Offset));
             }
 
             return true;
         }
+
+        public Task WaitContextsCompletionAsync() => Task.WhenAll(
+            _receivedContexts
+                .Select(x => x.Completion)
+                .ToList());
     }
 }

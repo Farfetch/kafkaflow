@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
     <IsPackable>true</IsPackable>
@@ -23,7 +23,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.17" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.20" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
   
@@ -39,5 +39,5 @@
     <ProjectReference Include="..\KafkaFlow.Admin\KafkaFlow.Admin.csproj" />
     <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
   </ItemGroup>
-
+  
 </Project>

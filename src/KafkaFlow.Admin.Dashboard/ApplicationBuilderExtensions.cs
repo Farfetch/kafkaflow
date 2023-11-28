@@ -1,22 +1,22 @@
+using System;
+using System.Globalization;
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+
 namespace KafkaFlow.Admin.Dashboard
 {
-    using System;
-    using System.Globalization;
-    using System.Reflection;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.FileProviders;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Serialization;
-
     /// <summary>
     /// Extension methods over IApplicationBuilder
     /// </summary>
     public static class ApplicationBuilderExtensions
     {
         /// <summary>
-        /// Enable the KafkaFlow dashboard. The path will be `/kafka-flow`
+        /// Enable the KafkaFlow dashboard. The path will be `/kafkaflow`
         /// </summary>
         /// <param name="app">Instance of <see cref="IApplicationBuilder"/></param>
         /// <returns></returns>

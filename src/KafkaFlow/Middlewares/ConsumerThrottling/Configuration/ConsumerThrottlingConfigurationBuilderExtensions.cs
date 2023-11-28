@@ -1,12 +1,12 @@
+using System;
+using System.Collections.Generic;
+using KafkaFlow.Configuration;
+using KafkaFlow.Consumers;
+using KafkaFlow.Middlewares.ConsumerThrottling;
+using KafkaFlow.Middlewares.ConsumerThrottling.Configuration;
+
 namespace KafkaFlow
 {
-    using System;
-    using System.Collections.Generic;
-    using KafkaFlow.Configuration;
-    using KafkaFlow.Consumers;
-    using KafkaFlow.Middlewares.ConsumerThrottling;
-    using KafkaFlow.Middlewares.ConsumerThrottling.Configuration;
-
     /// <summary>
     /// Provides extension methods for configuring consumer throttling in KafkaFlow.
     /// </summary>

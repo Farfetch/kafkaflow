@@ -1,74 +1,74 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
+using KafkaFlow.Consumers.DistributionStrategies;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Linq;
-    using Confluent.Kafka;
-    using KafkaFlow.Consumers.DistributionStrategies;
-
     internal sealed class ConsumerConfigurationBuilder : IConsumerConfigurationBuilder
     {
-        private readonly List<string> topics = new();
-        private readonly List<TopicPartitions> topicsPartitions = new();
-        private readonly List<Action<string>> statisticsHandlers = new();
+        private readonly List<string> _topics = new();
+        private readonly List<TopicPartitions> _topicsPartitions = new();
+        private readonly List<Action<string>> _statisticsHandlers = new();
 
-        private readonly List<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>>, TimeSpan interval)>
-            pendingOffsetsStatisticsHandlers = new();
+        private readonly List<PendingOffsetsStatisticsHandler> _pendingOffsetsStatisticsHandlers = new();
 
-        private readonly List<Action<IDependencyResolver, List<TopicPartition>>> partitionAssignedHandlers = new();
-        private readonly List<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionRevokedHandlers = new();
-        private readonly ConsumerMiddlewareConfigurationBuilder middlewareConfigurationBuilder;
+        private readonly List<Action<IDependencyResolver, List<Confluent.Kafka.TopicPartition>>> _partitionAssignedHandlers = new();
+        private readonly List<Action<IDependencyResolver, List<Confluent.Kafka.TopicPartitionOffset>>> _partitionRevokedHandlers = new();
+        private readonly ConsumerMiddlewareConfigurationBuilder _middlewareConfigurationBuilder;
 
-        private ConsumerConfig consumerConfig;
+        private Confluent.Kafka.ConsumerConfig _consumerConfig;
 
-        private string name;
-        private bool disableManagement;
-        private string groupId = string.Empty;
-        private AutoOffsetReset? autoOffsetReset;
-        private int? maxPollIntervalMs;
-        private int workersCount;
-        private int bufferSize;
-        private TimeSpan workerStopTimeout = TimeSpan.FromSeconds(30);
-        private bool autoStoreOffsets = true;
-        private bool noStoreOffsets;
-        private ConsumerInitialState initialState = ConsumerInitialState.Running;
-        private int statisticsInterval;
+        private string _name;
+        private bool _disableManagement;
+        private string _groupId = string.Empty;
+        private Confluent.Kafka.AutoOffsetReset? _autoOffsetReset;
+        private int? _maxPollIntervalMs;
+        private Func<WorkersCountContext, IDependencyResolver, Task<int>> _workersCountCalculator;
+        private TimeSpan _workersCountEvaluationInterval = TimeSpan.FromMinutes(5);
+        private int _bufferSize;
+        private TimeSpan _workerStopTimeout = TimeSpan.FromSeconds(30);
+        private bool _autoMessageCompletion = true;
+        private bool _noStoreOffsets;
+        private ConsumerInitialState _initialState = ConsumerInitialState.Running;
+        private int _statisticsInterval;
 
-        private Factory<IDistributionStrategy> distributionStrategyFactory = _ => new BytesSumDistributionStrategy();
-        private TimeSpan autoCommitInterval = TimeSpan.FromSeconds(5);
+        private Factory<IWorkerDistributionStrategy> _distributionStrategyFactory = _ => new BytesSumDistributionStrategy();
+        private TimeSpan _autoCommitInterval = TimeSpan.FromSeconds(5);
 
-        private ConsumerCustomFactory customFactory = (consumer, _) => consumer;
+        private ConsumerCustomFactory _customFactory = (consumer, _) => consumer;
 
         public ConsumerConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
         {
             this.DependencyConfigurator = dependencyConfigurator;
-            this.middlewareConfigurationBuilder = new ConsumerMiddlewareConfigurationBuilder(dependencyConfigurator);
+            _middlewareConfigurationBuilder = new ConsumerMiddlewareConfigurationBuilder(dependencyConfigurator);
         }
 
         public IDependencyConfigurator DependencyConfigurator { get; }
 
         public IConsumerConfigurationBuilder Topic(string topicName)
         {
-            this.topics.Add(topicName);
+            _topics.Add(topicName);
             return this;
         }
 
         public IConsumerConfigurationBuilder ManualAssignPartitions(string topicName, IEnumerable<int> partitions)
         {
-            this.topicsPartitions.Add(new TopicPartitions(topicName, partitions));
+            _topicsPartitions.Add(new TopicPartitions(topicName, partitions));
             return this;
         }
 
-        public IConsumerConfigurationBuilder WithConsumerConfig(ConsumerConfig config)
+        public IConsumerConfigurationBuilder WithConsumerConfig(Confluent.Kafka.ConsumerConfig config)
         {
-            this.consumerConfig = config;
+            _consumerConfig = config;
             return this;
         }
 
         public IConsumerConfigurationBuilder Topics(IEnumerable<string> topicNames)
         {
-            this.topics.AddRange(topicNames);
+            _topics.AddRange(topicNames);
             return this;
         }
 
@@ -76,28 +76,28 @@ namespace KafkaFlow.Configuration
 
         public IConsumerConfigurationBuilder WithName(string name)
         {
-            this.name = name;
+            _name = name;
             return this;
         }
 
         public IConsumerConfigurationBuilder DisableManagement()
         {
-            this.disableManagement = true;
+            _disableManagement = true;
             return this;
         }
 
         public IConsumerConfigurationBuilder WithGroupId(string groupId)
         {
-            this.groupId = groupId;
+            _groupId = groupId;
             return this;
         }
 
         public IConsumerConfigurationBuilder WithAutoOffsetReset(KafkaFlow.AutoOffsetReset autoOffsetReset)
         {
-            this.autoOffsetReset = autoOffsetReset switch
+            _autoOffsetReset = autoOffsetReset switch
             {
-                KafkaFlow.AutoOffsetReset.Earliest => AutoOffsetReset.Earliest,
-                KafkaFlow.AutoOffsetReset.Latest => AutoOffsetReset.Latest,
+                KafkaFlow.AutoOffsetReset.Earliest => Confluent.Kafka.AutoOffsetReset.Earliest,
+                KafkaFlow.AutoOffsetReset.Latest => Confluent.Kafka.AutoOffsetReset.Latest,
                 _ => throw new InvalidEnumArgumentException(
                     nameof(autoOffsetReset),
                     (int)autoOffsetReset,
@@ -109,163 +109,174 @@ namespace KafkaFlow.Configuration
 
         public IConsumerConfigurationBuilder WithAutoCommitIntervalMs(int autoCommitIntervalMs)
         {
-            this.autoCommitInterval = TimeSpan.FromMilliseconds(autoCommitIntervalMs);
+            _autoCommitInterval = TimeSpan.FromMilliseconds(autoCommitIntervalMs);
             return this;
         }
 
         public IConsumerConfigurationBuilder WithMaxPollIntervalMs(int maxPollIntervalMs)
         {
-            this.maxPollIntervalMs = maxPollIntervalMs;
+            _maxPollIntervalMs = maxPollIntervalMs;
             return this;
+        }
+
+        public IConsumerConfigurationBuilder WithWorkersCount(
+            Func<WorkersCountContext, IDependencyResolver, Task<int>> calculator,
+            TimeSpan evaluationInterval)
+        {
+            _workersCountCalculator = calculator;
+            _workersCountEvaluationInterval = evaluationInterval;
+            return this;
+        }
+
+        public IConsumerConfigurationBuilder WithWorkersCount(Func<WorkersCountContext, IDependencyResolver, Task<int>> calculator)
+        {
+            return this.WithWorkersCount(calculator, TimeSpan.FromMinutes(5));
         }
 
         public IConsumerConfigurationBuilder WithWorkersCount(int workersCount)
         {
-            this.workersCount = workersCount;
-            return this;
+            return this.WithWorkersCount((_, _) => Task.FromResult(workersCount));
         }
 
         public IConsumerConfigurationBuilder WithBufferSize(int size)
         {
-            this.bufferSize = size;
+            _bufferSize = size;
             return this;
         }
 
         public IConsumerConfigurationBuilder WithWorkerStopTimeout(int seconds)
         {
-            this.workerStopTimeout = TimeSpan.FromSeconds(seconds);
+            _workerStopTimeout = TimeSpan.FromSeconds(seconds);
             return this;
         }
 
         public IConsumerConfigurationBuilder WithWorkerStopTimeout(TimeSpan timeout)
         {
-            this.workerStopTimeout = timeout;
+            _workerStopTimeout = timeout;
             return this;
         }
 
-        public IConsumerConfigurationBuilder WithWorkDistributionStrategy<T>(Factory<T> factory)
-            where T : class, IDistributionStrategy
+        public IConsumerConfigurationBuilder WithWorkerDistributionStrategy<T>(Factory<T> factory)
+            where T : class, IWorkerDistributionStrategy
         {
-            this.distributionStrategyFactory = factory;
+            _distributionStrategyFactory = factory;
             return this;
         }
 
-        public IConsumerConfigurationBuilder WithWorkDistributionStrategy<T>()
-            where T : class, IDistributionStrategy
+        public IConsumerConfigurationBuilder WithWorkerDistributionStrategy<T>()
+            where T : class, IWorkerDistributionStrategy
         {
             this.DependencyConfigurator.AddTransient<T>();
-            this.distributionStrategyFactory = resolver => resolver.Resolve<T>();
+            _distributionStrategyFactory = resolver => resolver.Resolve<T>();
 
             return this;
         }
 
-        public IConsumerConfigurationBuilder WithAutoStoreOffsets()
+        public IConsumerConfigurationBuilder WithManualMessageCompletion()
         {
-            this.autoStoreOffsets = true;
-            return this;
-        }
-
-        public IConsumerConfigurationBuilder WithManualStoreOffsets()
-        {
-            this.autoStoreOffsets = false;
+            _autoMessageCompletion = false;
             return this;
         }
 
         public IConsumerConfigurationBuilder WithoutStoringOffsets()
         {
-            this.noStoreOffsets = true;
+            _noStoreOffsets = true;
             return this;
         }
 
         public IConsumerConfigurationBuilder WithInitialState(ConsumerInitialState state)
         {
-            this.initialState = state;
+            _initialState = state;
             return this;
         }
 
         public IConsumerConfigurationBuilder AddMiddlewares(Action<IConsumerMiddlewareConfigurationBuilder> middlewares)
         {
-            middlewares(this.middlewareConfigurationBuilder);
+            middlewares(_middlewareConfigurationBuilder);
             return this;
         }
 
         public IConsumerConfigurationBuilder WithPartitionsAssignedHandler(
-            Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler)
+            Action<IDependencyResolver, List<Confluent.Kafka.TopicPartition>> partitionsAssignedHandler)
         {
-            this.partitionAssignedHandlers.Add(partitionsAssignedHandler);
+            _partitionAssignedHandlers.Add(partitionsAssignedHandler);
             return this;
         }
 
         public IConsumerConfigurationBuilder WithPartitionsRevokedHandler(
-            Action<IDependencyResolver, List<TopicPartitionOffset>> partitionsRevokedHandler)
+            Action<IDependencyResolver, List<Confluent.Kafka.TopicPartitionOffset>> partitionsRevokedHandler)
         {
-            this.partitionRevokedHandlers.Add(partitionsRevokedHandler);
+            _partitionRevokedHandlers.Add(partitionsRevokedHandler);
             return this;
         }
 
         public IConsumerConfigurationBuilder WithStatisticsHandler(Action<string> statisticsHandler)
         {
-            this.statisticsHandlers.Add(statisticsHandler);
+            _statisticsHandlers.Add(statisticsHandler);
             return this;
         }
 
         public IConsumerConfigurationBuilder WithStatisticsIntervalMs(int statisticsIntervalMs)
         {
-            this.statisticsInterval = statisticsIntervalMs;
+            _statisticsInterval = statisticsIntervalMs;
             return this;
         }
 
         public IConsumerConfigurationBuilder WithPendingOffsetsStatisticsHandler(
-            Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> pendingOffsetsHandler,
+            Action<IDependencyResolver, IEnumerable<Confluent.Kafka.TopicPartitionOffset>> pendingOffsetsHandler,
             TimeSpan interval)
         {
-            this.pendingOffsetsStatisticsHandlers.Add((pendingOffsetsHandler, interval));
+            _pendingOffsetsStatisticsHandlers.Add(new(pendingOffsetsHandler, interval));
             return this;
         }
 
         public IConsumerConfigurationBuilder WithCustomFactory(ConsumerCustomFactory customFactory)
         {
-            this.customFactory = customFactory;
+            _customFactory = customFactory;
             return this;
         }
 
         public IConsumerConfiguration Build(ClusterConfiguration clusterConfiguration)
         {
-            var middlewareConfiguration = this.middlewareConfigurationBuilder.Build();
+            var middlewareConfiguration = _middlewareConfigurationBuilder.Build();
 
-            this.consumerConfig ??= new ConsumerConfig();
-            this.consumerConfig.BootstrapServers ??= string.Join(",", clusterConfiguration.Brokers);
-            this.consumerConfig.GroupId ??= this.groupId;
-            this.consumerConfig.AutoOffsetReset ??= this.autoOffsetReset;
-            this.consumerConfig.MaxPollIntervalMs ??= this.maxPollIntervalMs;
-            this.consumerConfig.StatisticsIntervalMs ??= this.statisticsInterval;
+            _consumerConfig ??= new Confluent.Kafka.ConsumerConfig();
 
-            this.consumerConfig.EnableAutoOffsetStore = false;
-            this.consumerConfig.EnableAutoCommit = false;
+            var consumerConfigCopy = new Confluent.Kafka.ConsumerConfig(_consumerConfig.ToDictionary(x => x.Key, x => x.Value));
 
-            this.consumerConfig.ReadSecurityInformationFrom(clusterConfiguration);
+            consumerConfigCopy.BootstrapServers = _consumerConfig.BootstrapServers ?? string.Join(",", clusterConfiguration.Brokers);
+            consumerConfigCopy.GroupId = _consumerConfig.GroupId ?? _groupId;
+            consumerConfigCopy.AutoOffsetReset = _consumerConfig.AutoOffsetReset ?? _autoOffsetReset;
+            consumerConfigCopy.MaxPollIntervalMs = _consumerConfig.MaxPollIntervalMs ?? _maxPollIntervalMs;
+            consumerConfigCopy.StatisticsIntervalMs = _consumerConfig.StatisticsIntervalMs ?? _statisticsInterval;
+
+            consumerConfigCopy.EnableAutoOffsetStore = false;
+            consumerConfigCopy.EnableAutoCommit = false;
+
+            consumerConfigCopy.ReadSecurityInformationFrom(clusterConfiguration);
 
             return new ConsumerConfiguration(
-                this.consumerConfig,
-                this.topics,
-                this.topicsPartitions,
-                this.name,
+                consumerConfigCopy,
+                _topics,
+                _topicsPartitions,
+                _name,
                 clusterConfiguration,
-                this.disableManagement,
-                this.workersCount,
-                this.bufferSize,
-                this.workerStopTimeout,
-                this.distributionStrategyFactory,
+                _disableManagement,
+                _workersCountCalculator,
+                _workersCountEvaluationInterval,
+                _bufferSize,
+                _workerStopTimeout,
+                _distributionStrategyFactory,
                 middlewareConfiguration,
-                this.autoStoreOffsets,
-                this.noStoreOffsets,
-                this.initialState,
-                this.autoCommitInterval,
-                this.statisticsHandlers,
-                this.partitionAssignedHandlers,
-                this.partitionRevokedHandlers,
-                this.pendingOffsetsStatisticsHandlers,
-                this.customFactory);
+                _autoMessageCompletion,
+                _noStoreOffsets,
+                _initialState,
+                _autoCommitInterval,
+                _statisticsHandlers,
+                _partitionAssignedHandlers,
+                _partitionRevokedHandlers,
+                _pendingOffsetsStatisticsHandlers,
+                _customFactory);
         }
     }
 }

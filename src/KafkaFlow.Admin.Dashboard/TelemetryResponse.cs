@@ -1,10 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
+
 namespace KafkaFlow.Admin.Dashboard
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using Newtonsoft.Json;
-
     /// <summary>
     /// The response of telemetry data
     /// </summary>
@@ -44,11 +44,6 @@ namespace KafkaFlow.Admin.Dashboard
             [Required]
             [JsonProperty(Required = Required.DisallowNull)]
             public string Name { get; set; }
-
-            /// <summary>
-            /// Gets or sets the current number of workers allocated by the consumer
-            /// </summary>
-            public int WorkersCount { get; set; }
 
             /// <summary>
             /// Gets or sets all the consumer partition assignments
@@ -101,6 +96,11 @@ namespace KafkaFlow.Admin.Dashboard
             /// Gets or sets the consumer lag
             /// </summary>
             public long Lag { get; set; }
+
+            /// <summary>
+            /// Gets or sets the workers count
+            /// </summary>
+            public int Workers { get; set; }
         }
     }
 }

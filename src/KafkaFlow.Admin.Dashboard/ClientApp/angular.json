@@ -29,7 +29,7 @@
             "customWebpackConfig": {
               "path": "./webpack.config.js"
             },
-            "baseHref": "/kafka-flow/",
+            "baseHref": "/kafkaflow/",
             "outputPath": "dist",
             "index": "src/index.html",
             "main": "src/main.ts",

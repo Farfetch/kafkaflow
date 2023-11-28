@@ -1,37 +1,42 @@
-namespace KafkaFlow.Consumers.DistributionStrategies
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace KafkaFlow.Consumers.DistributionStrategies;
+
+/// <summary>
+/// This strategy sums all bytes in the partition key and apply a mod operator with the total number of workers, the resulting number is the worker ID to be chosen
+/// This algorithm is fast and creates a good work balance. Messages with the same partition key are always delivered in the same worker, so, message order is guaranteed
+/// Set an optimal message buffer value to avoid idle workers (it will depends how many messages with the same partition key are consumed)
+/// </summary>
+public class BytesSumDistributionStrategy : IWorkerDistributionStrategy
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
+    private IReadOnlyList<IWorker> _workers;
 
-    /// <summary>
-    /// This strategy sums all bytes in the partition key and apply a mod operator with the total number of workers, the resulting number is the worker ID to be chosen
-    /// This algorithm is fast and creates a good work balance. Messages with the same partition key are always delivered in the same worker, so, message order is guaranteed
-    /// Set an optimal message buffer value to avoid idle workers (it will depends how many messages with the same partition key are consumed)
-    /// </summary>
-    public class BytesSumDistributionStrategy : IDistributionStrategy
+    /// <inheritdoc />
+    public void Initialize(IReadOnlyList<IWorker> workers)
     {
-        private IReadOnlyList<IWorker> workers;
+        _workers = workers;
+    }
 
-        /// <inheritdoc />
-        public void Init(IReadOnlyList<IWorker> workers)
+    /// <inheritdoc />
+    public ValueTask<IWorker> GetWorkerAsync(WorkerDistributionContext context)
+    {
+        if (context.RawMessageKey is null || _workers.Count == 1)
         {
-            this.workers = workers;
+            return new ValueTask<IWorker>(_workers[0]);
         }
 
-        /// <inheritdoc />
-        public Task<IWorker> GetWorkerAsync(byte[] partitionKey, CancellationToken cancellationToken)
-        {
-            if (partitionKey is null)
-            {
-                return Task.FromResult(this.workers[0]);
-            }
+        var bytesSum = 0;
 
-            return Task.FromResult(
-                cancellationToken.IsCancellationRequested
-                    ? null
-                    : this.workers.ElementAtOrDefault(partitionKey.Sum(x => x) % this.workers.Count));
+        for (var i = 0; i < context.RawMessageKey.Value.Length; i++)
+        {
+            bytesSum += context.RawMessageKey.Value.Span[i];
         }
+
+        return new ValueTask<IWorker>(
+            context.ConsumerStoppedCancellationToken.IsCancellationRequested
+                ? null
+                : _workers.ElementAtOrDefault(bytesSum % _workers.Count));
     }
 }

@@ -1,23 +1,28 @@
+using KafkaFlow.Configuration;
+using KafkaFlow.Consumers;
+
 namespace KafkaFlow
 {
-    using System.Linq;
-    using KafkaFlow.Configuration;
-    using KafkaFlow.Consumers;
-
     internal class ConsumerManagerFactory : IConsumerManagerFactory
     {
-        public IConsumerManager Create(IConsumerConfiguration configuration, IDependencyResolver resolver)
+        public IConsumerManager Create(IConsumerConfiguration configuration, IDependencyResolver consumerDependencyResolver)
         {
-            var logHandler = resolver.Resolve<ILogHandler>();
+            var logHandler = consumerDependencyResolver.Resolve<ILogHandler>();
 
-            var consumer = configuration.CustomFactory(new Consumer(configuration, resolver, logHandler), resolver);
+            var consumer = configuration.CustomFactory(
+                new Consumer(configuration, consumerDependencyResolver, logHandler),
+                consumerDependencyResolver);
+
+            var middlewareExecutor = new MiddlewareExecutor(configuration.MiddlewaresConfigurations);
 
             var consumerWorkerPool = new ConsumerWorkerPool(
                 consumer,
-                resolver,
-                new MiddlewareExecutor(configuration.MiddlewaresConfigurations),
+                consumerDependencyResolver,
+                middlewareExecutor,
                 configuration,
                 logHandler);
+
+            consumerWorkerPool.WorkerPoolStopped.Subscribe(() => middlewareExecutor.OnWorkerPoolStopped());
 
             var feeder = new WorkerPoolFeeder(
                 consumer,
@@ -28,6 +33,7 @@ namespace KafkaFlow
                 consumer,
                 consumerWorkerPool,
                 feeder,
+                consumerDependencyResolver,
                 logHandler);
 
             return consumerManager;

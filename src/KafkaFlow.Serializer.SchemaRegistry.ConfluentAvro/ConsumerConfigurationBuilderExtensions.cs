@@ -1,9 +1,9 @@
-﻿namespace KafkaFlow
-{
-    using Confluent.SchemaRegistry;
-    using KafkaFlow.Configuration;
-    using KafkaFlow.Serializer.SchemaRegistry;
+﻿using KafkaFlow.Configuration;
+using KafkaFlow.Middlewares.Serializer;
+using KafkaFlow.Serializer.SchemaRegistry;
 
+namespace KafkaFlow
+{
     /// <summary>
     /// No needed
     /// </summary>
@@ -20,8 +20,8 @@
             middlewares.DependencyConfigurator.TryAddTransient<IConfluentAvroTypeNameResolver, ConfluentAvroTypeNameResolver>();
 
             return middlewares.Add(
-                resolver => new SerializerConsumerMiddleware(
-                    new ConfluentAvroSerializer(resolver),
+                resolver => new DeserializerConsumerMiddleware(
+                    new ConfluentAvroDeserializer(resolver),
                     new SchemaRegistryTypeResolver(resolver.Resolve<IConfluentAvroTypeNameResolver>())));
         }
     }

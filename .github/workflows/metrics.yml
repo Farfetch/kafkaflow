@@ -1,0 +1,89 @@
+name: Monthly Metrics
+on:
+  workflow_dispatch:
+    inputs:
+      dates:
+        required: false
+  schedule:
+    - cron: '3 2 1 * *'
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    name: Calculate Metrics
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Get dates for last month
+      id: get-dates
+      shell: bash
+      run: |
+        # Calculate the first day of the previous month
+        first_day=$(date -d "last month" +%Y-%m-01)
+        # Calculate the last day of the previous month
+        last_day=$(date -d "$first_day +1 month -1 day" +%Y-%m-%d)
+        #Set an environment variable with the date range
+        echo "$first_day..$last_day"
+        echo "last_month=$first_day..$last_day" >> "$GITHUB_ENV"
+    
+    - name: Use input dates
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dates != '' }}
+      shell: bash
+      run: |
+        echo "${{github.event.inputs.dates}}"
+        echo "last_month=${{github.event.inputs.dates}}" >> "$GITHUB_ENV"
+
+    - name: Run issue-metrics tool for items opened last month
+      id: opened-metrics
+      uses: github/issue-metrics@v2
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SEARCH_QUERY: 'repo:farfetch/kafkaflow created:${{ env.last_month }} -reason:"not planned"'
+
+    - name: Upload for opened items 
+      uses: actions/upload-artifact@v3
+      with:
+        name: items-opened
+        path: ./issue_metrics.md
+
+    - name: Run issue-metrics tool for items closed last month
+      id: closed-metrics
+      uses: github/issue-metrics@v2
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SEARCH_QUERY: 'repo:farfetch/kafkaflow closed:${{ env.last_month }} -reason:"not planned"'
+
+    - name: Upload for closed items
+      uses: actions/upload-artifact@v3
+      with:
+        name: items-closed
+        path: ./issue_metrics.md
+
+    - name: Run issue-metrics tool for discussions opened last month
+      id: opened-discussions-metrics
+      uses: github/issue-metrics@v2
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SEARCH_QUERY: 'repo:farfetch/kafkaflow type:discussions created:${{ env.last_month }} -reason:"not planned"'
+
+    - name: Upload for opened discussions
+      uses: actions/upload-artifact@v3
+      with:
+        name: discussions-opened
+        path: ./issue_metrics.md
+
+    - name: Run issue-metrics tool for discussions closed last month
+      id: closed-discussions-metrics
+      uses: github/issue-metrics@v2
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SEARCH_QUERY: 'repo:farfetch/kafkaflow type:discussions closed:${{ env.last_month }} -reason:"not planned"'
+
+    - name: Upload for closed discussions
+      uses: actions/upload-artifact@v3
+      with:
+        name: discussions-closed
+        path: ./issue_metrics.md

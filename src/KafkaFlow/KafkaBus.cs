@@ -1,22 +1,22 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using KafkaFlow.Clusters;
+using KafkaFlow.Configuration;
+using KafkaFlow.Consumers;
+using KafkaFlow.Producers;
+
 namespace KafkaFlow
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using KafkaFlow.Clusters;
-    using KafkaFlow.Configuration;
-    using KafkaFlow.Consumers;
-    using KafkaFlow.Producers;
-
     internal class KafkaBus : IKafkaBus
     {
-        private readonly IDependencyResolver dependencyResolver;
-        private readonly KafkaConfiguration configuration;
-        private readonly IConsumerManagerFactory consumerManagerFactory;
-        private readonly IClusterManagerAccessor clusterManagerAccessor;
+        private readonly IDependencyResolver _dependencyResolver;
+        private readonly KafkaConfiguration _configuration;
+        private readonly IConsumerManagerFactory _consumerManagerFactory;
+        private readonly IClusterManagerAccessor _clusterManagerAccessor;
 
-        private readonly List<IConsumerManager> consumerManagers = new();
+        private readonly List<IConsumerManager> _consumerManagers = new();
 
         public KafkaBus(
             IDependencyResolver dependencyResolver,
@@ -26,10 +26,10 @@ namespace KafkaFlow
             IProducerAccessor producers,
             IClusterManagerAccessor clusterManagerAccessor)
         {
-            this.dependencyResolver = dependencyResolver;
-            this.configuration = configuration;
-            this.consumerManagerFactory = consumerManagerFactory;
-            this.clusterManagerAccessor = clusterManagerAccessor;
+            _dependencyResolver = dependencyResolver;
+            _configuration = configuration;
+            _consumerManagerFactory = consumerManagerFactory;
+            _clusterManagerAccessor = clusterManagerAccessor;
             this.Consumers = consumers;
             this.Producers = producers;
         }
@@ -44,22 +44,22 @@ namespace KafkaFlow
 
             stopTokenSource.Token.Register(() => this.StopAsync().GetAwaiter().GetResult());
 
-            foreach (var cluster in this.configuration.Clusters)
+            foreach (var cluster in _configuration.Clusters)
             {
                 await this.CreateMissingClusterTopics(cluster);
 
                 foreach (var consumerConfiguration in cluster.Consumers)
                 {
-                    var dependencyScope = this.dependencyResolver.CreateScope();
+                    var consumerDependencyScope = _dependencyResolver.CreateScope();
 
                     var consumerManager =
-                        this.consumerManagerFactory.Create(consumerConfiguration, dependencyScope.Resolver);
+                        _consumerManagerFactory.Create(consumerConfiguration, consumerDependencyScope.Resolver);
 
-                    this.consumerManagers.Add(consumerManager);
+                    _consumerManagers.Add(consumerManager);
                     this.Consumers.Add(
                         new MessageConsumer(
                             consumerManager,
-                            dependencyScope.Resolver.Resolve<ILogHandler>()));
+                            consumerDependencyScope.Resolver.Resolve<ILogHandler>()));
 
                     if (consumerConfiguration.InitialState == ConsumerInitialState.Running)
                     {
@@ -67,18 +67,18 @@ namespace KafkaFlow
                     }
                 }
 
-                cluster.OnStartedHandler(this.dependencyResolver);
+                cluster.OnStartedHandler(_dependencyResolver);
             }
         }
 
         public Task StopAsync()
         {
-            foreach (var cluster in this.configuration.Clusters)
+            foreach (var cluster in _configuration.Clusters)
             {
-                cluster.OnStoppingHandler(this.dependencyResolver);
+                cluster.OnStoppingHandler(_dependencyResolver);
             }
 
-            return Task.WhenAll(this.consumerManagers.Select(x => x.StopAsync()));
+            return Task.WhenAll(_consumerManagers.Select(x => x.StopAsync()));
         }
 
         private async Task CreateMissingClusterTopics(ClusterConfiguration cluster)
@@ -88,7 +88,7 @@ namespace KafkaFlow
                 return;
             }
 
-            await this.clusterManagerAccessor[cluster.Name].CreateIfNotExistsAsync(
+            await _clusterManagerAccessor[cluster.Name].CreateIfNotExistsAsync(
                 cluster.TopicsToCreateIfNotExist);
         }
     }

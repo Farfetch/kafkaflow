@@ -1,9 +1,9 @@
+using System;
+using System.Threading.Tasks;
+using Confluent.Kafka;
+
 namespace KafkaFlow
 {
-    using System;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-
     /// <summary>
     /// Provides access to the kafka message producer
     /// </summary>

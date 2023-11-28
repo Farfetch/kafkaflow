@@ -1,7 +1,7 @@
+using System.Collections.Generic;
+
 namespace KafkaFlow
 {
-    using System;
-
     /// <summary>
     /// A context that contains the message and metadata
     /// </summary>
@@ -28,19 +28,28 @@ namespace KafkaFlow
         IProducerContext ProducerContext { get; }
 
         /// <summary>
+        /// Gets the items
+        /// </summary>
+        IDictionary<string, object> Items { get; }
+
+        /// <summary>
+        /// Gets an instance of IDependencyResolver which provides methods to resolve dependencies.
+        /// This instance is tied to the message scope, meaning it is capable of resolving dependencies
+        /// that are scoped to the lifecycle of a single processed message.
+        /// </summary>
+        IDependencyResolver DependencyResolver { get; }
+
+        /// <summary>
+        /// Gets the brokers associated with the message
+        /// </summary>
+        public IReadOnlyCollection<string> Brokers { get; }
+
+        /// <summary>
         /// Creates a new <see cref="IMessageContext"/> with the new message
         /// </summary>
         /// <param name="key">The new message key</param>
         /// <param name="value">The new message value</param>
         /// <returns>A new message context containing the new values</returns>
         IMessageContext SetMessage(object key, object value);
-
-        /// <summary>
-        /// Deprecated
-        /// </summary>
-        /// <param name="message">key</param>
-        /// <returns></returns>
-        [Obsolete("This method should no longer be used, use the " + nameof(SetMessage) + "() instead.", true)]
-        IMessageContext TransformMessage(object message);
     }
 }

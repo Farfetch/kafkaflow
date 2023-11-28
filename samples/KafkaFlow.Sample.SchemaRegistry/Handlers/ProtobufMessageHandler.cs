@@ -1,7 +1,5 @@
-﻿
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using KafkaFlow.TypedHandler;
 using SchemaRegistry;
 
 namespace KafkaFlow.Sample.SchemaRegistry.Handlers;

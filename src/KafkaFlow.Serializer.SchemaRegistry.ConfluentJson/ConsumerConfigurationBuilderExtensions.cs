@@ -1,8 +1,9 @@
-﻿namespace KafkaFlow
-{
-    using KafkaFlow.Configuration;
-    using KafkaFlow.Serializer.SchemaRegistry;
+﻿using KafkaFlow.Configuration;
+using KafkaFlow.Middlewares.Serializer.Resolvers;
+using KafkaFlow.Serializer.SchemaRegistry;
 
+namespace KafkaFlow
+{
     /// <summary>
     /// No needed
     /// </summary>
@@ -17,8 +18,8 @@
         public static IConsumerMiddlewareConfigurationBuilder AddSchemaRegistryJsonSerializer<TMessage>(
             this IConsumerMiddlewareConfigurationBuilder middlewares)
         {
-            return middlewares.AddSerializer(
-                resolver => new ConfluentJsonSerializer(resolver),
+            return middlewares.AddDeserializer(
+                resolver => new ConfluentJsonDeserializer(),
                 _ => new SingleMessageTypeResolver(typeof(TMessage)));
         }
     }

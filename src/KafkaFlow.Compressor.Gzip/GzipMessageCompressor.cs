@@ -1,14 +1,12 @@
-﻿namespace KafkaFlow.Compressor.Gzip
-{
-    using System;
-    using System.IO;
-    using System.IO.Compression;
+﻿using System.IO;
+using System.IO.Compression;
 
+namespace KafkaFlow.Compressor.Gzip
+{
     /// <summary>
     /// A GZIP message compressor
     /// </summary>
-    [Obsolete("Compressors should only be used in backward compatibility scenarios, in the vast majority of cases native compression (producer.WithCompression()) should be used instead")]
-    public class GzipMessageCompressor : IMessageCompressor
+    public class GzipMessageCompressor : ICompressor
     {
         /// <inheritdoc />
         public byte[] Compress(byte[] message)
@@ -19,20 +17,6 @@
             using (var gzipStream = new GZipStream(outputStream, CompressionLevel.Optimal))
             {
                 inputStream.CopyTo(gzipStream);
-            }
-
-            return outputStream.ToArray();
-        }
-
-        /// <inheritdoc />
-        public byte[] Decompress(byte[] message)
-        {
-            using var outputStream = new MemoryStream();
-            using var inputStream = new MemoryStream(message);
-
-            using (var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress))
-            {
-                gzipStream.CopyTo(outputStream);
             }
 
             return outputStream.ToArray();

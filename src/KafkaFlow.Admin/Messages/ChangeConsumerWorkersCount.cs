@@ -1,7 +1,7 @@
+using System.Runtime.Serialization;
+
 namespace KafkaFlow.Admin.Messages
 {
-    using System.Runtime.Serialization;
-
     /// <summary>
     /// A message to change the worker count
     /// </summary>

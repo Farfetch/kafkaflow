@@ -1,7 +1,7 @@
+using System.Threading.Tasks;
+
 namespace KafkaFlow
 {
-    using System.Threading.Tasks;
-
     /// <summary>
     /// The delegate used to call the next middleware
     /// </summary>

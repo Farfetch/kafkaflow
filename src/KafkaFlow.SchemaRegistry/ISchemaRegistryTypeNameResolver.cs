@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace KafkaFlow
 {
     /// <summary>
@@ -10,6 +12,6 @@ namespace KafkaFlow
         /// </summary>
         /// <param name="schemaId">Identifier of the schema</param>
         /// <returns></returns>
-        string Resolve(int schemaId);
+        Task<string> ResolveAsync(int schemaId);
     }
 }

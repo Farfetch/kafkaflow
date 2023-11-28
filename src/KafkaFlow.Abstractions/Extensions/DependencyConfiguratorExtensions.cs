@@ -1,8 +1,8 @@
+using System;
+using KafkaFlow.Configuration;
+
 namespace KafkaFlow
 {
-    using System;
-    using KafkaFlow.Configuration;
-
     /// <summary>
     /// Provides extension methods over <see cref="IDependencyConfigurator"/>
     /// </summary>
@@ -130,6 +130,35 @@ namespace KafkaFlow
                     typeof(TService),
                     factory,
                     InstanceLifetime.Singleton);
+        }
+
+        /// <summary>
+        /// Registers a scoped type mapping where the returned instance will be given by the provided factory
+        /// </summary>
+        /// <param name="configurator">The <see cref="IDependencyConfigurator"/> object that this method was called on</param>
+        /// <typeparam name="TService">Type that will be created</typeparam>
+        /// <returns></returns>
+        public static IDependencyConfigurator AddScoped<TService>(this IDependencyConfigurator configurator)
+            where TService : class
+        {
+            return configurator.Add<TService>(InstanceLifetime.Scoped);
+        }
+
+        /// <summary>
+        /// Registers a scoped type mapping where the returned instance will be given by the provided factory
+        /// </summary>
+        /// <param name="configurator">The <see cref="IDependencyConfigurator"/> object that this method was called on</param>
+        /// <param name="factory">A factory to create new instances of the service implementation</param>
+        /// <typeparam name="TService">Type that will be created</typeparam>
+        /// <returns></returns>
+        public static IDependencyConfigurator AddScoped<TService>(
+            this IDependencyConfigurator configurator,
+            Func<IDependencyResolver, TService> factory)
+        {
+            return configurator.Add(
+                typeof(TService),
+                factory,
+                InstanceLifetime.Scoped);
         }
 
         /// <summary>

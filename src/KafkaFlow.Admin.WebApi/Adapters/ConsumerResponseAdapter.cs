@@ -1,10 +1,8 @@
+using KafkaFlow.Admin.WebApi.Contracts;
+using KafkaFlow.Consumers;
+
 namespace KafkaFlow.Admin.WebApi.Adapters
 {
-    using System;
-    using System.Linq;
-    using KafkaFlow.Admin.WebApi.Contracts;
-    using KafkaFlow.Consumers;
-
     internal static class ConsumerResponseAdapter
     {
         internal static ConsumerResponse Adapt(this IMessageConsumer consumer)

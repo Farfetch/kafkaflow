@@ -1,9 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using Confluent.Kafka;
-
     /// <summary>
     /// Represents the Consumer configuration values
     /// </summary>
@@ -12,7 +12,7 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Gets the consumer worker distribution strategy
         /// </summary>
-        Factory<IDistributionStrategy> DistributionStrategyFactory { get; }
+        Factory<IWorkerDistributionStrategy> DistributionStrategyFactory { get; }
 
         /// <summary>
         /// Gets the consumer middlewares configurations
@@ -45,9 +45,14 @@ namespace KafkaFlow.Configuration
         bool ManagementDisabled { get; }
 
         /// <summary>
-        /// Gets or sets the number of workers
+        /// Gets or sets the workers count calculator
         /// </summary>
-        int WorkersCount { get; set; }
+        Func<WorkersCountContext, IDependencyResolver, Task<int>> WorkersCountCalculator { get; set; }
+
+        /// <summary>
+        /// Gets the time interval at which the workers count calculation is re-evaluated.
+        /// </summary>
+        TimeSpan WorkersCountEvaluationInterval { get; }
 
         /// <summary>
         /// Gets the consumer group
@@ -66,12 +71,12 @@ namespace KafkaFlow.Configuration
         TimeSpan WorkerStopTimeout { get; }
 
         /// <summary>
-        /// Gets a value indicating whether if the application should store store at the end
+        /// Gets a value indicating whether if the application should manual complete the message at the end
         /// </summary>
-        bool AutoStoreOffsets { get; }
+        bool AutoMessageCompletion { get; }
 
         /// <summary>
-        /// Gets a value indicating that no offsets will be stored on Kafka
+        /// Gets a value indicating whether gets a value indicating that no offsets will be stored on Kafka
         /// </summary>
         bool NoStoreOffsets { get; }
 
@@ -88,20 +93,17 @@ namespace KafkaFlow.Configuration
         /// <summary>
         /// Gets the handlers that will be called when the partitions are assigned
         /// </summary>
-        IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> PartitionsAssignedHandlers { get; }
+        IReadOnlyList<Action<IDependencyResolver, List<Confluent.Kafka.TopicPartition>>> PartitionsAssignedHandlers { get; }
 
         /// <summary>
         /// Gets the handlers that will be called when the partitions are revoked
         /// </summary>
-        IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
+        IReadOnlyList<Action<IDependencyResolver, List<Confluent.Kafka.TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
 
         /// <summary>
         /// Gets the handlers that will be called when there are pending offsets
         /// </summary>
-        IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)> PendingOffsetsHandlers
-        {
-            get;
-        }
+        IReadOnlyList<PendingOffsetsStatisticsHandler> PendingOffsetsStatisticsHandlers { get; }
 
         /// <summary>
         /// Gets the custom factory used to create a new <see cref="KafkaFlow.Consumers.IConsumer"/>
@@ -117,6 +119,6 @@ namespace KafkaFlow.Configuration
         /// Parses KafkaFlow configuration to Confluent configuration
         /// </summary>
         /// <returns></returns>
-        ConsumerConfig GetKafkaConfig();
+        Confluent.Kafka.ConsumerConfig GetKafkaConfig();
     }
 }

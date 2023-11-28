@@ -1,10 +1,9 @@
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
+
 namespace KafkaFlow.Admin.WebApi.Contracts
 {
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using KafkaFlow.Consumers;
-    using Newtonsoft.Json;
-
     /// <summary>
     /// The response of the consumer group
     /// </summary>

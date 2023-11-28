@@ -1,8 +1,8 @@
+using System.Threading.Tasks;
+using KafkaFlow.Admin.Messages;
+
 namespace KafkaFlow.Admin
 {
-    using System.Threading.Tasks;
-    using KafkaFlow.Admin.Messages;
-
     /// <summary>
     /// A special producer to publish admin messages
     /// </summary>

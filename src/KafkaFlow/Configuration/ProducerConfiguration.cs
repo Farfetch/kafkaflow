@@ -1,10 +1,9 @@
+using System;
+using System.Collections.Generic;
+using Confluent.Kafka;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using Confluent.Kafka;
-    using Acks = KafkaFlow.Acks;
-
     internal class ProducerConfiguration : IProducerConfiguration
     {
         public ProducerConfiguration(

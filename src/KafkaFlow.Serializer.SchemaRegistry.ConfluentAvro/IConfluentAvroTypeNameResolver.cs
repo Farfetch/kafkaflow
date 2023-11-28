@@ -1,7 +1,7 @@
 namespace KafkaFlow
 {
     /// <inheritdoc />
-    public interface IConfluentAvroTypeNameResolver : IAsyncSchemaRegistryTypeNameResolver
+    public interface IConfluentAvroTypeNameResolver : ISchemaRegistryTypeNameResolver
     {
     }
 }

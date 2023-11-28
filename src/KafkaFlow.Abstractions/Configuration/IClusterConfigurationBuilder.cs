@@ -1,8 +1,8 @@
+using System;
+using System.Collections.Generic;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-
     /// <summary>
     /// A interface to build the cluster configuration
     /// </summary>

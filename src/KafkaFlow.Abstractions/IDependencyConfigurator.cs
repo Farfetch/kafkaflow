@@ -1,7 +1,7 @@
+using System;
+
 namespace KafkaFlow
 {
-    using System;
-
     /// <summary>
     /// Represents the interface to be implemented by custom dependency configurator
     /// </summary>

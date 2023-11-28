@@ -1,8 +1,8 @@
+using System;
+using System.Collections.Generic;
+
 namespace KafkaFlow.Middlewares.ConsumerThrottling.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-
     internal class ConsumerThrottlingConfiguration
     {
         public ConsumerThrottlingConfiguration(

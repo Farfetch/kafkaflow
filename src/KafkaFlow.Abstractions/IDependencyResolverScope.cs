@@ -1,7 +1,7 @@
+using System;
+
 namespace KafkaFlow
 {
-    using System;
-
     /// <summary>
     /// Represents the interface of a dependency injection resolver scope
     /// </summary>

@@ -1,0 +1,144 @@
+{
+  "tutorialSidebar": [
+    "introduction",
+    {
+      "type": "category",
+      "label": "Getting Started",
+      "items": [
+        {
+          "type": "doc",
+          "id": "getting-started/installation"
+        },
+        {
+          "type": "doc",
+          "id": "getting-started/create-your-first-application",
+          "label": "Quickstart"
+        },
+        {
+          "type": "doc",
+          "id": "getting-started/packages"
+        },
+        {
+          "type": "doc",
+          "id": "getting-started/samples"
+        }
+      ],
+      "link": {
+        "type": "generated-index"
+      }
+    },
+    {
+      "type": "category",
+      "label": "Guides",
+      "items": [
+        {
+          "type": "doc",
+          "id": "guides/configuration"
+        },
+        {
+          "type": "doc",
+          "id": "guides/producers"
+        },
+        {
+          "type": "category",
+          "label": "Consumers",
+          "items": [
+            {
+              "type": "doc",
+              "id": "guides/consumers/consumers"
+            },
+            {
+              "type": "doc",
+              "id": "guides/consumers/add-consumers"
+            }
+          ],
+          "link": {
+            "type": "generated-index"
+          }
+        },
+        {
+          "type": "category",
+          "label": "Middlewares",
+          "items": [
+            {
+              "type": "doc",
+              "id": "guides/middlewares/middlewares"
+            },
+            {
+              "type": "doc",
+              "id": "guides/middlewares/typed-handler-middleware"
+            },
+            {
+              "type": "doc",
+              "id": "guides/middlewares/serializer-middleware"
+            },
+            {
+              "type": "doc",
+              "id": "guides/middlewares/compressor-middleware"
+            },
+            {
+              "type": "doc",
+              "id": "guides/middlewares/batch-consume-middleware"
+            },
+            {
+              "type": "doc",
+              "id": "guides/middlewares/consumer-throttling-middleware"
+            }
+          ],
+          "link": {
+            "type": "generated-index"
+          }
+        },
+        {
+          "type": "doc",
+          "id": "guides/compression"
+        },
+        {
+          "type": "doc",
+          "id": "guides/logging"
+        },
+        {
+          "type": "category",
+          "label": "Administration",
+          "items": [
+            {
+              "type": "doc",
+              "id": "guides/admin/admin"
+            },
+            {
+              "type": "doc",
+              "id": "guides/admin/web-api",
+              "label": "Web API"
+            },
+            {
+              "type": "doc",
+              "id": "guides/admin/dashboard"
+            }
+          ],
+          "link": {
+            "type": "generated-index"
+          }
+        },
+        {
+          "type": "doc",
+          "id": "guides/authentication"
+        },
+        {
+          "type": "doc",
+          "id": "guides/global-events"
+        },
+        {
+          "type": "doc",
+          "id": "guides/open-telemetry"
+        },
+        {
+          "type": "doc",
+          "id": "guides/dependency-injection"
+        }
+      ],
+      "link": {
+        "type": "generated-index"
+      }
+    }
+  ]
+}

@@ -1,23 +1,22 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Confluent.Kafka;
+using KafkaFlow.Admin.Extensions;
+using KafkaFlow.Admin.Messages;
+using KafkaFlow.Consumers;
+
 namespace KafkaFlow.Admin.Handlers
 {
-    using System;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-    using Extensions;
-    using KafkaFlow.Admin.Messages;
-    using KafkaFlow.Consumers;
-    using KafkaFlow.TypedHandler;
-
     internal class RewindConsumerOffsetToDateTimeHandler : IMessageHandler<RewindConsumerOffsetToDateTime>
     {
-        private readonly IConsumerAccessor consumerAccessor;
+        private readonly IConsumerAccessor _consumerAccessor;
 
-        public RewindConsumerOffsetToDateTimeHandler(IConsumerAccessor consumerAccessor) => this.consumerAccessor = consumerAccessor;
+        public RewindConsumerOffsetToDateTimeHandler(IConsumerAccessor consumerAccessor) => _consumerAccessor = consumerAccessor;
 
         public Task Handle(IMessageContext context, RewindConsumerOffsetToDateTime message)
         {
-            var consumer = this.consumerAccessor[message.ConsumerName];
+            var consumer = _consumerAccessor[message.ConsumerName];
 
             if (consumer is null)
             {

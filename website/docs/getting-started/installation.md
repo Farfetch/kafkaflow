@@ -25,6 +25,7 @@ Required Packages:
  - [KafkaFlow.LogHandler.Console](https://www.nuget.org/packages/KafkaFlow.LogHandler.Console/)
 
 You can quickly install them using .NET CLI 👇
+
 ```shell
 dotnet add package KafkaFlow
 dotnet add package KafkaFlow.Microsoft.DependencyInjection
@@ -59,7 +60,7 @@ public void ConfigureServices(IServiceCollection services)
                 .WithBufferSize(100)
                 .WithWorkersCount(10)
                 .AddMiddlewares(middlewares => middlewares
-                    .AddSerializer<JsonCoreSerializer>()
+                    .AddDeserializer<JsonCoreDeserializer>()
                     .AddTypedHandlers(handlers => handlers
                         .AddHandler<SampleMessageHandler>())
                 )

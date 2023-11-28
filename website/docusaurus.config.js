@@ -34,10 +34,13 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/farfetch/kafkaflow/tree/master/website/',
+          editUrl: 'https://github.com/farfetch/kafkaflow/tree/master/website/',
+          lastVersion: 'current',
+          versions: {
+            current: {
+              label: '3.x',
+            },
+          },
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -64,6 +67,11 @@ const config = {
         },
         items: [
           {
+            type: 'docsVersionDropdown',
+            position: 'right',
+            dropdownActiveClassDisabled: false,
+          },
+          {
             type: 'doc',
             docId: 'introduction',
             position: 'right',
@@ -72,6 +80,11 @@ const config = {
           {
             to: 'extensions', 
             label: 'Extensions', 
+            position: 'right'
+          },
+          {
+            to: 'community', 
+            label: 'Community', 
             position: 'right'
           },
           {

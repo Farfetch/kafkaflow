@@ -1,10 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Consumers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-
     /// <summary>
     /// Provides access to the kafka message consumer
     /// </summary>
@@ -48,7 +47,7 @@ namespace KafkaFlow.Consumers
         /// <summary>
         /// Gets the current partition assignment
         /// </summary>
-        IReadOnlyList<TopicPartition> Assignment { get; }
+        IReadOnlyList<Confluent.Kafka.TopicPartition> Assignment { get; }
 
         /// <summary>
         /// Gets the (dynamic) group member id of this consumer (as set by the broker).
@@ -77,12 +76,12 @@ namespace KafkaFlow.Consumers
         /// <summary>
         /// Gets the consumer's paused partitions
         /// </summary>
-        IReadOnlyList<TopicPartition> PausedPartitions { get; }
+        IReadOnlyList<Confluent.Kafka.TopicPartition> PausedPartitions { get; }
 
         /// <summary>
         /// Gets the consumer's running partitions
         /// </summary>
-        IEnumerable<TopicPartition> RunningPartitions { get; }
+        IEnumerable<Confluent.Kafka.TopicPartition> RunningPartitions { get; }
 
         /// <summary>
         /// Gets the lag of each topic/partitions assigned
@@ -94,7 +93,7 @@ namespace KafkaFlow.Consumers
         /// Overrides the offsets of the given partitions and restart the consumer
         /// </summary>
         /// <param name="offsets">The offset values</param>
-        Task OverrideOffsetsAndRestartAsync(IReadOnlyCollection<TopicPartitionOffset> offsets);
+        Task OverrideOffsetsAndRestartAsync(IReadOnlyCollection<Confluent.Kafka.TopicPartitionOffset> offsets);
 
         /// <summary>
         /// Restart the current consumer with the new worker count
@@ -134,7 +133,7 @@ namespace KafkaFlow.Consumers
         /// <exception cref="T:Confluent.Kafka.TopicPartitionException">
         ///     Per partition success or error.
         /// </exception>
-        void Pause(IReadOnlyCollection<TopicPartition> partitions);
+        void Pause(IReadOnlyCollection<Confluent.Kafka.TopicPartition> partitions);
 
         /// <summary>
         ///     Resume consumption for the provided list of partitions.
@@ -148,7 +147,7 @@ namespace KafkaFlow.Consumers
         /// <exception cref="T:Confluent.Kafka.TopicPartitionException">
         ///     Per partition success or error.
         /// </exception>
-        void Resume(IReadOnlyCollection<TopicPartition> partitions);
+        void Resume(IReadOnlyCollection<Confluent.Kafka.TopicPartition> partitions);
 
         /// <summary>
         ///     Gets the current position (offset) for the
@@ -162,7 +161,7 @@ namespace KafkaFlow.Consumers
         /// <exception cref="T:Confluent.Kafka.KafkaException">
         ///     Thrown if the request failed.
         /// </exception>
-        Offset GetPosition(TopicPartition topicPartition);
+        Confluent.Kafka.Offset GetPosition(Confluent.Kafka.TopicPartition topicPartition);
 
         /// <summary>
         ///     Get the last cached low (oldest available /
@@ -185,7 +184,7 @@ namespace KafkaFlow.Consumers
         ///     The requested WatermarkOffsets
         ///     (see that class for additional documentation).
         /// </returns>
-        WatermarkOffsets GetWatermarkOffsets(TopicPartition topicPartition);
+        Confluent.Kafka.WatermarkOffsets GetWatermarkOffsets(Confluent.Kafka.TopicPartition topicPartition);
 
         /// <summary>
         ///     Query the Kafka cluster for low (oldest
@@ -205,7 +204,7 @@ namespace KafkaFlow.Consumers
         ///     The requested WatermarkOffsets (see
         ///     that class for additional documentation).
         /// </returns>
-        WatermarkOffsets QueryWatermarkOffsets(TopicPartition topicPartition, TimeSpan timeout);
+        Confluent.Kafka.WatermarkOffsets QueryWatermarkOffsets(Confluent.Kafka.TopicPartition topicPartition, TimeSpan timeout);
 
         /// <summary>
         ///     Look up the offsets for the given partitions
@@ -244,8 +243,8 @@ namespace KafkaFlow.Consumers
         ///     <see cref="P:Confluent.Kafka.TopicPartitionOffsetException.Results" />
         ///     property of the exception.
         /// </exception>
-        List<TopicPartitionOffset> GetOffsets(
-            IEnumerable<TopicPartitionTimestamp> timestampsToSearch,
+        List<Confluent.Kafka.TopicPartitionOffset> GetOffsets(
+            IEnumerable<Confluent.Kafka.TopicPartitionTimestamp> timestampsToSearch,
             TimeSpan timeout);
     }
 }

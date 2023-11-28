@@ -1,9 +1,8 @@
+using System.Collections.Generic;
+using Confluent.Kafka;
+
 namespace KafkaFlow.Consumers
 {
-    using System;
-    using System.Collections.Generic;
-    using Confluent.Kafka;
-
     /// <summary>
     /// The consumer flow manager
     /// </summary>

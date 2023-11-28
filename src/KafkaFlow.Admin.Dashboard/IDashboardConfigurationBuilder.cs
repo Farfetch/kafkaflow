@@ -1,8 +1,8 @@
+using System;
+using Microsoft.AspNetCore.Builder;
+
 namespace KafkaFlow.Admin.Dashboard
 {
-    using System;
-    using Microsoft.AspNetCore.Builder;
-
     /// <summary>
     /// Used to build the dashboard configuration
     /// </summary>

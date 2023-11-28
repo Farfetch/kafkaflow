@@ -1,40 +1,39 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using Confluent.Kafka;
-
     internal class ConsumerConfiguration : IConsumerConfiguration
     {
-        private readonly ConsumerConfig consumerConfig;
-        private int workersCount;
+        private readonly Confluent.Kafka.ConsumerConfig _consumerConfig;
 
         public ConsumerConfiguration(
-            ConsumerConfig consumerConfig,
+            Confluent.Kafka.ConsumerConfig consumerConfig,
             IReadOnlyList<string> topics,
             IReadOnlyList<TopicPartitions> manualAssignPartitions,
             string consumerName,
             ClusterConfiguration clusterConfiguration,
             bool managementDisabled,
-            int workersCount,
+            Func<WorkersCountContext, IDependencyResolver, Task<int>> workersCountCalculator,
+            TimeSpan workersCountEvaluationInterval,
             int bufferSize,
             TimeSpan workerStopTimeout,
-            Factory<IDistributionStrategy> distributionStrategyFactory,
+            Factory<IWorkerDistributionStrategy> distributionStrategyFactory,
             IReadOnlyList<MiddlewareConfiguration> middlewaresConfigurations,
-            bool autoStoreOffsets,
+            bool autoMessageCompletion,
             bool noStoreOffsets,
             ConsumerInitialState initialState,
             TimeSpan autoCommitInterval,
             IReadOnlyList<Action<string>> statisticsHandlers,
-            IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> partitionsAssignedHandlers,
-            IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> partitionsRevokedHandlers,
-            IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
-                pendingOffsetsHandlers,
+            IReadOnlyList<Action<IDependencyResolver, List<Confluent.Kafka.TopicPartition>>> partitionsAssignedHandlers,
+            IReadOnlyList<Action<IDependencyResolver, List<Confluent.Kafka.TopicPartitionOffset>>> partitionsRevokedHandlers,
+            IReadOnlyList<PendingOffsetsStatisticsHandler> pendingOffsetsStatisticsHandlers,
             ConsumerCustomFactory customFactory)
         {
-            this.consumerConfig = consumerConfig ?? throw new ArgumentNullException(nameof(consumerConfig));
+            _consumerConfig = consumerConfig ?? throw new ArgumentNullException(nameof(consumerConfig));
 
-            if (string.IsNullOrEmpty(this.consumerConfig.GroupId))
+            if (string.IsNullOrEmpty(_consumerConfig.GroupId))
             {
                 throw new ArgumentNullException(nameof(consumerConfig.GroupId));
             }
@@ -43,7 +42,7 @@ namespace KafkaFlow.Configuration
                 distributionStrategyFactory ?? throw new ArgumentNullException(nameof(distributionStrategyFactory));
             this.MiddlewaresConfigurations =
                 middlewaresConfigurations ?? throw new ArgumentNullException(nameof(middlewaresConfigurations));
-            this.AutoStoreOffsets = autoStoreOffsets;
+            this.AutoMessageCompletion = autoMessageCompletion;
             this.NoStoreOffsets = noStoreOffsets;
             this.InitialState = initialState;
             this.AutoCommitInterval = autoCommitInterval;
@@ -52,12 +51,13 @@ namespace KafkaFlow.Configuration
             this.ConsumerName = consumerName ?? Guid.NewGuid().ToString();
             this.ClusterConfiguration = clusterConfiguration;
             this.ManagementDisabled = managementDisabled;
-            this.WorkersCount = workersCount;
+            this.WorkersCountCalculator = workersCountCalculator;
+            this.WorkersCountEvaluationInterval = workersCountEvaluationInterval;
             this.WorkerStopTimeout = workerStopTimeout;
             this.StatisticsHandlers = statisticsHandlers;
             this.PartitionsAssignedHandlers = partitionsAssignedHandlers;
             this.PartitionsRevokedHandlers = partitionsRevokedHandlers;
-            this.PendingOffsetsHandlers = pendingOffsetsHandlers;
+            this.PendingOffsetsStatisticsHandlers = pendingOffsetsStatisticsHandlers;
             this.CustomFactory = customFactory;
 
             this.BufferSize = bufferSize > 0 ?
@@ -68,7 +68,7 @@ namespace KafkaFlow.Configuration
                     "The value must be greater than 0");
         }
 
-        public Factory<IDistributionStrategy> DistributionStrategyFactory { get; }
+        public Factory<IWorkerDistributionStrategy> DistributionStrategyFactory { get; }
 
         public IReadOnlyList<MiddlewareConfiguration> MiddlewaresConfigurations { get; }
 
@@ -82,25 +82,17 @@ namespace KafkaFlow.Configuration
 
         public bool ManagementDisabled { get; }
 
-        public int WorkersCount
-        {
-            get => this.workersCount;
-            set =>
-                this.workersCount = value > 0 ?
-                    value :
-                    throw new ArgumentOutOfRangeException(
-                        nameof(this.WorkersCount),
-                        this.WorkersCount,
-                        $"The {nameof(this.WorkersCount)} value must be greater than 0");
-        }
+        public Func<WorkersCountContext, IDependencyResolver, Task<int>> WorkersCountCalculator { get; set; }
 
-        public string GroupId => this.consumerConfig.GroupId;
+        public TimeSpan WorkersCountEvaluationInterval { get; }
+
+        public string GroupId => _consumerConfig.GroupId;
 
         public int BufferSize { get; }
 
         public TimeSpan WorkerStopTimeout { get; }
 
-        public bool AutoStoreOffsets { get; }
+        public bool AutoMessageCompletion { get; }
 
         public bool NoStoreOffsets { get; }
 
@@ -110,18 +102,17 @@ namespace KafkaFlow.Configuration
 
         public IReadOnlyList<Action<string>> StatisticsHandlers { get; }
 
-        public IReadOnlyList<Action<IDependencyResolver, List<TopicPartition>>> PartitionsAssignedHandlers { get; }
+        public IReadOnlyList<Action<IDependencyResolver, List<Confluent.Kafka.TopicPartition>>> PartitionsAssignedHandlers { get; }
 
-        public IReadOnlyList<Action<IDependencyResolver, List<TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
+        public IReadOnlyList<Action<IDependencyResolver, List<Confluent.Kafka.TopicPartitionOffset>>> PartitionsRevokedHandlers { get; }
 
-        public IReadOnlyList<(Action<IDependencyResolver, IEnumerable<TopicPartitionOffset>> handler, TimeSpan interval)>
-            PendingOffsetsHandlers { get; }
+        public IReadOnlyList<PendingOffsetsStatisticsHandler> PendingOffsetsStatisticsHandlers { get; }
 
         public ConsumerCustomFactory CustomFactory { get; }
 
-        public ConsumerConfig GetKafkaConfig()
+        public Confluent.Kafka.ConsumerConfig GetKafkaConfig()
         {
-            return this.consumerConfig;
+            return _consumerConfig;
         }
     }
 }

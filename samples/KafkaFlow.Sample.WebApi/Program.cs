@@ -10,7 +10,7 @@ builder.Services
         .AddCluster(
             cluster => cluster
                 .WithBrokers(new[] { "localhost:9092" })
-                .EnableAdminMessages("kafka-flow.admin")
+                .EnableAdminMessages("kafkaflow.admin")
         )
 );
 
@@ -19,11 +19,11 @@ builder.Services
         c =>
         {
             c.SwaggerDoc(
-                "kafka-flow",
+                "kafkaflow",
                 new OpenApiInfo
                 {
                     Title = "KafkaFlow Admin",
-                    Version = "kafka-flow",
+                    Version = "kafkaflow",
                 });
         })
     .AddControllers();
@@ -37,11 +37,10 @@ app.MapControllers();
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/kafka-flow/swagger.json", "KafkaFlow Admin");
+    c.SwaggerEndpoint("/swagger/kafkaflow/swagger.json", "KafkaFlow Admin");
 });
 
 var kafkaBus = app.Services.CreateKafkaBus();
 await kafkaBus.StartAsync();
 
 await app.RunAsync();
-        

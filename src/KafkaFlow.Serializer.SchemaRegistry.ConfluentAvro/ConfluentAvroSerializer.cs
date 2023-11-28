@@ -1,18 +1,18 @@
-﻿namespace KafkaFlow.Serializer.SchemaRegistry
-{
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
-    using Confluent.SchemaRegistry;
-    using Confluent.SchemaRegistry.Serdes;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using Confluent.SchemaRegistry;
+using Confluent.SchemaRegistry.Serdes;
 
+namespace KafkaFlow.Serializer.SchemaRegistry
+{
     /// <summary>
     /// A message serializer using Apache.Avro library
     /// </summary>
     public class ConfluentAvroSerializer : ISerializer
     {
-        private readonly ISchemaRegistryClient schemaRegistryClient;
-        private readonly AvroSerializerConfig serializerConfig;
+        private readonly ISchemaRegistryClient _schemaRegistryClient;
+        private readonly AvroSerializerConfig _serializerConfig;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfluentAvroSerializer"/> class.
@@ -23,12 +23,12 @@
             IDependencyResolver resolver,
             AvroSerializerConfig serializerConfig = null)
         {
-            this.schemaRegistryClient =
+            _schemaRegistryClient =
                 resolver.Resolve<ISchemaRegistryClient>() ??
                 throw new InvalidOperationException(
                     $"No schema registry configuration was found. Set it using {nameof(ClusterConfigurationBuilderExtensions.WithSchemaRegistry)} on cluster configuration");
 
-            this.serializerConfig = serializerConfig;
+            _serializerConfig = serializerConfig;
         }
 
         /// <inheritdoc/>
@@ -39,23 +39,9 @@
                     message.GetType(),
                     () => Activator.CreateInstance(
                         typeof(AvroSerializer<>).MakeGenericType(message.GetType()),
-                        this.schemaRegistryClient,
-                        this.serializerConfig))
+                        _schemaRegistryClient,
+                        _serializerConfig))
                 .SerializeAsync(message, output, context);
-        }
-
-        /// <inheritdoc/>
-        public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
-        {
-            return ConfluentDeserializerWrapper
-                .GetOrCreateDeserializer(
-                    type,
-                    () => Activator
-                        .CreateInstance(
-                            typeof(AvroDeserializer<>).MakeGenericType(type),
-                            this.schemaRegistryClient,
-                            null))
-                .DeserializeAsync(input, context);
         }
     }
 }

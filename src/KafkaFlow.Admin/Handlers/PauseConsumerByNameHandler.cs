@@ -1,21 +1,20 @@
+using System.Linq;
+using System.Threading.Tasks;
+using KafkaFlow.Admin.Extensions;
+using KafkaFlow.Admin.Messages;
+using KafkaFlow.Consumers;
+
 namespace KafkaFlow.Admin.Handlers
 {
-    using System.Linq;
-    using System.Threading.Tasks;
-    using KafkaFlow.Admin.Extensions;
-    using KafkaFlow.Admin.Messages;
-    using KafkaFlow.Consumers;
-    using KafkaFlow.TypedHandler;
-
     internal class PauseConsumerByNameHandler : IMessageHandler<PauseConsumerByName>
     {
-        private readonly IConsumerAccessor consumerAccessor;
+        private readonly IConsumerAccessor _consumerAccessor;
 
-        public PauseConsumerByNameHandler(IConsumerAccessor consumerAccessor) => this.consumerAccessor = consumerAccessor;
+        public PauseConsumerByNameHandler(IConsumerAccessor consumerAccessor) => _consumerAccessor = consumerAccessor;
 
         public Task Handle(IMessageContext context, PauseConsumerByName message)
         {
-            var consumer = this.consumerAccessor[message.ConsumerName];
+            var consumer = _consumerAccessor[message.ConsumerName];
 
             var assignment = consumer.FilterAssigment(message.Topics);
 

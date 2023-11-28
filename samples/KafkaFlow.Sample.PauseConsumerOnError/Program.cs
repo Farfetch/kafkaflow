@@ -2,7 +2,6 @@
 using KafkaFlow.Producers;
 using KafkaFlow.Sample.PauseConsumerOnError;
 using KafkaFlow.Serializer;
-using KafkaFlow.TypedHandler;
 using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection();
@@ -33,7 +32,7 @@ services.AddKafka(
                             middlewares =>
                                 middlewares
                                     .Add<PauseConsumerOnExceptionMiddleware>()
-                                    .AddSerializer<JsonCoreSerializer>()
+                                    .AddDeserializer<JsonCoreDeserializer>()
                                     .AddTypedHandlers(h => h.AddHandler<MessageHandler>())
                         )
                 )

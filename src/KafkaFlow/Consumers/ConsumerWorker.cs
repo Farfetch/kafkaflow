@@ -1,72 +1,87 @@
+using System;
+using System.Threading;
+using System.Threading.Channels;
+using System.Threading.Tasks;
+
 namespace KafkaFlow.Consumers
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Channels;
-    using System.Threading.Tasks;
-    using Confluent.Kafka;
-
     internal class ConsumerWorker : IConsumerWorker
     {
-        private readonly IConsumer consumer;
-        private readonly IDependencyResolver dependencyResolver;
-        private readonly IOffsetManager offsetManager;
-        private readonly IMiddlewareExecutor middlewareExecutor;
-        private readonly ILogHandler logHandler;
+        private readonly IConsumer _consumer;
+        private readonly IDependencyResolverScope _workerDependencyResolverScope;
+        private readonly IMiddlewareExecutor _middlewareExecutor;
+        private readonly ILogHandler _logHandler;
+        private readonly GlobalEvents _globalEvents;
 
-        private readonly Channel<ConsumeResult<byte[], byte[]>> messagesBuffer;
+        private readonly Channel<IMessageContext> _messagesBuffer;
 
-        private CancellationTokenSource stopCancellationTokenSource;
-        private Task backgroundTask;
-        private Action onMessageFinishedHandler;
+        private readonly Event _workerStoppingEvent;
+        private readonly Event _workerStoppedEvent;
+        private readonly Event<IMessageContext> _workerProcessingEnded;
+
+        private CancellationTokenSource _stopCancellationTokenSource;
+        private Task _backgroundTask;
 
         public ConsumerWorker(
             IConsumer consumer,
-            IDependencyResolver dependencyResolver,
+            IDependencyResolver consumerDependencyResolver,
             int workerId,
-            IOffsetManager offsetManager,
             IMiddlewareExecutor middlewareExecutor,
             ILogHandler logHandler)
         {
             this.Id = workerId;
-            this.consumer = consumer;
-            this.dependencyResolver = dependencyResolver;
-            this.offsetManager = offsetManager;
-            this.middlewareExecutor = middlewareExecutor;
-            this.logHandler = logHandler;
-            this.messagesBuffer = Channel.CreateBounded<ConsumeResult<byte[], byte[]>>(consumer.Configuration.BufferSize);
+            _consumer = consumer;
+            _workerDependencyResolverScope = consumerDependencyResolver.CreateScope();
+            _middlewareExecutor = middlewareExecutor;
+            _logHandler = logHandler;
+            _messagesBuffer = Channel.CreateBounded<IMessageContext>(consumer.Configuration.BufferSize);
+            _globalEvents = consumerDependencyResolver.Resolve<GlobalEvents>();
+
+            _workerStoppingEvent = new(logHandler);
+            _workerStoppedEvent = new(logHandler);
+            _workerProcessingEnded = new Event<IMessageContext>(logHandler);
+
+            var middlewareContext = _workerDependencyResolverScope.Resolver.Resolve<ConsumerMiddlewareContext>();
+
+            middlewareContext.Worker = this;
+            middlewareContext.Consumer = consumer;
         }
 
         public int Id { get; }
 
+        public CancellationToken StopCancellationToken => _stopCancellationTokenSource?.Token ?? default;
+
+        public IDependencyResolver WorkerDependencyResolver => _workerDependencyResolverScope.Resolver;
+
+        public IEvent WorkerStopping => _workerStoppingEvent;
+
+        public IEvent WorkerStopped => _workerStoppedEvent;
+
+        public IEvent<IMessageContext> WorkerProcessingEnded => _workerProcessingEnded;
+
         public ValueTask EnqueueAsync(
-            ConsumeResult<byte[], byte[]> message,
-            CancellationToken stopCancellationToken = default)
+            IMessageContext context,
+            CancellationToken stopCancellationToken)
         {
-            return this.messagesBuffer.Writer.WriteAsync(message, stopCancellationToken);
+            return _messagesBuffer.Writer.WriteAsync(context, stopCancellationToken);
         }
 
         public Task StartAsync()
         {
-            this.stopCancellationTokenSource = new CancellationTokenSource();
+            _stopCancellationTokenSource = new CancellationTokenSource();
 
-            this.backgroundTask = Task.Run(
+            _backgroundTask = Task.Run(
                 async () =>
                 {
                     try
                     {
-                        var cancellationTokenSource = new CancellationTokenSource();
-
-                        this.stopCancellationTokenSource.Token.Register(
-                            () => cancellationTokenSource.CancelAfter(this.consumer.Configuration.WorkerStopTimeout));
-
                         try
                         {
-                            while (await this.messagesBuffer.Reader.WaitToReadAsync(CancellationToken.None).ConfigureAwait(false))
+                            while (await _messagesBuffer.Reader.WaitToReadAsync(CancellationToken.None).ConfigureAwait(false))
                             {
-                                while (this.messagesBuffer.Reader.TryRead(out var message))
+                                while (_messagesBuffer.Reader.TryRead(out var message))
                                 {
-                                    await this.ProcessMessageAsync(message, cancellationTokenSource.Token).ConfigureAwait(false);
+                                    await this.ProcessMessageAsync(message, _stopCancellationTokenSource.Token).ConfigureAwait(false);
                                 }
                             }
                         }
@@ -77,65 +92,69 @@ namespace KafkaFlow.Consumers
                     }
                     catch (Exception ex)
                     {
-                        this.logHandler.Error("KafkaFlow consumer worker fatal error", ex, null);
+                        _logHandler.Error("KafkaFlow consumer worker fatal error", ex, null);
                     }
-                });
+                },
+                CancellationToken.None);
 
             return Task.CompletedTask;
         }
 
         public async Task StopAsync()
         {
-            this.messagesBuffer.Writer.TryComplete();
+            await _workerStoppingEvent.FireAsync();
 
-            if (this.stopCancellationTokenSource.Token.CanBeCanceled)
+            _messagesBuffer.Writer.TryComplete();
+
+            if (_stopCancellationTokenSource.Token.CanBeCanceled)
             {
-                this.stopCancellationTokenSource.Cancel();
+                _stopCancellationTokenSource.CancelAfter(_consumer.Configuration.WorkerStopTimeout);
             }
 
-            await this.backgroundTask.ConfigureAwait(false);
-            this.backgroundTask.Dispose();
+            await _backgroundTask.ConfigureAwait(false);
+
+            await _workerStoppedEvent.FireAsync();
         }
 
-        public void OnTaskCompleted(Action handler)
+        public void Dispose()
         {
-            this.onMessageFinishedHandler = handler;
+            _backgroundTask.Dispose();
+            _workerDependencyResolverScope.Dispose();
+            _stopCancellationTokenSource.Dispose();
         }
 
-        private async Task ProcessMessageAsync(ConsumeResult<byte[], byte[]> message, CancellationToken cancellationToken)
+        private async Task ProcessMessageAsync(IMessageContext context, CancellationToken cancellationToken)
         {
             try
             {
-                var context = new MessageContext(
-                    new Message(message.Message.Key, message.Message.Value),
-                    new MessageHeaders(message.Message.Headers),
-                    new ConsumerContext(
-                        this.consumer,
-                        this.offsetManager,
-                        message,
-                        cancellationToken,
-                        this.Id),
-                    null);
-
                 try
                 {
-                    var scope = this.dependencyResolver.CreateScope();
+                    await _globalEvents.FireMessageConsumeStartedAsync(new MessageEventContext(context));
 
-                    this.offsetManager.OnOffsetProcessed(
-                        message.TopicPartitionOffset,
-                        () => scope.Dispose());
+                    _ = context.ConsumerContext.Completion.ContinueWith(
+                        async task =>
+                        {
+                            if (task.IsFaulted)
+                            {
+                                await _globalEvents.FireMessageConsumeErrorAsync(new MessageErrorEventContext(context, task.Exception));
+                            }
 
-                    await this.middlewareExecutor
-                        .Execute(scope.Resolver, context, _ => Task.CompletedTask)
+                            await _globalEvents.FireMessageConsumeCompletedAsync(new MessageEventContext(context));
+                        });
+
+                    await _middlewareExecutor
+                        .Execute(context, _ => Task.CompletedTask)
                         .ConfigureAwait(false);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
-                    return;
+                    context.ConsumerContext.ShouldStoreOffset = false;
                 }
                 catch (Exception ex)
                 {
-                    this.logHandler.Error(
+                    await _globalEvents.FireMessageConsumeErrorAsync(new MessageErrorEventContext(context, ex));
+
+                    _logHandler.Error(
                         "Error processing message",
                         ex,
                         new
@@ -146,17 +165,19 @@ namespace KafkaFlow.Consumers
                             context.ConsumerContext.ConsumerName,
                         });
                 }
-
-                if (this.consumer.Configuration.AutoStoreOffsets && context.ConsumerContext.ShouldStoreOffset)
+                finally
                 {
-                    this.offsetManager.MarkAsProcessed(message.TopicPartitionOffset);
-                }
+                    if (context.ConsumerContext.AutoMessageCompletion)
+                    {
+                        context.ConsumerContext.Complete();
+                    }
 
-                this.onMessageFinishedHandler?.Invoke();
+                    await _workerProcessingEnded.FireAsync(context);
+                }
             }
             catch (Exception ex)
             {
-                this.logHandler.Error("KafkaFlow internal message error", ex, null);
+                _logHandler.Error("KafkaFlow internal message error", ex, null);
             }
         }
     }
