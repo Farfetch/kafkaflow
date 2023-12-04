@@ -1,36 +1,35 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace KafkaFlow.Middlewares.Compressor
+namespace KafkaFlow.Middlewares.Compressor;
+
+/// <summary>
+/// Middleware to decompress the messages when consuming
+/// </summary>
+public class DecompressorConsumerMiddleware : IMessageMiddleware
 {
+    private readonly IDecompressor _decompressor;
+
     /// <summary>
-    /// Middleware to decompress the messages when consuming
+    /// Initializes a new instance of the <see cref="DecompressorConsumerMiddleware"/> class.
     /// </summary>
-    public class DecompressorConsumerMiddleware : IMessageMiddleware
+    /// <param name="decompressor">Instance of <see cref="IDecompressor"/></param>
+    public DecompressorConsumerMiddleware(IDecompressor decompressor)
     {
-        private readonly IDecompressor _decompressor;
+        _decompressor = decompressor;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DecompressorConsumerMiddleware"/> class.
-        /// </summary>
-        /// <param name="decompressor">Instance of <see cref="IDecompressor"/></param>
-        public DecompressorConsumerMiddleware(IDecompressor decompressor)
+    /// <inheritdoc />
+    public Task Invoke(IMessageContext context, MiddlewareDelegate next)
+    {
+        if (!(context.Message.Value is byte[] rawData))
         {
-            _decompressor = decompressor;
+            throw new InvalidOperationException(
+                $"{nameof(context.Message.Value)} must be a byte array to be decompressed and it is '{context.Message.Value.GetType().FullName}'");
         }
 
-        /// <inheritdoc />
-        public Task Invoke(IMessageContext context, MiddlewareDelegate next)
-        {
-            if (!(context.Message.Value is byte[] rawData))
-            {
-                throw new InvalidOperationException(
-                    $"{nameof(context.Message.Value)} must be a byte array to be decompressed and it is '{context.Message.Value.GetType().FullName}'");
-            }
+        var data = _decompressor.Decompress(rawData);
 
-            var data = _decompressor.Decompress(rawData);
-
-            return next(context.SetMessage(context.Message.Key, data));
-        }
+        return next(context.SetMessage(context.Message.Key, data));
     }
 }

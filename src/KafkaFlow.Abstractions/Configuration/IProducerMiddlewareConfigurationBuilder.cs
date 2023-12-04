@@ -1,8 +1,7 @@
-namespace KafkaFlow.Configuration
+namespace KafkaFlow.Configuration;
+
+/// <inheritdoc cref="IMiddlewareConfigurationBuilder{TBuilder}"/>
+public interface IProducerMiddlewareConfigurationBuilder
+    : IMiddlewareConfigurationBuilder<IProducerMiddlewareConfigurationBuilder>
 {
-    /// <inheritdoc cref="IMiddlewareConfigurationBuilder{TBuilder}"/>
-    public interface IProducerMiddlewareConfigurationBuilder
-        : IMiddlewareConfigurationBuilder<IProducerMiddlewareConfigurationBuilder>
-    {
-    }
 }

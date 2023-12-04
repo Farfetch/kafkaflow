@@ -4,24 +4,23 @@ using Confluent.SchemaRegistry;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 
-namespace KafkaFlow
+namespace KafkaFlow;
+
+internal class ConfluentProtobufTypeNameResolver : ISchemaRegistryTypeNameResolver
 {
-    internal class ConfluentProtobufTypeNameResolver : ISchemaRegistryTypeNameResolver
+    private readonly ISchemaRegistryClient _client;
+
+    public ConfluentProtobufTypeNameResolver(ISchemaRegistryClient client)
     {
-        private readonly ISchemaRegistryClient _client;
+        _client = client;
+    }
 
-        public ConfluentProtobufTypeNameResolver(ISchemaRegistryClient client)
-        {
-            _client = client;
-        }
+    public async Task<string> ResolveAsync(int id)
+    {
+        var schemaString = (await _client.GetSchemaAsync(id, "serialized")).SchemaString;
 
-        public async Task<string> ResolveAsync(int id)
-        {
-            var schemaString = (await _client.GetSchemaAsync(id, "serialized")).SchemaString;
+        var protoFields = FileDescriptorProto.Parser.ParseFrom(ByteString.FromBase64(schemaString));
 
-            var protoFields = FileDescriptorProto.Parser.ParseFrom(ByteString.FromBase64(schemaString));
-
-            return $"{protoFields.Package}.{protoFields.MessageType.FirstOrDefault()?.Name}";
-        }
+        return $"{protoFields.Package}.{protoFields.MessageType.FirstOrDefault()?.Name}";
     }
 }

@@ -1,13 +1,12 @@
-namespace KafkaFlow
+namespace KafkaFlow;
+
+/// <summary>
+/// Context for serialization and deserialization operations.
+/// </summary>
+public interface ISerializerContext
 {
     /// <summary>
-    /// Context for serialization and deserialization operations.
+    /// Gets the topic associated with the message
     /// </summary>
-    public interface ISerializerContext
-    {
-        /// <summary>
-        /// Gets the topic associated with the message
-        /// </summary>
-        string Topic { get; }
-    }
+    string Topic { get; }
 }

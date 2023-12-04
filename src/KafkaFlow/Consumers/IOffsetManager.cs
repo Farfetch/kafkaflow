@@ -1,13 +1,12 @@
 using System.Threading.Tasks;
 
-namespace KafkaFlow.Consumers
+namespace KafkaFlow.Consumers;
+
+internal interface IOffsetManager
 {
-    internal interface IOffsetManager
-    {
-        void Enqueue(IConsumerContext context);
+    void Enqueue(IConsumerContext context);
 
-        void MarkAsProcessed(IConsumerContext offset);
+    void MarkAsProcessed(IConsumerContext offset);
 
-        Task WaitContextsCompletionAsync();
-    }
+    Task WaitContextsCompletionAsync();
 }

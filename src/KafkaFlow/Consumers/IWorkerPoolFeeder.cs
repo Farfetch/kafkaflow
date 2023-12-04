@@ -1,11 +1,10 @@
 using System.Threading.Tasks;
 
-namespace KafkaFlow.Consumers
-{
-    internal interface IWorkerPoolFeeder
-    {
-        void Start();
+namespace KafkaFlow.Consumers;
 
-        Task StopAsync();
-    }
+internal interface IWorkerPoolFeeder
+{
+    void Start();
+
+    Task StopAsync();
 }

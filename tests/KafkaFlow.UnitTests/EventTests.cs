@@ -5,200 +5,199 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace KafkaFlow.UnitTests
+namespace KafkaFlow.UnitTests;
+
+[TestClass]
+public class EventTests
 {
-    [TestClass]
-    public class EventTests
+    private readonly Event _target;
+    private readonly Event<string> _typedTarget;
+
+    public EventTests()
     {
-        private readonly Event _target;
-        private readonly Event<string> _typedTarget;
+        var log = new Mock<ILogHandler>();
+        _target = new Event(log.Object);
+        _typedTarget = new Event<string>(log.Object);
+    }
 
-        public EventTests()
+    [TestMethod]
+    public async Task FireAsync_EventSubscribed_CallDelegateWithSuccess()
+    {
+        // Arrange
+        var numberOfCalls = 0;
+
+        _target.Subscribe(() =>
         {
-            var log = new Mock<ILogHandler>();
-            _target = new Event(log.Object);
-            _typedTarget = new Event<string>(log.Object);
-        }
+            numberOfCalls++;
+            return Task.CompletedTask;
+        });
 
-        [TestMethod]
-        public async Task FireAsync_EventSubscribed_CallDelegateWithSuccess()
+        // Act
+        await _target.FireAsync();
+
+        // Assert
+        Assert.AreEqual(1, numberOfCalls);
+    }
+
+    [TestMethod]
+    public async Task FireAsync_EventWithMultipleObservers_CallAllDelegatesWithSuccess()
+    {
+        // Arrange
+        var numberOfCalls = 0;
+
+        _target.Subscribe(() =>
         {
-            // Arrange
-            var numberOfCalls = 0;
+            numberOfCalls++;
+            return Task.CompletedTask;
+        });
 
-            _target.Subscribe(() =>
-            {
-                numberOfCalls++;
-                return Task.CompletedTask;
-            });
-
-            // Act
-            await _target.FireAsync();
-
-            // Assert
-            Assert.AreEqual(1, numberOfCalls);
-        }
-
-        [TestMethod]
-        public async Task FireAsync_EventWithMultipleObservers_CallAllDelegatesWithSuccess()
+        _target.Subscribe(() =>
         {
-            // Arrange
-            var numberOfCalls = 0;
+            numberOfCalls++;
+            return Task.CompletedTask;
+        });
 
-            _target.Subscribe(() =>
-            {
-                numberOfCalls++;
-                return Task.CompletedTask;
-            });
+        // Act
+        await _target.FireAsync();
 
-            _target.Subscribe(() =>
-            {
-                numberOfCalls++;
-                return Task.CompletedTask;
-            });
+        // Assert
+        Assert.AreEqual(2, numberOfCalls);
+    }
 
-            // Act
-            await _target.FireAsync();
+    [TestMethod]
+    public async Task FireAsync_EventWithMultipleObserversAndErrors_CallAllDelegatesAndContinueWithoutErrors()
+    {
+        // Arrange
+        var numberOfCalls = 0;
 
-            // Assert
-            Assert.AreEqual(2, numberOfCalls);
-        }
+        _target.Subscribe(() => throw new NotImplementedException());
 
-        [TestMethod]
-        public async Task FireAsync_EventWithMultipleObserversAndErrors_CallAllDelegatesAndContinueWithoutErrors()
+        _target.Subscribe(() =>
         {
-            // Arrange
-            var numberOfCalls = 0;
+            numberOfCalls++;
+            return Task.CompletedTask;
+        });
 
-            _target.Subscribe(() => throw new NotImplementedException());
+        // Act
+        await _target.FireAsync();
 
-            _target.Subscribe(() =>
-            {
-                numberOfCalls++;
-                return Task.CompletedTask;
-            });
+        // Assert
+        Assert.AreEqual(1, numberOfCalls);
+    }
 
-            // Act
-            await _target.FireAsync();
+    [TestMethod]
+    public async Task FireAsync_EventSubscribedWithArgument_CallDelegateWithSuccess()
+    {
+        // Arrange
+        var expectedArgument = Guid.NewGuid().ToString();
+        var receivedArgument = string.Empty;
 
-            // Assert
-            Assert.AreEqual(1, numberOfCalls);
-        }
-
-        [TestMethod]
-        public async Task FireAsync_EventSubscribedWithArgument_CallDelegateWithSuccess()
+        _typedTarget.Subscribe(arg =>
         {
-            // Arrange
-            var expectedArgument = Guid.NewGuid().ToString();
-            var receivedArgument = string.Empty;
+            receivedArgument = arg;
+            return Task.CompletedTask;
+        });
 
-            _typedTarget.Subscribe(arg =>
-            {
-                receivedArgument = arg;
-                return Task.CompletedTask;
-            });
+        // Act
+        await _typedTarget.FireAsync(expectedArgument);
 
-            // Act
-            await _typedTarget.FireAsync(expectedArgument);
+        // Assert
+        Assert.AreEqual(expectedArgument, receivedArgument);
+    }
 
-            // Assert
-            Assert.AreEqual(expectedArgument, receivedArgument);
-        }
+    [TestMethod]
+    public async Task FireAsync_EventWithMultipleObserversAndArgument_CallAllDelegatesWithSuccess()
+    {
+        // Arrange
+        var expectedArgument = Guid.NewGuid().ToString();
+        var receivedArguments = new List<string>();
 
-        [TestMethod]
-        public async Task FireAsync_EventWithMultipleObserversAndArgument_CallAllDelegatesWithSuccess()
+        _typedTarget.Subscribe(arg =>
         {
-            // Arrange
-            var expectedArgument = Guid.NewGuid().ToString();
-            var receivedArguments = new List<string>();
+            receivedArguments.Add(arg);
+            return Task.CompletedTask;
+        });
 
-            _typedTarget.Subscribe(arg =>
-            {
-                receivedArguments.Add(arg);
-                return Task.CompletedTask;
-            });
-
-            _typedTarget.Subscribe(arg =>
-            {
-                receivedArguments.Add(arg);
-                return Task.CompletedTask;
-            });
-
-            // Act
-            await _typedTarget.FireAsync(expectedArgument);
-
-            // Assert
-            Assert.AreEqual(2, receivedArguments.Count);
-            Assert.IsTrue(receivedArguments.All(x => x == expectedArgument));
-        }
-
-        [TestMethod]
-        public async Task FireAsync_TypedEventWithMultipleObserversAndErrors_CallAllDelegatesAndContinueWithoutErrors()
+        _typedTarget.Subscribe(arg =>
         {
-            // Arrange
-            var numberOfCalls = 0;
+            receivedArguments.Add(arg);
+            return Task.CompletedTask;
+        });
 
-            _typedTarget.Subscribe(_ => throw new NotImplementedException());
+        // Act
+        await _typedTarget.FireAsync(expectedArgument);
 
-            _typedTarget.Subscribe(_ =>
-            {
-                numberOfCalls++;
-                return Task.CompletedTask;
-            });
+        // Assert
+        Assert.AreEqual(2, receivedArguments.Count);
+        Assert.IsTrue(receivedArguments.All(x => x == expectedArgument));
+    }
 
-            // Act
-            await _typedTarget.FireAsync(Guid.NewGuid().ToString());
+    [TestMethod]
+    public async Task FireAsync_TypedEventWithMultipleObserversAndErrors_CallAllDelegatesAndContinueWithoutErrors()
+    {
+        // Arrange
+        var numberOfCalls = 0;
 
-            // Assert
-            Assert.AreEqual(1, numberOfCalls);
-        }
+        _typedTarget.Subscribe(_ => throw new NotImplementedException());
 
-        [TestMethod]
-        public async Task FireAsync_DuplicatedEventHandler_CallHandlerOnce()
+        _typedTarget.Subscribe(_ =>
         {
-            // Arrange
-            var expectedArgument = Guid.NewGuid().ToString();
-            var receivedArguments = new List<string>();
+            numberOfCalls++;
+            return Task.CompletedTask;
+        });
 
-            Func<string, Task> handler = (arg) =>
-            {
-                receivedArguments.Add(arg);
-                return Task.CompletedTask;
-            };
+        // Act
+        await _typedTarget.FireAsync(Guid.NewGuid().ToString());
 
-            _typedTarget.Subscribe(handler);
-            _typedTarget.Subscribe(handler);
+        // Assert
+        Assert.AreEqual(1, numberOfCalls);
+    }
 
-            // Act
-            await _typedTarget.FireAsync(expectedArgument);
+    [TestMethod]
+    public async Task FireAsync_DuplicatedEventHandler_CallHandlerOnce()
+    {
+        // Arrange
+        var expectedArgument = Guid.NewGuid().ToString();
+        var receivedArguments = new List<string>();
 
-            // Assert
-            Assert.AreEqual(1, receivedArguments.Count);
-            Assert.IsTrue(receivedArguments.All(x => x == expectedArgument));
-        }
-
-        [TestMethod]
-        public async Task FireAsync_UnsubscribeEventHandler_DoesNotCallHandler()
+        Func<string, Task> handler = (arg) =>
         {
-            // Arrange
-            var expectedArgument = Guid.NewGuid().ToString();
-            var receivedArguments = new List<string>();
+            receivedArguments.Add(arg);
+            return Task.CompletedTask;
+        };
 
-            Func<string, Task> handler = (arg) =>
-            {
-                receivedArguments.Add(arg);
-                return Task.CompletedTask;
-            };
+        _typedTarget.Subscribe(handler);
+        _typedTarget.Subscribe(handler);
 
-            var subscription = _typedTarget.Subscribe(handler);
+        // Act
+        await _typedTarget.FireAsync(expectedArgument);
 
-            subscription.Cancel();
+        // Assert
+        Assert.AreEqual(1, receivedArguments.Count);
+        Assert.IsTrue(receivedArguments.All(x => x == expectedArgument));
+    }
 
-            // Act
-            await _typedTarget.FireAsync(expectedArgument);
+    [TestMethod]
+    public async Task FireAsync_UnsubscribeEventHandler_DoesNotCallHandler()
+    {
+        // Arrange
+        var expectedArgument = Guid.NewGuid().ToString();
+        var receivedArguments = new List<string>();
 
-            // Assert
-            Assert.AreEqual(0, receivedArguments.Count);
-        }
+        Func<string, Task> handler = (arg) =>
+        {
+            receivedArguments.Add(arg);
+            return Task.CompletedTask;
+        };
+
+        var subscription = _typedTarget.Subscribe(handler);
+
+        subscription.Cancel();
+
+        // Act
+        await _typedTarget.FireAsync(expectedArgument);
+
+        // Assert
+        Assert.AreEqual(0, receivedArguments.Count);
     }
 }

@@ -1,17 +1,16 @@
 using System.Threading.Tasks;
 
-namespace KafkaFlow.Consumers
+namespace KafkaFlow.Consumers;
+
+internal interface IConsumerManager
 {
-    internal interface IConsumerManager
-    {
-        IWorkerPoolFeeder Feeder { get; }
+    IWorkerPoolFeeder Feeder { get; }
 
-        IConsumerWorkerPool WorkerPool { get; }
+    IConsumerWorkerPool WorkerPool { get; }
 
-        IConsumer Consumer { get; }
+    IConsumer Consumer { get; }
 
-        Task StartAsync();
+    Task StartAsync();
 
-        Task StopAsync();
-    }
+    Task StopAsync();
 }

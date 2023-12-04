@@ -1,38 +1,37 @@
-﻿namespace KafkaFlow.Configuration
+﻿namespace KafkaFlow.Configuration;
+
+/// <summary>
+/// Provides access to events fired by the internals of the library
+/// </summary>
+public interface IGlobalEvents
 {
     /// <summary>
-    /// Provides access to events fired by the internals of the library
+    /// Gets the message consume completed event
     /// </summary>
-    public interface IGlobalEvents
-    {
-        /// <summary>
-        /// Gets the message consume completed event
-        /// </summary>
-        IEvent<MessageEventContext> MessageConsumeCompleted { get; }
+    IEvent<MessageEventContext> MessageConsumeCompleted { get; }
 
-        /// <summary>
-        /// Gets the message consume error event
-        /// </summary>
-        IEvent<MessageErrorEventContext> MessageConsumeError { get; }
+    /// <summary>
+    /// Gets the message consume error event
+    /// </summary>
+    IEvent<MessageErrorEventContext> MessageConsumeError { get; }
 
-        /// <summary>
-        /// Gets the message consume started event
-        /// </summary>
-        IEvent<MessageEventContext> MessageConsumeStarted { get; }
+    /// <summary>
+    /// Gets the message consume started event
+    /// </summary>
+    IEvent<MessageEventContext> MessageConsumeStarted { get; }
 
-        /// <summary>
-        /// Gets the message produce completed event
-        /// </summary>
-        IEvent<MessageEventContext> MessageProduceCompleted { get; }
+    /// <summary>
+    /// Gets the message produce completed event
+    /// </summary>
+    IEvent<MessageEventContext> MessageProduceCompleted { get; }
 
-        /// <summary>
-        /// Gets the message produce error event
-        /// </summary>
-        IEvent<MessageErrorEventContext> MessageProduceError { get; }
+    /// <summary>
+    /// Gets the message produce error event
+    /// </summary>
+    IEvent<MessageErrorEventContext> MessageProduceError { get; }
 
-        /// <summary>
-        /// Gets the message produce started event
-        /// </summary>
-        IEvent<MessageEventContext> MessageProduceStarted { get; }
-    }
+    /// <summary>
+    /// Gets the message produce started event
+    /// </summary>
+    IEvent<MessageEventContext> MessageProduceStarted { get; }
 }

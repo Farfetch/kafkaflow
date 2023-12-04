@@ -1,29 +1,28 @@
 using System.Threading.Tasks;
 
-namespace KafkaFlow.Middlewares.ConsumerThrottling
+namespace KafkaFlow.Middlewares.ConsumerThrottling;
+
+internal class ConsumerThrottlingThreshold : IConsumerThrottlingThreshold
 {
-    internal class ConsumerThrottlingThreshold : IConsumerThrottlingThreshold
+    private readonly IConsumerThrottlingAction _action;
+
+    public ConsumerThrottlingThreshold(long thresholdValue, IConsumerThrottlingAction action)
     {
-        private readonly IConsumerThrottlingAction _action;
+        _action = action;
+        this.ThresholdValue = thresholdValue;
+    }
 
-        public ConsumerThrottlingThreshold(long thresholdValue, IConsumerThrottlingAction action)
+    public long ThresholdValue { get; }
+
+    public async Task<bool> TryExecuteActionAsync(long metricValue)
+    {
+        if (this.ThresholdValue > metricValue)
         {
-            _action = action;
-            this.ThresholdValue = thresholdValue;
+            return false;
         }
 
-        public long ThresholdValue { get; }
+        await _action.ExecuteAsync();
 
-        public async Task<bool> TryExecuteActionAsync(long metricValue)
-        {
-            if (this.ThresholdValue > metricValue)
-            {
-                return false;
-            }
-
-            await _action.ExecuteAsync();
-
-            return true;
-        }
+        return true;
     }
 }

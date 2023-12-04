@@ -3,53 +3,52 @@ using Confluent.Kafka;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace KafkaFlow.UnitTests
+namespace KafkaFlow.UnitTests;
+
+[TestClass]
+public class MessageHeadersTests
 {
-    [TestClass]
-    public class MessageHeadersTests
+    private const string Key = "abc";
+    private const string StrValue = "123";
+    private readonly byte[] _value = Encoding.UTF8.GetBytes("123");
+
+    [TestMethod]
+    public void Add_WithKeyNotNull_ShouldAddValueCorrectly()
     {
-        private const string Key = "abc";
-        private const string StrValue = "123";
-        private readonly byte[] _value = Encoding.UTF8.GetBytes("123");
+        // Arrange
+        var header = new MessageHeaders();
 
-        [TestMethod]
-        public void Add_WithKeyNotNull_ShouldAddValueCorrectly()
-        {
-            // Arrange
-            var header = new MessageHeaders();
+        // Act
+        header.Add(Key, _value);
 
-            // Act
-            header.Add(Key, _value);
+        // Assert
+        header[Key].Should().BeEquivalentTo(_value);
+    }
 
-            // Assert
-            header[Key].Should().BeEquivalentTo(_value);
-        }
+    [TestMethod]
+    public void GetKafkaHeader_ShouldReturnKafkaHeaders()
+    {
+        // Arrange
+        var kafkaHeaders = new Headers { { Key, _value } };
+        var messageHeaders = new MessageHeaders(kafkaHeaders);
 
-        [TestMethod]
-        public void GetKafkaHeader_ShouldReturnKafkaHeaders()
-        {
-            // Arrange
-            var kafkaHeaders = new Headers { { Key, _value } };
-            var messageHeaders = new MessageHeaders(kafkaHeaders);
+        // Act
+        var result = messageHeaders.GetKafkaHeaders();
 
-            // Act
-            var result = messageHeaders.GetKafkaHeaders();
+        // Assert
+        result.Should().BeEquivalentTo(kafkaHeaders);
+    }
 
-            // Assert
-            result.Should().BeEquivalentTo(kafkaHeaders);
-        }
+    [TestMethod]
+    public void SetString_WithValueNotNull_ShouldAddValueCorrectly()
+    {
+        // Arrange
+        var header = new MessageHeaders();
 
-        [TestMethod]
-        public void SetString_WithValueNotNull_ShouldAddValueCorrectly()
-        {
-            // Arrange
-            var header = new MessageHeaders();
+        // Act
+        header.SetString(Key, StrValue);
 
-            // Act
-            header.SetString(Key, StrValue);
-
-            // Assert
-            header.GetString(Key).Should().BeEquivalentTo(StrValue);
-        }
+        // Assert
+        header.GetString(Key).Should().BeEquivalentTo(StrValue);
     }
 }

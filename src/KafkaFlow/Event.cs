@@ -3,78 +3,77 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace KafkaFlow
+namespace KafkaFlow;
+
+internal class Event<TArg> : IEvent<TArg>
 {
-    internal class Event<TArg> : IEvent<TArg>
+    private readonly ILogHandler _logHandler;
+
+    private readonly List<Func<TArg, Task>> _handlers = new();
+
+    public Event(ILogHandler logHandler)
     {
-        private readonly ILogHandler _logHandler;
+        _logHandler = logHandler;
+    }
 
-        private readonly List<Func<TArg, Task>> _handlers = new();
-
-        public Event(ILogHandler logHandler)
+    public IEventSubscription Subscribe(Func<TArg, Task> handler)
+    {
+        if (handler is null)
         {
-            _logHandler = logHandler;
+            throw new ArgumentNullException("Handler cannot be null");
         }
 
-        public IEventSubscription Subscribe(Func<TArg, Task> handler)
+        if (!_handlers.Contains(handler))
         {
-            if (handler is null)
-            {
-                throw new ArgumentNullException("Handler cannot be null");
-            }
-
-            if (!_handlers.Contains(handler))
-            {
-                _handlers.Add(handler);
-            }
-
-            return new EventSubscription(() => _handlers.Remove(handler));
+            _handlers.Add(handler);
         }
 
-        internal Task FireAsync(TArg arg)
-        {
-            var tasks = _handlers
-                .Select(handler => this.ProcessHandler(handler, arg));
+        return new EventSubscription(() => _handlers.Remove(handler));
+    }
 
-            return Task.WhenAll(tasks);
-        }
+    internal Task FireAsync(TArg arg)
+    {
+        var tasks = _handlers
+            .Select(handler => this.ProcessHandler(handler, arg));
 
-        private Task ProcessHandler(Func<TArg, Task> handler, TArg arg)
+        return Task.WhenAll(tasks);
+    }
+
+    private Task ProcessHandler(Func<TArg, Task> handler, TArg arg)
+    {
+        try
         {
-            try
+            return handler.Invoke(arg).ContinueWith(t =>
             {
-                return handler.Invoke(arg).ContinueWith(t =>
+                if (t.IsFaulted)
                 {
-                    if (t.IsFaulted)
-                    {
-                        this.LogHandlerOnError(t.Exception);
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                this.LogHandlerOnError(ex);
-                return Task.CompletedTask;
-            }
+                    this.LogHandlerOnError(t.Exception);
+                }
+            });
         }
-
-        private void LogHandlerOnError(Exception ex)
+        catch (Exception ex)
         {
-            _logHandler.Error("Error firing event", ex, new { Event = this.GetType().Name });
+            this.LogHandlerOnError(ex);
+            return Task.CompletedTask;
         }
     }
 
-    internal class Event : IEvent
+    private void LogHandlerOnError(Exception ex)
     {
-        private readonly Event<object> _evt;
-
-        public Event(ILogHandler logHandler)
-        {
-            _evt = new Event<object>(logHandler);
-        }
-
-        public IEventSubscription Subscribe(Func<Task> handler) => _evt.Subscribe(_ => handler.Invoke());
-
-        internal Task FireAsync() => _evt.FireAsync(null);
+        _logHandler.Error("Error firing event", ex, new { Event = this.GetType().Name });
     }
+}
+
+internal class Event : IEvent
+{
+    private readonly Event<object> _evt;
+
+    public Event(ILogHandler logHandler)
+    {
+        _evt = new Event<object>(logHandler);
+    }
+
+    public IEventSubscription Subscribe(Func<Task> handler) => _evt.Subscribe(_ => handler.Invoke());
+
+    internal Task FireAsync() => _evt.FireAsync(null);
 }

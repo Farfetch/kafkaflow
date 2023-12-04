@@ -1,24 +1,23 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace KafkaFlow.Admin.Messages
+namespace KafkaFlow.Admin.Messages;
+
+/// <summary>
+/// The message that resume a paused consumer group
+/// </summary>
+[DataContract]
+public class ResumeConsumersByGroup : IAdminMessage
 {
     /// <summary>
-    /// The message that resume a paused consumer group
+    /// Gets or sets the consumer group id
     /// </summary>
-    [DataContract]
-    public class ResumeConsumersByGroup : IAdminMessage
-    {
-        /// <summary>
-        /// Gets or sets the consumer group id
-        /// </summary>
-        [DataMember(Order = 1)]
-        public string GroupId { get; set; }
+    [DataMember(Order = 1)]
+    public string GroupId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the topics that will be resumed
-        /// </summary>
-        [DataMember(Order = 2)]
-        public IList<string> Topics { get; set; } = new List<string>();
-    }
+    /// <summary>
+    /// Gets or sets the topics that will be resumed
+    /// </summary>
+    [DataMember(Order = 2)]
+    public IList<string> Topics { get; set; } = new List<string>();
 }

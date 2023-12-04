@@ -1,19 +1,18 @@
 using System.Threading.Tasks;
 using KafkaFlow.IntegrationTests.Core.Messages;
 
-namespace KafkaFlow.IntegrationTests.Core.Handlers
+namespace KafkaFlow.IntegrationTests.Core.Handlers;
+
+internal class PauseResumeHandler : IMessageHandler<PauseResumeMessage>
 {
-    internal class PauseResumeHandler : IMessageHandler<PauseResumeMessage>
+    public async Task Handle(IMessageContext context, PauseResumeMessage message)
     {
-        public async Task Handle(IMessageContext context, PauseResumeMessage message)
-        {
-            context.ConsumerContext.Pause();
+        context.ConsumerContext.Pause();
 
-            await Task.Delay(Bootstrapper.MaxPollIntervalMs + 1000);
+        await Task.Delay(Bootstrapper.MaxPollIntervalMs + 1000);
 
-            MessageStorage.Add(message);
+        MessageStorage.Add(message);
 
-            context.ConsumerContext.Resume();
-        }
+        context.ConsumerContext.Resume();
     }
 }

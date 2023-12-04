@@ -3,118 +3,117 @@ using System.Collections.Generic;
 using System.Linq;
 using KafkaFlow.Producers;
 
-namespace KafkaFlow.Configuration
+namespace KafkaFlow.Configuration;
+
+internal class ClusterConfigurationBuilder : IClusterConfigurationBuilder
 {
-    internal class ClusterConfigurationBuilder : IClusterConfigurationBuilder
+    private readonly List<ProducerConfigurationBuilder> _producers = new();
+    private readonly List<ConsumerConfigurationBuilder> _consumers = new();
+    private readonly List<TopicConfiguration> _topicsToCreateIfNotExist = new();
+    private Action<IDependencyResolver> _onStartedHandler = _ => { };
+    private Action<IDependencyResolver> _onStoppingHandler = _ => { };
+    private IEnumerable<string> _brokers;
+    private string _name;
+    private Func<SecurityInformation> _securityInformationHandler;
+
+    public ClusterConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
     {
-        private readonly List<ProducerConfigurationBuilder> _producers = new();
-        private readonly List<ConsumerConfigurationBuilder> _consumers = new();
-        private readonly List<TopicConfiguration> _topicsToCreateIfNotExist = new();
-        private Action<IDependencyResolver> _onStartedHandler = _ => { };
-        private Action<IDependencyResolver> _onStoppingHandler = _ => { };
-        private IEnumerable<string> _brokers;
-        private string _name;
-        private Func<SecurityInformation> _securityInformationHandler;
+        this.DependencyConfigurator = dependencyConfigurator;
+    }
 
-        public ClusterConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
+    public IDependencyConfigurator DependencyConfigurator { get; }
+
+    public ClusterConfiguration Build(KafkaConfiguration kafkaConfiguration)
+    {
+        var configuration = new ClusterConfiguration(
+            kafkaConfiguration,
+            _name,
+            _brokers.ToList(),
+            _securityInformationHandler,
+            _onStartedHandler,
+            _onStoppingHandler,
+            _topicsToCreateIfNotExist);
+
+        configuration.AddProducers(_producers.Select(x => x.Build(configuration)));
+        configuration.AddConsumers(_consumers.Select(x => x.Build(configuration)));
+
+        return configuration;
+    }
+
+    public IClusterConfigurationBuilder WithBrokers(IEnumerable<string> brokers)
+    {
+        _brokers = brokers;
+        return this;
+    }
+
+    public IClusterConfigurationBuilder WithName(string name)
+    {
+        _name = name;
+        return this;
+    }
+
+    public IClusterConfigurationBuilder WithSecurityInformation(Action<SecurityInformation> handler)
+    {
+        // Uses a handler to avoid in-memory stored passwords for long periods
+        _securityInformationHandler = () =>
         {
-            this.DependencyConfigurator = dependencyConfigurator;
-        }
+            var config = new SecurityInformation();
+            handler(config);
+            return config;
+        };
 
-        public IDependencyConfigurator DependencyConfigurator { get; }
+        return this;
+    }
 
-        public ClusterConfiguration Build(KafkaConfiguration kafkaConfiguration)
-        {
-            var configuration = new ClusterConfiguration(
-                kafkaConfiguration,
-                _name,
-                _brokers.ToList(),
-                _securityInformationHandler,
-                _onStartedHandler,
-                _onStoppingHandler,
-                _topicsToCreateIfNotExist);
+    public IClusterConfigurationBuilder AddProducer<TProducer>(Action<IProducerConfigurationBuilder> producer)
+    {
+        this.DependencyConfigurator.AddSingleton<IMessageProducer<TProducer>>(
+            resolver => new MessageProducerWrapper<TProducer>(
+                resolver.Resolve<IProducerAccessor>().GetProducer<TProducer>()));
 
-            configuration.AddProducers(_producers.Select(x => x.Build(configuration)));
-            configuration.AddConsumers(_consumers.Select(x => x.Build(configuration)));
+        return this.AddProducer(typeof(TProducer).FullName, producer);
+    }
 
-            return configuration;
-        }
+    public IClusterConfigurationBuilder AddProducer(string name, Action<IProducerConfigurationBuilder> producer)
+    {
+        var builder = new ProducerConfigurationBuilder(this.DependencyConfigurator, name);
 
-        public IClusterConfigurationBuilder WithBrokers(IEnumerable<string> brokers)
-        {
-            _brokers = brokers;
-            return this;
-        }
+        producer(builder);
 
-        public IClusterConfigurationBuilder WithName(string name)
-        {
-            _name = name;
-            return this;
-        }
+        _producers.Add(builder);
 
-        public IClusterConfigurationBuilder WithSecurityInformation(Action<SecurityInformation> handler)
-        {
-            // Uses a handler to avoid in-memory stored passwords for long periods
-            _securityInformationHandler = () =>
-            {
-                var config = new SecurityInformation();
-                handler(config);
-                return config;
-            };
+        return this;
+    }
 
-            return this;
-        }
+    public IClusterConfigurationBuilder AddConsumer(Action<IConsumerConfigurationBuilder> consumer)
+    {
+        var builder = new ConsumerConfigurationBuilder(this.DependencyConfigurator);
 
-        public IClusterConfigurationBuilder AddProducer<TProducer>(Action<IProducerConfigurationBuilder> producer)
-        {
-            this.DependencyConfigurator.AddSingleton<IMessageProducer<TProducer>>(
-                resolver => new MessageProducerWrapper<TProducer>(
-                    resolver.Resolve<IProducerAccessor>().GetProducer<TProducer>()));
+        consumer(builder);
 
-            return this.AddProducer(typeof(TProducer).FullName, producer);
-        }
+        _consumers.Add(builder);
 
-        public IClusterConfigurationBuilder AddProducer(string name, Action<IProducerConfigurationBuilder> producer)
-        {
-            var builder = new ProducerConfigurationBuilder(this.DependencyConfigurator, name);
+        return this;
+    }
 
-            producer(builder);
+    public IClusterConfigurationBuilder OnStopping(Action<IDependencyResolver> handler)
+    {
+        _onStoppingHandler = handler;
+        return this;
+    }
 
-            _producers.Add(builder);
+    public IClusterConfigurationBuilder OnStarted(Action<IDependencyResolver> handler)
+    {
+        _onStartedHandler = handler;
+        return this;
+    }
 
-            return this;
-        }
-
-        public IClusterConfigurationBuilder AddConsumer(Action<IConsumerConfigurationBuilder> consumer)
-        {
-            var builder = new ConsumerConfigurationBuilder(this.DependencyConfigurator);
-
-            consumer(builder);
-
-            _consumers.Add(builder);
-
-            return this;
-        }
-
-        public IClusterConfigurationBuilder OnStopping(Action<IDependencyResolver> handler)
-        {
-            _onStoppingHandler = handler;
-            return this;
-        }
-
-        public IClusterConfigurationBuilder OnStarted(Action<IDependencyResolver> handler)
-        {
-            _onStartedHandler = handler;
-            return this;
-        }
-
-        public IClusterConfigurationBuilder CreateTopicIfNotExists(
-            string topicName,
-            int numberOfPartitions,
-            short replicationFactor)
-        {
-            _topicsToCreateIfNotExist.Add(new TopicConfiguration(topicName, numberOfPartitions, replicationFactor));
-            return this;
-        }
+    public IClusterConfigurationBuilder CreateTopicIfNotExists(
+        string topicName,
+        int numberOfPartitions,
+        short replicationFactor)
+    {
+        _topicsToCreateIfNotExist.Add(new TopicConfiguration(topicName, numberOfPartitions, replicationFactor));
+        return this;
     }
 }

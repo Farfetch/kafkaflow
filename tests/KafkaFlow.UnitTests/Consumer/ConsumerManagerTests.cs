@@ -8,159 +8,158 @@ using KafkaFlow.Consumers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace KafkaFlow.UnitTests.Consumer
+namespace KafkaFlow.UnitTests.Consumer;
+
+[TestClass]
+public class ConsumerManagerTests
 {
-    [TestClass]
-    public class ConsumerManagerTests
+    private readonly Fixture _fixture = new();
+
+    private ConsumerManager _target;
+
+    private Mock<IConsumer> _consumerMock;
+    private Mock<IConsumerWorkerPool> _workerPoolMock;
+    private Mock<IWorkerPoolFeeder> _feederMock;
+    private Mock<ILogHandler> _logHandlerMock;
+    private Mock<IDependencyResolver> _dependencyResolver;
+
+    private Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartition>> _onPartitionAssignedHandler;
+    private Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartitionOffset>> _onPartitionRevokedHandler;
+
+    [TestInitialize]
+    public void Setup()
     {
-        private readonly Fixture _fixture = new();
+        _consumerMock = new Mock<IConsumer>();
+        _workerPoolMock = new Mock<IConsumerWorkerPool>();
+        _feederMock = new Mock<IWorkerPoolFeeder>();
+        _logHandlerMock = new Mock<ILogHandler>();
+        _dependencyResolver = new Mock<IDependencyResolver>();
 
-        private ConsumerManager _target;
+        _consumerMock
+            .Setup(
+                x => x.OnPartitionsAssigned(It.IsAny<Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartition>>>()))
+            .Callback(
+                (Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartition>> value) =>
+                    _onPartitionAssignedHandler = value);
 
-        private Mock<IConsumer> _consumerMock;
-        private Mock<IConsumerWorkerPool> _workerPoolMock;
-        private Mock<IWorkerPoolFeeder> _feederMock;
-        private Mock<ILogHandler> _logHandlerMock;
-        private Mock<IDependencyResolver> _dependencyResolver;
+        _consumerMock
+            .Setup(
+                x => x.OnPartitionsRevoked(
+                    It.IsAny<Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartitionOffset>>>()))
+            .Callback(
+                (Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartitionOffset>> value) =>
+                    _onPartitionRevokedHandler = value);
 
-        private Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartition>> _onPartitionAssignedHandler;
-        private Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartitionOffset>> _onPartitionRevokedHandler;
+        var configurationMock = new Mock<IConsumerConfiguration>();
 
-        [TestInitialize]
-        public void Setup()
-        {
-            _consumerMock = new Mock<IConsumer>();
-            _workerPoolMock = new Mock<IConsumerWorkerPool>();
-            _feederMock = new Mock<IWorkerPoolFeeder>();
-            _logHandlerMock = new Mock<ILogHandler>();
-            _dependencyResolver = new Mock<IDependencyResolver>();
+        configurationMock
+            .SetupGet(x => x.WorkersCountCalculator)
+            .Returns((_, _) => Task.FromResult(10));
 
-            _consumerMock
-                .Setup(
-                    x => x.OnPartitionsAssigned(It.IsAny<Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartition>>>()))
-                .Callback(
-                    (Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartition>> value) =>
-                        _onPartitionAssignedHandler = value);
+        configurationMock
+            .SetupGet(x => x.WorkersCountEvaluationInterval)
+            .Returns(TimeSpan.FromMinutes(5));
 
-            _consumerMock
-                .Setup(
-                    x => x.OnPartitionsRevoked(
-                        It.IsAny<Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartitionOffset>>>()))
-                .Callback(
-                    (Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartitionOffset>> value) =>
-                        _onPartitionRevokedHandler = value);
+        _consumerMock
+            .SetupGet(x => x.Configuration)
+            .Returns(configurationMock.Object);
 
-            var configurationMock = new Mock<IConsumerConfiguration>();
+        _target = new ConsumerManager(
+            _consumerMock.Object,
+            _workerPoolMock.Object,
+            _feederMock.Object,
+            _dependencyResolver.Object,
+            _logHandlerMock.Object);
+    }
 
-            configurationMock
-                .SetupGet(x => x.WorkersCountCalculator)
-                .Returns((_, _) => Task.FromResult(10));
+    [TestMethod]
+    public void ConstructorCalled_InitializeProperties()
+    {
+        // Assert
+        _target.Consumer.Should().Be(_consumerMock.Object);
+        _target.WorkerPool.Should().Be(_workerPoolMock.Object);
+        _target.Feeder.Should().Be(_feederMock.Object);
+    }
 
-            configurationMock
-                .SetupGet(x => x.WorkersCountEvaluationInterval)
-                .Returns(TimeSpan.FromMinutes(5));
+    [TestMethod]
+    public async Task StartAsync_StartDependencies()
+    {
+        // Arrange
+        _feederMock
+            .Setup(x => x.Start());
 
-            _consumerMock
-                .SetupGet(x => x.Configuration)
-                .Returns(configurationMock.Object);
+        // Act
+        await _target.StartAsync();
 
-            _target = new ConsumerManager(
-                _consumerMock.Object,
-                _workerPoolMock.Object,
-                _feederMock.Object,
-                _dependencyResolver.Object,
-                _logHandlerMock.Object);
-        }
+        // Assert
+        _feederMock.VerifyAll();
+    }
 
-        [TestMethod]
-        public void ConstructorCalled_InitializeProperties()
-        {
-            // Assert
-            _target.Consumer.Should().Be(_consumerMock.Object);
-            _target.WorkerPool.Should().Be(_workerPoolMock.Object);
-            _target.Feeder.Should().Be(_feederMock.Object);
-        }
+    [TestMethod]
+    public async Task StopAsync_StopDependencies()
+    {
+        // Arrange
+        _feederMock
+            .Setup(x => x.StopAsync())
+            .Returns(Task.CompletedTask);
 
-        [TestMethod]
-        public async Task StartAsync_StartDependencies()
-        {
-            // Arrange
-            _feederMock
-                .Setup(x => x.Start());
+        _workerPoolMock
+            .Setup(x => x.StopAsync())
+            .Returns(Task.CompletedTask);
 
-            // Act
-            await _target.StartAsync();
+        // Act
+        await _target.StopAsync();
 
-            // Assert
-            _feederMock.VerifyAll();
-        }
+        // Assert
+        _feederMock.VerifyAll();
+        _workerPoolMock.VerifyAll();
+        _consumerMock.Verify(x => x.Dispose(), Times.Once());
+    }
 
-        [TestMethod]
-        public async Task StopAsync_StopDependencies()
-        {
-            // Arrange
-            _feederMock
-                .Setup(x => x.StopAsync())
-                .Returns(Task.CompletedTask);
+    [TestMethod]
+    public void OnPartitionsAssigned_StartWorkerPool()
+    {
+        // Arrange
+        var partitions = _fixture.Create<List<Confluent.Kafka.TopicPartition>>();
 
-            _workerPoolMock
-                .Setup(x => x.StopAsync())
-                .Returns(Task.CompletedTask);
+        _workerPoolMock
+            .Setup(x => x.StartAsync(partitions, It.IsAny<int>()))
+            .Returns(Task.CompletedTask);
 
-            // Act
-            await _target.StopAsync();
+        _logHandlerMock
+            .Setup(x => x.Info(It.IsAny<string>(), It.IsAny<object>()));
 
-            // Assert
-            _feederMock.VerifyAll();
-            _workerPoolMock.VerifyAll();
-            _consumerMock.Verify(x => x.Dispose(), Times.Once());
-        }
+        // Act
+        _onPartitionAssignedHandler(_dependencyResolver.Object, Mock.Of<Confluent.Kafka.IConsumer<byte[], byte[]>>(), partitions);
 
-        [TestMethod]
-        public void OnPartitionsAssigned_StartWorkerPool()
-        {
-            // Arrange
-            var partitions = _fixture.Create<List<Confluent.Kafka.TopicPartition>>();
+        // Assert
+        _workerPoolMock.VerifyAll();
+        _logHandlerMock.VerifyAll();
+    }
 
-            _workerPoolMock
-                .Setup(x => x.StartAsync(partitions, It.IsAny<int>()))
-                .Returns(Task.CompletedTask);
+    [TestMethod]
+    public void OnPartitionsRevoked_StopWorkerPool()
+    {
+        // Arrange
+        Confluent.Kafka.IConsumer<byte[], byte[]> consumer = null;
+        var partitions = _fixture.Create<List<Confluent.Kafka.TopicPartitionOffset>>();
 
-            _logHandlerMock
-                .Setup(x => x.Info(It.IsAny<string>(), It.IsAny<object>()));
+        _workerPoolMock
+            .Setup(x => x.StopAsync())
+            .Returns(Task.CompletedTask);
 
-            // Act
-            _onPartitionAssignedHandler(_dependencyResolver.Object, Mock.Of<Confluent.Kafka.IConsumer<byte[], byte[]>>(), partitions);
+        _consumerMock
+            .SetupGet(x => x.Configuration)
+            .Returns(new Mock<IConsumerConfiguration>().Object);
 
-            // Assert
-            _workerPoolMock.VerifyAll();
-            _logHandlerMock.VerifyAll();
-        }
+        _logHandlerMock
+            .Setup(x => x.Warning(It.IsAny<string>(), It.IsAny<object>()));
 
-        [TestMethod]
-        public void OnPartitionsRevoked_StopWorkerPool()
-        {
-            // Arrange
-            Confluent.Kafka.IConsumer<byte[], byte[]> consumer = null;
-            var partitions = _fixture.Create<List<Confluent.Kafka.TopicPartitionOffset>>();
+        // Act
+        _onPartitionRevokedHandler(_dependencyResolver.Object, consumer, partitions);
 
-            _workerPoolMock
-                .Setup(x => x.StopAsync())
-                .Returns(Task.CompletedTask);
-
-            _consumerMock
-                .SetupGet(x => x.Configuration)
-                .Returns(new Mock<IConsumerConfiguration>().Object);
-
-            _logHandlerMock
-                .Setup(x => x.Warning(It.IsAny<string>(), It.IsAny<object>()));
-
-            // Act
-            _onPartitionRevokedHandler(_dependencyResolver.Object, consumer, partitions);
-
-            // Assert
-            _workerPoolMock.VerifyAll();
-            _logHandlerMock.VerifyAll();
-        }
+        // Assert
+        _workerPoolMock.VerifyAll();
+        _logHandlerMock.VerifyAll();
     }
 }

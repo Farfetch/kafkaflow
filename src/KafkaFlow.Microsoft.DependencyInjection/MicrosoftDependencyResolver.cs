@@ -2,30 +2,29 @@
 using System.Collections.Generic;
 using global::Microsoft.Extensions.DependencyInjection;
 
-namespace KafkaFlow
+namespace KafkaFlow;
+
+internal class MicrosoftDependencyResolver : IDependencyResolver
 {
-    internal class MicrosoftDependencyResolver : IDependencyResolver
+    private readonly IServiceProvider _serviceProvider;
+
+    public MicrosoftDependencyResolver(IServiceProvider serviceProvider)
     {
-        private readonly IServiceProvider _serviceProvider;
+        _serviceProvider = serviceProvider;
+    }
 
-        public MicrosoftDependencyResolver(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
+    public object Resolve(Type type)
+    {
+        return _serviceProvider.GetService(type);
+    }
 
-        public object Resolve(Type type)
-        {
-            return _serviceProvider.GetService(type);
-        }
+    public IEnumerable<object> ResolveAll(Type type)
+    {
+        return _serviceProvider.GetServices(type);
+    }
 
-        public IEnumerable<object> ResolveAll(Type type)
-        {
-            return _serviceProvider.GetServices(type);
-        }
-
-        public IDependencyResolverScope CreateScope()
-        {
-            return new MicrosoftDependencyResolverScope(_serviceProvider.CreateScope());
-        }
+    public IDependencyResolverScope CreateScope()
+    {
+        return new MicrosoftDependencyResolverScope(_serviceProvider.CreateScope());
     }
 }

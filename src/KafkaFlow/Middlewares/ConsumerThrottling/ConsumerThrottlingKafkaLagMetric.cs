@@ -3,28 +3,27 @@ using System.Linq;
 using System.Threading.Tasks;
 using KafkaFlow.Consumers;
 
-namespace KafkaFlow.Middlewares.ConsumerThrottling
+namespace KafkaFlow.Middlewares.ConsumerThrottling;
+
+internal class ConsumerThrottlingKafkaLagMetric : IConsumerThrottlingMetric
 {
-    internal class ConsumerThrottlingKafkaLagMetric : IConsumerThrottlingMetric
+    private readonly IReadOnlyList<IMessageConsumer> _consumers;
+
+    public ConsumerThrottlingKafkaLagMetric(IConsumerAccessor consumerAccessor, IEnumerable<string> consumersNames)
     {
-        private readonly IReadOnlyList<IMessageConsumer> _consumers;
+        _consumers = consumerAccessor.All
+            .Where(consumer => consumersNames.Contains(consumer.ConsumerName))
+            .ToList()
+            .AsReadOnly();
+    }
 
-        public ConsumerThrottlingKafkaLagMetric(IConsumerAccessor consumerAccessor, IEnumerable<string> consumersNames)
-        {
-            _consumers = consumerAccessor.All
-                .Where(consumer => consumersNames.Contains(consumer.ConsumerName))
-                .ToList()
-                .AsReadOnly();
-        }
+    public Task<long> GetValueAsync()
+    {
+        var lag = _consumers
+            .SelectMany(x => x.GetTopicPartitionsLag())
+            .Select(x => x.Lag)
+            .Sum();
 
-        public Task<long> GetValueAsync()
-        {
-            var lag = _consumers
-                .SelectMany(x => x.GetTopicPartitionsLag())
-                .Select(x => x.Lag)
-                .Sum();
-
-            return Task.FromResult(lag);
-        }
+        return Task.FromResult(lag);
     }
 }

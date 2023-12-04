@@ -1,32 +1,31 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace KafkaFlow
+namespace KafkaFlow;
+
+/// <summary>
+/// Represents an Event to be subscribed.
+/// </summary>
+public interface IEvent
 {
     /// <summary>
-    /// Represents an Event to be subscribed.
+    /// Subscribes to the event.
     /// </summary>
-    public interface IEvent
-    {
-        /// <summary>
-        /// Subscribes to the event.
-        /// </summary>
-        /// <param name="handler">The handler to be called when the event is fired.</param>
-        /// <returns>Event subscription reference</returns>
-        IEventSubscription Subscribe(Func<Task> handler);
-    }
+    /// <param name="handler">The handler to be called when the event is fired.</param>
+    /// <returns>Event subscription reference</returns>
+    IEventSubscription Subscribe(Func<Task> handler);
+}
 
+/// <summary>
+/// Represents an Event to be subscribed.
+/// </summary>
+/// <typeparam name="TArg">The argument expected by the event.</typeparam>
+public interface IEvent<out TArg>
+{
     /// <summary>
-    /// Represents an Event to be subscribed.
+    /// Subscribes to the event.
     /// </summary>
-    /// <typeparam name="TArg">The argument expected by the event.</typeparam>
-    public interface IEvent<out TArg>
-    {
-        /// <summary>
-        /// Subscribes to the event.
-        /// </summary>
-        /// <param name="handler">The handler to be called when the event is fired.</param>
-        /// <returns>Event subscription reference</returns>
-        IEventSubscription Subscribe(Func<TArg, Task> handler);
-    }
+    /// <param name="handler">The handler to be called when the event is fired.</param>
+    /// <returns>Event subscription reference</returns>
+    IEventSubscription Subscribe(Func<TArg, Task> handler);
 }

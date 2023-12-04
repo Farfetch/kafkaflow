@@ -1,11 +1,10 @@
 using System.Threading.Tasks;
 
-namespace KafkaFlow.Middlewares.ConsumerThrottling
-{
-    internal interface IConsumerThrottlingThreshold
-    {
-        long ThresholdValue { get; }
+namespace KafkaFlow.Middlewares.ConsumerThrottling;
 
-        Task<bool> TryExecuteActionAsync(long metricValue);
-    }
+internal interface IConsumerThrottlingThreshold
+{
+    long ThresholdValue { get; }
+
+    Task<bool> TryExecuteActionAsync(long metricValue);
 }

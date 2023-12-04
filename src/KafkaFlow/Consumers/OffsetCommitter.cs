@@ -6,155 +6,154 @@ using System.Threading;
 using System.Threading.Tasks;
 using KafkaFlow.Configuration;
 
-namespace KafkaFlow.Consumers
+namespace KafkaFlow.Consumers;
+
+internal class OffsetCommitter : IOffsetCommitter
 {
-    internal class OffsetCommitter : IOffsetCommitter
+    private readonly IConsumer _consumer;
+    private readonly IDependencyResolver _resolver;
+
+    private readonly ILogHandler _logHandler;
+
+    private readonly object _commitSyncRoot = new();
+
+    private Timer _commitTimer;
+    private IReadOnlyList<Timer> _statisticsTimers;
+
+    private ConcurrentDictionary<(string, int), TopicPartitionOffset> _offsetsToCommit = new();
+
+    public OffsetCommitter(
+        IConsumer consumer,
+        IDependencyResolver resolver,
+        ILogHandler logHandler)
     {
-        private readonly IConsumer _consumer;
-        private readonly IDependencyResolver _resolver;
+        _consumer = consumer;
+        _resolver = resolver;
+        _logHandler = logHandler;
+    }
 
-        private readonly ILogHandler _logHandler;
+    public List<PendingOffsetsStatisticsHandler> PendingOffsetsStatisticsHandlers { get; } = new();
 
-        private readonly object _commitSyncRoot = new();
+    public void MarkAsProcessed(TopicPartitionOffset tpo)
+    {
+        _offsetsToCommit.AddOrUpdate(
+            (tpo.Topic, tpo.Partition),
+            tpo,
+            (_, _) => tpo);
+    }
 
-        private Timer _commitTimer;
-        private IReadOnlyList<Timer> _statisticsTimers;
+    public Task StartAsync()
+    {
+        _commitTimer = new Timer(
+            _ => this.CommitHandler(),
+            null,
+            _consumer.Configuration.AutoCommitInterval,
+            _consumer.Configuration.AutoCommitInterval);
 
-        private ConcurrentDictionary<(string, int), TopicPartitionOffset> _offsetsToCommit = new();
+        _statisticsTimers = this.PendingOffsetsStatisticsHandlers
+            .Select(
+                handler => new Timer(
+                    _ => this.PendingOffsetsHandler(handler),
+                    null,
+                    handler.Interval,
+                    handler.Interval))
+            .ToList();
 
-        public OffsetCommitter(
-            IConsumer consumer,
-            IDependencyResolver resolver,
-            ILogHandler logHandler)
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync()
+    {
+        _commitTimer.Dispose();
+        this.CommitHandler();
+
+        foreach (var timer in _statisticsTimers)
         {
-            _consumer = consumer;
-            _resolver = resolver;
-            _logHandler = logHandler;
+            timer.Dispose();
         }
 
-        public List<PendingOffsetsStatisticsHandler> PendingOffsetsStatisticsHandlers { get; } = new();
+        return Task.CompletedTask;
+    }
 
-        public void MarkAsProcessed(TopicPartitionOffset tpo)
+    private void PendingOffsetsHandler(PendingOffsetsStatisticsHandler handler)
+    {
+        if (!_offsetsToCommit.IsEmpty)
         {
-            _offsetsToCommit.AddOrUpdate(
-                (tpo.Topic, tpo.Partition),
-                tpo,
-                (_, _) => tpo);
+            handler.Handler(
+                _resolver,
+                _offsetsToCommit.Values.Select(
+                    x =>
+                        new Confluent.Kafka.TopicPartitionOffset(x.Topic, x.Partition, x.Offset)));
         }
+    }
 
-        public Task StartAsync()
+    private void CommitHandler()
+    {
+        lock (_commitSyncRoot)
         {
-            _commitTimer = new Timer(
-                _ => this.CommitHandler(),
-                null,
-                _consumer.Configuration.AutoCommitInterval,
-                _consumer.Configuration.AutoCommitInterval);
+            ConcurrentDictionary<(string, int), TopicPartitionOffset> offsets = null;
 
-            _statisticsTimers = this.PendingOffsetsStatisticsHandlers
-                .Select(
-                    handler => new Timer(
-                        _ => this.PendingOffsetsHandler(handler),
-                        null,
-                        handler.Interval,
-                        handler.Interval))
-                .ToList();
-
-            return Task.CompletedTask;
-        }
-
-        public Task StopAsync()
-        {
-            _commitTimer.Dispose();
-            this.CommitHandler();
-
-            foreach (var timer in _statisticsTimers)
+            try
             {
-                timer.Dispose();
-            }
-
-            return Task.CompletedTask;
-        }
-
-        private void PendingOffsetsHandler(PendingOffsetsStatisticsHandler handler)
-        {
-            if (!_offsetsToCommit.IsEmpty)
-            {
-                handler.Handler(
-                    _resolver,
-                    _offsetsToCommit.Values.Select(
-                        x =>
-                            new Confluent.Kafka.TopicPartitionOffset(x.Topic, x.Partition, x.Offset)));
-            }
-        }
-
-        private void CommitHandler()
-        {
-            lock (_commitSyncRoot)
-            {
-                ConcurrentDictionary<(string, int), TopicPartitionOffset> offsets = null;
-
-                try
+                if (!_offsetsToCommit.Any())
                 {
-                    if (!_offsetsToCommit.Any())
-                    {
-                        return;
-                    }
-
-                    offsets = Interlocked.Exchange(
-                        ref _offsetsToCommit,
-                        new ConcurrentDictionary<(string, int), TopicPartitionOffset>());
-
-                    _consumer.Commit(
-                        offsets.Values
-                            .Select(x => new Confluent.Kafka.TopicPartitionOffset(x.Topic, x.Partition, x.Offset + 1))
-                            .ToList());
-
-                    if (!_consumer.Configuration.ManagementDisabled)
-                    {
-                        this.LogOffsetsCommitted(offsets.Values);
-                    }
+                    return;
                 }
-                catch (Exception e)
-                {
-                    _logHandler.Warning(
-                        "Error Commiting Offsets",
-                        new { ErrorMessage = e.Message });
 
-                    if (offsets is not null)
-                    {
-                        this.RequeueFailedOffsets(offsets.Values);
-                    }
+                offsets = Interlocked.Exchange(
+                    ref _offsetsToCommit,
+                    new ConcurrentDictionary<(string, int), TopicPartitionOffset>());
+
+                _consumer.Commit(
+                    offsets.Values
+                        .Select(x => new Confluent.Kafka.TopicPartitionOffset(x.Topic, x.Partition, x.Offset + 1))
+                        .ToList());
+
+                if (!_consumer.Configuration.ManagementDisabled)
+                {
+                    this.LogOffsetsCommitted(offsets.Values);
+                }
+            }
+            catch (Exception e)
+            {
+                _logHandler.Warning(
+                    "Error Commiting Offsets",
+                    new { ErrorMessage = e.Message });
+
+                if (offsets is not null)
+                {
+                    this.RequeueFailedOffsets(offsets.Values);
                 }
             }
         }
+    }
 
-        private void LogOffsetsCommitted(IEnumerable<TopicPartitionOffset> offsets)
-        {
-            _logHandler.Verbose(
-                "Offsets committed",
-                new
-                {
-                    Offsets = offsets.GroupBy(
-                        x => x.Topic,
-                        (topic, groupedOffsets) => new
-                        {
-                            Topic = topic,
-                            Partitions = groupedOffsets.Select(
-                                offset => new
-                                {
-                                    offset.Partition,
-                                    offset.Offset,
-                                }),
-                        }),
-                });
-        }
-
-        private void RequeueFailedOffsets(IEnumerable<TopicPartitionOffset> offsets)
-        {
-            foreach (var tpo in offsets)
+    private void LogOffsetsCommitted(IEnumerable<TopicPartitionOffset> offsets)
+    {
+        _logHandler.Verbose(
+            "Offsets committed",
+            new
             {
-                _offsetsToCommit.TryAdd((tpo.Topic, tpo.Partition), tpo);
-            }
+                Offsets = offsets.GroupBy(
+                    x => x.Topic,
+                    (topic, groupedOffsets) => new
+                    {
+                        Topic = topic,
+                        Partitions = groupedOffsets.Select(
+                            offset => new
+                            {
+                                offset.Partition,
+                                offset.Offset,
+                            }),
+                    }),
+            });
+    }
+
+    private void RequeueFailedOffsets(IEnumerable<TopicPartitionOffset> offsets)
+    {
+        foreach (var tpo in offsets)
+        {
+            _offsetsToCommit.TryAdd((tpo.Topic, tpo.Partition), tpo);
         }
     }
 }

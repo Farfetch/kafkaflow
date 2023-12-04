@@ -1,12 +1,11 @@
-namespace KafkaFlow.Configuration
+namespace KafkaFlow.Configuration;
+
+internal class ProducerMiddlewareConfigurationBuilder
+    : MiddlewareConfigurationBuilder<IProducerMiddlewareConfigurationBuilder>,
+        IProducerMiddlewareConfigurationBuilder
 {
-    internal class ProducerMiddlewareConfigurationBuilder
-        : MiddlewareConfigurationBuilder<IProducerMiddlewareConfigurationBuilder>,
-            IProducerMiddlewareConfigurationBuilder
+    public ProducerMiddlewareConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
+        : base(dependencyConfigurator)
     {
-        public ProducerMiddlewareConfigurationBuilder(IDependencyConfigurator dependencyConfigurator)
-            : base(dependencyConfigurator)
-        {
-        }
     }
 }

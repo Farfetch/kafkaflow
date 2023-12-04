@@ -1,28 +1,27 @@
-namespace KafkaFlow.Consumers
+namespace KafkaFlow.Consumers;
+
+/// <summary>
+/// An enum with all consumer status
+/// </summary>
+public enum ConsumerStatus
 {
     /// <summary>
-    /// An enum with all consumer status
+    /// When the consumer is stopped
     /// </summary>
-    public enum ConsumerStatus
-    {
-        /// <summary>
-        /// When the consumer is stopped
-        /// </summary>
-        Stopped,
+    Stopped,
 
-        /// <summary>
-        /// When all consumer partitions are running
-        /// </summary>
-        Running,
+    /// <summary>
+    /// When all consumer partitions are running
+    /// </summary>
+    Running,
 
-        /// <summary>
-        /// When the consumer has paused and running partitions at the same time
-        /// </summary>
-        PartiallyRunning,
+    /// <summary>
+    /// When the consumer has paused and running partitions at the same time
+    /// </summary>
+    PartiallyRunning,
 
-        /// <summary>
-        /// When all consumer partitions are paused
-        /// </summary>
-        Paused,
-    }
+    /// <summary>
+    /// When all consumer partitions are paused
+    /// </summary>
+    Paused,
 }

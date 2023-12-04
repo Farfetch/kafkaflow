@@ -1,35 +1,34 @@
 using System;
 using System.Collections.Generic;
 
-namespace KafkaFlow.Middlewares.TypedHandler
+namespace KafkaFlow.Middlewares.TypedHandler;
+
+internal class HandlerTypeMapping
 {
-    internal class HandlerTypeMapping
+    private static readonly IReadOnlyList<Type> s_emptyList = new List<Type>().AsReadOnly();
+
+    private readonly Dictionary<Type, List<Type>> _mapping = new();
+
+    public void AddMapping(Type messageType, Type handlerType)
     {
-        private static readonly IReadOnlyList<Type> s_emptyList = new List<Type>().AsReadOnly();
-
-        private readonly Dictionary<Type, List<Type>> _mapping = new();
-
-        public void AddMapping(Type messageType, Type handlerType)
+        if (!_mapping.TryGetValue(messageType, out var handlers))
         {
-            if (!_mapping.TryGetValue(messageType, out var handlers))
-            {
-                handlers = new List<Type>();
-                _mapping.Add(messageType, handlers);
-            }
-
-            handlers.Add(handlerType);
+            handlers = new List<Type>();
+            _mapping.Add(messageType, handlers);
         }
 
-        public IReadOnlyList<Type> GetHandlersTypes(Type messageType)
-        {
-            if (messageType is null)
-            {
-                return s_emptyList;
-            }
+        handlers.Add(handlerType);
+    }
 
-            return _mapping.TryGetValue(messageType, out var handlerType) ?
-                handlerType :
-                s_emptyList;
+    public IReadOnlyList<Type> GetHandlersTypes(Type messageType)
+    {
+        if (messageType is null)
+        {
+            return s_emptyList;
         }
+
+        return _mapping.TryGetValue(messageType, out var handlerType) ?
+            handlerType :
+            s_emptyList;
     }
 }

@@ -2,22 +2,21 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace KafkaFlow.UnitTests.ConfigurationBuilders
+namespace KafkaFlow.UnitTests.ConfigurationBuilders;
+
+[TestClass]
+public class KafkaConfigurationBuilderTests
 {
-    [TestClass]
-    public class KafkaConfigurationBuilderTests
+    [TestMethod]
+    public void ExtensionMethod_UseMicrosoftLog_ConfigureMicrosoftLogHandler()
     {
-        [TestMethod]
-        public void ExtensionMethod_UseMicrosoftLog_ConfigureMicrosoftLogHandler()
-        {
-            // Arrange
-            var builder = new Mock<IKafkaConfigurationBuilder>();
+        // Arrange
+        var builder = new Mock<IKafkaConfigurationBuilder>();
 
-            // Act
-            ExtensionMethods.UseMicrosoftLog(builder.Object);
+        // Act
+        ExtensionMethods.UseMicrosoftLog(builder.Object);
 
-            // Assert
-            builder.Verify(x => x.UseLogHandler<MicrosoftLogHandler>(), Times.Once);
-        }
+        // Assert
+        builder.Verify(x => x.UseLogHandler<MicrosoftLogHandler>(), Times.Once);
     }
 }

@@ -1,12 +1,11 @@
 ﻿using System;
 
-namespace KafkaFlow.IntegrationTests.Core.Exceptions
+namespace KafkaFlow.IntegrationTests.Core.Exceptions;
+
+public class ErrorExecutingMiddlewareException : Exception
 {
-    public class ErrorExecutingMiddlewareException : Exception
+    public ErrorExecutingMiddlewareException(string middlewareName)
+        : base($"Exception thrown executing {middlewareName}")
     {
-        public ErrorExecutingMiddlewareException(string middlewareName)
-            : base($"Exception thrown executing {middlewareName}")
-        {
-        }
     }
 }

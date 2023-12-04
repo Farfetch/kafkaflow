@@ -1,35 +1,34 @@
 using System;
 using System.Threading.Tasks;
 
-namespace KafkaFlow.Middlewares.Serializer.Resolvers
+namespace KafkaFlow.Middlewares.Serializer.Resolvers;
+
+internal class DefaultTypeResolver : IMessageTypeResolver
 {
-    internal class DefaultTypeResolver : IMessageTypeResolver
+    private const string MessageType = "Message-Type";
+
+    public ValueTask<Type> OnConsumeAsync(IMessageContext context)
     {
-        private const string MessageType = "Message-Type";
+        var typeName = context.Headers.GetString(MessageType);
 
-        public ValueTask<Type> OnConsumeAsync(IMessageContext context)
+        return typeName is null ?
+            new ValueTask<Type>((Type)null) :
+            new ValueTask<Type>(Type.GetType(typeName));
+    }
+
+    public ValueTask OnProduceAsync(IMessageContext context)
+    {
+        if (context.Message.Value is null)
         {
-            var typeName = context.Headers.GetString(MessageType);
-
-            return typeName is null ?
-                new ValueTask<Type>((Type)null) :
-                new ValueTask<Type>(Type.GetType(typeName));
-        }
-
-        public ValueTask OnProduceAsync(IMessageContext context)
-        {
-            if (context.Message.Value is null)
-            {
-                return default(ValueTask);
-            }
-
-            var messageType = context.Message.Value.GetType();
-
-            context.Headers.SetString(
-                MessageType,
-                $"{messageType.FullName}, {messageType.Assembly.GetName().Name}");
-
             return default(ValueTask);
         }
+
+        var messageType = context.Message.Value.GetType();
+
+        context.Headers.SetString(
+            MessageType,
+            $"{messageType.FullName}, {messageType.Assembly.GetName().Name}");
+
+        return default(ValueTask);
     }
 }

@@ -4,27 +4,26 @@ using KafkaFlow.Configuration;
 using KafkaFlow.Middlewares.Serializer;
 using KafkaFlow.Serializer.SchemaRegistry;
 
-namespace KafkaFlow
+namespace KafkaFlow;
+
+/// <summary>
+/// No needed
+/// </summary>
+public static class ProducerConfigurationBuilderExtensions
 {
     /// <summary>
-    /// No needed
+    /// Registers a middleware to serialize avro messages using schema registry
     /// </summary>
-    public static class ProducerConfigurationBuilderExtensions
+    /// <param name="middlewares">The middleware configuration builder</param>
+    /// <param name="config">The avro serializer configuration</param>
+    /// <returns></returns>
+    public static IProducerMiddlewareConfigurationBuilder AddSchemaRegistryAvroSerializer(
+        this IProducerMiddlewareConfigurationBuilder middlewares,
+        AvroSerializerConfig config = null)
     {
-        /// <summary>
-        /// Registers a middleware to serialize avro messages using schema registry
-        /// </summary>
-        /// <param name="middlewares">The middleware configuration builder</param>
-        /// <param name="config">The avro serializer configuration</param>
-        /// <returns></returns>
-        public static IProducerMiddlewareConfigurationBuilder AddSchemaRegistryAvroSerializer(
-            this IProducerMiddlewareConfigurationBuilder middlewares,
-            AvroSerializerConfig config = null)
-        {
-            return middlewares.Add(
-                resolver => new SerializerProducerMiddleware(
-                    new ConfluentAvroSerializer(resolver, config),
-                    new SchemaRegistryTypeResolver(new ConfluentAvroTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>()))));
-        }
+        return middlewares.Add(
+            resolver => new SerializerProducerMiddleware(
+                new ConfluentAvroSerializer(resolver, config),
+                new SchemaRegistryTypeResolver(new ConfluentAvroTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>()))));
     }
 }

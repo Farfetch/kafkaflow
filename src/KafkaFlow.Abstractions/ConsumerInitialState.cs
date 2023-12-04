@@ -1,18 +1,17 @@
-namespace KafkaFlow
+namespace KafkaFlow;
+
+/// <summary>
+/// Consumer initial state options
+/// </summary>
+public enum ConsumerInitialState
 {
     /// <summary>
-    /// Consumer initial state options
+    /// Automatically start the consumer when the bus is started
     /// </summary>
-    public enum ConsumerInitialState
-    {
-        /// <summary>
-        /// Automatically start the consumer when the bus is started
-        /// </summary>
-        Running,
+    Running,
 
-        /// <summary>
-        /// Do not start the consumer when the bus is started
-        /// </summary>
-        Stopped,
-    }
+    /// <summary>
+    /// Do not start the consumer when the bus is started
+    /// </summary>
+    Stopped,
 }
