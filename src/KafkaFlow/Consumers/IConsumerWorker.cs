@@ -10,7 +10,7 @@ namespace KafkaFlow.Consumers
 
         IDependencyResolver WorkerDependencyResolver { get; }
 
-        ValueTask EnqueueAsync(IMessageContext context, CancellationToken stopCancellationToken);
+        ValueTask EnqueueAsync(IMessageContext context);
 
         Task StartAsync();
 

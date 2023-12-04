@@ -42,16 +42,24 @@ namespace KafkaFlow.Consumers
                 {
                     this.DequeuedContext = _receivedContexts.First.Value;
                     _receivedContexts.RemoveFirst();
-                }
-                while (_receivedContexts.Count > 0 && _processedContexts.Remove(_receivedContexts.First.Value.Offset));
+                } while (_receivedContexts.Count > 0 && _processedContexts.Remove(_receivedContexts.First.Value.Offset));
             }
 
             return true;
         }
 
-        public Task WaitContextsCompletionAsync() => Task.WhenAll(
-            _receivedContexts
-                .Select(x => x.Completion)
-                .ToList());
+        public Task WaitContextsCompletionAsync()
+        {
+            List<Task> tasks;
+
+            lock (_receivedContexts)
+            {
+                tasks = _receivedContexts
+                    .Select(x => (Task)x.Completion)
+                    .ToList();
+            }
+
+            return Task.WhenAll(tasks);
+        }
     }
 }
