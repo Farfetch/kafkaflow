@@ -59,11 +59,9 @@ namespace KafkaFlow.Consumers
 
         public IEvent<IMessageContext> WorkerProcessingEnded => _workerProcessingEnded;
 
-        public ValueTask EnqueueAsync(
-            IMessageContext context,
-            CancellationToken stopCancellationToken)
+        public ValueTask EnqueueAsync(IMessageContext context)
         {
-            return _messagesBuffer.Writer.WriteAsync(context, stopCancellationToken);
+            return _messagesBuffer.Writer.WriteAsync(context, CancellationToken.None);
         }
 
         public Task StartAsync()

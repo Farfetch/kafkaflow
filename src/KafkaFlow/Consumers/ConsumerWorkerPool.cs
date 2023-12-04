@@ -127,7 +127,7 @@ namespace KafkaFlow.Consumers
 
         public async Task EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken)
         {
-            await _startedTaskSource.Task.ConfigureAwait(false);
+            await _startedTaskSource.Task;
 
             var worker = (IConsumerWorker)await _distributionStrategy
                 .GetWorkerAsync(
@@ -136,8 +136,7 @@ namespace KafkaFlow.Consumers
                         message.Topic,
                         message.Partition.Value,
                         message.Message.Key,
-                        stopCancellationToken))
-                .ConfigureAwait(false);
+                        stopCancellationToken));
 
             if (worker is null)
             {
@@ -146,11 +145,9 @@ namespace KafkaFlow.Consumers
 
             var context = this.CreateMessageContext(message, worker);
 
-            await worker
-                .EnqueueAsync(context, stopCancellationToken)
-                .ConfigureAwait(false);
-
             _offsetManager.Enqueue(context.ConsumerContext);
+
+            await worker.EnqueueAsync(context);
         }
 
         private MessageContext CreateMessageContext(ConsumeResult<byte[], byte[]> message, IConsumerWorker worker)
