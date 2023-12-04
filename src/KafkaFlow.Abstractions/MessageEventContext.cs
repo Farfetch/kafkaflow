@@ -1,22 +1,21 @@
-﻿namespace KafkaFlow
+﻿namespace KafkaFlow;
+
+/// <summary>
+/// Represents a message context used in the events
+/// </summary>
+public class MessageEventContext
 {
     /// <summary>
-    /// Represents a message context used in the events
+    /// Initializes a new instance of the <see cref="MessageEventContext"/> class.
     /// </summary>
-    public class MessageEventContext
+    /// <param name="messageContext">The message context</param>
+    public MessageEventContext(IMessageContext messageContext)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MessageEventContext"/> class.
-        /// </summary>
-        /// <param name="messageContext">The message context</param>
-        public MessageEventContext(IMessageContext messageContext)
-        {
-            this.MessageContext = messageContext;
-        }
-
-        /// <summary>
-        /// Gets the message context
-        /// </summary>
-        public IMessageContext MessageContext { get; }
+        this.MessageContext = messageContext;
     }
+
+    /// <summary>
+    /// Gets the message context
+    /// </summary>
+    public IMessageContext MessageContext { get; }
 }

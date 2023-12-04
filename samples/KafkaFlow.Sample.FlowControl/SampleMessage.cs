@@ -1,11 +1,10 @@
 using System;
 
-namespace KafkaFlow.Sample.FlowControl
-{
-    internal class SampleMessage
-    {
-        public Guid Id { get; set; }
+namespace KafkaFlow.Sample.FlowControl;
 
-        public string Name { get; set; }
-    }
+internal class SampleMessage
+{
+    public Guid Id { get; set; }
+
+    public string Name { get; set; }
 }

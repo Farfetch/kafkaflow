@@ -8,37 +8,36 @@ using KafkaFlow.IntegrationTests.Core;
 using KafkaFlow.IntegrationTests.Core.Handlers;
 using KafkaFlow.IntegrationTests.Core.Producers;
 
-namespace KafkaFlow.IntegrationTests
+namespace KafkaFlow.IntegrationTests;
+
+[TestClass]
+public class CompressionTest
 {
-    [TestClass]
-    public class CompressionTest
+    private readonly Fixture _fixture = new();
+
+    private IServiceProvider _provider;
+
+    [TestInitialize]
+    public void Setup()
     {
-        private readonly Fixture _fixture = new();
+        _provider = Bootstrapper.GetServiceProvider();
+        MessageStorage.Clear();
+    }
 
-        private IServiceProvider _provider;
+    [TestMethod]
+    public async Task GzipTest()
+    {
+        // Arrange
+        var producer = _provider.GetRequiredService<IMessageProducer<GzipProducer>>();
+        var messages = _fixture.CreateMany<byte[]>(10).ToList();
 
-        [TestInitialize]
-        public void Setup()
+        // Act
+        await Task.WhenAll(messages.Select(m => producer.ProduceAsync(Guid.NewGuid().ToString(), m)));
+
+        // Assert
+        foreach (var message in messages)
         {
-            _provider = Bootstrapper.GetServiceProvider();
-            MessageStorage.Clear();
-        }
-
-        [TestMethod]
-        public async Task GzipTest()
-        {
-            // Arrange
-            var producer = _provider.GetRequiredService<IMessageProducer<GzipProducer>>();
-            var messages = _fixture.CreateMany<byte[]>(10).ToList();
-
-            // Act
-            await Task.WhenAll(messages.Select(m => producer.ProduceAsync(Guid.NewGuid().ToString(), m)));
-
-            // Assert
-            foreach (var message in messages)
-            {
-                await MessageStorage.AssertMessageAsync(message);
-            }
+            await MessageStorage.AssertMessageAsync(message);
         }
     }
 }

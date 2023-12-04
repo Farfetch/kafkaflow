@@ -1,6 +1,5 @@
-namespace KafkaFlow.IntegrationTests.Core.Producers
+namespace KafkaFlow.IntegrationTests.Core.Producers;
+
+internal class JsonProducer
 {
-    internal class JsonProducer
-    {
-    }
 }

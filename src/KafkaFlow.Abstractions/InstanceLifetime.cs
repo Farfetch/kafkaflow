@@ -1,23 +1,22 @@
-namespace KafkaFlow
+namespace KafkaFlow;
+
+/// <summary>
+/// Specifies the lifetime of a class
+/// </summary>
+public enum InstanceLifetime
 {
     /// <summary>
-    /// Specifies the lifetime of a class
+    /// Specifies that a single instance of the class will be created for the entire application
     /// </summary>
-    public enum InstanceLifetime
-    {
-        /// <summary>
-        /// Specifies that a single instance of the class will be created for the entire application
-        /// </summary>
-        Singleton,
+    Singleton,
 
-        /// <summary>
-        /// Specifies that a new instance of the class will be created for each scope
-        /// </summary>
-        Scoped,
+    /// <summary>
+    /// Specifies that a new instance of the class will be created for each scope
+    /// </summary>
+    Scoped,
 
-        /// <summary>
-        /// Specifies that a new instance of the class will be created every time it is requested
-        /// </summary>
-        Transient,
-    }
+    /// <summary>
+    /// Specifies that a new instance of the class will be created every time it is requested
+    /// </summary>
+    Transient,
 }

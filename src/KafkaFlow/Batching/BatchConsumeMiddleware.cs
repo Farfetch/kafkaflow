@@ -6,140 +6,139 @@ using System.Threading.Tasks;
 using KafkaFlow.Configuration;
 using KafkaFlow.Consumers;
 
-namespace KafkaFlow.Batching
+namespace KafkaFlow.Batching;
+
+internal class BatchConsumeMiddleware : IMessageMiddleware, IDisposable
 {
-    internal class BatchConsumeMiddleware : IMessageMiddleware, IDisposable
+    private readonly SemaphoreSlim _dispatchSemaphore = new(1, 1);
+
+    private readonly int _batchSize;
+    private readonly TimeSpan _batchTimeout;
+    private readonly ILogHandler _logHandler;
+    private readonly IConsumerConfiguration _consumerConfiguration;
+
+    private readonly List<IMessageContext> _batch;
+    private CancellationTokenSource _dispatchTokenSource;
+    private Task<Task> _dispatchTask;
+
+    public BatchConsumeMiddleware(
+        IConsumerMiddlewareContext middlewareContext,
+        int batchSize,
+        TimeSpan batchTimeout,
+        ILogHandler logHandler)
     {
-        private readonly SemaphoreSlim _dispatchSemaphore = new(1, 1);
+        _batchSize = batchSize;
+        _batchTimeout = batchTimeout;
+        _logHandler = logHandler;
+        _batch = new(batchSize);
+        _consumerConfiguration = middlewareContext.Consumer.Configuration;
 
-        private readonly int _batchSize;
-        private readonly TimeSpan _batchTimeout;
-        private readonly ILogHandler _logHandler;
-        private readonly IConsumerConfiguration _consumerConfiguration;
+        middlewareContext.Worker.WorkerStopped.Subscribe(() => this.TriggerDispatchAndWaitAsync());
+    }
 
-        private readonly List<IMessageContext> _batch;
-        private CancellationTokenSource _dispatchTokenSource;
-        private Task<Task> _dispatchTask;
+    public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
+    {
+        await _dispatchSemaphore.WaitAsync();
 
-        public BatchConsumeMiddleware(
-            IConsumerMiddlewareContext middlewareContext,
-            int batchSize,
-            TimeSpan batchTimeout,
-            ILogHandler logHandler)
+        try
         {
-            _batchSize = batchSize;
-            _batchTimeout = batchTimeout;
-            _logHandler = logHandler;
-            _batch = new(batchSize);
-            _consumerConfiguration = middlewareContext.Consumer.Configuration;
+            context.ConsumerContext.AutoMessageCompletion = false;
 
-            middlewareContext.Worker.WorkerStopped.Subscribe(() => this.TriggerDispatchAndWaitAsync());
+            _batch.Add(context);
+
+            if (_batch.Count == 1)
+            {
+                this.ScheduleExecution(context, next);
+                return;
+            }
+        }
+        finally
+        {
+            _dispatchSemaphore.Release();
         }
 
-        public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
+        if (_batch.Count >= _batchSize)
         {
-            await _dispatchSemaphore.WaitAsync();
+            await this.TriggerDispatchAndWaitAsync();
+        }
+    }
 
-            try
+    public void Dispose()
+    {
+        _dispatchTask?.Dispose();
+        _dispatchTokenSource?.Dispose();
+        _dispatchSemaphore.Dispose();
+    }
+
+    private async Task TriggerDispatchAndWaitAsync()
+    {
+        await _dispatchSemaphore.WaitAsync();
+        _dispatchTokenSource?.Cancel();
+        _dispatchSemaphore.Release();
+
+        await (_dispatchTask ?? Task.CompletedTask);
+    }
+
+    private void ScheduleExecution(IMessageContext context, MiddlewareDelegate next)
+    {
+        _dispatchTokenSource = CancellationTokenSource.CreateLinkedTokenSource(context.ConsumerContext.WorkerStopped);
+
+        _dispatchTask = Task
+            .Delay(_batchTimeout, _dispatchTokenSource.Token)
+            .ContinueWith(
+                _ => this.DispatchAsync(context, next),
+                CancellationToken.None);
+    }
+
+    private async Task DispatchAsync(IMessageContext context, MiddlewareDelegate next)
+    {
+        await _dispatchSemaphore.WaitAsync();
+
+        _dispatchTokenSource.Dispose();
+        _dispatchTokenSource = null;
+
+        var localBatch = _batch.ToList();
+
+        try
+        {
+            if (!localBatch.Any())
             {
-                context.ConsumerContext.AutoMessageCompletion = false;
+                return;
+            }
 
-                _batch.Add(context);
+            var batchContext = new BatchConsumeMessageContext(context.ConsumerContext, localBatch, _consumerConfiguration.ClusterConfiguration.Brokers);
 
-                if (_batch.Count == 1)
+            await next(batchContext).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (context.ConsumerContext.WorkerStopped.IsCancellationRequested)
+        {
+            foreach (var messageContext in localBatch)
+            {
+                messageContext.ConsumerContext.ShouldStoreOffset = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logHandler.Error(
+                "Error executing a message batch",
+                ex,
+                new
                 {
-                    this.ScheduleExecution(context, next);
-                    return;
-                }
-            }
-            finally
-            {
-                _dispatchSemaphore.Release();
-            }
-
-            if (_batch.Count >= _batchSize)
-            {
-                await this.TriggerDispatchAndWaitAsync();
-            }
+                    context.ConsumerContext.Topic,
+                    context.ConsumerContext.GroupId,
+                    context.ConsumerContext.WorkerId,
+                });
         }
-
-        public void Dispose()
+        finally
         {
-            _dispatchTask?.Dispose();
-            _dispatchTokenSource?.Dispose();
-            _dispatchSemaphore.Dispose();
-        }
-
-        private async Task TriggerDispatchAndWaitAsync()
-        {
-            await _dispatchSemaphore.WaitAsync();
-            _dispatchTokenSource?.Cancel();
+            _batch.Clear();
             _dispatchSemaphore.Release();
 
-            await (_dispatchTask ?? Task.CompletedTask);
-        }
-
-        private void ScheduleExecution(IMessageContext context, MiddlewareDelegate next)
-        {
-            _dispatchTokenSource = CancellationTokenSource.CreateLinkedTokenSource(context.ConsumerContext.WorkerStopped);
-
-            _dispatchTask = Task
-                .Delay(_batchTimeout, _dispatchTokenSource.Token)
-                .ContinueWith(
-                    _ => this.DispatchAsync(context, next),
-                    CancellationToken.None);
-        }
-
-        private async Task DispatchAsync(IMessageContext context, MiddlewareDelegate next)
-        {
-            await _dispatchSemaphore.WaitAsync();
-
-            _dispatchTokenSource.Dispose();
-            _dispatchTokenSource = null;
-
-            var localBatch = _batch.ToList();
-
-            try
-            {
-                if (!localBatch.Any())
-                {
-                    return;
-                }
-
-                var batchContext = new BatchConsumeMessageContext(context.ConsumerContext, localBatch, _consumerConfiguration.ClusterConfiguration.Brokers);
-
-                await next(batchContext).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (context.ConsumerContext.WorkerStopped.IsCancellationRequested)
+            if (_consumerConfiguration.AutoMessageCompletion)
             {
                 foreach (var messageContext in localBatch)
                 {
-                    messageContext.ConsumerContext.ShouldStoreOffset = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logHandler.Error(
-                    "Error executing a message batch",
-                    ex,
-                    new
-                    {
-                        context.ConsumerContext.Topic,
-                        context.ConsumerContext.GroupId,
-                        context.ConsumerContext.WorkerId,
-                    });
-            }
-            finally
-            {
-                _batch.Clear();
-                _dispatchSemaphore.Release();
-
-                if (_consumerConfiguration.AutoMessageCompletion)
-                {
-                    foreach (var messageContext in localBatch)
-                    {
-                        messageContext.ConsumerContext.Complete();
-                    }
+                    messageContext.ConsumerContext.Complete();
                 }
             }
         }

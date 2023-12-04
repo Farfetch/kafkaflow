@@ -2,30 +2,29 @@ using System.Threading.Tasks;
 using Confluent.SchemaRegistry;
 using Newtonsoft.Json;
 
-namespace KafkaFlow.Serializer.SchemaRegistry
+namespace KafkaFlow.Serializer.SchemaRegistry;
+
+internal class ConfluentAvroTypeNameResolver : ISchemaRegistryTypeNameResolver
 {
-    internal class ConfluentAvroTypeNameResolver : ISchemaRegistryTypeNameResolver
+    private readonly ISchemaRegistryClient _client;
+
+    public ConfluentAvroTypeNameResolver(ISchemaRegistryClient client)
     {
-        private readonly ISchemaRegistryClient _client;
+        _client = client;
+    }
 
-        public ConfluentAvroTypeNameResolver(ISchemaRegistryClient client)
-        {
-            _client = client;
-        }
+    public async Task<string> ResolveAsync(int id)
+    {
+        var schema = await _client.GetSchemaAsync(id);
 
-        public async Task<string> ResolveAsync(int id)
-        {
-            var schema = await _client.GetSchemaAsync(id);
+        var avroFields = JsonConvert.DeserializeObject<AvroSchemaFields>(schema.SchemaString);
+        return $"{avroFields.Namespace}.{avroFields.Name}";
+    }
 
-            var avroFields = JsonConvert.DeserializeObject<AvroSchemaFields>(schema.SchemaString);
-            return $"{avroFields.Namespace}.{avroFields.Name}";
-        }
+    private class AvroSchemaFields
+    {
+        public string Name { get; set; }
 
-        private class AvroSchemaFields
-        {
-            public string Name { get; set; }
-
-            public string Namespace { get; set; }
-        }
+        public string Namespace { get; set; }
     }
 }

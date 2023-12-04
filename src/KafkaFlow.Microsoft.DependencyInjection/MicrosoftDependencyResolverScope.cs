@@ -1,22 +1,21 @@
 using global::Microsoft.Extensions.DependencyInjection;
 
-namespace KafkaFlow
+namespace KafkaFlow;
+
+internal class MicrosoftDependencyResolverScope : IDependencyResolverScope
 {
-    internal class MicrosoftDependencyResolverScope : IDependencyResolverScope
+    private readonly IServiceScope _scope;
+
+    public MicrosoftDependencyResolverScope(IServiceScope scope)
     {
-        private readonly IServiceScope _scope;
+        _scope = scope;
+        this.Resolver = new MicrosoftDependencyResolver(scope.ServiceProvider);
+    }
 
-        public MicrosoftDependencyResolverScope(IServiceScope scope)
-        {
-            _scope = scope;
-            this.Resolver = new MicrosoftDependencyResolver(scope.ServiceProvider);
-        }
+    public IDependencyResolver Resolver { get; }
 
-        public IDependencyResolver Resolver { get; }
-
-        public void Dispose()
-        {
-            _scope.Dispose();
-        }
+    public void Dispose()
+    {
+        _scope.Dispose();
     }
 }

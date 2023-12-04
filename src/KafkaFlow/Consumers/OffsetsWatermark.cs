@@ -1,34 +1,33 @@
 using System;
 using Confluent.Kafka;
 
-namespace KafkaFlow.Consumers
+namespace KafkaFlow.Consumers;
+
+internal readonly struct OffsetsWatermark : IOffsetsWatermark, IEquatable<OffsetsWatermark>
 {
-    internal readonly struct OffsetsWatermark : IOffsetsWatermark, IEquatable<OffsetsWatermark>
+    private readonly WatermarkOffsets _watermark;
+
+    public OffsetsWatermark(WatermarkOffsets watermark)
     {
-        private readonly WatermarkOffsets _watermark;
+        _watermark = watermark;
+    }
 
-        public OffsetsWatermark(WatermarkOffsets watermark)
-        {
-            _watermark = watermark;
-        }
+    public long High => _watermark.High.Value;
 
-        public long High => _watermark.High.Value;
+    public long Low => _watermark.Low.Value;
 
-        public long Low => _watermark.Low.Value;
+    public bool Equals(OffsetsWatermark other)
+    {
+        return Equals(_watermark, other._watermark);
+    }
 
-        public bool Equals(OffsetsWatermark other)
-        {
-            return Equals(_watermark, other._watermark);
-        }
+    public override bool Equals(object obj)
+    {
+        return obj is OffsetsWatermark other && this.Equals(other);
+    }
 
-        public override bool Equals(object obj)
-        {
-            return obj is OffsetsWatermark other && this.Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            return _watermark != null ? _watermark.GetHashCode() : 0;
-        }
+    public override int GetHashCode()
+    {
+        return _watermark != null ? _watermark.GetHashCode() : 0;
     }
 }

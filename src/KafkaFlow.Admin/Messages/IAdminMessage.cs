@@ -1,9 +1,8 @@
-namespace KafkaFlow.Admin.Messages
+namespace KafkaFlow.Admin.Messages;
+
+/// <summary>
+/// The interface that every admin message must implement
+/// </summary>
+public interface IAdminMessage
 {
-    /// <summary>
-    /// The interface that every admin message must implement
-    /// </summary>
-    public interface IAdminMessage
-    {
-    }
 }

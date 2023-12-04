@@ -6,62 +6,61 @@ using System.Threading;
 using System.Threading.Tasks;
 using KafkaFlow.Middlewares.Serializer.Resolvers;
 
-namespace KafkaFlow
+namespace KafkaFlow;
+
+/// <summary>
+///  The message type resolver to be used with schema registry serializers
+/// </summary>
+public class SchemaRegistryTypeResolver : IMessageTypeResolver
 {
+    private static readonly ConcurrentDictionary<int, Type> s_types = new();
+
+    private static readonly SemaphoreSlim s_semaphore = new(1, 1);
+
+    private readonly ISchemaRegistryTypeNameResolver _typeNameResolver;
+
     /// <summary>
-    ///  The message type resolver to be used with schema registry serializers
+    /// Initializes a new instance of the <see cref="SchemaRegistryTypeResolver"/> class.
     /// </summary>
-    public class SchemaRegistryTypeResolver : IMessageTypeResolver
+    /// <param name="typeNameResolver">A instance of the <see cref="ISchemaRegistryTypeNameResolver"/> interface.</param>
+    public SchemaRegistryTypeResolver(ISchemaRegistryTypeNameResolver typeNameResolver)
     {
-        private static readonly ConcurrentDictionary<int, Type> s_types = new();
+        _typeNameResolver = typeNameResolver;
+    }
 
-        private static readonly SemaphoreSlim s_semaphore = new(1, 1);
+    /// <inheritdoc />
+    public async ValueTask<Type> OnConsumeAsync(IMessageContext context)
+    {
+        var schemaId = BinaryPrimitives.ReadInt32BigEndian(
+            ((byte[])context.Message.Value).AsSpan().Slice(1, 4));
 
-        private readonly ISchemaRegistryTypeNameResolver _typeNameResolver;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SchemaRegistryTypeResolver"/> class.
-        /// </summary>
-        /// <param name="typeNameResolver">A instance of the <see cref="ISchemaRegistryTypeNameResolver"/> interface.</param>
-        public SchemaRegistryTypeResolver(ISchemaRegistryTypeNameResolver typeNameResolver)
+        if (s_types.TryGetValue(schemaId, out var type))
         {
-            _typeNameResolver = typeNameResolver;
+            return type;
         }
 
-        /// <inheritdoc />
-        public async ValueTask<Type> OnConsumeAsync(IMessageContext context)
-        {
-            var schemaId = BinaryPrimitives.ReadInt32BigEndian(
-                ((byte[])context.Message.Value).AsSpan().Slice(1, 4));
+        await s_semaphore.WaitAsync();
 
-            if (s_types.TryGetValue(schemaId, out var type))
+        try
+        {
+            if (s_types.TryGetValue(schemaId, out type))
             {
                 return type;
             }
 
-            await s_semaphore.WaitAsync();
+            var typeName = await _typeNameResolver.ResolveAsync(schemaId);
 
-            try
-            {
-                if (s_types.TryGetValue(schemaId, out type))
-                {
-                    return type;
-                }
-
-                var typeName = await _typeNameResolver.ResolveAsync(schemaId);
-
-                return s_types[schemaId] = AppDomain.CurrentDomain
-                    .GetAssemblies()
-                    .Select(a => a.GetType(typeName))
-                    .FirstOrDefault(x => x != null);
-            }
-            finally
-            {
-                s_semaphore.Release();
-            }
+            return s_types[schemaId] = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .Select(a => a.GetType(typeName))
+                .FirstOrDefault(x => x != null);
         }
-
-        /// <inheritdoc />
-        public ValueTask OnProduceAsync(IMessageContext context) => default(ValueTask);
+        finally
+        {
+            s_semaphore.Release();
+        }
     }
+
+    /// <inheritdoc />
+    public ValueTask OnProduceAsync(IMessageContext context) => default(ValueTask);
 }

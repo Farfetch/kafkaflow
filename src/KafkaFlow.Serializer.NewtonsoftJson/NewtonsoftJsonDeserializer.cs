@@ -4,49 +4,48 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace KafkaFlow.Serializer
+namespace KafkaFlow.Serializer;
+
+/// <summary>
+/// A message deserializer using NewtonsoftJson library
+/// </summary>
+public class NewtonsoftJsonDeserializer : IDeserializer
 {
+    private const int DefaultBufferSize = 1024;
+
+    private static readonly UTF8Encoding s_uTF8NoBom = new(false);
+
+    private readonly JsonSerializerSettings _settings;
+
     /// <summary>
-    /// A message deserializer using NewtonsoftJson library
+    /// Initializes a new instance of the <see cref="NewtonsoftJsonDeserializer"/> class.
     /// </summary>
-    public class NewtonsoftJsonDeserializer : IDeserializer
+    /// <param name="settings">Json serializer settings</param>
+    public NewtonsoftJsonDeserializer(JsonSerializerSettings settings)
     {
-        private const int DefaultBufferSize = 1024;
+        _settings = settings;
+    }
 
-        private static readonly UTF8Encoding s_uTF8NoBom = new(false);
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NewtonsoftJsonDeserializer"/> class.
+    /// </summary>
+    public NewtonsoftJsonDeserializer()
+        : this(new JsonSerializerSettings())
+    {
+    }
 
-        private readonly JsonSerializerSettings _settings;
+    /// <inheritdoc/>
+    public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
+    {
+        using var sr = new StreamReader(
+            input,
+            s_uTF8NoBom,
+            true,
+            DefaultBufferSize,
+            true);
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NewtonsoftJsonDeserializer"/> class.
-        /// </summary>
-        /// <param name="settings">Json serializer settings</param>
-        public NewtonsoftJsonDeserializer(JsonSerializerSettings settings)
-        {
-            _settings = settings;
-        }
+        var serializer = JsonSerializer.CreateDefault(_settings);
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NewtonsoftJsonDeserializer"/> class.
-        /// </summary>
-        public NewtonsoftJsonDeserializer()
-            : this(new JsonSerializerSettings())
-        {
-        }
-
-        /// <inheritdoc/>
-        public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
-        {
-            using var sr = new StreamReader(
-                input,
-                s_uTF8NoBom,
-                true,
-                DefaultBufferSize,
-                true);
-
-            var serializer = JsonSerializer.CreateDefault(_settings);
-
-            return Task.FromResult(serializer.Deserialize(sr, type));
-        }
+        return Task.FromResult(serializer.Deserialize(sr, type));
     }
 }

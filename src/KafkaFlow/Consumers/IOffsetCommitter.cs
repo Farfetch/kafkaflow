@@ -2,16 +2,15 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using KafkaFlow.Configuration;
 
-namespace KafkaFlow.Consumers
+namespace KafkaFlow.Consumers;
+
+internal interface IOffsetCommitter
 {
-    internal interface IOffsetCommitter
-    {
-        List<PendingOffsetsStatisticsHandler> PendingOffsetsStatisticsHandlers { get; }
+    List<PendingOffsetsStatisticsHandler> PendingOffsetsStatisticsHandlers { get; }
 
-        void MarkAsProcessed(TopicPartitionOffset tpo);
+    void MarkAsProcessed(TopicPartitionOffset tpo);
 
-        Task StartAsync();
+    Task StartAsync();
 
-        Task StopAsync();
-    }
+    Task StopAsync();
 }

@@ -9,54 +9,53 @@ using KafkaFlow.IntegrationTests.Core.Handlers;
 using KafkaFlow.IntegrationTests.Core.Messages;
 using KafkaFlow.IntegrationTests.Core.Producers;
 
-namespace KafkaFlow.IntegrationTests
+namespace KafkaFlow.IntegrationTests;
+
+[TestClass]
+public class CompressionSerializationTest
 {
-    [TestClass]
-    public class CompressionSerializationTest
+    private readonly Fixture _fixture = new();
+
+    private IServiceProvider _provider;
+
+    [TestInitialize]
+    public void Setup()
     {
-        private readonly Fixture _fixture = new();
+        _provider = Bootstrapper.GetServiceProvider();
+        MessageStorage.Clear();
+    }
 
-        private IServiceProvider _provider;
+    [TestMethod]
+    public async Task JsonGzipMessageTest()
+    {
+        // Arrange
+        var producer = _provider.GetRequiredService<IMessageProducer<JsonGzipProducer>>();
+        var messages = _fixture.CreateMany<TestMessage1>(10).ToList();
 
-        [TestInitialize]
-        public void Setup()
+        // Act
+        await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
+
+        // Assert
+        foreach (var message in messages)
         {
-            _provider = Bootstrapper.GetServiceProvider();
-            MessageStorage.Clear();
+            await MessageStorage.AssertMessageAsync(message);
         }
+    }
 
-        [TestMethod]
-        public async Task JsonGzipMessageTest()
+    [TestMethod]
+    public async Task ProtoBufGzipMessageTest()
+    {
+        // Arrange
+        var producer = _provider.GetRequiredService<IMessageProducer<ProtobufGzipProducer>>();
+        var messages = _fixture.CreateMany<TestMessage1>(10).ToList();
+
+        // Act
+        await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
+
+        // Assert
+        foreach (var message in messages)
         {
-            // Arrange
-            var producer = _provider.GetRequiredService<IMessageProducer<JsonGzipProducer>>();
-            var messages = _fixture.CreateMany<TestMessage1>(10).ToList();
-
-            // Act
-            await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
-
-            // Assert
-            foreach (var message in messages)
-            {
-                await MessageStorage.AssertMessageAsync(message);
-            }
-        }
-
-        [TestMethod]
-        public async Task ProtoBufGzipMessageTest()
-        {
-            // Arrange
-            var producer = _provider.GetRequiredService<IMessageProducer<ProtobufGzipProducer>>();
-            var messages = _fixture.CreateMany<TestMessage1>(10).ToList();
-
-            // Act
-            await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
-
-            // Assert
-            foreach (var message in messages)
-            {
-                await MessageStorage.AssertMessageAsync(message);
-            }
+            await MessageStorage.AssertMessageAsync(message);
         }
     }
 }

@@ -1,10 +1,9 @@
 using System;
 using System.Threading.Tasks;
 
-namespace KafkaFlow
+namespace KafkaFlow;
+
+internal interface IMiddlewareExecutor
 {
-    internal interface IMiddlewareExecutor
-    {
-        Task Execute(IMessageContext context, Func<IMessageContext, Task> nextOperation);
-    }
+    Task Execute(IMessageContext context, Func<IMessageContext, Task> nextOperation);
 }

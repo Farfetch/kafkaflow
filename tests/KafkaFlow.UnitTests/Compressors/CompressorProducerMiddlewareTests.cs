@@ -7,89 +7,88 @@ using KafkaFlow.Middlewares.Compressor;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace KafkaFlow.UnitTests.Compressors
+namespace KafkaFlow.UnitTests.Compressors;
+
+[TestClass]
+public class CompressorProducerMiddlewareTests
 {
-    [TestClass]
-    public class CompressorProducerMiddlewareTests
+    private Mock<IMessageContext> _contextMock;
+    private Mock<ICompressor> _compressorMock;
+
+    private CompressorProducerMiddleware _target;
+
+    [TestInitialize]
+    public void Setup()
     {
-        private Mock<IMessageContext> _contextMock;
-        private Mock<ICompressor> _compressorMock;
+        _contextMock = new Mock<IMessageContext>();
+        _compressorMock = new Mock<ICompressor>();
 
-        private CompressorProducerMiddleware _target;
+        _target = new CompressorProducerMiddleware(_compressorMock.Object);
+    }
 
-        [TestInitialize]
-        public void Setup()
-        {
-            _contextMock = new Mock<IMessageContext>();
-            _compressorMock = new Mock<ICompressor>();
+    [TestMethod]
+    public async Task Invoke_InvalidMessage_Throws()
+    {
+        // Arrange
+        var uncompressedMessage = new Message(new byte[1], new object());
+        IMessageContext resultContext = null;
 
-            _target = new CompressorProducerMiddleware(_compressorMock.Object);
-        }
+        _contextMock
+            .SetupGet(x => x.Message)
+            .Returns(uncompressedMessage);
 
-        [TestMethod]
-        public async Task Invoke_InvalidMessage_Throws()
-        {
-            // Arrange
-            var uncompressedMessage = new Message(new byte[1], new object());
-            IMessageContext resultContext = null;
+        // Act
+        Func<Task> act = () => _target.Invoke(
+            _contextMock.Object,
+            ctx =>
+            {
+                resultContext = ctx;
+                return Task.CompletedTask;
+            });
 
-            _contextMock
-                .SetupGet(x => x.Message)
-                .Returns(uncompressedMessage);
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        resultContext.Should().BeNull();
+        _contextMock.Verify(x => x.SetMessage(It.IsAny<object>(), It.IsAny<object>()), Times.Never);
+        _compressorMock.Verify(x => x.Compress(It.IsAny<byte[]>()), Times.Never);
+    }
 
-            // Act
-            Func<Task> act = () => _target.Invoke(
-                _contextMock.Object,
-                ctx =>
-                {
-                    resultContext = ctx;
-                    return Task.CompletedTask;
-                });
+    [TestMethod]
+    public async Task Invoke_ValidMessage_Compress()
+    {
+        // Arrange
+        var uncompressedValue = new byte[1];
+        var compressedValue = new byte[1];
+        var uncompressedMessage = new Message(new byte[1], uncompressedValue);
 
-            // Assert
-            await act.Should().ThrowAsync<InvalidOperationException>();
-            resultContext.Should().BeNull();
-            _contextMock.Verify(x => x.SetMessage(It.IsAny<object>(), It.IsAny<object>()), Times.Never);
-            _compressorMock.Verify(x => x.Compress(It.IsAny<byte[]>()), Times.Never);
-        }
+        var transformedContextMock = new Mock<IMessageContext>();
+        IMessageContext resultContext = null;
 
-        [TestMethod]
-        public async Task Invoke_ValidMessage_Compress()
-        {
-            // Arrange
-            var uncompressedValue = new byte[1];
-            var compressedValue = new byte[1];
-            var uncompressedMessage = new Message(new byte[1], uncompressedValue);
+        _contextMock
+            .SetupGet(x => x.Message)
+            .Returns(uncompressedMessage);
 
-            var transformedContextMock = new Mock<IMessageContext>();
-            IMessageContext resultContext = null;
+        _compressorMock
+            .Setup(x => x.Compress(uncompressedValue))
+            .Returns(compressedValue);
 
-            _contextMock
-                .SetupGet(x => x.Message)
-                .Returns(uncompressedMessage);
+        _contextMock
+            .Setup(x => x.SetMessage(uncompressedMessage.Key, compressedValue))
+            .Returns(transformedContextMock.Object);
 
-            _compressorMock
-                .Setup(x => x.Compress(uncompressedValue))
-                .Returns(compressedValue);
+        // Act
+        await _target.Invoke(
+            _contextMock.Object,
+            ctx =>
+            {
+                resultContext = ctx;
+                return Task.CompletedTask;
+            });
 
-            _contextMock
-                .Setup(x => x.SetMessage(uncompressedMessage.Key, compressedValue))
-                .Returns(transformedContextMock.Object);
-
-            // Act
-            await _target.Invoke(
-                _contextMock.Object,
-                ctx =>
-                {
-                    resultContext = ctx;
-                    return Task.CompletedTask;
-                });
-
-            // Assert
-            resultContext.Should().NotBeNull();
-            resultContext.Should().Be(transformedContextMock.Object);
-            _contextMock.VerifyAll();
-            _compressorMock.VerifyAll();
-        }
+        // Assert
+        resultContext.Should().NotBeNull();
+        resultContext.Should().Be(transformedContextMock.Object);
+        _contextMock.VerifyAll();
+        _compressorMock.VerifyAll();
     }
 }

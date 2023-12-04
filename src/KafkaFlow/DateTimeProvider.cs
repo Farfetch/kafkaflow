@@ -1,11 +1,10 @@
 using System;
 
-namespace KafkaFlow
-{
-    internal class DateTimeProvider : IDateTimeProvider
-    {
-        public DateTime UtcNow => DateTime.UtcNow;
+namespace KafkaFlow;
 
-        public DateTime MinValue => DateTime.MinValue;
-    }
+internal class DateTimeProvider : IDateTimeProvider
+{
+    public DateTime UtcNow => DateTime.UtcNow;
+
+    public DateTime MinValue => DateTime.MinValue;
 }

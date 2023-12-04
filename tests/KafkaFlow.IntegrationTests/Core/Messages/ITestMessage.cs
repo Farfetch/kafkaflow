@@ -1,13 +1,12 @@
 ﻿using System;
 
-namespace KafkaFlow.IntegrationTests.Core.Messages
+namespace KafkaFlow.IntegrationTests.Core.Messages;
+
+internal interface ITestMessage
 {
-    internal interface ITestMessage
-    {
-        Guid Id { get; set; }
+    Guid Id { get; set; }
 
-        string Value { get; set; }
+    string Value { get; set; }
 
-        int Version { get; set; }
-    }
+    int Version { get; set; }
 }

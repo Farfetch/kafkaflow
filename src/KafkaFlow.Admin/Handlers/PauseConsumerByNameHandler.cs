@@ -4,26 +4,25 @@ using KafkaFlow.Admin.Extensions;
 using KafkaFlow.Admin.Messages;
 using KafkaFlow.Consumers;
 
-namespace KafkaFlow.Admin.Handlers
+namespace KafkaFlow.Admin.Handlers;
+
+internal class PauseConsumerByNameHandler : IMessageHandler<PauseConsumerByName>
 {
-    internal class PauseConsumerByNameHandler : IMessageHandler<PauseConsumerByName>
+    private readonly IConsumerAccessor _consumerAccessor;
+
+    public PauseConsumerByNameHandler(IConsumerAccessor consumerAccessor) => _consumerAccessor = consumerAccessor;
+
+    public Task Handle(IMessageContext context, PauseConsumerByName message)
     {
-        private readonly IConsumerAccessor _consumerAccessor;
+        var consumer = _consumerAccessor[message.ConsumerName];
 
-        public PauseConsumerByNameHandler(IConsumerAccessor consumerAccessor) => _consumerAccessor = consumerAccessor;
+        var assignment = consumer.FilterAssigment(message.Topics);
 
-        public Task Handle(IMessageContext context, PauseConsumerByName message)
+        if (assignment.Any())
         {
-            var consumer = _consumerAccessor[message.ConsumerName];
-
-            var assignment = consumer.FilterAssigment(message.Topics);
-
-            if (assignment.Any())
-            {
-                consumer?.Pause(assignment);
-            }
-
-            return Task.CompletedTask;
+            consumer?.Pause(assignment);
         }
+
+        return Task.CompletedTask;
     }
 }

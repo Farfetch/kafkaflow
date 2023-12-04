@@ -1,15 +1,14 @@
 using System.Collections.Generic;
 
-namespace KafkaFlow.Admin.WebApi.Contracts
+namespace KafkaFlow.Admin.WebApi.Contracts;
+
+/// <summary>
+/// The response of the consumer groups
+/// </summary>
+public class GroupsResponse
 {
     /// <summary>
-    /// The response of the consumer groups
+    /// Gets or sets the groups collection
     /// </summary>
-    public class GroupsResponse
-    {
-        /// <summary>
-        /// Gets or sets the groups collection
-        /// </summary>
-        public IEnumerable<GroupResponse> Groups { get; set; }
-    }
+    public IEnumerable<GroupResponse> Groups { get; set; }
 }

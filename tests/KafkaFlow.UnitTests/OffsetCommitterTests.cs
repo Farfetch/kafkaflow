@@ -6,133 +6,132 @@ using KafkaFlow.Consumers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace KafkaFlow.UnitTests
+namespace KafkaFlow.UnitTests;
+
+[TestClass]
+public class OffsetCommitterTests
 {
-    [TestClass]
-    public class OffsetCommitterTests
+    private const int TestTimeout = 5000;
+
+    private Mock<IConsumer> _consumerMock;
+
+    private Confluent.Kafka.TopicPartition _topicPartition;
+
+    private OffsetCommitter _offsetCommitter;
+
+    [TestInitialize]
+    public async Task Setup()
     {
-        private const int TestTimeout = 5000;
+        _consumerMock = new Mock<IConsumer>();
+        _topicPartition = new Confluent.Kafka.TopicPartition("topic-A", new Confluent.Kafka.Partition(1));
 
-        private Mock<IConsumer> _consumerMock;
+        _consumerMock
+            .Setup(c => c.Configuration.AutoCommitInterval)
+            .Returns(TimeSpan.FromMilliseconds(1000));
 
-        private Confluent.Kafka.TopicPartition _topicPartition;
+        _offsetCommitter = new OffsetCommitter(
+            _consumerMock.Object,
+            Mock.Of<IDependencyResolver>(),
+            Mock.Of<ILogHandler>());
 
-        private OffsetCommitter _offsetCommitter;
+        await _offsetCommitter.StartAsync();
+    }
 
-        [TestInitialize]
-        public async Task Setup()
-        {
-            _consumerMock = new Mock<IConsumer>();
-            _topicPartition = new Confluent.Kafka.TopicPartition("topic-A", new Confluent.Kafka.Partition(1));
+    [TestCleanup]
+    public async Task Cleanup()
+    {
+        await _offsetCommitter.StopAsync();
+    }
 
-            _consumerMock
-                .Setup(c => c.Configuration.AutoCommitInterval)
-                .Returns(TimeSpan.FromMilliseconds(1000));
+    [TestMethod]
+    public async Task MarkAsProcessed_ShouldCommit()
+    {
+        // Arrange
+        var expectedOffsets = new[] { new Confluent.Kafka.TopicPartitionOffset(_topicPartition, new Confluent.Kafka.Offset(2)) };
 
-            _offsetCommitter = new OffsetCommitter(
-                _consumerMock.Object,
-                Mock.Of<IDependencyResolver>(),
-                Mock.Of<ILogHandler>());
+        var ready = new TaskCompletionSource().WithTimeout(TestTimeout);
 
-            await _offsetCommitter.StartAsync();
-        }
+        _consumerMock
+            .Setup(c => c.Commit(It.Is<IReadOnlyCollection<Confluent.Kafka.TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))))
+            .Callback((IEnumerable<Confluent.Kafka.TopicPartitionOffset> _) => ready.SetResult());
 
-        [TestCleanup]
-        public async Task Cleanup()
-        {
-            await _offsetCommitter.StopAsync();
-        }
+        // Act
+        _offsetCommitter.MarkAsProcessed(
+            new KafkaFlow.TopicPartitionOffset(
+                _topicPartition.Topic,
+                _topicPartition.Partition,
+                1));
 
-        [TestMethod]
-        public async Task MarkAsProcessed_ShouldCommit()
-        {
-            // Arrange
-            var expectedOffsets = new[] { new Confluent.Kafka.TopicPartitionOffset(_topicPartition, new Confluent.Kafka.Offset(2)) };
+        await ready.Task;
 
-            var ready = new TaskCompletionSource().WithTimeout(TestTimeout);
+        // Assert
+        _consumerMock.VerifyAll();
+    }
 
-            _consumerMock
-                .Setup(c => c.Commit(It.Is<IReadOnlyCollection<Confluent.Kafka.TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))))
-                .Callback((IEnumerable<Confluent.Kafka.TopicPartitionOffset> _) => ready.SetResult());
+    [TestMethod]
+    public async Task PendingOffsetsState_ShouldExecuteHandlers()
+    {
+        // Arrange
+        var ready = new TaskCompletionSource().WithTimeout(TestTimeout);
 
-            // Act
-            _offsetCommitter.MarkAsProcessed(
-                new KafkaFlow.TopicPartitionOffset(
-                    _topicPartition.Topic,
-                    _topicPartition.Partition,
-                    1));
+        var committer = new OffsetCommitter(
+            _consumerMock.Object,
+            Mock.Of<IDependencyResolver>(),
+            Mock.Of<ILogHandler>());
 
-            await ready.Task;
+        committer.PendingOffsetsStatisticsHandlers.Add(new((_, _) => ready.TrySetResult(), TimeSpan.FromMilliseconds(100)));
 
-            // Assert
-            _consumerMock.VerifyAll();
-        }
+        await committer.StartAsync();
 
-        [TestMethod]
-        public async Task PendingOffsetsState_ShouldExecuteHandlers()
-        {
-            // Arrange
-            var ready = new TaskCompletionSource().WithTimeout(TestTimeout);
+        // Act
+        committer.MarkAsProcessed(
+            new KafkaFlow.TopicPartitionOffset(
+                _topicPartition.Topic,
+                _topicPartition.Partition,
+                1));
 
-            var committer = new OffsetCommitter(
-                _consumerMock.Object,
-                Mock.Of<IDependencyResolver>(),
-                Mock.Of<ILogHandler>());
+        // Assert
+        await ready.Task;
 
-            committer.PendingOffsetsStatisticsHandlers.Add(new((_, _) => ready.TrySetResult(), TimeSpan.FromMilliseconds(100)));
+        // Cleanup
+        await committer.StopAsync();
+    }
 
-            await committer.StartAsync();
+    [TestMethod]
+    public async Task MarkAsProcessed_WithFailure_ShouldRequeueFailedOffsetAndCommit()
+    {
+        // Arrange
+        var expectedOffsets = new[] { new Confluent.Kafka.TopicPartitionOffset(_topicPartition, new Confluent.Kafka.Offset(2)) };
 
-            // Act
-            committer.MarkAsProcessed(
-                new KafkaFlow.TopicPartitionOffset(
-                    _topicPartition.Topic,
-                    _topicPartition.Partition,
-                    1));
+        var ready = new TaskCompletionSource().WithTimeout(TestTimeout);
+        var hasThrown = false;
 
-            // Assert
-            await ready.Task;
-
-            // Cleanup
-            await committer.StopAsync();
-        }
-
-        [TestMethod]
-        public async Task MarkAsProcessed_WithFailure_ShouldRequeueFailedOffsetAndCommit()
-        {
-            // Arrange
-            var expectedOffsets = new[] { new Confluent.Kafka.TopicPartitionOffset(_topicPartition, new Confluent.Kafka.Offset(2)) };
-
-            var ready = new TaskCompletionSource().WithTimeout(TestTimeout);
-            var hasThrown = false;
-
-            _consumerMock
-                .Setup(c => c.Commit(It.Is<IReadOnlyCollection<Confluent.Kafka.TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))))
-                .Callback(
-                    (IEnumerable<Confluent.Kafka.TopicPartitionOffset> _) =>
+        _consumerMock
+            .Setup(c => c.Commit(It.Is<IReadOnlyCollection<Confluent.Kafka.TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))))
+            .Callback(
+                (IEnumerable<Confluent.Kafka.TopicPartitionOffset> _) =>
+                {
+                    if (!hasThrown)
                     {
-                        if (!hasThrown)
-                        {
-                            hasThrown = true;
-                            throw new InvalidOperationException();
-                        }
+                        hasThrown = true;
+                        throw new InvalidOperationException();
+                    }
 
-                        ready.TrySetResult();
-                    });
+                    ready.TrySetResult();
+                });
 
-            // Act
-            _offsetCommitter.MarkAsProcessed(
-                new KafkaFlow.TopicPartitionOffset(
-                    _topicPartition.Topic,
-                    _topicPartition.Partition,
-                    1));
+        // Act
+        _offsetCommitter.MarkAsProcessed(
+            new KafkaFlow.TopicPartitionOffset(
+                _topicPartition.Topic,
+                _topicPartition.Partition,
+                1));
 
-            await ready.Task;
+        await ready.Task;
 
-            // Assert
-            _consumerMock.Verify(
-                c => c.Commit(It.Is<IReadOnlyCollection<Confluent.Kafka.TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))),
-                Times.Exactly(2));
-        }
+        // Assert
+        _consumerMock.Verify(
+            c => c.Commit(It.Is<IReadOnlyCollection<Confluent.Kafka.TopicPartitionOffset>>(l => l.SequenceEqual(expectedOffsets))),
+            Times.Exactly(2));
     }
 }

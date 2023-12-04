@@ -1,14 +1,13 @@
 using System.Threading.Tasks;
 using KafkaFlow.IntegrationTests.Core.Messages;
 
-namespace KafkaFlow.IntegrationTests.Core.Handlers
+namespace KafkaFlow.IntegrationTests.Core.Handlers;
+
+internal class ConfluentProtobufMessageHandler : IMessageHandler<TestProtoMessage>
 {
-    internal class ConfluentProtobufMessageHandler : IMessageHandler<TestProtoMessage>
+    public Task Handle(IMessageContext context, TestProtoMessage message)
     {
-        public Task Handle(IMessageContext context, TestProtoMessage message)
-        {
-            MessageStorage.Add(message);
-            return Task.CompletedTask;
-        }
+        MessageStorage.Add(message);
+        return Task.CompletedTask;
     }
 }

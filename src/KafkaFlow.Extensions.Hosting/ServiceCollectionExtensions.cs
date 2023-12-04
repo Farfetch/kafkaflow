@@ -2,26 +2,25 @@
 using global::Microsoft.Extensions.DependencyInjection;
 using KafkaFlow.Configuration;
 
-namespace KafkaFlow
+namespace KafkaFlow;
+
+/// <summary>
+/// No needed
+/// </summary>
+public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// No needed
+    /// Configures KafkaFlow to run as a Hosted Service
     /// </summary>
-    public static class ServiceCollectionExtensions
+    /// <param name="services">Instance of <see cref="IServiceCollection"/></param>
+    /// <param name="kafka">A handler to configure KafkaFlow</param>
+    /// <returns></returns>
+    public static IServiceCollection AddKafkaFlowHostedService(
+        this IServiceCollection services,
+        Action<IKafkaConfigurationBuilder> kafka)
     {
-        /// <summary>
-        /// Configures KafkaFlow to run as a Hosted Service
-        /// </summary>
-        /// <param name="services">Instance of <see cref="IServiceCollection"/></param>
-        /// <param name="kafka">A handler to configure KafkaFlow</param>
-        /// <returns></returns>
-        public static IServiceCollection AddKafkaFlowHostedService(
-            this IServiceCollection services,
-            Action<IKafkaConfigurationBuilder> kafka)
-        {
-            return services
-                .AddHostedService<KafkaFlowHostedService>()
-                .AddKafka(kafka);
-        }
+        return services
+            .AddHostedService<KafkaFlowHostedService>()
+            .AddKafka(kafka);
     }
 }

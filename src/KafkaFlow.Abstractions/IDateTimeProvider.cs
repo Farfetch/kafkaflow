@@ -1,16 +1,15 @@
 using System;
 
-namespace KafkaFlow
-{
-    /// <summary>
-    /// Provides access to DateTime static members
-    /// </summary>
-    public interface IDateTimeProvider
-    {
-        /// <inheritdoc cref="DateTime.UtcNow"/>
-        DateTime UtcNow { get; }
+namespace KafkaFlow;
 
-        /// <inheritdoc cref="DateTime.MinValue"/>
-        DateTime MinValue { get; }
-    }
+/// <summary>
+/// Provides access to DateTime static members
+/// </summary>
+public interface IDateTimeProvider
+{
+    /// <inheritdoc cref="DateTime.UtcNow"/>
+    DateTime UtcNow { get; }
+
+    /// <inheritdoc cref="DateTime.MinValue"/>
+    DateTime MinValue { get; }
 }

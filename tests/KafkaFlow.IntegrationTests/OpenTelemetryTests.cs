@@ -20,213 +20,212 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Polly;
 
-namespace KafkaFlow.IntegrationTests
+namespace KafkaFlow.IntegrationTests;
+
+[TestClass]
+public class OpenTelemetryTests
 {
-    [TestClass]
-    public class OpenTelemetryTests
+    private readonly Fixture _fixture = new();
+
+    private List<Activity> _exportedItems;
+
+    private bool _isPartitionAssigned;
+
+    [TestInitialize]
+    public void Setup()
     {
-        private readonly Fixture _fixture = new();
+        _exportedItems = new List<Activity>();
+    }
 
-        private List<Activity> _exportedItems;
+    [TestMethod]
+    public async Task AddOpenTelemetry_ProducingAndConsumingOneMessage_TraceAndSpansAreCreatedCorrectly()
+    {
+        // Arrange
+        var provider = await this.GetServiceProvider();
+        MessageStorage.Clear();
 
-        private bool _isPartitionAssigned;
+        using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+        .AddSource(KafkaFlowInstrumentation.ActivitySourceName)
+        .AddInMemoryExporter(_exportedItems)
+        .Build();
 
-        [TestInitialize]
-        public void Setup()
-        {
-            _exportedItems = new List<Activity>();
-        }
+        var producer = provider.GetRequiredService<IMessageProducer<GzipProducer>>();
+        var message = _fixture.Create<byte[]>();
 
-        [TestMethod]
-        public async Task AddOpenTelemetry_ProducingAndConsumingOneMessage_TraceAndSpansAreCreatedCorrectly()
-        {
-            // Arrange
-            var provider = await this.GetServiceProvider();
-            MessageStorage.Clear();
+        // Act
+        await producer.ProduceAsync(null, message);
 
-            using var tracerProvider = Sdk.CreateTracerProviderBuilder()
-            .AddSource(KafkaFlowInstrumentation.ActivitySourceName)
-            .AddInMemoryExporter(_exportedItems)
-            .Build();
+        // Assert
+        var (producerSpan, consumerSpan, internalSpan) = await this.WaitForSpansAsync();
 
-            var producer = provider.GetRequiredService<IMessageProducer<GzipProducer>>();
-            var message = _fixture.Create<byte[]>();
+        Assert.IsNotNull(_exportedItems);
+        Assert.IsNull(producerSpan.ParentId);
+        Assert.AreEqual(producerSpan.TraceId, consumerSpan.TraceId);
+        Assert.AreEqual(consumerSpan.ParentSpanId, producerSpan.SpanId);
+    }
 
-            // Act
-            await producer.ProduceAsync(null, message);
+    [TestMethod]
+    public async Task AddOpenTelemetry_CreateActivityOnConsumingMessage_TraceIsPropagatedToCreatedActivity()
+    {
+        // Arrange
+        var provider = await this.GetServiceProvider();
+        MessageStorage.Clear();
 
-            // Assert
-            var (producerSpan, consumerSpan, internalSpan) = await this.WaitForSpansAsync();
+        using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+        .AddSource("KafkaFlow.OpenTelemetry")
+        .AddInMemoryExporter(_exportedItems)
+        .Build();
 
-            Assert.IsNotNull(_exportedItems);
-            Assert.IsNull(producerSpan.ParentId);
-            Assert.AreEqual(producerSpan.TraceId, consumerSpan.TraceId);
-            Assert.AreEqual(consumerSpan.ParentSpanId, producerSpan.SpanId);
-        }
+        var producer = provider.GetRequiredService<IMessageProducer<GzipProducer>>();
+        var message = _fixture.Create<byte[]>();
 
-        [TestMethod]
-        public async Task AddOpenTelemetry_CreateActivityOnConsumingMessage_TraceIsPropagatedToCreatedActivity()
-        {
-            // Arrange
-            var provider = await this.GetServiceProvider();
-            MessageStorage.Clear();
+        // Act
+        await producer.ProduceAsync(null, message);
 
-            using var tracerProvider = Sdk.CreateTracerProviderBuilder()
-            .AddSource("KafkaFlow.OpenTelemetry")
-            .AddInMemoryExporter(_exportedItems)
-            .Build();
+        // Assert
+        var (producerSpan, consumerSpan, internalSpan) = await this.WaitForSpansAsync();
 
-            var producer = provider.GetRequiredService<IMessageProducer<GzipProducer>>();
-            var message = _fixture.Create<byte[]>();
+        Assert.IsNotNull(_exportedItems);
+        Assert.IsNull(producerSpan.ParentId);
+        Assert.AreEqual(producerSpan.TraceId, consumerSpan.TraceId);
+        Assert.AreEqual(consumerSpan.ParentSpanId, producerSpan.SpanId);
+        Assert.AreEqual(internalSpan.TraceId, consumerSpan.TraceId);
+        Assert.AreEqual(internalSpan.ParentSpanId, consumerSpan.SpanId);
+    }
 
-            // Act
-            await producer.ProduceAsync(null, message);
+    [TestMethod]
+    public async Task AddOpenTelemetry_ProducingAndConsumingOneMessage_BaggageIsPropagatedFromTestActivityToConsumer()
+    {
+        // Arrange
+        var provider = await this.GetServiceProvider();
+        MessageStorage.Clear();
 
-            // Assert
-            var (producerSpan, consumerSpan, internalSpan) = await this.WaitForSpansAsync();
+        var kafkaFlowTestString = "KafkaFlowTest";
+        var baggageName1 = "TestBaggage1";
+        var baggageValue1 = "TestBaggageValue1";
+        var baggageName2 = "TestBaggage2";
+        var baggageValue2 = "TestBaggageValue2";
 
-            Assert.IsNotNull(_exportedItems);
-            Assert.IsNull(producerSpan.ParentId);
-            Assert.AreEqual(producerSpan.TraceId, consumerSpan.TraceId);
-            Assert.AreEqual(consumerSpan.ParentSpanId, producerSpan.SpanId);
-            Assert.AreEqual(internalSpan.TraceId, consumerSpan.TraceId);
-            Assert.AreEqual(internalSpan.ParentSpanId, consumerSpan.SpanId);
-        }
+        using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+        .AddSource(KafkaFlowInstrumentation.ActivitySourceName)
+        .AddSource(kafkaFlowTestString)
+        .AddInMemoryExporter(_exportedItems)
+        .Build();
 
-        [TestMethod]
-        public async Task AddOpenTelemetry_ProducingAndConsumingOneMessage_BaggageIsPropagatedFromTestActivityToConsumer()
-        {
-            // Arrange
-            var provider = await this.GetServiceProvider();
-            MessageStorage.Clear();
+        var producer = provider.GetRequiredService<IMessageProducer<GzipProducer>>();
+        var message = _fixture.Create<byte[]>();
 
-            var kafkaFlowTestString = "KafkaFlowTest";
-            var baggageName1 = "TestBaggage1";
-            var baggageValue1 = "TestBaggageValue1";
-            var baggageName2 = "TestBaggage2";
-            var baggageValue2 = "TestBaggageValue2";
+        // Act
+        ActivitySource activitySource = new(kafkaFlowTestString);
 
-            using var tracerProvider = Sdk.CreateTracerProviderBuilder()
-            .AddSource(KafkaFlowInstrumentation.ActivitySourceName)
-            .AddSource(kafkaFlowTestString)
-            .AddInMemoryExporter(_exportedItems)
-            .Build();
+        var activity = activitySource.StartActivity("TestActivity", ActivityKind.Client);
 
-            var producer = provider.GetRequiredService<IMessageProducer<GzipProducer>>();
-            var message = _fixture.Create<byte[]>();
+        activity.AddBaggage(baggageName1, baggageValue1);
+        activity.AddBaggage(baggageName2, baggageValue2);
 
-            // Act
-            ActivitySource activitySource = new(kafkaFlowTestString);
+        await producer.ProduceAsync(null, message);
 
-            var activity = activitySource.StartActivity("TestActivity", ActivityKind.Client);
+        // Assert
+        var (producerSpan, consumerSpan, internalSpan) = await this.WaitForSpansAsync();
 
-            activity.AddBaggage(baggageName1, baggageValue1);
-            activity.AddBaggage(baggageName2, baggageValue2);
+        Assert.IsNotNull(_exportedItems);
+        Assert.AreEqual(producerSpan.TraceId, consumerSpan.TraceId);
+        Assert.AreEqual(consumerSpan.ParentSpanId, producerSpan.SpanId);
+        Assert.AreEqual(producerSpan.GetBaggageItem(baggageName1), baggageValue1);
+        Assert.AreEqual(consumerSpan.GetBaggageItem(baggageName1), baggageValue1);
+        Assert.AreEqual(producerSpan.GetBaggageItem(baggageName2), baggageValue2);
+        Assert.AreEqual(consumerSpan.GetBaggageItem(baggageName2), baggageValue2);
+    }
 
-            await producer.ProduceAsync(null, message);
+    private async Task<IServiceProvider> GetServiceProvider()
+    {
+        var topicName = $"OpenTelemetryTestTopic_{Guid.NewGuid()}";
 
-            // Assert
-            var (producerSpan, consumerSpan, internalSpan) = await this.WaitForSpansAsync();
+        _isPartitionAssigned = false;
 
-            Assert.IsNotNull(_exportedItems);
-            Assert.AreEqual(producerSpan.TraceId, consumerSpan.TraceId);
-            Assert.AreEqual(consumerSpan.ParentSpanId, producerSpan.SpanId);
-            Assert.AreEqual(producerSpan.GetBaggageItem(baggageName1), baggageValue1);
-            Assert.AreEqual(consumerSpan.GetBaggageItem(baggageName1), baggageValue1);
-            Assert.AreEqual(producerSpan.GetBaggageItem(baggageName2), baggageValue2);
-            Assert.AreEqual(consumerSpan.GetBaggageItem(baggageName2), baggageValue2);
-        }
-
-        private async Task<IServiceProvider> GetServiceProvider()
-        {
-            var topicName = $"OpenTelemetryTestTopic_{Guid.NewGuid()}";
-
-            _isPartitionAssigned = false;
-
-            var builder = Host
-                .CreateDefaultBuilder()
-                .ConfigureAppConfiguration(
-                    (_, config) =>
-                    {
-                        config
-                            .SetBasePath(Directory.GetCurrentDirectory())
-                            .AddJsonFile(
-                                "conf/appsettings.json",
-                                false,
-                                true)
-                            .AddEnvironmentVariables();
-                    })
-                .ConfigureServices((context, services) =>
-                    services.AddKafka(
-                        kafka => kafka
-                            .UseLogHandler<TraceLogHandler>()
-                            .AddCluster(
-                                cluster => cluster
-                                    .WithBrokers(context.Configuration.GetValue<string>("Kafka:Brokers").Split(';'))
-                                    .CreateTopicIfNotExists(topicName, 1, 1)
-                                    .AddProducer<GzipProducer>(
-                                        producer => producer
-                                            .DefaultTopic(topicName)
-                                            .AddMiddlewares(
-                                                middlewares => middlewares
-                                                    .AddCompressor<GzipMessageCompressor>()))
-                                    .AddConsumer(
-                                        consumer => consumer
-                                            .Topic(topicName)
-                                            .WithGroupId(topicName)
-                                            .WithBufferSize(100)
-                                            .WithWorkersCount(10)
-                                            .WithAutoOffsetReset(AutoOffsetReset.Latest)
-                                            .AddMiddlewares(
-                                                middlewares => middlewares
-                                                    .AddDecompressor<GzipMessageDecompressor>()
-                                                    .Add<GzipMiddleware>())
-                                            .WithPartitionsAssignedHandler((_, _) =>
-                                            {
-                                                _isPartitionAssigned = true;
-                                            })))
-                            .AddOpenTelemetryInstrumentation()))
-                .UseDefaultServiceProvider(
-                    (_, options) =>
-                    {
-                        options.ValidateScopes = true;
-                        options.ValidateOnBuild = true;
-                    });
-
-            var host = builder.Build();
-            var bus = host.Services.CreateKafkaBus();
-            bus.StartAsync().GetAwaiter().GetResult();
-
-            await this.WaitForPartitionAssignmentAsync();
-
-            return host.Services;
-        }
-
-        private async Task WaitForPartitionAssignmentAsync()
-        {
-            await Policy
-                .HandleResult<bool>(isAvailable => !isAvailable)
-                .WaitAndRetryAsync(Enumerable.Range(0, 6).Select(i => TimeSpan.FromSeconds(Math.Pow(i, 2))))
-                .ExecuteAsync(() => Task.FromResult(_isPartitionAssigned));
-        }
-
-        private async Task<(Activity producerSpan, Activity consumerSpan, Activity internalSpan)> WaitForSpansAsync()
-        {
-            Activity producerSpan = null, consumerSpan = null, internalSpan = null;
-
-            await Policy
-                .HandleResult<bool>(isAvailable => !isAvailable)
-                .WaitAndRetryAsync(Enumerable.Range(0, 6).Select(i => TimeSpan.FromSeconds(Math.Pow(i, 2))))
-                .ExecuteAsync(() =>
+        var builder = Host
+            .CreateDefaultBuilder()
+            .ConfigureAppConfiguration(
+                (_, config) =>
                 {
-                    producerSpan = _exportedItems.Find(x => x.Kind == ActivityKind.Producer);
-                    consumerSpan = _exportedItems.Find(x => x.Kind == ActivityKind.Consumer);
-                    internalSpan = _exportedItems.Find(x => x.Kind == ActivityKind.Internal);
-
-                    return Task.FromResult(producerSpan != null && consumerSpan != null);
+                    config
+                        .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile(
+                            "conf/appsettings.json",
+                            false,
+                            true)
+                        .AddEnvironmentVariables();
+                })
+            .ConfigureServices((context, services) =>
+                services.AddKafka(
+                    kafka => kafka
+                        .UseLogHandler<TraceLogHandler>()
+                        .AddCluster(
+                            cluster => cluster
+                                .WithBrokers(context.Configuration.GetValue<string>("Kafka:Brokers").Split(';'))
+                                .CreateTopicIfNotExists(topicName, 1, 1)
+                                .AddProducer<GzipProducer>(
+                                    producer => producer
+                                        .DefaultTopic(topicName)
+                                        .AddMiddlewares(
+                                            middlewares => middlewares
+                                                .AddCompressor<GzipMessageCompressor>()))
+                                .AddConsumer(
+                                    consumer => consumer
+                                        .Topic(topicName)
+                                        .WithGroupId(topicName)
+                                        .WithBufferSize(100)
+                                        .WithWorkersCount(10)
+                                        .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                        .AddMiddlewares(
+                                            middlewares => middlewares
+                                                .AddDecompressor<GzipMessageDecompressor>()
+                                                .Add<GzipMiddleware>())
+                                        .WithPartitionsAssignedHandler((_, _) =>
+                                        {
+                                            _isPartitionAssigned = true;
+                                        })))
+                        .AddOpenTelemetryInstrumentation()))
+            .UseDefaultServiceProvider(
+                (_, options) =>
+                {
+                    options.ValidateScopes = true;
+                    options.ValidateOnBuild = true;
                 });
 
-            return (producerSpan, consumerSpan, internalSpan);
-        }
+        var host = builder.Build();
+        var bus = host.Services.CreateKafkaBus();
+        bus.StartAsync().GetAwaiter().GetResult();
+
+        await this.WaitForPartitionAssignmentAsync();
+
+        return host.Services;
+    }
+
+    private async Task WaitForPartitionAssignmentAsync()
+    {
+        await Policy
+            .HandleResult<bool>(isAvailable => !isAvailable)
+            .WaitAndRetryAsync(Enumerable.Range(0, 6).Select(i => TimeSpan.FromSeconds(Math.Pow(i, 2))))
+            .ExecuteAsync(() => Task.FromResult(_isPartitionAssigned));
+    }
+
+    private async Task<(Activity producerSpan, Activity consumerSpan, Activity internalSpan)> WaitForSpansAsync()
+    {
+        Activity producerSpan = null, consumerSpan = null, internalSpan = null;
+
+        await Policy
+            .HandleResult<bool>(isAvailable => !isAvailable)
+            .WaitAndRetryAsync(Enumerable.Range(0, 6).Select(i => TimeSpan.FromSeconds(Math.Pow(i, 2))))
+            .ExecuteAsync(() =>
+            {
+                producerSpan = _exportedItems.Find(x => x.Kind == ActivityKind.Producer);
+                consumerSpan = _exportedItems.Find(x => x.Kind == ActivityKind.Consumer);
+                internalSpan = _exportedItems.Find(x => x.Kind == ActivityKind.Internal);
+
+                return Task.FromResult(producerSpan != null && consumerSpan != null);
+            });
+
+        return (producerSpan, consumerSpan, internalSpan);
     }
 }

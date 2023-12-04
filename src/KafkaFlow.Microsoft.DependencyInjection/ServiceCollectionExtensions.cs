@@ -2,28 +2,27 @@ using System;
 using global::Microsoft.Extensions.DependencyInjection;
 using KafkaFlow.Configuration;
 
-namespace KafkaFlow
+namespace KafkaFlow;
+
+/// <summary>
+/// Extension methods over IServiceCollection
+/// </summary>
+public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Extension methods over IServiceCollection
+    /// Configures KafkaFlow
     /// </summary>
-    public static class ServiceCollectionExtensions
+    /// <param name="services">Instance of <see cref="IServiceCollection"/></param>
+    /// <param name="kafka">A handler to configure KafkaFlow</param>
+    /// <returns></returns>
+    public static IServiceCollection AddKafka(
+        this IServiceCollection services,
+        Action<IKafkaConfigurationBuilder> kafka)
     {
-        /// <summary>
-        /// Configures KafkaFlow
-        /// </summary>
-        /// <param name="services">Instance of <see cref="IServiceCollection"/></param>
-        /// <param name="kafka">A handler to configure KafkaFlow</param>
-        /// <returns></returns>
-        public static IServiceCollection AddKafka(
-            this IServiceCollection services,
-            Action<IKafkaConfigurationBuilder> kafka)
-        {
-            var configurator = new KafkaFlowConfigurator(
-                new MicrosoftDependencyConfigurator(services),
-                kafka);
+        var configurator = new KafkaFlowConfigurator(
+            new MicrosoftDependencyConfigurator(services),
+            kafka);
 
-            return services.AddSingleton(configurator);
-        }
+        return services.AddSingleton(configurator);
     }
 }

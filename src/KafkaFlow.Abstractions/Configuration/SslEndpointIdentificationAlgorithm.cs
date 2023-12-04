@@ -1,12 +1,11 @@
-namespace KafkaFlow.Configuration
-{
-    /// <summary>SslEndpointIdentificationAlgorithm enum values</summary>
-    public enum SslEndpointIdentificationAlgorithm
-    {
-        /// <summary>None</summary>
-        None,
+namespace KafkaFlow.Configuration;
 
-        /// <summary>Https</summary>
-        Https,
-    }
+/// <summary>SslEndpointIdentificationAlgorithm enum values</summary>
+public enum SslEndpointIdentificationAlgorithm
+{
+    /// <summary>None</summary>
+    None,
+
+    /// <summary>Https</summary>
+    Https,
 }

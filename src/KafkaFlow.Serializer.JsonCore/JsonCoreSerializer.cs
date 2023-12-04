@@ -2,61 +2,60 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace KafkaFlow.Serializer
+namespace KafkaFlow.Serializer;
+
+/// <summary>
+/// A message serializer using System.Text.Json library
+/// </summary>
+public class JsonCoreSerializer : ISerializer
 {
+    private readonly JsonSerializerOptions _serializerOptions;
+    private readonly JsonWriterOptions _writerOptions;
+
     /// <summary>
-    /// A message serializer using System.Text.Json library
+    /// Initializes a new instance of the <see cref="JsonCoreSerializer"/> class.
     /// </summary>
-    public class JsonCoreSerializer : ISerializer
+    /// <param name="options">Json serializer options</param>
+    public JsonCoreSerializer(JsonSerializerOptions options)
     {
-        private readonly JsonSerializerOptions _serializerOptions;
-        private readonly JsonWriterOptions _writerOptions;
+        _serializerOptions = options;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JsonCoreSerializer"/> class.
-        /// </summary>
-        /// <param name="options">Json serializer options</param>
-        public JsonCoreSerializer(JsonSerializerOptions options)
-        {
-            _serializerOptions = options;
-        }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="JsonCoreSerializer"/> class.
+    /// </summary>
+    /// <param name="writerOptions">Json writer options</param>
+    public JsonCoreSerializer(JsonWriterOptions writerOptions)
+    {
+        _writerOptions = writerOptions;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JsonCoreSerializer"/> class.
-        /// </summary>
-        /// <param name="writerOptions">Json writer options</param>
-        public JsonCoreSerializer(JsonWriterOptions writerOptions)
-        {
-            _writerOptions = writerOptions;
-        }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="JsonCoreSerializer"/> class.
+    /// </summary>
+    /// <param name="serializerOptions">Json serializer options</param>
+    /// <param name="writerOptions">Json writer options</param>
+    public JsonCoreSerializer(JsonSerializerOptions serializerOptions, JsonWriterOptions writerOptions)
+    {
+        _serializerOptions = serializerOptions;
+        _writerOptions = writerOptions;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JsonCoreSerializer"/> class.
-        /// </summary>
-        /// <param name="serializerOptions">Json serializer options</param>
-        /// <param name="writerOptions">Json writer options</param>
-        public JsonCoreSerializer(JsonSerializerOptions serializerOptions, JsonWriterOptions writerOptions)
-        {
-            _serializerOptions = serializerOptions;
-            _writerOptions = writerOptions;
-        }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="JsonCoreSerializer"/> class.
+    /// </summary>
+    public JsonCoreSerializer()
+        : this(new JsonSerializerOptions(), default)
+    {
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JsonCoreSerializer"/> class.
-        /// </summary>
-        public JsonCoreSerializer()
-            : this(new JsonSerializerOptions(), default)
-        {
-        }
+    /// <inheritdoc/>
+    public Task SerializeAsync(object message, Stream output, ISerializerContext context)
+    {
+        using var writer = new Utf8JsonWriter(output, _writerOptions);
 
-        /// <inheritdoc/>
-        public Task SerializeAsync(object message, Stream output, ISerializerContext context)
-        {
-            using var writer = new Utf8JsonWriter(output, _writerOptions);
+        JsonSerializer.Serialize(writer, message, _serializerOptions);
 
-            JsonSerializer.Serialize(writer, message, _serializerOptions);
-
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
     }
 }

@@ -1,16 +1,15 @@
 using System.Threading.Tasks;
 
-namespace KafkaFlow.Middlewares.ConsumerThrottling
+namespace KafkaFlow.Middlewares.ConsumerThrottling;
+
+/// <summary>
+/// Defines a metric that is used by the KafkaFlow consumer throttling feature.
+/// </summary>
+public interface IConsumerThrottlingMetric
 {
     /// <summary>
-    /// Defines a metric that is used by the KafkaFlow consumer throttling feature.
+    /// Retrieves the value of the metric defined in the implementation of this interface.
     /// </summary>
-    public interface IConsumerThrottlingMetric
-    {
-        /// <summary>
-        /// Retrieves the value of the metric defined in the implementation of this interface.
-        /// </summary>
-        /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation, with a <see cref="long"/> result representing the metric's value.</returns>
-        Task<long> GetValueAsync();
-    }
+    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation, with a <see cref="long"/> result representing the metric's value.</returns>
+    Task<long> GetValueAsync();
 }

@@ -1,20 +1,19 @@
 using System;
 using System.Threading.Tasks;
 
-namespace KafkaFlow.Middlewares.ConsumerThrottling
+namespace KafkaFlow.Middlewares.ConsumerThrottling;
+
+internal class ConsumerThrottlingDelayAction : IConsumerThrottlingAction
 {
-    internal class ConsumerThrottlingDelayAction : IConsumerThrottlingAction
+    private readonly TimeSpan _delay;
+
+    public ConsumerThrottlingDelayAction(TimeSpan delay)
     {
-        private readonly TimeSpan _delay;
+        _delay = delay;
+    }
 
-        public ConsumerThrottlingDelayAction(TimeSpan delay)
-        {
-            _delay = delay;
-        }
-
-        public Task ExecuteAsync()
-        {
-            return Task.Delay(_delay);
-        }
+    public Task ExecuteAsync()
+    {
+        return Task.Delay(_delay);
     }
 }

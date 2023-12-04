@@ -3,45 +3,44 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace KafkaFlow.Serializer
+namespace KafkaFlow.Serializer;
+
+/// <summary>
+/// A message serializer using NewtonsoftJson library
+/// </summary>
+public class NewtonsoftJsonSerializer : ISerializer
 {
+    private const int DefaultBufferSize = 1024;
+
+    private static readonly UTF8Encoding s_uTF8NoBom = new(false);
+
+    private readonly JsonSerializerSettings _settings;
+
     /// <summary>
-    /// A message serializer using NewtonsoftJson library
+    /// Initializes a new instance of the <see cref="NewtonsoftJsonSerializer"/> class.
     /// </summary>
-    public class NewtonsoftJsonSerializer : ISerializer
+    /// <param name="settings">Json serializer settings</param>
+    public NewtonsoftJsonSerializer(JsonSerializerSettings settings)
     {
-        private const int DefaultBufferSize = 1024;
+        _settings = settings;
+    }
 
-        private static readonly UTF8Encoding s_uTF8NoBom = new(false);
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NewtonsoftJsonSerializer"/> class.
+    /// </summary>
+    public NewtonsoftJsonSerializer()
+        : this(new JsonSerializerSettings())
+    {
+    }
 
-        private readonly JsonSerializerSettings _settings;
+    /// <inheritdoc/>
+    public Task SerializeAsync(object message, Stream output, ISerializerContext context)
+    {
+        using var sw = new StreamWriter(output, s_uTF8NoBom, DefaultBufferSize, true);
+        var serializer = JsonSerializer.CreateDefault(_settings);
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NewtonsoftJsonSerializer"/> class.
-        /// </summary>
-        /// <param name="settings">Json serializer settings</param>
-        public NewtonsoftJsonSerializer(JsonSerializerSettings settings)
-        {
-            _settings = settings;
-        }
+        serializer.Serialize(sw, message);
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NewtonsoftJsonSerializer"/> class.
-        /// </summary>
-        public NewtonsoftJsonSerializer()
-            : this(new JsonSerializerSettings())
-        {
-        }
-
-        /// <inheritdoc/>
-        public Task SerializeAsync(object message, Stream output, ISerializerContext context)
-        {
-            using var sw = new StreamWriter(output, s_uTF8NoBom, DefaultBufferSize, true);
-            var serializer = JsonSerializer.CreateDefault(_settings);
-
-            serializer.Serialize(sw, message);
-
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
     }
 }

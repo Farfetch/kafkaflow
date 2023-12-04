@@ -1,19 +1,18 @@
 ﻿using System;
 
-namespace KafkaFlow
+namespace KafkaFlow;
+
+internal class EventSubscription : IEventSubscription
 {
-    internal class EventSubscription : IEventSubscription
+    private readonly Action _cancelDelegate;
+
+    public EventSubscription(Action cancelDelegate)
     {
-        private readonly Action _cancelDelegate;
+        _cancelDelegate = cancelDelegate;
+    }
 
-        public EventSubscription(Action cancelDelegate)
-        {
-            _cancelDelegate = cancelDelegate;
-        }
-
-        public void Cancel()
-        {
-            _cancelDelegate.Invoke();
-        }
+    public void Cancel()
+    {
+        _cancelDelegate.Invoke();
     }
 }

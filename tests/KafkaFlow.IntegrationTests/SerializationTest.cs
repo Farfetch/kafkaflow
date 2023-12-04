@@ -10,105 +10,104 @@ using KafkaFlow.IntegrationTests.Core.Messages;
 using KafkaFlow.IntegrationTests.Core.Producers;
 using MessageTypes;
 
-namespace KafkaFlow.IntegrationTests
+namespace KafkaFlow.IntegrationTests;
+
+[TestClass]
+public class SerializationTest
 {
-    [TestClass]
-    public class SerializationTest
+    private readonly Fixture _fixture = new();
+
+    private IServiceProvider _provider;
+
+    [TestInitialize]
+    public void Setup()
     {
-        private readonly Fixture _fixture = new();
+        _provider = Bootstrapper.GetServiceProvider();
+        MessageStorage.Clear();
+    }
 
-        private IServiceProvider _provider;
+    [TestMethod]
+    public async Task JsonMessageTest()
+    {
+        // Arrange
+        var producer = _provider.GetRequiredService<IMessageProducer<JsonProducer>>();
+        var messages = _fixture.CreateMany<TestMessage1>(10).ToList();
 
-        [TestInitialize]
-        public void Setup()
+        // Act
+        await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
+
+        // Assert
+        foreach (var message in messages)
         {
-            _provider = Bootstrapper.GetServiceProvider();
-            MessageStorage.Clear();
+            await MessageStorage.AssertMessageAsync(message);
         }
+    }
 
-        [TestMethod]
-        public async Task JsonMessageTest()
+    [TestMethod]
+    public async Task ProtobufMessageTest()
+    {
+        // Arrange
+        var producer = _provider.GetRequiredService<IMessageProducer<ProtobufProducer>>();
+        var messages = _fixture.CreateMany<TestMessage1>(10).ToList();
+
+        // Act
+        await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
+
+        // Assert
+        foreach (var message in messages)
         {
-            // Arrange
-            var producer = _provider.GetRequiredService<IMessageProducer<JsonProducer>>();
-            var messages = _fixture.CreateMany<TestMessage1>(10).ToList();
-
-            // Act
-            await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
-
-            // Assert
-            foreach (var message in messages)
-            {
-                await MessageStorage.AssertMessageAsync(message);
-            }
+            await MessageStorage.AssertMessageAsync(message);
         }
+    }
 
-        [TestMethod]
-        public async Task ProtobufMessageTest()
+    [TestMethod]
+    public async Task AvroMessageTest()
+    {
+        // Arrange
+        var producer = _provider.GetRequiredService<IMessageProducer<AvroProducer>>();
+        var messages = _fixture.CreateMany<LogMessages2>(10).ToList();
+
+        // Act
+        await Task.WhenAll(messages.Select(m => producer.ProduceAsync(Guid.NewGuid().ToString(), m)));
+
+        // Assert
+        foreach (var message in messages)
         {
-            // Arrange
-            var producer = _provider.GetRequiredService<IMessageProducer<ProtobufProducer>>();
-            var messages = _fixture.CreateMany<TestMessage1>(10).ToList();
-
-            // Act
-            await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
-
-            // Assert
-            foreach (var message in messages)
-            {
-                await MessageStorage.AssertMessageAsync(message);
-            }
+            await MessageStorage.AssertMessageAsync(message);
         }
+    }
 
-        [TestMethod]
-        public async Task AvroMessageTest()
+    [TestMethod]
+    public async Task ProtobufSchemaRegistryMessageTest()
+    {
+        // Arrange
+        var producer = _provider.GetRequiredService<IMessageProducer<ConfluentProtobufProducer>>();
+        var messages = _fixture.CreateMany<TestProtoMessage>(10).ToList();
+
+        // Act
+        await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id, m)));
+
+        // Assert
+        foreach (var message in messages)
         {
-            // Arrange
-            var producer = _provider.GetRequiredService<IMessageProducer<AvroProducer>>();
-            var messages = _fixture.CreateMany<LogMessages2>(10).ToList();
-
-            // Act
-            await Task.WhenAll(messages.Select(m => producer.ProduceAsync(Guid.NewGuid().ToString(), m)));
-
-            // Assert
-            foreach (var message in messages)
-            {
-                await MessageStorage.AssertMessageAsync(message);
-            }
+            await MessageStorage.AssertMessageAsync(message);
         }
+    }
 
-        [TestMethod]
-        public async Task ProtobufSchemaRegistryMessageTest()
+    [TestMethod]
+    public async Task JsonSchemaRegistryMessageTest()
+    {
+        // Arrange
+        var producer = _provider.GetRequiredService<IMessageProducer<ConfluentJsonProducer>>();
+        var messages = _fixture.CreateMany<TestMessage3>(10).ToList();
+
+        // Act
+        await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
+
+        // Assert
+        foreach (var message in messages)
         {
-            // Arrange
-            var producer = _provider.GetRequiredService<IMessageProducer<ConfluentProtobufProducer>>();
-            var messages = _fixture.CreateMany<TestProtoMessage>(10).ToList();
-
-            // Act
-            await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id, m)));
-
-            // Assert
-            foreach (var message in messages)
-            {
-                await MessageStorage.AssertMessageAsync(message);
-            }
-        }
-
-        [TestMethod]
-        public async Task JsonSchemaRegistryMessageTest()
-        {
-            // Arrange
-            var producer = _provider.GetRequiredService<IMessageProducer<ConfluentJsonProducer>>();
-            var messages = _fixture.CreateMany<TestMessage3>(10).ToList();
-
-            // Act
-            await Task.WhenAll(messages.Select(m => producer.ProduceAsync(m.Id.ToString(), m)));
-
-            // Assert
-            foreach (var message in messages)
-            {
-                await MessageStorage.AssertMessageAsync(message);
-            }
+            await MessageStorage.AssertMessageAsync(message);
         }
     }
 }

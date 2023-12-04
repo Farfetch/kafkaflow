@@ -4,36 +4,35 @@ using System.Threading.Tasks;
 using Confluent.SchemaRegistry.Serdes;
 using NJsonSchema.Generation;
 
-namespace KafkaFlow.Serializer.SchemaRegistry
+namespace KafkaFlow.Serializer.SchemaRegistry;
+
+/// <summary>
+/// A json message serializer integrated with the confluent schema registry
+/// </summary>
+public class ConfluentJsonDeserializer : IDeserializer
 {
+    private readonly JsonSchemaGeneratorSettings _schemaGeneratorSettings;
+
     /// <summary>
-    /// A json message serializer integrated with the confluent schema registry
+    /// Initializes a new instance of the <see cref="ConfluentJsonDeserializer"/> class.
     /// </summary>
-    public class ConfluentJsonDeserializer : IDeserializer
+    /// <param name="schemaGeneratorSettings">An instance of <see cref="JsonSchemaGeneratorSettings"/></param>
+    public ConfluentJsonDeserializer(JsonSchemaGeneratorSettings schemaGeneratorSettings = null)
     {
-        private readonly JsonSchemaGeneratorSettings _schemaGeneratorSettings;
+        _schemaGeneratorSettings = schemaGeneratorSettings;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ConfluentJsonDeserializer"/> class.
-        /// </summary>
-        /// <param name="schemaGeneratorSettings">An instance of <see cref="JsonSchemaGeneratorSettings"/></param>
-        public ConfluentJsonDeserializer(JsonSchemaGeneratorSettings schemaGeneratorSettings = null)
-        {
-            _schemaGeneratorSettings = schemaGeneratorSettings;
-        }
-
-        /// <inheritdoc/>
-        public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
-        {
-            return ConfluentDeserializerWrapper
-                .GetOrCreateDeserializer(
-                    type,
-                    () => Activator
-                        .CreateInstance(
-                            typeof(JsonDeserializer<>).MakeGenericType(type),
-                            null,
-                            _schemaGeneratorSettings))
-                .DeserializeAsync(input, context);
-        }
+    /// <inheritdoc/>
+    public Task<object> DeserializeAsync(Stream input, Type type, ISerializerContext context)
+    {
+        return ConfluentDeserializerWrapper
+            .GetOrCreateDeserializer(
+                type,
+                () => Activator
+                    .CreateInstance(
+                        typeof(JsonDeserializer<>).MakeGenericType(type),
+                        null,
+                        _schemaGeneratorSettings))
+            .DeserializeAsync(input, context);
     }
 }

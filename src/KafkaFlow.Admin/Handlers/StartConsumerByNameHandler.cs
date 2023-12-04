@@ -2,19 +2,18 @@ using System.Threading.Tasks;
 using KafkaFlow.Admin.Messages;
 using KafkaFlow.Consumers;
 
-namespace KafkaFlow.Admin.Handlers
+namespace KafkaFlow.Admin.Handlers;
+
+internal class StartConsumerByNameHandler : IMessageHandler<StartConsumerByName>
 {
-    internal class StartConsumerByNameHandler : IMessageHandler<StartConsumerByName>
+    private readonly IConsumerAccessor _consumerAccessor;
+
+    public StartConsumerByNameHandler(IConsumerAccessor consumerAccessor) => _consumerAccessor = consumerAccessor;
+
+    public async Task Handle(IMessageContext context, StartConsumerByName message)
     {
-        private readonly IConsumerAccessor _consumerAccessor;
+        var consumer = _consumerAccessor[message.ConsumerName];
 
-        public StartConsumerByNameHandler(IConsumerAccessor consumerAccessor) => _consumerAccessor = consumerAccessor;
-
-        public async Task Handle(IMessageContext context, StartConsumerByName message)
-        {
-            var consumer = _consumerAccessor[message.ConsumerName];
-
-            await consumer.StartAsync();
-        }
+        await consumer.StartAsync();
     }
 }

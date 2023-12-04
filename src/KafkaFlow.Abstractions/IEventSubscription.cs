@@ -1,13 +1,12 @@
-﻿namespace KafkaFlow
+﻿namespace KafkaFlow;
+
+/// <summary>
+/// Represents an Event subscription.
+/// </summary>
+public interface IEventSubscription
 {
     /// <summary>
-    /// Represents an Event subscription.
+    /// Cancels the subscription to the event.
     /// </summary>
-    public interface IEventSubscription
-    {
-        /// <summary>
-        /// Cancels the subscription to the event.
-        /// </summary>
-        void Cancel();
-    }
+    void Cancel();
 }
