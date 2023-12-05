@@ -12,8 +12,4 @@
         <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0" />
-    </ItemGroup>
-
 </Project>

@@ -9,7 +9,6 @@
 
     <ItemGroup>
         <PackageReference Include="Confluent.SchemaRegistry" Version="2.1.1" />
-        <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
     </ItemGroup>
 
     <ItemGroup>

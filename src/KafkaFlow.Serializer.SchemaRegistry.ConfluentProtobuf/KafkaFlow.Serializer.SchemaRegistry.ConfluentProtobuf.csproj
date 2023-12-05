@@ -8,8 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Confluent.Kafka" Version="2.1.1" />
-        <PackageReference Include="Confluent.SchemaRegistry" Version="2.1.1" />
         <PackageReference Include="Confluent.SchemaRegistry.Serdes.Protobuf" Version="1.9.3" />
     </ItemGroup>
 
