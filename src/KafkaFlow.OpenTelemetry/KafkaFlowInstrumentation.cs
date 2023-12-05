@@ -1,7 +1,7 @@
-﻿namespace KafkaFlow.OpenTelemetry
-{
-    using System.Reflection;
+﻿using System.Reflection;
 
+namespace KafkaFlow.OpenTelemetry
+{
     /// <summary>
     /// KafkaFlow OTEL instrumentation properties
     /// </summary>

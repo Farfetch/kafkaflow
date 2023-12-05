@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\KafkaFlow.Admin.Dashboard\KafkaFlow.Admin.Dashboard.csproj" />
-    <ProjectReference Include="..\..\src\KafkaFlow.Admin.WebApi\KafkaFlow.Admin.WebApi.csproj" />
     <ProjectReference Include="..\..\src\KafkaFlow.Admin\KafkaFlow.Admin.csproj" />
     <ProjectReference Include="..\..\src\KafkaFlow.Extensions.Hosting\KafkaFlow.Extensions.Hosting.csproj" />
     <ProjectReference Include="..\..\src\KafkaFlow.LogHandler.Console\KafkaFlow.LogHandler.Console.csproj" />
