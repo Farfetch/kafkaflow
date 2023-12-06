@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
-using global::Unity;
-using global::Unity.Lifetime;
+using Unity;
+using Unity.Lifetime;
 
 namespace KafkaFlow.Unity
 {
@@ -67,7 +67,7 @@ namespace KafkaFlow.Unity
         {
             string name = null;
 
-            if (this.AlreadyRegistered(serviceType))
+            if (AlreadyRegistered(serviceType))
             {
                 name = Guid.NewGuid().ToString();
             }
@@ -81,6 +81,12 @@ namespace KafkaFlow.Unity
             return this;
         }
 
+        /// <inheritdoc />
+        public bool AlreadyRegistered(Type registeredType)
+        {
+            return _container.Registrations.Any(x => x.RegisteredType == registeredType);
+        }
+
         private static object ParseLifetime(InstanceLifetime lifetime) =>
             lifetime switch
             {
@@ -89,10 +95,5 @@ namespace KafkaFlow.Unity
                 InstanceLifetime.Transient => new TransientLifetimeManager(),
                 _ => throw new InvalidCastException($"There is not mapping defined to {lifetime}")
             };
-
-        private bool AlreadyRegistered(Type registeredType)
-        {
-            return _container.Registrations.Any(x => x.RegisteredType == registeredType);
-        }
     }
 }

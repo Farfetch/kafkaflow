@@ -4,9 +4,9 @@ using Confluent.SchemaRegistry;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 
-namespace KafkaFlow
+namespace KafkaFlow.Serializer.SchemaRegistry
 {
-    internal class ConfluentProtobufTypeNameResolver : ISchemaRegistryTypeNameResolver
+    internal class ConfluentProtobufTypeNameResolver : IConfluentProtobufTypeNameResolver
     {
         private readonly ISchemaRegistryClient _client;
 
@@ -21,7 +21,18 @@ namespace KafkaFlow
 
             var protoFields = FileDescriptorProto.Parser.ParseFrom(ByteString.FromBase64(schemaString));
 
-            return $"{protoFields.Package}.{protoFields.MessageType.FirstOrDefault()?.Name}";
+            return BuildTypeName(protoFields);
+        }
+
+        private static string BuildTypeName(FileDescriptorProto protoFields)
+        {
+            var package = protoFields.Package;
+            if (string.IsNullOrEmpty(package))
+            {
+                package = protoFields.Options.CsharpNamespace;
+            }
+
+            return $"{package}.{protoFields.MessageType.FirstOrDefault()?.Name}";
         }
     }
 }

@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using Confluent.SchemaRegistry;
-
 using FluentAssertions;
-
 using Google.Protobuf;
+using Google.Protobuf.Reflection;
+using KafkaFlow.Serializer.SchemaRegistry;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -13,36 +13,63 @@ namespace KafkaFlow.UnitTests.Middlewares.Serialization
     [TestClass]
     public class ConfluentProtobufTypeNameResolverTests
     {
-        private readonly Mock<ISchemaRegistryClient> _schemaRegistryClient;
-        private readonly ConfluentProtobufTypeNameResolver _schemaRegistryTypeResolver;
+        private const string MessageTypeName = "TestMessage";
 
-        public ConfluentProtobufTypeNameResolverTests()
+        [TestMethod]
+        public async Task ResolveAsync_WithPackage_ReturnTypeName()
         {
-            _schemaRegistryClient = new Mock<ISchemaRegistryClient>();
-            _schemaRegistryTypeResolver = new ConfluentProtobufTypeNameResolver(_schemaRegistryClient.Object);
+            // Arrange
+            var schemaRegistryClientMock = CreateSchemaRegistryClientMock(p => p.Package = "TestPackage");
+            var resolver = new ConfluentProtobufTypeNameResolver(schemaRegistryClientMock.Object);
+
+            // Act
+            var typeName = await resolver.ResolveAsync(1);
+
+            // Assert
+            typeName.Should().Be($"TestPackage.{MessageTypeName}");
         }
 
         [TestMethod]
-        public async Task ResolveAsync_ValidProtobufObject_ReturnsProtoFields()
+        public async Task ResolveAsync_NoPackageWithCsharpNamespace_ReturnTypeName()
         {
             // Arrange
-            var schemaId = 420;
-
-            var dummyProtobufObj = new DummyProtobufObject
+            var schemaRegistryClientMock = CreateSchemaRegistryClientMock(p =>
             {
-                Field1 = "Field1",
-                Field2 = 8,
-            };
-            var base64Encoded = Convert.ToBase64String(dummyProtobufObj.ToByteArray());
-
-            _schemaRegistryClient.Setup(client => client.GetSchemaAsync(schemaId, "serialized"))
-                .ReturnsAsync(new Schema(base64Encoded, SchemaType.Protobuf));
+                p.Package = string.Empty;
+                p.Options.CsharpNamespace = "TestCsharpNamespace";
+            });
+            var resolver = new ConfluentProtobufTypeNameResolver(schemaRegistryClientMock.Object);
 
             // Act
-            var protoFields = await _schemaRegistryTypeResolver.ResolveAsync(schemaId);
+            var typeName = await resolver.ResolveAsync(1);
 
             // Assert
-            protoFields.Should().NotBeNull();
+            typeName.Should().Be($"TestCsharpNamespace.{MessageTypeName}");
+        }
+
+        private static Mock<ISchemaRegistryClient> CreateSchemaRegistryClientMock(Action<FileDescriptorProto> configure)
+        {
+            var protoFields = new FileDescriptorProto
+            {
+                MessageType =
+                {
+                    new DescriptorProto
+                    {
+                        Name = MessageTypeName,
+                    },
+                },
+                Options = new FileOptions(),
+            };
+            configure(protoFields);
+
+            var schema = new Schema(protoFields.ToByteString().ToBase64(), SchemaType.Protobuf);
+
+            var schemaRegistryClientMock = new Mock<ISchemaRegistryClient>();
+            schemaRegistryClientMock
+                .Setup(o => o.GetSchemaAsync(1, "serialized"))
+                .ReturnsAsync(schema);
+
+            return schemaRegistryClientMock;
         }
     }
 }

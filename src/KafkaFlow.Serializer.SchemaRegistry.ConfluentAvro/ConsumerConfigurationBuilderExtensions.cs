@@ -1,5 +1,4 @@
-﻿using Confluent.SchemaRegistry;
-using KafkaFlow.Configuration;
+﻿using KafkaFlow.Configuration;
 using KafkaFlow.Middlewares.Serializer;
 using KafkaFlow.Serializer.SchemaRegistry;
 
@@ -18,10 +17,12 @@ namespace KafkaFlow
         public static IConsumerMiddlewareConfigurationBuilder AddSchemaRegistryAvroDeserializer(
             this IConsumerMiddlewareConfigurationBuilder middlewares)
         {
+            middlewares.DependencyConfigurator.TryAddTransient<IConfluentAvroTypeNameResolver, ConfluentAvroTypeNameResolver>();
+
             return middlewares.Add(
                 resolver => new DeserializerConsumerMiddleware(
                     new ConfluentAvroDeserializer(resolver),
-                    new SchemaRegistryTypeResolver(new ConfluentAvroTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>()))));
+                    new SchemaRegistryTypeResolver(resolver.Resolve<IConfluentAvroTypeNameResolver>())));
         }
     }
 }

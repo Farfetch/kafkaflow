@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace KafkaFlow.Serializer.SchemaRegistry
 {
-    internal class ConfluentAvroTypeNameResolver : ISchemaRegistryTypeNameResolver
+    internal sealed class ConfluentAvroTypeNameResolver : IConfluentAvroTypeNameResolver
     {
         private readonly ISchemaRegistryClient _client;
 

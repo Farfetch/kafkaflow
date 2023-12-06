@@ -54,5 +54,12 @@ namespace KafkaFlow
             Type serviceType,
             Func<IDependencyResolver, TImplementation> factory,
             InstanceLifetime lifetime);
+
+        /// <summary>
+        /// Checks if the given <paramref name="registeredType" /> is already registered
+        /// </summary>
+        /// <param name="registeredType">Service type</param>
+        /// <returns></returns>
+        bool AlreadyRegistered(Type registeredType);
     }
 }
