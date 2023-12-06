@@ -4,7 +4,6 @@ using KafkaFlow.Configuration;
 using KafkaFlow.OpenTelemetry;
 using KafkaFlow.Producers;
 using KafkaFlow.Serializer;
-using KafkaFlow.TypedHandler;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry;
 using OpenTelemetry.Resources;
@@ -55,7 +54,7 @@ public class Program
                                 .WithWorkersCount(3)
                                 .AddMiddlewares(
                                     middlewares => middlewares
-                                        .AddSerializer<ProtobufNetSerializer>()
+                                        .AddDeserializer<ProtobufNetDeserializer>()
                                         .AddTypedHandlers(h => h.AddHandler<PrintConsoleHandler>())
                                 )
                         )

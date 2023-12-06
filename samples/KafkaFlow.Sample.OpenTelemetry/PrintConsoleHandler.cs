@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using KafkaFlow.TypedHandler;
 
 namespace KafkaFlow.Sample.OpenTelemetry;
 

@@ -33,5 +33,5 @@ When using [.NET automatic instrumentation](https://github.com/open-telemetry/op
 
 ## Propagation
 
-KafkaFlow supports [Propagation](https://opentelemetry.io/docs/specs/otel/context/api-propagators/), the mechanism that moves context information data between services and processes.
+KafkaFlow uses [Propagation](https://opentelemetry.io/docs/specs/otel/context/api-propagators/), the mechanism that moves context information data between services and processes.
 When a message is produced using a KafkaFlow producer and consumed by a KafkaFlow consumer, the context will automatically be propagated.
