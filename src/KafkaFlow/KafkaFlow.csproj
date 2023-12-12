@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="Confluent.Kafka" Version="2.1.1" />
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
         <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
         <PackageReference Include="System.Threading.Channels" Version="6.0.0" />
     </ItemGroup>

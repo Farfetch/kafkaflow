@@ -12,7 +12,7 @@ internal interface IConsumerWorker : IWorker, IDisposable
 
     ValueTask EnqueueAsync(IMessageContext context);
 
-    Task StartAsync();
+    Task StartAsync(CancellationToken stopCancellationToken);
 
     Task StopAsync();
 }

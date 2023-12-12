@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Confluent.Kafka;
 using KafkaFlow.Consumers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -15,7 +16,7 @@ public class OffsetCommitterTests
 
     private Mock<IConsumer> _consumerMock;
 
-    private Confluent.Kafka.TopicPartition _topicPartition;
+    private TopicPartition _topicPartition;
 
     private OffsetCommitter _offsetCommitter;
 
@@ -23,7 +24,7 @@ public class OffsetCommitterTests
     public async Task Setup()
     {
         _consumerMock = new Mock<IConsumer>();
-        _topicPartition = new Confluent.Kafka.TopicPartition("topic-A", new Confluent.Kafka.Partition(1));
+        _topicPartition = new TopicPartition("topic-A", new Partition(1));
 
         _consumerMock
             .Setup(c => c.Configuration.AutoCommitInterval)
@@ -47,7 +48,7 @@ public class OffsetCommitterTests
     public async Task MarkAsProcessed_ShouldCommit()
     {
         // Arrange
-        var expectedOffsets = new[] { new Confluent.Kafka.TopicPartitionOffset(_topicPartition, new Confluent.Kafka.Offset(2)) };
+        var expectedOffsets = new[] { new Confluent.Kafka.TopicPartitionOffset(_topicPartition, new Offset(2)) };
 
         var ready = new TaskCompletionSource().WithTimeout(TestTimeout);
 
@@ -57,7 +58,7 @@ public class OffsetCommitterTests
 
         // Act
         _offsetCommitter.MarkAsProcessed(
-            new KafkaFlow.TopicPartitionOffset(
+            new TopicPartitionOffset(
                 _topicPartition.Topic,
                 _topicPartition.Partition,
                 1));
@@ -85,7 +86,7 @@ public class OffsetCommitterTests
 
         // Act
         committer.MarkAsProcessed(
-            new KafkaFlow.TopicPartitionOffset(
+            new TopicPartitionOffset(
                 _topicPartition.Topic,
                 _topicPartition.Partition,
                 1));
@@ -101,7 +102,7 @@ public class OffsetCommitterTests
     public async Task MarkAsProcessed_WithFailure_ShouldRequeueFailedOffsetAndCommit()
     {
         // Arrange
-        var expectedOffsets = new[] { new Confluent.Kafka.TopicPartitionOffset(_topicPartition, new Confluent.Kafka.Offset(2)) };
+        var expectedOffsets = new[] { new Confluent.Kafka.TopicPartitionOffset(_topicPartition, new Offset(2)) };
 
         var ready = new TaskCompletionSource().WithTimeout(TestTimeout);
         var hasThrown = false;
@@ -114,7 +115,7 @@ public class OffsetCommitterTests
                     if (!hasThrown)
                     {
                         hasThrown = true;
-                        throw new InvalidOperationException();
+                        throw new KafkaException(ErrorCode.Unknown);
                     }
 
                     ready.TrySetResult();
@@ -122,7 +123,7 @@ public class OffsetCommitterTests
 
         // Act
         _offsetCommitter.MarkAsProcessed(
-            new KafkaFlow.TopicPartitionOffset(
+            new TopicPartitionOffset(
                 _topicPartition.Topic,
                 _topicPartition.Partition,
                 1));

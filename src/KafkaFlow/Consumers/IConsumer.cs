@@ -39,6 +39,11 @@ public interface IConsumer : IDisposable
     ConsumerStatus Status { get; }
 
     /// <summary>
+    /// Gets the event for subscribing to notifications when the consumer's maximum polling interval is exceeded.
+    /// </summary>
+    IEvent MaxPollIntervalExceeded { get; }
+
+    /// <summary>
     /// Gets the lag of each topic/partitions assigned
     /// </summary>
     /// <returns>The list of topic, partition and lag</returns>
@@ -48,13 +53,21 @@ public interface IConsumer : IDisposable
     /// Register a handler to be executed when the partitions are assigned
     /// </summary>
     /// <param name="handler">The handler that will be executed</param>
-    void OnPartitionsAssigned(Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartition>> handler);
+    void OnPartitionsAssigned(
+        Action<
+            IDependencyResolver,
+            Confluent.Kafka.IConsumer<byte[], byte[]>,
+            List<Confluent.Kafka.TopicPartition>> handler);
 
     /// <summary>
     /// Register a handler to be executed when the partitions are revoked
     /// </summary>
     /// <param name="handler">The handler that will be executed</param>
-    void OnPartitionsRevoked(Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartitionOffset>> handler);
+    void OnPartitionsRevoked(
+        Action<
+            IDependencyResolver,
+            Confluent.Kafka.IConsumer<byte[], byte[]>,
+            List<Confluent.Kafka.TopicPartitionOffset>> handler);
 
     /// <summary>
     /// Register a handler to be executed when an error occurs
