@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using KafkaFlow.Configuration;
+using KafkaFlow.Extensions;
 
 namespace KafkaFlow.Consumers;
 
@@ -22,6 +23,7 @@ internal class ConsumerWorkerPool : IConsumerWorkerPool
     private TaskCompletionSource<object> _startedTaskSource = new();
     private List<IConsumerWorker> _workers = new();
 
+    private CancellationTokenSource _stopCancellationTokenSource;
     private IWorkerDistributionStrategy _distributionStrategy;
     private IOffsetManager _offsetManager;
 
@@ -65,24 +67,34 @@ internal class ConsumerWorkerPool : IConsumerWorkerPool
 
             this.CurrentWorkersCount = workersCount;
 
+            _stopCancellationTokenSource = new CancellationTokenSource();
+
+            var subscription = _consumer.MaxPollIntervalExceeded.Subscribe(
+                () =>
+                {
+                    _stopCancellationTokenSource.Cancel();
+                    return Task.CompletedTask;
+                });
+
+            _stopCancellationTokenSource.Token.Register(() => subscription.Cancel());
+
             await Task.WhenAll(
-                    Enumerable
-                        .Range(0, this.CurrentWorkersCount)
-                        .Select(
-                            workerId =>
-                            {
-                                var worker = new ConsumerWorker(
-                                    _consumer,
-                                    _consumerDependencyResolver,
-                                    workerId,
-                                    _middlewareExecutor,
-                                    _logHandler);
+                Enumerable
+                    .Range(0, this.CurrentWorkersCount)
+                    .Select(
+                        workerId =>
+                        {
+                            var worker = new ConsumerWorker(
+                                _consumer,
+                                _consumerDependencyResolver,
+                                workerId,
+                                _middlewareExecutor,
+                                _logHandler);
 
-                                _workers.Add(worker);
+                            _workers.Add(worker);
 
-                                return worker.StartAsync();
-                            }))
-                .ConfigureAwait(false);
+                            return worker.StartAsync(_stopCancellationTokenSource.Token);
+                        }));
 
             _distributionStrategy = _distributionStrategyFactory(_consumerDependencyResolver);
             _distributionStrategy.Initialize(_workers.AsReadOnly());
@@ -112,11 +124,18 @@ internal class ConsumerWorkerPool : IConsumerWorkerPool
         _workers = new List<IConsumerWorker>();
         _startedTaskSource = new();
 
-        await Task.WhenAll(currentWorkers.Select(x => x.StopAsync())).ConfigureAwait(false);
+        if (_stopCancellationTokenSource.Token.CanBeCanceled)
+        {
+            _stopCancellationTokenSource.CancelAfter(_consumer.Configuration.WorkerStopTimeout);
+        }
 
-        await _offsetManager.WaitContextsCompletionAsync();
+        await Task.WhenAll(currentWorkers.Select(x => x.StopAsync()));
+        await _offsetManager
+            .WaitContextsCompletionAsync()
+            .WithCancellation(_stopCancellationTokenSource.Token, false);
 
         currentWorkers.ForEach(worker => worker.Dispose());
+        _stopCancellationTokenSource?.Dispose();
 
         _offsetManager = null;
 

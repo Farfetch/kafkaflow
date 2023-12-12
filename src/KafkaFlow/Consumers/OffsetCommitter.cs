@@ -1,9 +1,9 @@
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Confluent.Kafka;
 using KafkaFlow.Configuration;
 
 namespace KafkaFlow.Consumers;
@@ -114,11 +114,17 @@ internal class OffsetCommitter : IOffsetCommitter
                     this.LogOffsetsCommitted(offsets.Values);
                 }
             }
-            catch (Exception e)
+            catch (KafkaException ex) when (ex.Error.Code == ErrorCode.UnknownMemberId)
+            {
+                _logHandler.Warning(
+                    "Failed to commit offset: consumer has left the group",
+                    new { ErrorMessage = ex.Message });
+            }
+            catch (KafkaException ex)
             {
                 _logHandler.Warning(
                     "Error Commiting Offsets",
-                    new { ErrorMessage = e.Message });
+                    new { ErrorMessage = ex.Message });
 
                 if (offsets is not null)
                 {

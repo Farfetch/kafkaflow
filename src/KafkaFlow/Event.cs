@@ -20,36 +20,53 @@ internal class Event<TArg> : IEvent<TArg>
     {
         if (handler is null)
         {
-            throw new ArgumentNullException("Handler cannot be null");
+            throw new ArgumentNullException(nameof(handler));
         }
 
-        if (!_handlers.Contains(handler))
+        lock (_handlers)
         {
-            _handlers.Add(handler);
+            if (!_handlers.Contains(handler))
+            {
+                _handlers.Add(handler);
+            }
         }
 
-        return new EventSubscription(() => _handlers.Remove(handler));
+        return new EventSubscription(
+            () =>
+            {
+                lock (_handlers)
+                {
+                    _handlers.Remove(handler);
+                }
+            });
     }
 
     internal Task FireAsync(TArg arg)
     {
-        var tasks = _handlers
-            .Select(handler => this.ProcessHandler(handler, arg));
+        List<Func<TArg, Task>> localHandlers;
 
-        return Task.WhenAll(tasks);
+        lock (_handlers)
+        {
+            localHandlers = _handlers.ToList();
+        }
+
+        return Task.WhenAll(localHandlers.Select(handler => this.ProcessHandler(handler, arg)));
     }
 
     private Task ProcessHandler(Func<TArg, Task> handler, TArg arg)
     {
         try
         {
-            return handler.Invoke(arg).ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                {
-                    this.LogHandlerOnError(t.Exception);
-                }
-            });
+            return handler
+                .Invoke(arg)
+                .ContinueWith(
+                    t =>
+                    {
+                        if (t.IsFaulted)
+                        {
+                            this.LogHandlerOnError(t.Exception);
+                        }
+                    });
         }
         catch (Exception ex)
         {

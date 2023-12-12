@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Confluent.Kafka;
 using KafkaFlow.Configuration;
 
 namespace KafkaFlow.Consumers;
@@ -13,18 +14,20 @@ internal class Consumer : IConsumer
     private readonly IDependencyResolver _dependencyResolver;
     private readonly ILogHandler _logHandler;
 
-    private readonly List<Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartition>>>
+    private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>>>
         _partitionsAssignedHandlers = new();
 
-    private readonly List<Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartitionOffset>>>
+    private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>,
+            List<Confluent.Kafka.TopicPartitionOffset>>>
         _partitionsRevokedHandlers = new();
 
-    private readonly List<Action<Confluent.Kafka.IConsumer<byte[], byte[]>, Confluent.Kafka.Error>> _errorsHandlers = new();
-    private readonly List<Action<Confluent.Kafka.IConsumer<byte[], byte[]>, string>> _statisticsHandlers = new();
-    private readonly ConcurrentDictionary<Confluent.Kafka.TopicPartition, long> _currentPartitionsOffsets = new();
+    private readonly List<Action<IConsumer<byte[], byte[]>, Error>> _errorsHandlers = new();
+    private readonly List<Action<IConsumer<byte[], byte[]>, string>> _statisticsHandlers = new();
+    private readonly ConcurrentDictionary<TopicPartition, long> _currentPartitionsOffsets = new();
     private readonly ConsumerFlowManager _flowManager;
+    private readonly Event _maxPollIntervalExceeded;
 
-    private Confluent.Kafka.IConsumer<byte[], byte[]> _consumer;
+    private IConsumer<byte[], byte[]> _consumer;
 
     public Consumer(
         IConsumerConfiguration configuration,
@@ -34,9 +37,8 @@ internal class Consumer : IConsumer
         _dependencyResolver = dependencyResolver;
         _logHandler = logHandler;
         this.Configuration = configuration;
-        _flowManager = new ConsumerFlowManager(
-            this,
-            _logHandler);
+        _flowManager = new ConsumerFlowManager(this, _logHandler);
+        _maxPollIntervalExceeded = new(_logHandler);
 
         foreach (var handler in this.Configuration.StatisticsHandlers)
         {
@@ -65,13 +67,15 @@ internal class Consumer : IConsumer
 
     public IReadOnlyList<string> Subscription { get; private set; } = new List<string>();
 
-    public IReadOnlyList<Confluent.Kafka.TopicPartition> Assignment { get; private set; } = new List<Confluent.Kafka.TopicPartition>();
+    public IReadOnlyList<TopicPartition> Assignment { get; private set; } = new List<TopicPartition>();
 
     public IConsumerFlowManager FlowManager => _flowManager;
 
     public string MemberId => _consumer?.MemberId;
 
     public string ClientInstanceName => _consumer?.Name;
+
+    public IEvent MaxPollIntervalExceeded => _maxPollIntervalExceeded;
 
     public ConsumerStatus Status
     {
@@ -93,29 +97,30 @@ internal class Consumer : IConsumer
         }
     }
 
-    public void OnPartitionsAssigned(Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartition>> handler) =>
+    public void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler) =>
         _partitionsAssignedHandlers.Add(handler);
 
-    public void OnPartitionsRevoked(Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartitionOffset>> handler) =>
+    public void OnPartitionsRevoked(
+        Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartitionOffset>> handler) =>
         _partitionsRevokedHandlers.Add(handler);
 
-    public void OnError(Action<Confluent.Kafka.IConsumer<byte[], byte[]>, Confluent.Kafka.Error> handler) =>
+    public void OnError(Action<IConsumer<byte[], byte[]>, Error> handler) =>
         _errorsHandlers.Add(handler);
 
-    public void OnStatistics(Action<Confluent.Kafka.IConsumer<byte[], byte[]>, string> handler) =>
+    public void OnStatistics(Action<IConsumer<byte[], byte[]>, string> handler) =>
         _statisticsHandlers.Add(handler);
 
-    public Confluent.Kafka.Offset GetPosition(Confluent.Kafka.TopicPartition topicPartition) =>
+    public Offset GetPosition(TopicPartition topicPartition) =>
         _consumer.Position(topicPartition);
 
-    public Confluent.Kafka.WatermarkOffsets GetWatermarkOffsets(Confluent.Kafka.TopicPartition topicPartition) =>
+    public WatermarkOffsets GetWatermarkOffsets(TopicPartition topicPartition) =>
         _consumer.GetWatermarkOffsets(topicPartition);
 
-    public Confluent.Kafka.WatermarkOffsets QueryWatermarkOffsets(Confluent.Kafka.TopicPartition topicPartition, TimeSpan timeout) =>
+    public WatermarkOffsets QueryWatermarkOffsets(TopicPartition topicPartition, TimeSpan timeout) =>
         _consumer.QueryWatermarkOffsets(topicPartition, timeout);
 
     public List<Confluent.Kafka.TopicPartitionOffset> OffsetsForTimes(
-        IEnumerable<Confluent.Kafka.TopicPartitionTimestamp> topicPartitions,
+        IEnumerable<TopicPartitionTimestamp> topicPartitions,
         TimeSpan timeout) =>
         _consumer.OffsetsForTimes(topicPartitions, timeout);
 
@@ -150,7 +155,7 @@ internal class Consumer : IConsumer
         }
     }
 
-    public async ValueTask<Confluent.Kafka.ConsumeResult<byte[], byte[]>> ConsumeAsync(CancellationToken cancellationToken)
+    public async ValueTask<ConsumeResult<byte[], byte[]>> ConsumeAsync(CancellationToken cancellationToken)
     {
         while (true)
         {
@@ -164,7 +169,15 @@ internal class Consumer : IConsumer
             {
                 throw;
             }
-            catch (Confluent.Kafka.KafkaException ex) when (ex.Error.IsFatal)
+            catch (ConsumeException ex) when (ex.Error.Code == ErrorCode.Local_MaxPollExceeded)
+            {
+                _logHandler.Warning(
+                    "Max Poll Interval Exceeded",
+                    new { this.Configuration.ConsumerName });
+
+                await _maxPollIntervalExceeded.FireAsync();
+            }
+            catch (KafkaException ex) when (ex.Error.IsFatal)
             {
                 _logHandler.Error(
                     "Kafka Consumer fatal error occurred. Recreating consumer in 5 seconds",
@@ -173,7 +186,7 @@ internal class Consumer : IConsumer
 
                 this.InvalidateConsumer();
 
-                await Task.Delay(5000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(5000, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -222,7 +235,7 @@ internal class Consumer : IConsumer
 
         var kafkaConfig = this.Configuration.GetKafkaConfig();
 
-        var consumerBuilder = new Confluent.Kafka.ConsumerBuilder<byte[], byte[]>(kafkaConfig);
+        var consumerBuilder = new ConsumerBuilder<byte[], byte[]>(kafkaConfig);
 
         _consumer =
             consumerBuilder
@@ -231,7 +244,7 @@ internal class Consumer : IConsumer
                 .SetPartitionsRevokedHandler(
                     (consumer, partitions) =>
                     {
-                        this.Assignment = new List<Confluent.Kafka.TopicPartition>();
+                        this.Assignment = new List<TopicPartition>();
                         this.Subscription = new List<string>();
                         _currentPartitionsOffsets.Clear();
                         _flowManager.Stop();
@@ -256,14 +269,18 @@ internal class Consumer : IConsumer
     private void ManualAssign(IEnumerable<TopicPartitions> topics)
     {
         var partitions = topics
-            .SelectMany(topic => topic.Partitions.Select(partition => new Confluent.Kafka.TopicPartition(topic.Name, new Confluent.Kafka.Partition(partition))))
+            .SelectMany(
+                topic => topic.Partitions.Select(
+                    partition => new TopicPartition(topic.Name, new Partition(partition))))
             .ToList();
 
         _consumer.Assign(partitions);
         this.FirePartitionsAssignedHandlers(_consumer, partitions);
     }
 
-    private void FirePartitionsAssignedHandlers(Confluent.Kafka.IConsumer<byte[], byte[]> consumer, List<Confluent.Kafka.TopicPartition> partitions)
+    private void FirePartitionsAssignedHandlers(
+        IConsumer<byte[], byte[]> consumer,
+        List<TopicPartition> partitions)
     {
         this.Assignment = partitions;
         this.Subscription = consumer.Subscription;

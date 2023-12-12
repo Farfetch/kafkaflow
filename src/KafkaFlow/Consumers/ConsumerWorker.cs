@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using KafkaFlow.Extensions;
 
 namespace KafkaFlow.Consumers;
 
@@ -19,7 +20,6 @@ internal class ConsumerWorker : IConsumerWorker
     private readonly Event _workerStoppedEvent;
     private readonly Event<IMessageContext> _workerProcessingEnded;
 
-    private CancellationTokenSource _stopCancellationTokenSource;
     private Task _backgroundTask;
 
     public ConsumerWorker(
@@ -49,7 +49,7 @@ internal class ConsumerWorker : IConsumerWorker
 
     public int Id { get; }
 
-    public CancellationToken StopCancellationToken => _stopCancellationTokenSource?.Token ?? default;
+    public CancellationToken StopCancellationToken { get; private set; }
 
     public IDependencyResolver WorkerDependencyResolver => _workerDependencyResolverScope.Resolver;
 
@@ -64,29 +64,30 @@ internal class ConsumerWorker : IConsumerWorker
         return _messagesBuffer.Writer.WriteAsync(context, CancellationToken.None);
     }
 
-    public Task StartAsync()
+    public Task StartAsync(CancellationToken stopCancellationToken)
     {
-        _stopCancellationTokenSource = new CancellationTokenSource();
+        this.StopCancellationToken = stopCancellationToken;
 
         _backgroundTask = Task.Run(
             async () =>
             {
+                IMessageContext currentContext = null;
+
                 try
                 {
-                    try
+                    await foreach (var context in _messagesBuffer.Reader.ReadAllItemsAsync(stopCancellationToken))
                     {
-                        while (await _messagesBuffer.Reader.WaitToReadAsync(CancellationToken.None).ConfigureAwait(false))
-                        {
-                            while (_messagesBuffer.Reader.TryRead(out var message))
-                            {
-                                await this.ProcessMessageAsync(message, _stopCancellationTokenSource.Token).ConfigureAwait(false);
-                            }
-                        }
+                        currentContext = context;
+
+                        await this
+                            .ProcessMessageAsync(context, stopCancellationToken)
+                            .WithCancellation(stopCancellationToken, true);
                     }
-                    catch (OperationCanceledException)
-                    {
-                        // Ignores the exception
-                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    currentContext?.ConsumerContext.Discard();
+                    await this.DiscardBufferedContextsAsync();
                 }
                 catch (Exception ex)
                 {
@@ -104,12 +105,7 @@ internal class ConsumerWorker : IConsumerWorker
 
         _messagesBuffer.Writer.TryComplete();
 
-        if (_stopCancellationTokenSource.Token.CanBeCanceled)
-        {
-            _stopCancellationTokenSource.CancelAfter(_consumer.Configuration.WorkerStopTimeout);
-        }
-
-        await _backgroundTask.ConfigureAwait(false);
+        await _backgroundTask;
 
         await _workerStoppedEvent.FireAsync();
     }
@@ -118,7 +114,14 @@ internal class ConsumerWorker : IConsumerWorker
     {
         _backgroundTask.Dispose();
         _workerDependencyResolverScope.Dispose();
-        _stopCancellationTokenSource.Dispose();
+    }
+
+    private async Task DiscardBufferedContextsAsync()
+    {
+        await foreach (var context in _messagesBuffer.Reader.ReadAllItemsAsync(CancellationToken.None))
+        {
+            context.ConsumerContext.Discard();
+        }
     }
 
     private async Task ProcessMessageAsync(IMessageContext context, CancellationToken cancellationToken)
@@ -138,11 +141,10 @@ internal class ConsumerWorker : IConsumerWorker
                         }
 
                         await _globalEvents.FireMessageConsumeCompletedAsync(new MessageEventContext(context));
-                    });
+                    },
+                    CancellationToken.None);
 
-                await _middlewareExecutor
-                    .Execute(context, _ => Task.CompletedTask)
-                    .ConfigureAwait(false);
+                await _middlewareExecutor.Execute(context, _ => Task.CompletedTask);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
