@@ -257,12 +257,13 @@ internal class Consumer : IConsumer
         if (security?.OAuthBearerTokenRefreshHandler != null)
         {
             var authenticator = new OAuthBearerAuthenticator();
+            var handler = security.OAuthBearerTokenRefreshHandler;
 
             consumerBuilder.SetOAuthBearerTokenRefreshHandler((client, _) =>
             {
                 authenticator.Client = client;
 
-                security.OAuthBearerTokenRefreshHandler(authenticator);
+                handler(authenticator);
             });
         }
 

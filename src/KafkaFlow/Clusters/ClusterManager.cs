@@ -40,12 +40,13 @@ internal class ClusterManager : IClusterManager, IDisposable
                 if (security?.OAuthBearerTokenRefreshHandler != null)
                 {
                     var authenticator = new OAuthBearerAuthenticator();
+                    var handler = security.OAuthBearerTokenRefreshHandler;
 
                     adminClientBuilder.SetOAuthBearerTokenRefreshHandler((client, _) =>
                     {
                         authenticator.Client = client;
 
-                        security.OAuthBearerTokenRefreshHandler(authenticator);
+                        handler(authenticator);
                     });
                 }
 
