@@ -50,8 +50,7 @@ internal class ClusterManager : IClusterManager, IDisposable
                     });
                 }
 
-                return new AdminClientBuilder(config)
-                    .Build();
+                return adminClientBuilder.Build();
             });
     }
 
