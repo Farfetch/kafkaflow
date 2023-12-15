@@ -15,6 +15,7 @@ internal static class ConfigurationExtensions
         SaslMechanism.Plain => Confluent.Kafka.SaslMechanism.Plain,
         SaslMechanism.ScramSha256 => Confluent.Kafka.SaslMechanism.ScramSha256,
         SaslMechanism.ScramSha512 => Confluent.Kafka.SaslMechanism.ScramSha512,
+        SaslMechanism.OAuthBearer => Confluent.Kafka.SaslMechanism.OAuthBearer,
         _ => throw new ArgumentOutOfRangeException()
     };
 

@@ -1,3 +1,6 @@
+using System;
+using KafkaFlow.Authentication;
+
 namespace KafkaFlow.Configuration;
 
 /// <summary>
@@ -209,4 +212,9 @@ public class SecurityInformation
     ///     importance: low
     /// </summary>
     public bool? EnableSaslOauthbearerUnsecureJwt { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the OAuthBearerTokenRefreshHandler for custom OAuth authentication.
+    /// </summary>
+    public Action<IOAuthBearerAuthenticator> OAuthBearerTokenRefreshHandler { get; set; }
 }
