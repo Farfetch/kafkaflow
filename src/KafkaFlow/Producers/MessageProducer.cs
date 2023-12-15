@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using KafkaFlow.Authentication;
 using KafkaFlow.Configuration;
 
 namespace KafkaFlow.Producers;
@@ -260,6 +261,20 @@ internal class MessageProducer : IMessageProducer, IDisposable
                             handler.Invoke(statistics);
                         }
                     });
+
+            var security = _configuration.Cluster.GetSecurityInformation();
+
+            if (security?.OAuthBearerTokenRefreshHandler != null)
+            {
+                var authenticator = new OAuthBearerAuthenticator();
+
+                producerBuilder.SetOAuthBearerTokenRefreshHandler((client, _) =>
+                {
+                    authenticator.Client = client;
+
+                    security.OAuthBearerTokenRefreshHandler(authenticator);
+                });
+            }
 
             return _producer = _configuration.CustomFactory(
                 producerBuilder.Build(),
