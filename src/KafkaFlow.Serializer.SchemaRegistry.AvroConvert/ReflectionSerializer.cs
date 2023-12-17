@@ -14,22 +14,63 @@ internal class ReflectionSerializer<T> : IAsyncSerializer<T>
 {
     private readonly ISchemaRegistryClient _schemaRegistry;
     private readonly bool _autoRegisterSchemas;
+    private readonly bool _normalizeSchemas;
+    private readonly bool _useLatestVersion;
+    private readonly int _initialBufferSize;
+    private readonly SubjectNameStrategyDelegate _subjectNameStrategy;
+
+    private readonly string _schemaString;
     private readonly ConcurrentDictionary<string, Lazy<Task<int>>> _schemaIds = new();
-    private readonly Lazy<string> _schema = new(() => AvroConvert.GenerateSchema(typeof(T)));
 
     public ReflectionSerializer(ISchemaRegistryClient schemaRegistry, AvroSerializerConfig config = null)
     {
         _schemaRegistry = schemaRegistry;
+
         _autoRegisterSchemas = config?.AutoRegisterSchemas ?? true;
+        _normalizeSchemas = config?.NormalizeSchemas ?? false;
+        _useLatestVersion = config?.UseLatestVersion ?? false;
+        _initialBufferSize = config?.BufferBytes ?? 1024;
+
+        if (config?.SubjectNameStrategy != null)
+        {
+            _subjectNameStrategy = config.SubjectNameStrategy.Value.ToDelegate();
+        }
+
+        if (_useLatestVersion && _autoRegisterSchemas)
+        {
+            throw new ArgumentException(
+                "AvroConvertSerializer: Cannot enable both UseLatestVersion and AutoRegisterSchemas");
+        }
+
+        _schemaString = AvroConvert.GenerateSchema(typeof(T));
     }
 
     public async Task<byte[]> SerializeAsync(T data, SerializationContext context)
     {
-        var subject = $"{context.Topic}-{context.Component.ToString().ToLower()}";
+        var subject = GetSubject(context);
 
-        var schemaId = await _schemaIds.GetOrAdd(subject, x => new Lazy<Task<int>>(() => GetSchemaId(x))).Value;
+        var schemaId = await _schemaIds.GetOrAdd(subject, x => new Lazy<Task<int>>(() => GetSchemaId(x))).Value.ConfigureAwait(false);
 
         return GetPayload(data, schemaId);
+    }
+
+    private string GetSubject(SerializationContext context)
+    {
+        const string recordType = "record type";
+
+        if (_subjectNameStrategy != null)
+        {
+            var serializationContext = new SerializationContext(context.Component, context.Topic);
+
+            return _subjectNameStrategy(serializationContext, recordType);
+        }
+
+        if (context.Component == MessageComponentType.Key)
+        {
+            return _schemaRegistry.ConstructKeySubjectName(context.Topic, recordType);
+        }
+
+        return _schemaRegistry.ConstructValueSubjectName(context.Topic, recordType);
     }
 
     private byte[] GetPayload(T data, int schemaId)
@@ -37,9 +78,9 @@ internal class ReflectionSerializer<T> : IAsyncSerializer<T>
         var schemaIdBytes = new byte[4];
         BinaryPrimitives.WriteInt32BigEndian(schemaIdBytes, schemaId);
 
-        var serializedData = AvroConvert.SerializeHeadless(data, _schema.Value);
+        var serializedData = AvroConvert.SerializeHeadless(data, _schemaString);
 
-        using var stream = new MemoryStream(1024);
+        using var stream = new MemoryStream(_initialBufferSize);
 
         stream.WriteByte(0);
         stream.Write(schemaIdBytes, 0, schemaIdBytes.Length);
@@ -50,13 +91,17 @@ internal class ReflectionSerializer<T> : IAsyncSerializer<T>
 
     private async Task<int> GetSchemaId(string subject)
     {
-        var schema = new Schema(_schema.Value, SchemaType.Avro);
-
-        if (_autoRegisterSchemas)
+        if (_useLatestVersion)
         {
-            return await _schemaRegistry.RegisterSchemaAsync(subject, schema).ConfigureAwait(false);
+            var latestSchema = await _schemaRegistry.GetLatestSchemaAsync(subject).ConfigureAwait(false);
+
+            return latestSchema.Id;
         }
 
-        return await _schemaRegistry.GetSchemaIdAsync(subject, schema).ConfigureAwait(false);
+        var schema = new Schema(_schemaString, SchemaType.Avro);
+
+        return _autoRegisterSchemas
+            ? await _schemaRegistry.RegisterSchemaAsync(subject, schema, _normalizeSchemas).ConfigureAwait(false)
+            : await _schemaRegistry.GetSchemaIdAsync(subject, schema, _normalizeSchemas).ConfigureAwait(false);
     }
 }

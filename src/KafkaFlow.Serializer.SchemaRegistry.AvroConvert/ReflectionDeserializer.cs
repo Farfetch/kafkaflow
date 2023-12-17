@@ -40,7 +40,7 @@ internal class ReflectionDeserializer<T> : IAsyncDeserializer<T>
             _cache.Clear();
         }
 
-        var schema = await _cache.GetOrAdd(schemaId, key => new Lazy<Task<Schema>>(() => _schemaRegistry.GetSchemaAsync(key))).Value;
+        var schema = await _cache.GetOrAdd(schemaId, key => new Lazy<Task<Schema>>(() => _schemaRegistry.GetSchemaAsync(key))).Value.ConfigureAwait(false);
 
         return AvroConvert.DeserializeHeadless<T>(payload.ToArray(), schema.SchemaString);
     }

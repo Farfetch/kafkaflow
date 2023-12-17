@@ -29,7 +29,7 @@ internal static class Bootstrapper
     internal const string PauseResumeGroupId = "consumer-pause-resume";
     internal const string AvroGroupId = "consumer-avro";
     internal const string JsonGroupId = "consumer-json";
-    internal const string AvroConvertGroupId = "consumer-json";
+    internal const string AvroConvertGroupId = "consumer-avroconvert";
 
     private const string ProtobufTopicName = "test-protobuf";
     private const string ProtobufSchemaRegistryTopicName = "test-protobuf-sr";
@@ -40,7 +40,7 @@ internal static class Bootstrapper
     private const string ProtobufGzipTopicName = "test-protobuf-gzip";
     private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
     private const string AvroTopicName = "test-avro";
-    private const string AvroConvertTopicName = "test-avro";
+    private const string AvroConvertTopicName = "test-avroconvert";
 
     private static readonly Lazy<IServiceProvider> s_lazyProvider = new(SetupProvider);
 
