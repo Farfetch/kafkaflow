@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<PackageId>KafkaFlow.Serializer.SchemaRegistry.AvroConvert</PackageId>
+		<Description>Avro implementation for KafkaFlow serializer middleware using AvroConvert package</Description>
+		<RootNamespace>KafkaFlow.Serializer.SchemaRegistry</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="AvroConvert" Version="3.4.3" />
+	  <PackageReference Include="Confluent.SchemaRegistry.Serdes.Avro" Version="1.9.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\KafkaFlow.SchemaRegistry\KafkaFlow.SchemaRegistry.csproj" />
+	</ItemGroup>
+
+</Project>

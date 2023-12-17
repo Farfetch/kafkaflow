@@ -29,6 +29,7 @@ internal static class Bootstrapper
     internal const string PauseResumeGroupId = "consumer-pause-resume";
     internal const string AvroGroupId = "consumer-avro";
     internal const string JsonGroupId = "consumer-json";
+    internal const string AvroConvertGroupId = "consumer-json";
 
     private const string ProtobufTopicName = "test-protobuf";
     private const string ProtobufSchemaRegistryTopicName = "test-protobuf-sr";
@@ -39,6 +40,7 @@ internal static class Bootstrapper
     private const string ProtobufGzipTopicName = "test-protobuf-gzip";
     private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
     private const string AvroTopicName = "test-avro";
+    private const string AvroConvertTopicName = "test-avro";
 
     private static readonly Lazy<IServiceProvider> s_lazyProvider = new(SetupProvider);
 
@@ -104,6 +106,7 @@ internal static class Bootstrapper
                         .CreateTopicIfNotExists(AvroTopicName, 1, 1)
                         .CreateTopicIfNotExists(ProtobufSchemaRegistryTopicName, 2, 1)
                         .CreateTopicIfNotExists(JsonSchemaRegistryTopicName, 2, 1)
+                        .CreateTopicIfNotExists(AvroConvertTopicName, 1, 1)
                         .AddProducer<AvroProducer>(
                             producer => producer
                                 .DefaultTopic(AvroTopicName)
@@ -187,7 +190,36 @@ internal static class Bootstrapper
                                         .AddTypedHandlers(
                                             handlers => handlers
                                                 .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                .AddHandler<ConfluentJsonMessageHandler>()))))
+                                                .AddHandler<ConfluentJsonMessageHandler>())))
+                        .AddProducer<AvroConvertProducer>(
+                            producer => producer
+                                .DefaultTopic(AvroConvertTopicName)
+                                .AddMiddlewares(
+                                    middlewares => middlewares
+                                        .AddSerializer(
+                                            resolver => new AvroConvertSerializer(
+                                                resolver,
+                                                new AvroSerializerConfig
+                                                {
+                                                    AutoRegisterSchemas = true,
+                                                    SubjectNameStrategy = SubjectNameStrategy.Record,
+                                                }))))
+                        .AddConsumer(
+                            consumer => consumer
+                                .Topic(AvroConvertTopicName)
+                                .WithGroupId(AvroConvertGroupId)
+                                .WithBufferSize(100)
+                                .WithWorkersCount(10)
+                                .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                .WithConsumerConfig(defaultConfig)
+                                .AddMiddlewares(
+                                    middlewares => middlewares
+                                        .AddDeserializer<AvroConvertDeserializer>()
+                                        .AddTypedHandlers(
+                                            handlers => handlers
+                                                .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                                .AddHandler<AvroConvertMessageHandler>())))
+                    )
                 .AddCluster(
                     cluster => cluster
                         .WithBrokers(kafkaBrokers.Split(';'))
@@ -339,5 +371,6 @@ internal static class Bootstrapper
         services.AddSingleton<ProtobufGzipProducer2>();
         services.AddSingleton<ProtobufGzipProducer>();
         services.AddSingleton<GzipProducer>();
+        services.AddSingleton<AvroConvertProducer>();
     }
 }

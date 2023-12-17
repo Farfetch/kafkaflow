@@ -13,9 +13,11 @@ var services = new ServiceCollection();
 const string avroProducerName = "avro-producer";
 const string jsonProducerName = "json-producer";
 const string protobufProducerName = "protobuf-producer";
+const string avroConvertProducerName = "avroconvert-producer";
 const string avroTopic = "avro-topic";
 const string jsonTopic = "json-topic";
 const string protobufTopic = "protobuf-topic";
+const string avroConvertTopic = "avroconvert-topic";
 
 services.AddKafka(
     kafka => kafka
@@ -64,6 +66,18 @@ services.AddKafka(
                                     })
                         )
                 )
+                .AddProducer(
+                    avroConvertProducerName,
+                    producer => producer
+                        .DefaultTopic(avroConvertTopic)
+                        .AddMiddlewares(
+                            middlewares => middlewares
+                                .AddSchemaRegistryAvroConvertSerializer(
+                                    new AvroSerializerConfig
+                                    {
+                                        SubjectNameStrategy = SubjectNameStrategy.TopicRecord
+                                    }))
+                )
                 .AddConsumer(
                     consumer => consumer
                         .Topic(avroTopic)
@@ -106,6 +120,21 @@ services.AddKafka(
                                 .AddTypedHandlers(handlers => handlers.AddHandler<ProtobufMessageHandler>())
                         )
                 )
+                .AddConsumer(
+                    consumer => consumer
+                        .Topic(avroConvertTopic)
+                        .WithGroupId("avroconvert-group-id")
+                        .WithBufferSize(100)
+                        .WithWorkersCount(20)
+                        .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                        .AddMiddlewares(
+                            middlewares => middlewares
+                                .AddSchemaRegistryAvroConvertDeserializer()
+                                .AddTypedHandlers(
+                                    handlers => handlers
+                                        .AddHandler<AvroConvertMessageHandler>())
+                        )
+                )
         )
 );
 
@@ -137,7 +166,10 @@ while (true)
                         new JsonLogMessage { Message = Guid.NewGuid().ToString() }),
                     producers[protobufProducerName].ProduceAsync(
                         Guid.NewGuid().ToString(),
-                        new ProtobufLogMessage { Message = Guid.NewGuid().ToString() })
+                        new ProtobufLogMessage { Message = Guid.NewGuid().ToString() }),
+                    producers[avroConvertProducerName].ProduceAsync(
+                        Guid.NewGuid().ToString(),
+                        new AvroConvertLogMessage { Message = Guid.NewGuid().ToString() })
                 );
             }
 
