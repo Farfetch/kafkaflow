@@ -4,11 +4,11 @@ using Newtonsoft.Json;
 
 namespace KafkaFlow.Serializer.SchemaRegistry;
 
-internal class ConfluentAvroTypeNameResolver : ISchemaRegistryTypeNameResolver
+internal class AvroConvertTypeNameResolver : ISchemaRegistryTypeNameResolver, ISchemaStringTypeNameResolver
 {
     private readonly ISchemaRegistryClient _client;
 
-    public ConfluentAvroTypeNameResolver(ISchemaRegistryClient client)
+    public AvroConvertTypeNameResolver(ISchemaRegistryClient client)
     {
         _client = client;
     }
@@ -17,7 +17,18 @@ internal class ConfluentAvroTypeNameResolver : ISchemaRegistryTypeNameResolver
     {
         var schema = await _client.GetSchemaAsync(id);
 
-        var avroFields = JsonConvert.DeserializeObject<AvroSchemaFields>(schema.SchemaString);
+        return GetSchemaTypeName(schema.SchemaString);
+    }
+
+    public string Resolve(string schemaString)
+    {
+        return GetSchemaTypeName(schemaString);
+    }
+
+    private string GetSchemaTypeName(string schemaString)
+    {
+        var avroFields = JsonConvert.DeserializeObject<AvroSchemaFields>(schemaString);
+
         return $"{avroFields.Namespace}.{avroFields.Name}";
     }
 

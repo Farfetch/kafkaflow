@@ -20,9 +20,10 @@ internal class ReflectionSerializer<T> : IAsyncSerializer<T>
     private readonly SubjectNameStrategyDelegate _subjectNameStrategy;
 
     private readonly string _schemaString;
+    private readonly string _typeName;
     private readonly ConcurrentDictionary<string, Lazy<Task<int>>> _schemaIds = new();
 
-    public ReflectionSerializer(ISchemaRegistryClient schemaRegistry, AvroSerializerConfig config = null)
+    public ReflectionSerializer(ISchemaRegistryClient schemaRegistry, ISchemaStringTypeNameResolver typeNameResolver, AvroSerializerConfig config = null)
     {
         _schemaRegistry = schemaRegistry;
 
@@ -43,6 +44,7 @@ internal class ReflectionSerializer<T> : IAsyncSerializer<T>
         }
 
         _schemaString = AvroConvert.GenerateSchema(typeof(T));
+        _typeName = typeNameResolver.Resolve(_schemaString);
     }
 
     public async Task<byte[]> SerializeAsync(T data, SerializationContext context)
@@ -56,21 +58,19 @@ internal class ReflectionSerializer<T> : IAsyncSerializer<T>
 
     private string GetSubject(SerializationContext context)
     {
-        const string recordType = "record type";
-
         if (_subjectNameStrategy != null)
         {
             var serializationContext = new SerializationContext(context.Component, context.Topic);
 
-            return _subjectNameStrategy(serializationContext, recordType);
+            return _subjectNameStrategy(serializationContext, _typeName);
         }
 
         if (context.Component == MessageComponentType.Key)
         {
-            return _schemaRegistry.ConstructKeySubjectName(context.Topic, recordType);
+            return _schemaRegistry.ConstructKeySubjectName(context.Topic, _typeName);
         }
 
-        return _schemaRegistry.ConstructValueSubjectName(context.Topic, recordType);
+        return _schemaRegistry.ConstructValueSubjectName(context.Topic, _typeName);
     }
 
     private byte[] GetPayload(T data, int schemaId)

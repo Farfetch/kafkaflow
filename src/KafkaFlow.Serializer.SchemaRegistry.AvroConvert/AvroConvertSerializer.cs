@@ -12,6 +12,7 @@ namespace KafkaFlow.Serializer.SchemaRegistry;
 public class AvroConvertSerializer : ISerializer
 {
     private readonly ISchemaRegistryClient _schemaRegistryClient;
+    private readonly ISchemaStringTypeNameResolver _typeNameResolver;
     private readonly AvroSerializerConfig _serializerConfig;
 
     /// <summary>
@@ -28,6 +29,7 @@ public class AvroConvertSerializer : ISerializer
             throw new InvalidOperationException(
                 $"No schema registry configuration was found. Set it using {nameof(ClusterConfigurationBuilderExtensions.WithSchemaRegistry)} on cluster configuration");
 
+        _typeNameResolver = new AvroConvertTypeNameResolver(_schemaRegistryClient);
         _serializerConfig = serializerConfig;
     }
 
@@ -40,6 +42,7 @@ public class AvroConvertSerializer : ISerializer
                 () => Activator.CreateInstance(
                     typeof(ReflectionSerializer<>).MakeGenericType(message.GetType()),
                     _schemaRegistryClient,
+                    _typeNameResolver,
                     _serializerConfig))
             .SerializeAsync(message, output, context);
     }

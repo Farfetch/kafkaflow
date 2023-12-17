@@ -21,6 +21,6 @@ public static class ConsumerConfigurationBuilderExtensions
         return middlewares.Add(
             resolver => new DeserializerConsumerMiddleware(
                 new AvroConvertDeserializer(resolver),
-                new SchemaRegistryTypeResolver(new ConfluentAvroTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>()))));
+                new SchemaRegistryTypeResolver(new AvroConvertTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>()))));
     }
 }

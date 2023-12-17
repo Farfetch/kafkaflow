@@ -24,6 +24,6 @@ public static class ProducerConfigurationBuilderExtensions
         return middlewares.Add(
             resolver => new SerializerProducerMiddleware(
                 new AvroConvertSerializer(resolver, config),
-                new SchemaRegistryTypeResolver(new ConfluentAvroTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>()))));
+                new SchemaRegistryTypeResolver(new AvroConvertTypeNameResolver(resolver.Resolve<ISchemaRegistryClient>()))));
     }
 }
