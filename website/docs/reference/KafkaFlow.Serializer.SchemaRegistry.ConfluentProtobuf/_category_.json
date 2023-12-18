@@ -1,6 +1,6 @@
 {
   "label": "KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf",
-  "position": 17,
+  "position": 18,
   "link": {
     "type": "generated-index"
   }
