@@ -2,7 +2,6 @@
 using System.IO;
 using System.Threading.Tasks;
 using Confluent.SchemaRegistry;
-using Confluent.SchemaRegistry.Serdes;
 
 namespace KafkaFlow.Serializer.SchemaRegistry;
 

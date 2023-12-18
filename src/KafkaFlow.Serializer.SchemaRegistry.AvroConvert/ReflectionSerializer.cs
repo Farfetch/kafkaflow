@@ -32,10 +32,9 @@ internal class ReflectionSerializer<T> : IAsyncSerializer<T>
         _useLatestVersion = config?.UseLatestVersion ?? false;
         _initialBufferSize = config?.BufferBytes ?? 1024;
 
-        if (config?.SubjectNameStrategy != null)
-        {
-            _subjectNameStrategy = config.SubjectNameStrategy.Value.ToDelegate();
-        }
+        _subjectNameStrategy = config?.SubjectNameStrategy != null
+            ? config.SubjectNameStrategy.Value.ToDelegate()
+            : SubjectNameStrategy.Topic.ToDelegate();
 
         if (_useLatestVersion && _autoRegisterSchemas)
         {
@@ -58,19 +57,9 @@ internal class ReflectionSerializer<T> : IAsyncSerializer<T>
 
     private string GetSubject(SerializationContext context)
     {
-        if (_subjectNameStrategy != null)
-        {
-            var serializationContext = new SerializationContext(context.Component, context.Topic);
+        var serializationContext = new SerializationContext(context.Component, context.Topic);
 
-            return _subjectNameStrategy(serializationContext, _typeName);
-        }
-
-        if (context.Component == MessageComponentType.Key)
-        {
-            return _schemaRegistry.ConstructKeySubjectName(context.Topic, _typeName);
-        }
-
-        return _schemaRegistry.ConstructValueSubjectName(context.Topic, _typeName);
+        return _subjectNameStrategy(serializationContext, _typeName);
     }
 
     private byte[] GetPayload(T data, int schemaId)

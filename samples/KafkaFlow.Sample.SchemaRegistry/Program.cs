@@ -29,6 +29,7 @@ services.AddKafka(
                 .CreateTopicIfNotExists(avroTopic, 1, 1)
                 .CreateTopicIfNotExists(jsonTopic, 1, 1)
                 .CreateTopicIfNotExists(protobufTopic, 1, 1)
+                .CreateTopicIfNotExists(avroConvertTopic, 1, 1)
                 .AddProducer(
                     avroProducerName,
                     producer => producer
