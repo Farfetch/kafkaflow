@@ -102,6 +102,62 @@ const resources = [
       },
     ],
   },
+  {
+    title:
+      "Instrumenting .NET Kafka Clients with OpenTelemetry and KafkaFlow",
+    description: null,
+    link: "https://youtu.be/HOivyibM-04?si=Hk7Mif1TnDJHskyb",
+    type: "Video",
+    date: "2023-12-05",
+    authors: [
+      {
+        name: "Gui Ferreira",
+        url: "https://guiferreira.me",
+      },
+    ],
+  },
+  {
+    title:
+      "How to Dynamically Subscribe to Kafka Topics in .NET",
+    description: null,
+    link: "https://youtu.be/18VMi6MgCSQ?si=koUDdESAbGcQ0FUU",
+    type: "Video",
+    date: "2023-12-12",
+    authors: [
+      {
+        name: "Gui Ferreira",
+        url: "https://guiferreira.me",
+      },
+    ],
+  },
+  {
+    title:
+      "A BETTER Way to Kafka Event-Driven Applications with C#",
+    description: null,
+    link: "https://guiferreira.me/archive/2023/a-better-way-to-kafka-event-driven-applications-with-csharp/",
+    type: "Article",
+    date: "2023-12-13",
+    authors: [
+      {
+        name: "Gui Ferreira",
+        url: "https://guiferreira.me",
+      },
+    ],
+  },
+  {
+    title:
+      "3 KafkaFlow Features Hard to Ignore",
+    description: null,
+    link: "https://guiferreira.me/archive/2023/3-kafkaflow-features-hard-to-ignore/",
+    type: "Article",
+    date: "2023-12-19",
+    authors: [
+      {
+        name: "Gui Ferreira",
+        url: "https://guiferreira.me",
+      },
+    ],
+  },
 ];
 
 export default function Community() {
