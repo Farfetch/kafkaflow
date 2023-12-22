@@ -109,7 +109,7 @@ internal class ClusterManager : IClusterManager, IDisposable
             foreach (var duplicatedTopic in duplicatedTopics)
             {
                 _logHandler.Warning(
-                        "Topic {Topic} declaration is duplicated. First one configuration will be used",
+                        "Topic {Topic} declaration is duplicated. First topic configuration will be used",
                         new
                         {
                             duplicatedTopic,
