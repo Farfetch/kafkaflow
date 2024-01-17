@@ -10,7 +10,7 @@ KafkaFlow provides a Dashboard where you can visualize information related to yo
 
 :::caution
 It is important to note that the Dashboard runs, shows information, and manages the consumers on all application instances. This means that if you have 10 machines running your application, the Dashboard will run in every instance. **Any operation will affect the consumer in all the machines**.
-:::caution
+:::
 
 ## Adding the Dashboard
 

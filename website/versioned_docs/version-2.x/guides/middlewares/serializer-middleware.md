@@ -30,7 +30,7 @@ Both classes can be provided as an argument through a factory method too.
 
 :::tip
 For topics that have just one message type, use the `AddSingleTypeSerializer` method.
-:::tip
+:::
 
 
 ```csharp
