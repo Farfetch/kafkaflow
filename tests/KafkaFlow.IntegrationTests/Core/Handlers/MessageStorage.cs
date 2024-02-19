@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using global::Microsoft.VisualStudio.TestTools.UnitTesting;
 using KafkaFlow.IntegrationTests.Core.Messages;
@@ -17,6 +18,7 @@ internal static class MessageStorage
     private static readonly ConcurrentBag<TestProtoMessage> s_protoMessages = new();
     private static readonly ConcurrentBag<(long, int)> s_versions = new();
     private static readonly ConcurrentBag<byte[]> s_byteMessages = new();
+    private static readonly ConcurrentBag<byte[]> s_nullMessages = new();
 
     public static void Add(ITestMessage message)
     {
@@ -37,6 +39,11 @@ internal static class MessageStorage
     public static void Add(byte[] message)
     {
         s_byteMessages.Add(message);
+    }
+    
+    public static void AddNullMessage(byte[] message)
+    {
+        s_nullMessages.Add(message);
     }
 
     public static async Task AssertCountMessageAsync(ITestMessage message, int count)
@@ -112,6 +119,22 @@ internal static class MessageStorage
             if (DateTime.Now.Subtract(start).Seconds > TimeoutSec)
             {
                 Assert.Fail("Message (byte[]) not received");
+                return;
+            }
+
+            await Task.Delay(100).ConfigureAwait(false);
+        }
+    }
+    
+    public static async Task AssertNullMessageAsync()
+    {
+        var nullBytes = new byte[] { 110, 117, 108, 108 };
+        var start = DateTime.Now;
+        while (!s_nullMessages.Any(x => x.SequenceEqual(nullBytes)))
+        {
+            if (DateTime.Now.Subtract(start).Seconds > TimeoutSec)
+            {
+                Assert.Fail("Null message not received");
                 return;
             }
 

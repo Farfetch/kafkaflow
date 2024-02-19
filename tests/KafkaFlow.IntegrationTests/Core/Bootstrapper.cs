@@ -29,6 +29,8 @@ internal static class Bootstrapper
     internal const string PauseResumeGroupId = "consumer-pause-resume";
     internal const string AvroGroupId = "consumer-avro";
     internal const string JsonGroupId = "consumer-json";
+    internal const string NullGroupId = "consumer-null";
+    
 
     private const string ProtobufTopicName = "test-protobuf";
     private const string ProtobufSchemaRegistryTopicName = "test-protobuf-sr";
@@ -39,6 +41,7 @@ internal static class Bootstrapper
     private const string ProtobufGzipTopicName = "test-protobuf-gzip";
     private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
     private const string AvroTopicName = "test-avro";
+    private const string NullTopicName = "test-null";
 
     private static readonly Lazy<IServiceProvider> s_lazyProvider = new(SetupProvider);
 
@@ -198,6 +201,7 @@ internal static class Bootstrapper
                         .CreateTopicIfNotExists(JsonGzipTopicName, 2, 1)
                         .CreateTopicIfNotExists(ProtobufGzipTopicName, 2, 1)
                         .CreateTopicIfNotExists(ProtobufGzipTopicName2, 2, 1)
+                        .CreateTopicIfNotExists(NullTopicName, 1, 1)
                         .AddConsumer(
                             consumer => consumer
                                 .Topic(ProtobufTopicName)
@@ -251,6 +255,21 @@ internal static class Bootstrapper
                                                     .AddHandlersFromAssemblyOf<MessageHandler>())))
                         .AddConsumer(
                             consumer => consumer
+                                .Topic(NullTopicName)
+                                .WithGroupId(NullGroupId)
+                                .WithBufferSize(100)
+                                .WithWorkersCount(10)
+                                .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                .AddMiddlewares(
+                                    middlewares => middlewares
+                                        .AddTypedHandlers(
+                                            handlers =>
+                                                handlers
+                                                    .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                                    .AddHandler<NullMessageHandler>()
+                                        )))                        
+                        .AddConsumer(
+                            consumer => consumer
                                 .Topics(GzipTopicName)
                                 .WithGroupId(GzipGroupId)
                                 .WithBufferSize(100)
@@ -295,6 +314,12 @@ internal static class Bootstrapper
                         .AddProducer<JsonProducer>(
                             producer => producer
                                 .DefaultTopic(JsonTopicName)
+                                .AddMiddlewares(
+                                    middlewares => middlewares
+                                        .AddSerializer<JsonCoreSerializer>()))
+                        .AddProducer<NullProducer>(
+                            producer => producer
+                                .DefaultTopic(NullTopicName)
                                 .AddMiddlewares(
                                     middlewares => middlewares
                                         .AddSerializer<JsonCoreSerializer>()))

@@ -38,7 +38,7 @@ public class SerializerProducerMiddleware : IMessageMiddleware
     {
         await _typeResolver.OnProduceAsync(context);
 
-        byte[] messageValue;
+        byte[] messageValue = null;
 
         using (var buffer = s_memoryStreamManager.GetStream())
         {
@@ -48,8 +48,10 @@ public class SerializerProducerMiddleware : IMessageMiddleware
                     buffer,
                     new SerializerContext(context.ProducerContext.Topic))
                 .ConfigureAwait(false);
-
-            messageValue = buffer.ToArray();
+            if (buffer.Length > 0)
+            {
+                messageValue = buffer.ToArray();
+            }
         }
 
         await next(context.SetMessage(context.Message.Key, messageValue)).ConfigureAwait(false);
