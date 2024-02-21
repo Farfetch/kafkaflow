@@ -49,7 +49,6 @@ internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
             .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
             .AddScoped<ConsumerMiddlewareContext>()
             .AddScoped<IConsumerMiddlewareContext>(r => r.Resolve<ConsumerMiddlewareContext>())
-            .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()
             .AddSingleton(
                 r =>
                 {
