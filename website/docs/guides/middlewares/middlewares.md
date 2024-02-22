@@ -144,7 +144,7 @@ public class JsonDeserializeMiddleware : IMessageMiddleware
     public Task Invoke(IMessageContext context, MiddlewareDelegate next)
     {
         if(!(context.Message is byte[] rawMessage))
-            throw new InvalidoperationException();
+            throw new InvalidOperationException();
 
         var type = Type.GetType(context.Headers.GetString("Message-Type"));
 
