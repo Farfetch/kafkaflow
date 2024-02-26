@@ -44,7 +44,7 @@ The message will be delivered as a byte array to the first middleware; you will 
 
 ## When Producing
 
-The middlewares are called when the `Produce` or `PoduceAsync` of the `IMessageProducer` is called. After all the middlewares execute, the message will be published to Kafka.
+The middlewares are called when the `Produce` or `ProduceAsync` of the `IMessageProducer` is called. After all the middlewares execute, the message will be published to Kafka.
 
 ## Creating a middleware
 

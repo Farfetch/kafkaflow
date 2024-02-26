@@ -86,6 +86,6 @@ public void Configure(
 }
 ```
 
-Now you can create Message Handlers or access Producers and start exchanging events trouh Kafka.
+Now you can create Message Handlers or access Producers and start exchanging events through Kafka.
 
 
