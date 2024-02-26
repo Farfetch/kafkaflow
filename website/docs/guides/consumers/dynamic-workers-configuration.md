@@ -39,7 +39,7 @@ Configuring Dynamic Worker Configuration is straightforward with the fluent inte
 )
 ```
 
-In this example, the number of worker threads is adjusted dynamically based on whether it's a peak hour or off-peak hour. You can implement your custom logic in the `WithWorkersCount`` method to suit your application's specific requirements.
+In this example, the number of worker threads is adjusted dynamically based on whether it's a peak hour or off-peak hour. You can implement your custom logic in the `WithWorkersCount` method to suit your application's specific requirements.
 
 That's it! Your KafkaFlow consumer will now dynamically adjust the number of worker threads based on your custom logic and the specified evaluation interval.
 
