@@ -50,7 +50,7 @@ The message will be delivered as a byte array to the first middleware; you will 
 
 ## When Producing
 
-The middlewares are called when the `Produce` or `PoduceAsync` of the `IMessageProducer` is called. After all the middlewares execute, the message will be published to Kafka.
+The middlewares are called when the `Produce` or `ProduceAsync` of the `IMessageProducer` is called. After all the middlewares execute, the message will be published to Kafka.
 
 ## Creating a middleware
 
@@ -150,7 +150,7 @@ public class JsonDeserializeMiddleware : IMessageMiddleware
     public Task Invoke(IMessageContext context, MiddlewareDelegate next)
     {
         if(!(context.Message is byte[] rawMessage))
-            throw new InvalidoperationException();
+            throw new InvalidOperationException();
 
         var type = Type.GetType(context.Headers.GetString("Message-Type"));
 

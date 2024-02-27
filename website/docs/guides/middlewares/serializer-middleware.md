@@ -43,7 +43,7 @@ services.AddKafka(kafka => kafka
                     resolver => new JsonMessageSerializer(...),
                     resolver => new YourTypeResolver(...))
                 // or
-                .AddSingleTypeSerializer<JsonMessageSerializer, YourMessageType>()
+                .AddSingleTypeSerializer<YourMessageType, JsonMessageSerializer>()
                 // or
                 .AddSingleTypeSerializer<YourMessageType>(resolver => new JsonMessageSerializer(...))
                 ...
