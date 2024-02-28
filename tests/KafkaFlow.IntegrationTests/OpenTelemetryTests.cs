@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using AutoFixture;
-using global::OpenTelemetry;
-using global::OpenTelemetry.Trace;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 using KafkaFlow.Compressor.Gzip;
 using KafkaFlow.Configuration;
 using KafkaFlow.IntegrationTests.Core;
@@ -31,10 +32,13 @@ public class OpenTelemetryTests
 
     private bool _isPartitionAssigned;
 
+    private string _topicName;
+
     [TestInitialize]
     public void Setup()
     {
         _exportedItems = new List<Activity>();
+        _topicName =  $"OpenTelemetryTestTopic_{Guid.NewGuid()}";
     }
 
     [TestMethod]
@@ -62,6 +66,92 @@ public class OpenTelemetryTests
         Assert.IsNull(producerSpan.ParentId);
         Assert.AreEqual(producerSpan.TraceId, consumerSpan.TraceId);
         Assert.AreEqual(consumerSpan.ParentSpanId, producerSpan.SpanId);
+    }
+
+    [TestMethod]
+    public async Task AddOpenTelemetry_WithEnrichProducer_DefinedHeaderIsIncludedInActivity()
+    {
+        // Arrange
+        string tagName = "otel.header.tag.name";
+        string headerKey = "otel-header-key";
+        string headerValue = "otel-header-value";
+        var provider = await this.GetServiceProvider(options => options.EnrichProducer = (activity, messageContext) => 
+        {
+            var header = messageContext.Headers.FirstOrDefault(x => x.Key == headerKey);
+            var valueString = Encoding.UTF8.GetString(header.Value);
+            activity.SetTag(tagName, valueString);
+        });
+
+        MessageStorage.Clear();
+
+        using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+        .AddSource(KafkaFlowInstrumentation.ActivitySourceName)
+        .AddInMemoryExporter(_exportedItems)
+        .Build();
+
+        var producer = provider.GetRequiredService<IMessageProducer<GzipProducer>>();
+        var message = _fixture.Create<byte[]>();
+        IMessageHeaders headers = new MessageHeaders
+        {
+            { headerKey, Encoding.UTF8.GetBytes(headerValue) }
+        };
+
+        // Act
+        await producer.ProduceAsync(_topicName, "key", message, headers);
+
+        // Assert
+        var (producerSpan, consumerSpan, internalSpan) = await this.WaitForSpansAsync();
+
+        var otelTagValueProducer = producerSpan.Tags.FirstOrDefault(x => x.Key == tagName).Value;
+        var otelTagValueConsumer = consumerSpan.Tags.FirstOrDefault(x => x.Key == tagName).Value;
+
+        Assert.IsNotNull(_exportedItems);
+        Assert.IsNull(otelTagValueConsumer);
+        Assert.IsNotNull(otelTagValueProducer);
+        Assert.AreEqual(otelTagValueProducer, headerValue);
+    }
+
+    [TestMethod]
+    public async Task AddOpenTelemetry_WithEnrichConsumer_DefinedHeaderIsIncludedInActivity()
+    {
+        // Arrange
+        string tagName = "otel-header-tag-name";
+        string headerKey = "otel-header-key";
+        string headerValue = "otel-header-value";
+        var provider = await this.GetServiceProvider(options => options.EnrichConsumer = (activity, messageContext) =>
+        {
+            var header = messageContext.Headers.FirstOrDefault(x => x.Key == headerKey);
+            var valueString = Encoding.UTF8.GetString(header.Value);
+            activity.SetTag(tagName, valueString);
+        });
+
+        MessageStorage.Clear();
+
+        using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+        .AddSource(KafkaFlowInstrumentation.ActivitySourceName)
+        .AddInMemoryExporter(_exportedItems)
+        .Build();
+
+        var producer = provider.GetRequiredService<IMessageProducer<GzipProducer>>();
+        var message = _fixture.Create<byte[]>();
+        IMessageHeaders headers = new MessageHeaders
+        {
+            { headerKey, Encoding.UTF8.GetBytes(headerValue) }
+        };
+
+        // Act
+        await producer.ProduceAsync(_topicName, "key", message, headers);
+
+        // Assert
+        var (producerSpan, consumerSpan, internalSpan) = await this.WaitForSpansAsync();
+
+        var otelTagValueProducer = producerSpan.Tags.FirstOrDefault(x => x.Key == tagName).Value;
+        var otelTagValueConsumer = consumerSpan.Tags.FirstOrDefault(x => x.Key == tagName).Value;
+
+        Assert.IsNotNull(_exportedItems);
+        Assert.IsNull(otelTagValueProducer);
+        Assert.IsNotNull(otelTagValueConsumer);
+        Assert.AreEqual(otelTagValueConsumer, headerValue);
     }
 
     [TestMethod]
@@ -137,9 +227,9 @@ public class OpenTelemetryTests
         Assert.AreEqual(consumerSpan.GetBaggageItem(baggageName2), baggageValue2);
     }
 
-    private async Task<IServiceProvider> GetServiceProvider()
+    private async Task<IServiceProvider> GetServiceProvider(Action<KafkaFlowInstrumentationOptions> options = null)
     {
-        var topicName = $"OpenTelemetryTestTopic_{Guid.NewGuid()}";
+        
 
         _isPartitionAssigned = false;
 
@@ -163,17 +253,17 @@ public class OpenTelemetryTests
                         .AddCluster(
                             cluster => cluster
                                 .WithBrokers(context.Configuration.GetValue<string>("Kafka:Brokers").Split(';'))
-                                .CreateTopicIfNotExists(topicName, 1, 1)
+                                .CreateTopicIfNotExists(_topicName, 1, 1)
                                 .AddProducer<GzipProducer>(
                                     producer => producer
-                                        .DefaultTopic(topicName)
+                                        .DefaultTopic(_topicName)
                                         .AddMiddlewares(
                                             middlewares => middlewares
                                                 .AddCompressor<GzipMessageCompressor>()))
                                 .AddConsumer(
                                     consumer => consumer
-                                        .Topic(topicName)
-                                        .WithGroupId(topicName)
+                                        .Topic(_topicName)
+                                        .WithGroupId(_topicName)
                                         .WithBufferSize(100)
                                         .WithWorkersCount(10)
                                         .WithAutoOffsetReset(AutoOffsetReset.Latest)
@@ -185,7 +275,7 @@ public class OpenTelemetryTests
                                         {
                                             _isPartitionAssigned = true;
                                         })))
-                        .AddOpenTelemetryInstrumentation()))
+                        .AddOpenTelemetryInstrumentation(options)))
             .UseDefaultServiceProvider(
                 (_, options) =>
                 {
