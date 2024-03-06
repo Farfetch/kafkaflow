@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using global::OpenTelemetry;
-using global::OpenTelemetry.Context.Propagation;
-using global::OpenTelemetry.Trace;
+using OpenTelemetry;
+using OpenTelemetry.Context.Propagation;
+using OpenTelemetry.Trace;
 
 namespace KafkaFlow.OpenTelemetry;
 
@@ -16,7 +16,7 @@ internal static class OpenTelemetryProducerEventsHandler
     private const string AttributeMessagingKafkaDestinationPartition = "messaging.kafka.destination.partition";
     private static readonly TextMapPropagator s_propagator = Propagators.DefaultTextMapPropagator;
 
-    public static Task OnProducerStarted(IMessageContext context)
+    public static Task OnProducerStarted(IMessageContext context, KafkaFlowInstrumentationOptions options)
     {
         try
         {
@@ -55,6 +55,8 @@ internal static class OpenTelemetryProducerEventsHandler
             {
                 SetProducerTags(context, activity);
             }
+
+            options?.EnrichProducer?.Invoke(activity, context);
         }
         catch
         {

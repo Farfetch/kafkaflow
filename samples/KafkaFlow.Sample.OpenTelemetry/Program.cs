@@ -32,7 +32,18 @@ public class Program
         services.AddKafka(
             kafka => kafka
                 .UseConsoleLog()
-                .AddOpenTelemetryInstrumentation()
+                .AddOpenTelemetryInstrumentation(options =>
+                {
+                    options.EnrichProducer = (activity, messageContext) =>
+                    {
+                        activity.SetTag("messaging.destination.producername", "KafkaFlowOtel");
+                    };
+
+                    options.EnrichConsumer = (activity, messageContext) =>
+                    {
+                        activity.SetTag("messaging.destination.groupid", messageContext.ConsumerContext.GroupId);
+                    };
+                })
                 .AddCluster(
                     cluster => cluster
                         .WithBrokers(new[]

@@ -11,13 +11,25 @@ internal class MessageContext : IMessageContext
         IConsumerContext consumer,
         IProducerContext producer,
         IReadOnlyCollection<string> brokers)
+        : this(message, headers, dependencyResolver, consumer, producer, brokers, new Dictionary<string, object>())
+    {
+    }
+
+    private MessageContext(
+        Message message,
+        IMessageHeaders headers,
+        IDependencyResolver dependencyResolver,
+        IConsumerContext consumer,
+        IProducerContext producer,
+        IReadOnlyCollection<string> brokers,
+        IDictionary<string, object> items)
     {
         this.Message = message;
         this.DependencyResolver = dependencyResolver;
         this.Headers = headers ?? new MessageHeaders();
         this.ConsumerContext = consumer;
         this.ProducerContext = producer;
-        this.Items = new Dictionary<string, object>();
+        this.Items = items;
         this.Brokers = brokers;
     }
 
@@ -41,5 +53,6 @@ internal class MessageContext : IMessageContext
         this.DependencyResolver,
         this.ConsumerContext,
         this.ProducerContext,
-        this.Brokers);
+        this.Brokers,
+        this.Items);
 }
