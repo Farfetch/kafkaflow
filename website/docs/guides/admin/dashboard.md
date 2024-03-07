@@ -61,7 +61,6 @@ await kafkaBus.StartAsync();
 await app.RunAsync();
 ```
 
-The dashboard UI will be available at `/kafka-flow` and is refreshed every 5 seconds with telemetry data available at the endpoint `/kafka-flow/telemetry`. 
+The dashboard UI will be available at `/kafkaflow` and is refreshed every 5 seconds with telemetry data available at the endpoint `/kafkaflow/consumers/telemetry`.
 
 ![image](https://user-images.githubusercontent.com/233064/124478023-1d773680-dd7b-11eb-89e4-41a1f4f36a6f.png)
-

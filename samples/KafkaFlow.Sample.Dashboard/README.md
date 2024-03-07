@@ -19,6 +19,14 @@ Position the terminal in that folder and run the following command.
 docker-compose up -d
 ```
 
+### Build Dashboard UI
+
+Using your terminal of choice, navigate to `kafkaflow\src\KafkaFlow.Admin.Dashboard\ClientApp` folder and run the following command:
+
+```bash
+ng build
+```
+
 ### Run the Sample
 
 Using your terminal of choice, start the sample for the sample folder.

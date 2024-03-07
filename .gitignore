@@ -144,6 +144,7 @@ artifacts/
 
 # Node folders
 node_modules/
+/dist
 
 # StyleCop
 StyleCopReport.xml
