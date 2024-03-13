@@ -29,6 +29,18 @@ internal class TraceLogHandler : ILogHandler
                 }));
     }
 
+    public void Warning(string message, Exception ex, object data)
+    {
+        Trace.TraceWarning(
+            JsonSerializer.Serialize(
+                new
+                {
+                    Message = message,
+                    Exception = ex,
+                    Data = data,
+                }));
+    }
+
     public void Info(string message, object data)
     {
         Trace.TraceInformation(
