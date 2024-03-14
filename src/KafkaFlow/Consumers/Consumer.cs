@@ -256,12 +256,11 @@ internal class Consumer : IConsumer
 
         if (security?.OAuthBearerTokenRefreshHandler != null)
         {
-            var authenticator = new OAuthBearerAuthenticator();
             var handler = security.OAuthBearerTokenRefreshHandler;
 
             consumerBuilder.SetOAuthBearerTokenRefreshHandler((client, _) =>
             {
-                authenticator.Client = client;
+                var authenticator = new OAuthBearerAuthenticator(client);
 
                 handler(authenticator);
             });

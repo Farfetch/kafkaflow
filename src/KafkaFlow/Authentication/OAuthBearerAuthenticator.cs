@@ -3,17 +3,22 @@ using Confluent.Kafka;
 
 namespace KafkaFlow.Authentication;
 
-internal class OAuthBearerAuthenticator : IOAuthBearerAuthenticator
+internal readonly struct OAuthBearerAuthenticator : IOAuthBearerAuthenticator
 {
-    internal IClient Client { get; set; }
+    private readonly IClient _client;
+
+    public OAuthBearerAuthenticator(IClient client)
+    {
+        _client = client;
+    }
 
     public void SetToken(string tokenValue, long lifetimeMs, string principalName, IDictionary<string, string> extensions = null)
     {
-        Client?.OAuthBearerSetToken(tokenValue, lifetimeMs, principalName, extensions);
+        _client.OAuthBearerSetToken(tokenValue, lifetimeMs, principalName, extensions);
     }
 
     public void SetTokenFailure(string error)
     {
-        Client?.OAuthBearerSetTokenFailure(error);
+        _client.OAuthBearerSetTokenFailure(error);
     }
 }
