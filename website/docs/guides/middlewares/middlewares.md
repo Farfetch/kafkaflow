@@ -17,6 +17,12 @@ Every product/consumer has its own Middlewares instances, so the instances are n
 
 Middlewares are instantiated by the configured dependency injection container, so every dependency configured by your container can be delivered in the middleware constructor.
 
+:::info
+
+Use overloads of the `Add<TMiddleware>(MiddlewareLifetime)` method when registering middlewares with your DI container to control middleware instance lifetime.
+
+:::
+
 ## Use Cases
 
 Middlewares can perform several jobs. As an example, Middlewares can be used to:
