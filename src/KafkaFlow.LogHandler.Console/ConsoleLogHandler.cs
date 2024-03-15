@@ -24,6 +24,21 @@ internal class ConsoleLogHandler : ILogHandler
         $"\nKafkaFlow: {message} | Data: {JsonSerializer.Serialize(data)}",
         ConsoleColor.Yellow);
 
+    public void Warning(string message, Exception ex, object data)
+    {
+        var serializedException = JsonSerializer.Serialize(
+         new
+         {
+             Type = ex.GetType().FullName,
+             ex.Message,
+             ex.StackTrace,
+         });
+
+        Print(
+            $"\nKafkaFlow: {message} | Data: {JsonSerializer.Serialize(data)} | Exception: {serializedException}",
+            ConsoleColor.Yellow);
+    }
+
     public void Info(string message, object data) => Print(
         $"\nKafkaFlow: {message} | Data: {JsonSerializer.Serialize(data)}",
         ConsoleColor.Green);

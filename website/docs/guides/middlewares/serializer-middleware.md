@@ -24,7 +24,7 @@ Both classes can be provided as an argument through a factory method too.
 
 :::tip
 For topics that have just one message type, use the `AddSingleTypeSerializer`/`AddSingleTypeDeserializer` method.
-:::tip
+:::
 
 
 ```csharp
@@ -43,7 +43,7 @@ services.AddKafka(kafka => kafka
                     resolver => new JsonMessageSerializer(...),
                     resolver => new YourTypeResolver(...))
                 // or
-                .AddSingleTypeSerializer<JsonMessageSerializer, YourMessageType>()
+                .AddSingleTypeSerializer<YourMessageType, JsonMessageSerializer>()
                 // or
                 .AddSingleTypeSerializer<YourMessageType>(resolver => new JsonMessageSerializer(...))
                 ...

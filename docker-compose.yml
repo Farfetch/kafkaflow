@@ -39,20 +39,26 @@ services:
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "broker:9092", "--list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
       
   schema-registry:
     image: confluentinc/cp-schema-registry:7.2.1
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
-      - broker
+      broker:
+        condition: service_healthy
     ports:
       - "8081:8081"
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
-      
+     
   kafka-tools:
     image: confluentinc/cp-kafka:7.0.5
     hostname: kafka

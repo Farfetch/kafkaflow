@@ -10,7 +10,7 @@ KafkaFlow provides a Dashboard where you can visualize information related to yo
 
 :::caution
 It is important to note that the Dashboard runs, shows information, and manages the consumers on all application instances. This means that if you have 10 machines running your application, the Dashboard will run in every instance. **Any operation will affect the consumer in all the machines**.
-:::caution
+:::
 
 ## Adding the Dashboard
 
@@ -61,7 +61,6 @@ await kafkaBus.StartAsync();
 await app.RunAsync();
 ```
 
-The dashboard UI will be available at `/kafka-flow` and is refreshed every 5 seconds with telemetry data available at the endpoint `/kafka-flow/telemetry`. 
+The dashboard UI will be available at `/kafkaflow` and is refreshed every 5 seconds with telemetry data available at the endpoint `/kafkaflow/consumers/telemetry`.
 
 ![image](https://user-images.githubusercontent.com/233064/124478023-1d773680-dd7b-11eb-89e4-41a1f4f36a6f.png)
-
