@@ -2,6 +2,7 @@ using System;
 using Confluent.Kafka;
 using KafkaFlow.Configuration;
 using SaslMechanism = KafkaFlow.Configuration.SaslMechanism;
+using SaslOauthbearerMethod = KafkaFlow.Configuration.SaslOauthbearerMethod;
 using SecurityProtocol = KafkaFlow.Configuration.SecurityProtocol;
 using SslEndpointIdentificationAlgorithm = KafkaFlow.Configuration.SslEndpointIdentificationAlgorithm;
 
@@ -16,6 +17,13 @@ internal static class ConfigurationExtensions
         SaslMechanism.ScramSha256 => Confluent.Kafka.SaslMechanism.ScramSha256,
         SaslMechanism.ScramSha512 => Confluent.Kafka.SaslMechanism.ScramSha512,
         SaslMechanism.OAuthBearer => Confluent.Kafka.SaslMechanism.OAuthBearer,
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
+    public static Confluent.Kafka.SaslOauthbearerMethod ToConfluent(this SaslOauthbearerMethod method) => method switch
+    {
+        SaslOauthbearerMethod.Default => Confluent.Kafka.SaslOauthbearerMethod.Default,
+        SaslOauthbearerMethod.Oidc => Confluent.Kafka.SaslOauthbearerMethod.Oidc,
         _ => throw new ArgumentOutOfRangeException()
     };
 
@@ -71,5 +79,10 @@ internal static class ConfigurationExtensions
         config.SaslMechanism = securityInformation.SaslMechanism?.ToConfluent();
         config.SaslUsername = securityInformation.SaslUsername;
         config.SaslPassword = securityInformation.SaslPassword;
+        config.SaslOauthbearerMethod = securityInformation.SaslOauthbearerMethod?.ToConfluent();
+        config.SaslOauthbearerClientId = securityInformation.SaslOauthbearerClientId;
+        config.SaslOauthbearerClientSecret = securityInformation.SaslOauthbearerClientSecret;
+        config.SaslOauthbearerTokenEndpointUrl = securityInformation.SaslOauthbearerTokenEndpointUrl;
+        config.SaslOauthbearerScope = securityInformation.SaslOauthbearerScope;
     }
 }
