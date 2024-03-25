@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using KafkaFlow.Authentication;
 using KafkaFlow.Configuration;
 
 namespace KafkaFlow.Consumers;
@@ -235,25 +236,35 @@ internal class Consumer : IConsumer
 
         var kafkaConfig = this.Configuration.GetKafkaConfig();
 
-        var consumerBuilder = new ConsumerBuilder<byte[], byte[]>(kafkaConfig);
+        var consumerBuilder = new ConsumerBuilder<byte[], byte[]>(kafkaConfig)
+            .SetPartitionsAssignedHandler(
+                (consumer, partitions) => this.FirePartitionsAssignedHandlers(consumer, partitions))
+            .SetPartitionsRevokedHandler(
+                (consumer, partitions) =>
+                {
+                    this.Assignment = new List<TopicPartition>();
+                    this.Subscription = new List<string>();
+                    _currentPartitionsOffsets.Clear();
+                    _flowManager.Stop();
+                    _partitionsRevokedHandlers.ForEach(handler => handler(_dependencyResolver, consumer, partitions));
+                })
+            .SetErrorHandler((consumer, error) => _errorsHandlers.ForEach(x => x(consumer, error)))
+            .SetStatisticsHandler((consumer, statistics) => _statisticsHandlers.ForEach(x => x(consumer, statistics)));
 
-        _consumer =
-            consumerBuilder
-                .SetPartitionsAssignedHandler(
-                    (consumer, partitions) => this.FirePartitionsAssignedHandlers(consumer, partitions))
-                .SetPartitionsRevokedHandler(
-                    (consumer, partitions) =>
-                    {
-                        this.Assignment = new List<TopicPartition>();
-                        this.Subscription = new List<string>();
-                        _currentPartitionsOffsets.Clear();
-                        _flowManager.Stop();
+        var security = this.Configuration.ClusterConfiguration.GetSecurityInformation();
 
-                        _partitionsRevokedHandlers.ForEach(handler => handler(_dependencyResolver, consumer, partitions));
-                    })
-                .SetErrorHandler((consumer, error) => _errorsHandlers.ForEach(x => x(consumer, error)))
-                .SetStatisticsHandler((consumer, statistics) => _statisticsHandlers.ForEach(x => x(consumer, statistics)))
-                .Build();
+        if (security?.OAuthBearerTokenRefreshHandler != null)
+        {
+            var handler = security.OAuthBearerTokenRefreshHandler;
+
+            consumerBuilder.SetOAuthBearerTokenRefreshHandler((client, _) =>
+            {
+                var authenticator = new OAuthBearerAuthenticator(client);
+                handler(authenticator);
+            });
+        }
+
+        _consumer = consumerBuilder.Build();
 
         if (this.Configuration.Topics.Any())
         {

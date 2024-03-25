@@ -14,4 +14,7 @@ public enum SaslMechanism
 
     /// <summary>SCRAM-SHA-512</summary>
     ScramSha512,
+
+    /// <summary>OAUTH-BEARER</summary>
+    OAuthBearer,
 }
