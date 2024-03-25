@@ -40,6 +40,7 @@
         <ProjectReference Include="..\..\src\KafkaFlow.OpenTelemetry\KafkaFlow.OpenTelemetry.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow.Serializer.JsonCore\KafkaFlow.Serializer.JsonCore.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow.Serializer.ProtobufNet\KafkaFlow.Serializer.ProtobufNet.csproj" />
+        <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.AvroConvert\KafkaFlow.Serializer.SchemaRegistry.AvroConvert.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro\KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.ConfluentJson\KafkaFlow.Serializer.SchemaRegistry.ConfluentJson.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf.csproj" />

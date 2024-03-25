@@ -62,6 +62,7 @@ Install the [KafkaFlow.SchemaRegistry](https://www.nuget.org/packages/KafkaFlow.
 -   [KafkaFlow.Serializer.SchemaRegistry.ConfluentJson](https://www.nuget.org/packages/KafkaFlow.Serializer.SchemaRegistry.ConfluentJson/)
 -   [KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro](https://www.nuget.org/packages/KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro/)
 -   [KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf](https://www.nuget.org/packages/KafkaFlow.Serializer.ConfluentProtobuf/)
+-   [KafkaFlow.Serializer.SchemaRegistry.AvroConvert](https://www.nuget.org/packages/KafkaFlow.Serializer.AvroConvert/)
 
 ```csharp
 public class Startup
@@ -89,7 +90,7 @@ public class Startup
 }
 ```
 :::info
-[ConfluentAvro](https://www.nuget.org/packages/KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro/) and [ConfluentProtobuf](https://www.nuget.org/packages/KafkaFlow.Serializer.ConfluentProtobuf/) type resolvers can support multiple types per topic however, due to the JSON serialization format used by [confluent-kafka-dotnet](https://docs.confluent.io/platform/current/clients/confluent-kafka-dotnet/_site/api/Confluent.SchemaRegistry.Serdes.JsonSerializer-1.html), [ConfluentJson](https://www.nuget.org/packages/KafkaFlow.Serializer.SchemaRegistry.ConfluentJson/) type resolver can only resolve a single type of message per topic. 
+[ConfluentAvro](https://www.nuget.org/packages/KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro/), [ConfluentProtobuf](https://www.nuget.org/packages/KafkaFlow.Serializer.ConfluentProtobuf/) and [AvroConvert](https://www.nuget.org/packages/KafkaFlow.Serializer.AvroConvert/) type resolvers can support multiple types per topic however, due to the JSON serialization format used by [confluent-kafka-dotnet](https://docs.confluent.io/platform/current/clients/confluent-kafka-dotnet/_site/api/Confluent.SchemaRegistry.Serdes.JsonSerializer-1.html), [ConfluentJson](https://www.nuget.org/packages/KafkaFlow.Serializer.SchemaRegistry.ConfluentJson/) type resolver can only resolve a single type of message per topic. 
 :::
 
 :::info

@@ -110,4 +110,21 @@ public class SerializationTest
             await MessageStorage.AssertMessageAsync(message);
         }
     }
+
+    [TestMethod]
+    public async Task AvroConvertMessageTest()
+    {
+        // Arrange
+        var producer = _provider.GetRequiredService<IMessageProducer<AvroConvertProducer>>();
+        var messages = _fixture.CreateMany<TestAvroConvertMessage>(10).ToList();
+
+        // Act
+        await Task.WhenAll(messages.Select(m => producer.ProduceAsync(Guid.NewGuid().ToString(), m)));
+
+        // Assert
+        foreach (var message in messages)
+        {
+            await MessageStorage.AssertMessageAsync(message);
+        }
+    }
 }

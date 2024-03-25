@@ -21,6 +21,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\KafkaFlow.LogHandler.Console\KafkaFlow.LogHandler.Console.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow.Microsoft.DependencyInjection\KafkaFlow.Microsoft.DependencyInjection.csproj" />
+        <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.AvroConvert\KafkaFlow.Serializer.SchemaRegistry.AvroConvert.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro\KafkaFlow.Serializer.SchemaRegistry.ConfluentAvro.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.ConfluentJson\KafkaFlow.Serializer.SchemaRegistry.ConfluentJson.csproj" />
         <ProjectReference Include="..\..\src\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf\KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf.csproj" />
