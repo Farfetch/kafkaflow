@@ -216,7 +216,7 @@ public class SecurityInformation
     ///     default: false
     ///     importance: low
     /// </summary>
-    public SaslOauthbearerMethod? SaslOauthbearerMethod;
+    public SaslOauthbearerMethod? SaslOauthbearerMethod { get; set; }
 
     /// <summary>
     ///     Gets or sets the SaslOauthbearerClientId
@@ -224,7 +224,7 @@ public class SecurityInformation
     ///     default: false
     ///     importance: low
     /// </summary>
-    public string SaslOauthbearerClientId;
+    public string SaslOauthbearerClientId { get; set; }
 
     /// <summary>
     ///     Gets or sets the SaslOauthbearerClientSecret
