@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using KafkaFlow.Middlewares.Serializer.Resolvers;
 using Microsoft.IO;
 
@@ -38,18 +39,21 @@ public class SerializerProducerMiddleware : IMessageMiddleware
     {
         await _typeResolver.OnProduceAsync(context);
 
-        byte[] messageValue;
+        byte[] messageValue = Array.Empty<byte>();
 
-        using (var buffer = s_memoryStreamManager.GetStream())
+        if (context.Message.Value is not null)
         {
-            await _serializer
-                .SerializeAsync(
-                    context.Message.Value,
-                    buffer,
-                    new SerializerContext(context.ProducerContext.Topic))
-                .ConfigureAwait(false);
+            using (var buffer = s_memoryStreamManager.GetStream())
+            {
+                await _serializer
+                    .SerializeAsync(
+                        context.Message.Value,
+                        buffer,
+                        new SerializerContext(context.ProducerContext.Topic))
+                    .ConfigureAwait(false);
 
-            messageValue = buffer.ToArray();
+                messageValue = buffer.ToArray();
+            }
         }
 
         await next(context.SetMessage(context.Message.Key, messageValue)).ConfigureAwait(false);
