@@ -209,4 +209,44 @@ public class SecurityInformation
     ///     importance: low
     /// </summary>
     public bool? EnableSaslOauthbearerUnsecureJwt { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the SaslOauthbearerMethod
+    ///
+    ///     default: false
+    ///     importance: low
+    /// </summary>
+    public SaslOauthbearerMethod? SaslOauthbearerMethod { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the SaslOauthbearerClientId
+    ///
+    ///     default: false
+    ///     importance: low
+    /// </summary>
+    public string SaslOauthbearerClientId { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the SaslOauthbearerClientSecret
+    ///
+    ///     default: false
+    ///     importance: low
+    /// </summary>
+    public string SaslOauthbearerClientSecret { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the SaslOauthbearerTokenEndpointUrl
+    ///
+    ///     default: false
+    ///     importance: low
+    /// </summary>
+    public string SaslOauthbearerTokenEndpointUrl { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the SaslOauthbearerScope
+    ///
+    ///     default: false
+    ///     importance: low
+    /// </summary>
+    public string SaslOauthbearerScope { get; set; }
 }
