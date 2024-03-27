@@ -45,7 +45,7 @@ public class ProducerTest
         var key = Guid.NewGuid().ToString();
 
         // Act
-        await producer.ProduceAsync(key, null);
+        await producer.ProduceAsync(key, Array.Empty<byte>());
 
         // Assert
         await MessageStorage.AssertNullMessageAsync();
