@@ -36,4 +36,18 @@ public class ProducerTest
         // Assert
         await MessageStorage.AssertMessageAsync(message);
     }
+
+    [TestMethod]
+    public async Task ProduceNullMessageTest()
+    {
+        // Arrange
+        var producer = _provider.GetRequiredService<IMessageProducer<NullProducer>>();
+        var key = Guid.NewGuid().ToString();
+
+        // Act
+        await producer.ProduceAsync(key, Array.Empty<byte>());
+
+        // Assert
+        await MessageStorage.AssertNullMessageAsync();
+    }
 }

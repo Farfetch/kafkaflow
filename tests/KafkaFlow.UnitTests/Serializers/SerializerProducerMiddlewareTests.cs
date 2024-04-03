@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -84,6 +85,60 @@ public class SerializerProducerMiddlewareTests
         _serializerMock.VerifyAll();
         _typeResolverMock.VerifyAll();
     }
+
+    [TestMethod]
+    public async Task Invoke_NullMessage_Serialize()
+    {
+        // Arrange
+        byte[] rawMessage = null;
+        var key = new object();
+        var deserializedMessage = new Message(key, new TestMessage());
+        IMessageContext resultContext = null;
+        var producerContext = new Mock<IProducerContext>();
+        producerContext.SetupGet(x => x.Topic).Returns("test-topic");
+
+        var transformedContextMock = new Mock<IMessageContext>();
+
+        _contextMock
+            .SetupGet(x => x.Message)
+            .Returns(deserializedMessage);
+
+        _typeResolverMock.Setup(x => x.OnProduceAsync(_contextMock.Object));
+
+        _serializerMock
+            .Setup(
+                x => x.SerializeAsync(
+                    deserializedMessage.Value,
+                    It.IsAny<Stream>(),
+                    It.IsAny<ISerializerContext>()))
+            .Callback((object _, Stream stream, ISerializerContext _) => stream.WriteAsync(rawMessage));
+
+        _contextMock
+            .Setup(x => x.SetMessage(key, It.IsAny<IEnumerable<byte>>()))
+            .Returns(transformedContextMock.Object);
+
+        _contextMock
+            .SetupGet(x => x.ProducerContext)
+            .Returns(producerContext.Object);
+
+        // Act
+        await _target.Invoke(
+            _contextMock.Object,
+            ctx =>
+            {
+                resultContext = ctx;
+                return Task.CompletedTask;
+            });
+
+        // Assert
+        resultContext.Should().NotBeNull();
+        resultContext.Should().Be(transformedContextMock.Object);
+        resultContext.Message.Value.Should().BeNull();
+        _contextMock.VerifyAll();
+        _serializerMock.VerifyAll();
+        _typeResolverMock.VerifyAll();
+    }
+
 
     private class TestMessage
     {
