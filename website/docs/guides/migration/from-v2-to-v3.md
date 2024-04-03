@@ -244,6 +244,9 @@ For the KafkaFlow engine to adapt to the dynamic change of workers, the way the 
 
 To achieve this, a new method in the message context was provided to signal the message completion `.Complete()`. Additionally, a new property called `AutoMessageCompletion` was added to signal if KafkaFlow should signal the message as completed automatically which is the default behavior. This property is useful for scenarios where we don't want to complete the message right away, for example in Batch Consume scenarios.
 
+- Use `WithManualMessageCompletion()` instead of `WithManualStoreOffsets()`.
+- Use `context.ConsumerContext.Complete()` instead of `context.ConsumerContext.StoreOffset()`.
+
 ### 1.3 Expose Worker Events to Client Applications
 
 > Related Issues: [#427](https://github.com/Farfetch/kafkaflow/issues/427)

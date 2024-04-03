@@ -26,6 +26,8 @@ Both classes can be provided as an argument through a factory method too.
 For topics that have just one message type, use the `AddSingleTypeSerializer`/`AddSingleTypeDeserializer` method.
 :::
 
+Serializer middleware also handles the produce of tombstone records. The messages produced are `null` whenever the message value is null, but not when that value is an empty `byte` array.
+
 
 ```csharp
 services.AddKafka(kafka => kafka
@@ -43,7 +45,7 @@ services.AddKafka(kafka => kafka
                     resolver => new JsonMessageSerializer(...),
                     resolver => new YourTypeResolver(...))
                 // or
-                .AddSingleTypeSerializer<JsonMessageSerializer, YourMessageType>()
+                .AddSingleTypeSerializer<YourMessageType, JsonMessageSerializer>()
                 // or
                 .AddSingleTypeSerializer<YourMessageType>(resolver => new JsonMessageSerializer(...))
                 ...

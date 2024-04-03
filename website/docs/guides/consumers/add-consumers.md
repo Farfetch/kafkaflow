@@ -106,9 +106,8 @@ services.AddKafka(kafka => kafka
 ## Store Offsets Manually
 
 By default, offsets are stored after the handler and middleware execution automatically.
-This is the equivalent to configure the consumer as `WithAutoStoreOffsets()`.
 
-To control Offset storing, it's possible to configure using `WithManualStoreOffsets()` as the following example:
+To control Offset storing, it's possible to configure using `WithManualMessageCompletion()` as the following example:
 
 
 ```csharp
@@ -121,7 +120,7 @@ services.AddKafka(kafka => kafka
         .AddConsumer(consumer => consumer
             .Topic("topic-name")
             .WithGroupId("sample-group")
-            .WithManualStoreOffsets()
+            .WithManualMessageCompletion()
             ...
         )
     )

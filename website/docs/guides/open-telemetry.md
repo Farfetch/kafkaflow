@@ -25,7 +25,40 @@ services.AddKafka(
 );
 ```
 
-Once you have your .NET application instrumentation configured ([see here](https://opentelemetry.io/docs/instrumentation/net/getting-started/)), you just need to subscribe to the source `KafkaFlow.OpenTelemetry` that is accessible through a constant at `KafkaFlowInstrumentation.ActivitySourceName`.
+Once you have your .NET application instrumentation configured ([see here](https://opentelemetry.io/docs/instrumentation/net/getting-started/)), the KafkaFlow activity can be captured by adding the source `KafkaFlowInstrumentation.ActivitySourceName` in the tracer provider builder, e.g.:
+
+```csharp
+ using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+     .AddSource(KafkaFlowInstrumentation.ActivitySourceName)
+     ...
+```
+
+## Advanced Configuration
+
+The instrumentation can be configured to change the default behavior by using KafkaFlowInstrumentationOptions.
+
+### Enrich
+
+This option can be used to enrich the `Activity` with additional information from `IMessageContext` object. It defines separate methods for producer and consumer enrich:
+
+```csharp
+services.AddKafka(
+    kafka => kafka
+        .AddCluster(...)
+        .AddOpenTelemetryInstrumentation(options =>
+        {
+            options.EnrichProducer = (activity, messageContext) =>
+            {
+                activity.SetTag("messaging.destination.producername", "KafkaFlowOtel");
+            };
+
+            options.EnrichConsumer = (activity, messageContext) =>
+            {
+                activity.SetTag("messaging.destination.group.id", messageContext.ConsumerContext.GroupId);
+            };
+        })
+);
+```
 
 ## Using .NET Automatic Instrumentation
 

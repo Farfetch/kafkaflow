@@ -96,7 +96,7 @@ internal class TelemetryScheduler : ITelemetryScheduler
         }
         catch (Exception e)
         {
-            _logHandler.Warning("Error producing telemetry data", new { Exception = e });
+            _logHandler.Warning("Error producing telemetry data", e, null);
         }
     }
 }

@@ -17,6 +17,12 @@ Every product/consumer has its own Middlewares instances, so the instances are n
 
 Middlewares are instantiated by the configured dependency injection container, so every dependency configured by your container can be delivered in the middleware constructor.
 
+:::info
+
+Use overloads of the `Add<TMiddleware>(MiddlewareLifetime)` method when registering middlewares with your DI container to control middleware instance lifetime.
+
+:::
+
 ## Use Cases
 
 Middlewares can perform several jobs. As an example, Middlewares can be used to:
@@ -44,7 +50,7 @@ The message will be delivered as a byte array to the first middleware; you will 
 
 ## When Producing
 
-The middlewares are called when the `Produce` or `PoduceAsync` of the `IMessageProducer` is called. After all the middlewares execute, the message will be published to Kafka.
+The middlewares are called when the `Produce` or `ProduceAsync` of the `IMessageProducer` is called. After all the middlewares execute, the message will be published to Kafka.
 
 ## Creating a middleware
 
@@ -144,7 +150,7 @@ public class JsonDeserializeMiddleware : IMessageMiddleware
     public Task Invoke(IMessageContext context, MiddlewareDelegate next)
     {
         if(!(context.Message is byte[] rawMessage))
-            throw new InvalidoperationException();
+            throw new InvalidOperationException();
 
         var type = Type.GetType(context.Headers.GetString("Message-Type"));
 
