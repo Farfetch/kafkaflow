@@ -14,6 +14,8 @@ public class ClusterConfiguration
     private readonly List<IProducerConfiguration> _producers = new();
     private readonly List<IConsumerConfiguration> _consumers = new();
     private readonly ReadOnlyCollection<TopicConfiguration> _topicsToCreateIfNotExist;
+    private SecurityInformation _securityInformation;
+    private bool _securityInformationLoaded;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ClusterConfiguration"/> class.
@@ -103,5 +105,14 @@ public class ClusterConfiguration
     /// Gets the kafka security information
     /// </summary>
     /// <returns></returns>
-    public SecurityInformation GetSecurityInformation() => _securityInformationHandler?.Invoke();
+    public SecurityInformation GetSecurityInformation()
+    {
+        if (!_securityInformationLoaded)
+        {
+            _securityInformation = _securityInformationHandler?.Invoke();
+            _securityInformationLoaded = true;
+        }
+
+        return _securityInformation;
+    }
 }

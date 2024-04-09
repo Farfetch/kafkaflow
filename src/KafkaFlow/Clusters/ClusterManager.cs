@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using Confluent.Kafka.Admin;
+using KafkaFlow.Authentication;
 using KafkaFlow.Configuration;
 
 namespace KafkaFlow.Clusters;
@@ -32,8 +33,22 @@ internal class ClusterManager : IClusterManager, IDisposable
 
                 config.ReadSecurityInformationFrom(configuration);
 
-                return new AdminClientBuilder(config)
-                    .Build();
+                var adminClientBuilder = new AdminClientBuilder(config);
+
+                var security = configuration.GetSecurityInformation();
+
+                if (security?.OAuthBearerTokenRefreshHandler != null)
+                {
+                    var handler = security.OAuthBearerTokenRefreshHandler;
+
+                    adminClientBuilder.SetOAuthBearerTokenRefreshHandler((client, _) =>
+                    {
+                        var authenticator = new OAuthBearerAuthenticator(client);
+                        handler(authenticator);
+                    });
+                }
+
+                return adminClientBuilder.Build();
             });
     }
 
