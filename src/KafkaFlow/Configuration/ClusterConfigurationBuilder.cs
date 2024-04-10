@@ -110,8 +110,8 @@ internal class ClusterConfigurationBuilder : IClusterConfigurationBuilder
 
     public IClusterConfigurationBuilder CreateTopicIfNotExists(
         string topicName,
-        int numberOfPartitions,
-        short replicationFactor)
+        int numberOfPartitions = -1,
+        short replicationFactor = -1)
     {
         _topicsToCreateIfNotExist.Add(new TopicConfiguration(topicName, numberOfPartitions, replicationFactor));
         return this;

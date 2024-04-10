@@ -75,11 +75,11 @@ public interface IClusterConfigurationBuilder
     /// Adds a Topic to the Cluster
     /// </summary>
     /// <param name="topicName">The topic name</param>
-    /// <param name="numberOfPartitions">The number of Topic partitions</param>
-    /// <param name="replicationFactor">The Topic replication factor</param>
+    /// <param name="numberOfPartitions">The number of Topic partitions. Default is to use the cluster-defined partitions.</param>
+    /// <param name="replicationFactor">The Topic replication factor. Default is to use the cluster-defined replication factor.</param>
     /// <returns></returns>
     IClusterConfigurationBuilder CreateTopicIfNotExists(
         string topicName,
-        int numberOfPartitions,
-        short replicationFactor);
+        int numberOfPartitions = -1,
+        short replicationFactor = -1);
 }

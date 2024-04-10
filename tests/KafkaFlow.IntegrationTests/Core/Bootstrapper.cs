@@ -42,6 +42,7 @@ internal static class Bootstrapper
     private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
     private const string AvroTopicName = "test-avro";
     private const string NullTopicName = "test-null";
+    private const string DefaultParamsTopicName = "test-default-params";
 
     private static readonly Lazy<IServiceProvider> s_lazyProvider = new(SetupProvider);
 
@@ -202,6 +203,7 @@ internal static class Bootstrapper
                         .CreateTopicIfNotExists(ProtobufGzipTopicName, 2, 1)
                         .CreateTopicIfNotExists(ProtobufGzipTopicName2, 2, 1)
                         .CreateTopicIfNotExists(NullTopicName, 1, 1)
+                        .CreateTopicIfNotExists(DefaultParamsTopicName)
                         .AddConsumer(
                             consumer => consumer
                                 .Topic(ProtobufTopicName)
