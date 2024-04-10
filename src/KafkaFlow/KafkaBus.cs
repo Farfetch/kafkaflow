@@ -18,6 +18,8 @@ internal class KafkaBus : IKafkaBus
 
     private readonly List<IConsumerManager> _consumerManagers = new();
 
+    private bool _stopped;
+
     public KafkaBus(
         IDependencyResolver dependencyResolver,
         KafkaConfiguration configuration,
@@ -73,12 +75,22 @@ internal class KafkaBus : IKafkaBus
 
     public Task StopAsync()
     {
-        foreach (var cluster in _configuration.Clusters)
+        lock (_consumerManagers)
         {
-            cluster.OnStoppingHandler(_dependencyResolver);
-        }
+            if (_stopped)
+            {
+                return Task.CompletedTask;
+            }
 
-        return Task.WhenAll(_consumerManagers.Select(x => x.StopAsync()));
+            _stopped = true;
+
+            foreach (var cluster in _configuration.Clusters)
+            {
+                cluster.OnStoppingHandler(_dependencyResolver);
+            }
+
+            return Task.WhenAll(_consumerManagers.Select(x => x.StopAsync()));
+        }
     }
 
     private async Task CreateMissingClusterTopics(ClusterConfiguration cluster)
