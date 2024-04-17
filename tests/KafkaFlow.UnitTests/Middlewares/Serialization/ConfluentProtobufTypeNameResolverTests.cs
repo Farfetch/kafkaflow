@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Confluent.SchemaRegistry;
 
@@ -43,5 +44,59 @@ public class ConfluentProtobufTypeNameResolverTests
 
         // Assert
         protoFields.Should().NotBeNull();
+    }
+    
+    [TestMethod]
+    public async Task ResolveAsync_SchemaWithPackageOnly_ReturnsTypeNameWithPackageNamespace()
+    {
+        // Arrange
+        // below schema-string is base64 encoded protobuf schema of 'syntax = \"proto3\";\npackage kafkaflow.test;\n\nmessage Person {\n  string name = 1;\n}\n'
+        var schemaString = "CgdkZWZhdWx0Eg5rYWZrYWZsb3cudGVzdCIUCgZQZXJzb24SCgoEbmFtZRgBKAliBnByb3RvMw==";
+        var schemaId = 420;
+        
+        _schemaRegistryClient.Setup(client => client.GetSchemaAsync(schemaId, "serialized"))
+            .ReturnsAsync(new RegisteredSchema("test", 1, schemaId, schemaString, SchemaType.Protobuf, new List<SchemaReference>()));
+        
+        // Act
+        var actual = await _schemaRegistryTypeResolver.ResolveAsync(schemaId);
+        
+        // Assert
+        actual.Should().Be("kafkaflow.test.Person");
+    }
+    
+    [TestMethod]
+    public async Task ResolveAsync_SchemaWithCsharpNamespace_ReturnsTypeNameWithCsharpNamespace()
+    {
+        // Arrange
+        // below schema-string is base64 encoded protobuf schema of 'syntax = \"proto3\";\npackage kafkaflow.test;\n\nmessage Person {\n  string name = 1;\n}\n'
+        var schemaString = "CgdkZWZhdWx0Eg5rYWZrYWZsb3cudGVzdCIUCgZQZXJzb24SCgoEbmFtZRgBKAlCEaoCDkthZmthRmxvdy5UZXN0YgZwcm90bzM=";
+        var schemaId = 420;
+        
+        _schemaRegistryClient.Setup(client => client.GetSchemaAsync(schemaId, "serialized"))
+            .ReturnsAsync(new RegisteredSchema("test", 1, schemaId, schemaString, SchemaType.Protobuf, new List<SchemaReference>()));
+        
+        // Act
+        var actual = await _schemaRegistryTypeResolver.ResolveAsync(schemaId);
+        
+        // Assert
+        Assert.AreEqual("KafkaFlow.Test.Person", actual);
+    }
+    
+    [TestMethod]
+    public async Task ResolveAsync_SchemaWithoutPackageOrNamespace_ReturnsTypeNameWithoutNamespace()
+    {
+        // Arrange
+        // below schema-string is base64 encoded protobuf schema of 'syntax = \"proto3\";\n\nmessage Person {\n  string name = 1;\n}\n'
+        var schemaString = "CgdkZWZhdWx0IhQKBlBlcnNvbhIKCgRuYW1lGAEoCWIGcHJvdG8z";
+        var schemaId = 420;
+        
+        _schemaRegistryClient.Setup(client => client.GetSchemaAsync(schemaId, "serialized"))
+            .ReturnsAsync(new RegisteredSchema("test", 1, schemaId, schemaString, SchemaType.Protobuf, new List<SchemaReference>()));
+        
+        // Act
+        var actual = await _schemaRegistryTypeResolver.ResolveAsync(schemaId);
+        
+        // Assert
+        Assert.AreEqual("Person", actual);
     }
 }
