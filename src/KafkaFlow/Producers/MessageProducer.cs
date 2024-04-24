@@ -50,7 +50,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
             headers,
             messageScope.Resolver);
 
-        await _globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext));
+        await _globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext)).ConfigureAwait(false);
 
         try
         {
@@ -65,11 +65,11 @@ internal class MessageProducer : IMessageProducer, IDisposable
                     })
                 .ConfigureAwait(false);
 
-            await _globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext));
+            await _globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext)).ConfigureAwait(false);
         }
         catch (Exception e)
         {
-            await _globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(messageContext, e));
+            await _globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(messageContext, e)).ConfigureAwait(false);
             throw;
         }
 
@@ -311,7 +311,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
         }
         catch (ProduceException<byte[], byte[]> e)
         {
-            await _globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(context, e));
+            await _globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(context, e)).ConfigureAwait(false);
 
             if (e.Error.IsFatal)
             {

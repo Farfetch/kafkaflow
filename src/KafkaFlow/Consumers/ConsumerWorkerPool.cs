@@ -63,7 +63,7 @@ internal class ConsumerWorkerPool : IConsumerWorkerPool
                 new NullOffsetManager() :
                 new OffsetManager(_offsetCommitter, partitions);
 
-            await _offsetCommitter.StartAsync();
+            await _offsetCommitter.StartAsync().ConfigureAwait(false);
 
             this.CurrentWorkersCount = workersCount;
 
@@ -94,7 +94,8 @@ internal class ConsumerWorkerPool : IConsumerWorkerPool
                             _workers.Add(worker);
 
                             return worker.StartAsync(_stopCancellationTokenSource.Token);
-                        }));
+                        }))
+                .ConfigureAwait(false);
 
             _distributionStrategy = _distributionStrategyFactory(_consumerDependencyResolver);
             _distributionStrategy.Initialize(_workers.AsReadOnly());
@@ -129,24 +130,25 @@ internal class ConsumerWorkerPool : IConsumerWorkerPool
             _stopCancellationTokenSource.CancelAfter(_consumer.Configuration.WorkerStopTimeout);
         }
 
-        await Task.WhenAll(currentWorkers.Select(x => x.StopAsync()));
+        await Task.WhenAll(currentWorkers.Select(x => x.StopAsync())).ConfigureAwait(false);
         await _offsetManager
             .WaitContextsCompletionAsync()
-            .WithCancellation(_stopCancellationTokenSource.Token, false);
+            .WithCancellation(_stopCancellationTokenSource.Token, false)
+            .ConfigureAwait(false);
 
         currentWorkers.ForEach(worker => worker.Dispose());
         _stopCancellationTokenSource?.Dispose();
 
         _offsetManager = null;
 
-        await _workerPoolStoppedSubject.FireAsync();
+        await _workerPoolStoppedSubject.FireAsync().ConfigureAwait(false);
 
-        await _offsetCommitter.StopAsync();
+        await _offsetCommitter.StopAsync().ConfigureAwait(false);
     }
 
     public async Task EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken)
     {
-        await _startedTaskSource.Task;
+        await _startedTaskSource.Task.ConfigureAwait(false);
 
         var worker = (IConsumerWorker)await _distributionStrategy
             .GetWorkerAsync(
@@ -155,7 +157,7 @@ internal class ConsumerWorkerPool : IConsumerWorkerPool
                     message.Topic,
                     message.Partition.Value,
                     message.Message.Key,
-                    stopCancellationToken));
+                    stopCancellationToken)).ConfigureAwait(false);
 
         if (worker is null)
         {
@@ -166,7 +168,7 @@ internal class ConsumerWorkerPool : IConsumerWorkerPool
 
         _offsetManager.Enqueue(context.ConsumerContext);
 
-        await worker.EnqueueAsync(context);
+        await worker.EnqueueAsync(context).ConfigureAwait(false);
     }
 
     private MessageContext CreateMessageContext(ConsumeResult<byte[], byte[]> message, IConsumerWorker worker)

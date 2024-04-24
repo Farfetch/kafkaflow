@@ -37,7 +37,7 @@ public class SerializerProducerMiddleware : IMessageMiddleware
     /// <returns></returns>
     public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
     {
-        await _typeResolver.OnProduceAsync(context);
+        await _typeResolver.OnProduceAsync(context).ConfigureAwait(false);
 
         byte[] messageValue = Array.Empty<byte>();
 
