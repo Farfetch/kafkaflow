@@ -48,7 +48,7 @@ internal class KafkaBus : IKafkaBus
 
         foreach (var cluster in _configuration.Clusters)
         {
-            await this.CreateMissingClusterTopics(cluster);
+            await this.CreateMissingClusterTopics(cluster).ConfigureAwait(false);
 
             foreach (var consumerConfiguration in cluster.Consumers)
             {
@@ -101,6 +101,7 @@ internal class KafkaBus : IKafkaBus
         }
 
         await _clusterManagerAccessor[cluster.Name].CreateIfNotExistsAsync(
-            cluster.TopicsToCreateIfNotExist);
+            cluster.TopicsToCreateIfNotExist)
+            .ConfigureAwait(false);
     }
 }

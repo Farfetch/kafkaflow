@@ -70,14 +70,14 @@ internal class ConsumerManager : IConsumerManager
 
     private async Task EvaluateWorkersCountAsync()
     {
-        var newWorkersCount = await this.CalculateWorkersCount(this.Consumer.Assignment);
+        var newWorkersCount = await this.CalculateWorkersCount(this.Consumer.Assignment).ConfigureAwait(false);
 
         if (newWorkersCount == this.WorkerPool.CurrentWorkersCount)
         {
             return;
         }
 
-        await this.ChangeWorkersCountAsync(newWorkersCount);
+        await this.ChangeWorkersCountAsync(newWorkersCount).ConfigureAwait(false);
     }
 
     private async Task ChangeWorkersCountAsync(int workersCount)
@@ -86,10 +86,10 @@ internal class ConsumerManager : IConsumerManager
         {
             this.StopEvaluateWorkerCountTimer();
 
-            await this.Feeder.StopAsync();
-            await this.WorkerPool.StopAsync();
+            await this.Feeder.StopAsync().ConfigureAwait(false);
+            await this.WorkerPool.StopAsync().ConfigureAwait(false);
 
-            await this.WorkerPool.StartAsync(this.Consumer.Assignment, workersCount);
+            await this.WorkerPool.StartAsync(this.Consumer.Assignment, workersCount).ConfigureAwait(false);
             this.Feeder.Start();
 
             this.StartEvaluateWorkerCountTimer();
@@ -155,7 +155,8 @@ internal class ConsumerManager : IConsumerManager
                                     .Select(x => x.Partition.Value)
                                     .ToList()))
                         .ToList()),
-                _dependencyResolver);
+                _dependencyResolver)
+                .ConfigureAwait(false);
         }
         catch (Exception e)
         {

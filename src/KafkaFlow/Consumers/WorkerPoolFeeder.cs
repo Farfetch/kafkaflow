@@ -72,6 +72,6 @@ internal class WorkerPoolFeeder : IWorkerPoolFeeder
             _stopTokenSource.Dispose();
         }
 
-        await (_feederTask ?? Task.CompletedTask);
+        await (_feederTask ?? Task.CompletedTask).ConfigureAwait(false);
     }
 }

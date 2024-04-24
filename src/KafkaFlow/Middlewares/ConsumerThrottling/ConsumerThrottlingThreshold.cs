@@ -21,7 +21,7 @@ internal class ConsumerThrottlingThreshold : IConsumerThrottlingThreshold
             return false;
         }
 
-        await _action.ExecuteAsync();
+        await _action.ExecuteAsync().ConfigureAwait(false);
 
         return true;
     }
