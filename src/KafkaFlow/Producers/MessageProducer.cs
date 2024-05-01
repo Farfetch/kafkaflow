@@ -1,21 +1,25 @@
 using System;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using KafkaFlow.Authentication;
 using KafkaFlow.Configuration;
+using KafkaFlow.Extensions;
 
 namespace KafkaFlow.Producers;
 
-internal class MessageProducer : IMessageProducer, IDisposable
+internal class MessageProducer : IMessageProducer, IAsyncDisposable
 {
+    private readonly Channel<ProduceItem> _queue = Channel.CreateUnbounded<ProduceItem>();
+    private readonly object _producerCreationSync = new();
+
     private readonly IDependencyResolverScope _producerDependencyScope;
     private readonly ILogHandler _logHandler;
     private readonly IProducerConfiguration _configuration;
     private readonly MiddlewareExecutor _middlewareExecutor;
     private readonly GlobalEvents _globalEvents;
-
-    private readonly object _producerCreationSync = new();
+    private readonly Task _produceTask;
 
     private volatile IProducer<byte[], byte[]> _producer;
 
@@ -28,52 +32,42 @@ internal class MessageProducer : IMessageProducer, IDisposable
         _configuration = configuration;
         _middlewareExecutor = new MiddlewareExecutor(configuration.MiddlewaresConfigurations);
         _globalEvents = dependencyResolver.Resolve<GlobalEvents>();
+
+        _produceTask = Task.Run(async () =>
+        {
+            await foreach (var item in _queue.Reader.ReadAllItemsAsync())
+            {
+                IMessageContext context;
+
+                try
+                {
+                    context = await item.MiddlewareCompletion;
+                }
+                catch
+                {
+                    continue;
+                }
+
+                InternalProduce(item, context);
+            }
+        });
     }
 
     public string ProducerName => _configuration.Name;
 
-    public async Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
+    public Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
         string topic,
         object messageKey,
         object messageValue,
         IMessageHeaders headers = null,
         int? partition = null)
     {
-        DeliveryResult<byte[], byte[]> report = null;
-
-        using var messageScope = _producerDependencyScope.Resolver.CreateScope();
-
-        var messageContext = this.CreateMessageContext(
+        return InternalProduceAsync(
             topic,
             messageKey,
             messageValue,
-            headers,
-            messageScope.Resolver);
-
-        await _globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext));
-
-        try
-        {
-            await _middlewareExecutor
-                .Execute(
-                    messageContext,
-                    async context =>
-                    {
-                        report = await this
-                            .InternalProduceAsync(context, partition)
-                            .ConfigureAwait(false);
-                    })
-                .ConfigureAwait(false);
-
-            await _globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext));
-        }
-        catch (Exception e)
-        {
-            await _globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(messageContext, e));
-            throw;
-        }
-
-        return report;
+            headers: headers,
+            partition: partition);
     }
 
     public Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
@@ -85,15 +79,15 @@ internal class MessageProducer : IMessageProducer, IDisposable
         if (string.IsNullOrWhiteSpace(_configuration.DefaultTopic))
         {
             throw new InvalidOperationException(
-                $"There is no default topic defined for producer {this.ProducerName}");
+                $"There is no default topic defined for producer {ProducerName}");
         }
 
-        return this.ProduceAsync(
+        return InternalProduceAsync(
             _configuration.DefaultTopic,
             messageKey,
             messageValue,
-            headers,
-            partition);
+            headers: headers,
+            partition: partition);
     }
 
     public void Produce(
@@ -104,61 +98,13 @@ internal class MessageProducer : IMessageProducer, IDisposable
         Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
         int? partition = null)
     {
-        var messageScope = _producerDependencyScope.Resolver.CreateScope();
-
-        var messageContext = this.CreateMessageContext(
+        _ = InternalProduceAsync(
             topic,
             messageKey,
             messageValue,
-            headers,
-            messageScope.Resolver);
-
-        _globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext));
-
-        _middlewareExecutor
-            .Execute(
-                messageContext,
-                context =>
-                {
-                    var completionSource = new TaskCompletionSource<byte>();
-
-                    this.InternalProduce(
-                        context,
-                        partition,
-                        report =>
-                        {
-                            if (report.Error.IsError)
-                            {
-                                completionSource.SetException(new ProduceException<byte[], byte[]>(report.Error, report));
-                            }
-                            else
-                            {
-                                completionSource.SetResult(0);
-                            }
-
-                            deliveryHandler?.Invoke(report);
-                        });
-
-                    return completionSource.Task;
-                })
-            .ContinueWith(
-                task =>
-                {
-                    if (task.IsFaulted)
-                    {
-                        deliveryHandler?.Invoke(
-                            new DeliveryReport<byte[], byte[]>
-                            {
-                                Error = new Error(ErrorCode.Local_Fail, task.Exception?.Message),
-                                Status = PersistenceStatus.NotPersisted,
-                                Topic = topic,
-                            });
-                    }
-
-                    messageScope.Dispose();
-                });
-
-        _globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext));
+            headers: headers,
+            deliveryHandler: deliveryHandler,
+            partition: partition);
     }
 
     public void Produce(
@@ -171,29 +117,25 @@ internal class MessageProducer : IMessageProducer, IDisposable
         if (string.IsNullOrWhiteSpace(_configuration.DefaultTopic))
         {
             throw new InvalidOperationException(
-                $"There is no default topic defined for producer {this.ProducerName}");
+                $"There is no default topic defined for producer {ProducerName}");
         }
 
-        this.Produce(
+        _ = InternalProduceAsync(
             _configuration.DefaultTopic,
             messageKey,
             messageValue,
-            headers,
-            deliveryHandler,
-            partition);
+            headers: headers,
+            deliveryHandler: deliveryHandler,
+            partition: partition);
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
+        _queue.Writer.Complete();
+
+        await _produceTask;
+
         _producer?.Dispose();
-    }
-
-    private static void FillContextWithResultMetadata(IMessageContext context, DeliveryResult<byte[], byte[]> result)
-    {
-        var concreteProducerContext = (ProducerContext)context.ProducerContext;
-
-        concreteProducerContext.Offset = result.Offset;
-        concreteProducerContext.Partition = result.Partition;
     }
 
     private static Message<byte[], byte[]> CreateMessage(IMessageContext context)
@@ -226,6 +168,77 @@ internal class MessageProducer : IMessageProducer, IDisposable
         };
     }
 
+    private async Task<DeliveryResult<byte[], byte[]>> InternalProduceAsync(
+        string topic,
+        object messageKey,
+        object messageValue,
+        IMessageHeaders headers = null,
+        Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
+        int? partition = null)
+    {
+        var middlewareCompletionSource = new TaskCompletionSource<IMessageContext>();
+        var produceItem = new ProduceItem(partition, deliveryHandler, middlewareCompletionSource.Task);
+
+        _queue.Writer.TryWrite(produceItem);
+
+        using var messageScope = _producerDependencyScope.Resolver.CreateScope();
+
+        var startContext = CreateMessageContext(
+            topic,
+            messageKey,
+            messageValue,
+            headers,
+            messageScope.Resolver);
+
+        await _globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(startContext));
+
+        DeliveryReport<byte[], byte[]> report = null;
+
+        try
+        {
+            await _middlewareExecutor.Execute(
+                startContext,
+                async endContext =>
+                {
+                    middlewareCompletionSource.TrySetResult(endContext);
+                    report = await produceItem.ProduceCompletionSource.Task;
+                });
+        }
+        catch (Exception e)
+        {
+            middlewareCompletionSource.TrySetException(e);
+            await _globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(startContext, e));
+            throw;
+        }
+
+        await _globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(startContext));
+
+        return report;
+    }
+
+    private void OnMessageDelivered(
+        DeliveryReport<byte[], byte[]> report,
+        ProduceItem item,
+        IMessageContext context)
+    {
+        item.DeliveryHandler?.Invoke(report);
+
+        if (report.Error.IsError)
+        {
+            var exception = new ProduceException<byte[], byte[]>(report.Error, report);
+            OnProduceError(context, exception, report);
+            item.ProduceCompletionSource.SetException(exception);
+        }
+        else
+        {
+            var concreteProducerContext = (ProducerContext)context.ProducerContext;
+            concreteProducerContext.Offset = report.Offset;
+            concreteProducerContext.Partition = report.Partition;
+
+            item.ProduceCompletionSource.SetResult(report);
+        }
+    }
+
     private IProducer<byte[], byte[]> EnsureProducer()
     {
         if (_producer != null)
@@ -246,7 +259,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
                     {
                         if (error.IsFatal)
                         {
-                            this.InvalidateProducer(error, null);
+                            InvalidateProducer(error, null);
                         }
                         else
                         {
@@ -294,71 +307,46 @@ internal class MessageProducer : IMessageProducer, IDisposable
             new { Error = error });
     }
 
-    private async Task<DeliveryResult<byte[], byte[]>> InternalProduceAsync(IMessageContext context, int? partition)
+    private void InternalProduce(ProduceItem item, IMessageContext context)
     {
-        DeliveryResult<byte[], byte[]> result = null;
-
-        var localProducer = this.EnsureProducer();
+        var producer = EnsureProducer();
         var message = CreateMessage(context);
 
         try
         {
-            var produceTask = partition.HasValue ?
-                localProducer.ProduceAsync(new TopicPartition(context.ProducerContext.Topic, partition.Value), message) :
-                localProducer.ProduceAsync(context.ProducerContext.Topic, message);
-
-            result = await produceTask.ConfigureAwait(false);
-        }
-        catch (ProduceException<byte[], byte[]> e)
-        {
-            await _globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(context, e));
-
-            if (e.Error.IsFatal)
+            if (item.Partition.HasValue)
             {
-                this.InvalidateProducer(e.Error, result);
+                producer.Produce(
+                    new TopicPartition(
+                        context.ProducerContext.Topic,
+                        item.Partition.Value),
+                    message,
+                    report => OnMessageDelivered(report, item, context));
             }
-
-            throw;
+            else
+            {
+                producer.Produce(
+                    context.ProducerContext.Topic,
+                    message,
+                    report => OnMessageDelivered(report, item, context));
+            }
         }
-
-        FillContextWithResultMetadata(context, result);
-
-        return result;
+        catch (Exception e)
+        {
+            OnProduceError(context, e, null);
+        }
     }
 
-    private void InternalProduce(
+    private async void OnProduceError(
         IMessageContext context,
-        int? partition,
-        Action<DeliveryReport<byte[], byte[]>> deliveryHandler)
+        Exception e,
+        DeliveryResult<byte[], byte[]> result)
     {
-        var localProducer = this.EnsureProducer();
-        var message = CreateMessage(context);
+        await _globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(context, e));
 
-        if (partition.HasValue)
+        if (e is KafkaException kafkaException && kafkaException.Error.IsFatal)
         {
-            localProducer.Produce(
-                new TopicPartition(context.ProducerContext.Topic, partition.Value),
-                message,
-                Handler);
-
-            return;
-        }
-
-        localProducer.Produce(
-            context.ProducerContext.Topic,
-            message,
-            Handler);
-
-        void Handler(DeliveryReport<byte[], byte[]> report)
-        {
-            if (report.Error.IsFatal)
-            {
-                this.InvalidateProducer(report.Error, report);
-            }
-
-            FillContextWithResultMetadata(context, report);
-
-            deliveryHandler(report);
+            InvalidateProducer(kafkaException.Error, result);
         }
     }
 
@@ -376,5 +364,26 @@ internal class MessageProducer : IMessageProducer, IDisposable
             null,
             new ProducerContext(topic, _producerDependencyScope.Resolver),
             _configuration.Cluster.Brokers);
+    }
+
+    private class ProduceItem
+    {
+        public ProduceItem(
+            int? partition,
+            Action<DeliveryReport<byte[], byte[]>> deliveryHandler,
+            Task<IMessageContext> middlewareCompletion)
+        {
+            Partition = partition;
+            DeliveryHandler = deliveryHandler;
+            MiddlewareCompletion = middlewareCompletion;
+        }
+
+        public int? Partition { get; }
+
+        public Action<DeliveryReport<byte[], byte[]>> DeliveryHandler { get; }
+
+        public Task<IMessageContext> MiddlewareCompletion { get; }
+
+        public TaskCompletionSource<DeliveryReport<byte[], byte[]>> ProduceCompletionSource { get; } = new();
     }
 }
