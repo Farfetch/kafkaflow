@@ -62,6 +62,7 @@ public interface IMessageProducer
     /// <param name="headers">The message headers</param>
     /// <param name="deliveryHandler">A handler with the operation result</param>
     /// <param name="partition">The partition where the message will be produced, if no partition is provided it will be calculated using the message key</param>
+    [Obsolete("This method will be remove in the next major release, please use ProduceAsync() instead")]
     void Produce(
         string topic,
         object messageKey,
@@ -79,6 +80,7 @@ public interface IMessageProducer
     /// <param name="headers">The message headers</param>
     /// <param name="deliveryHandler">A handler with the operation result</param>
     /// <param name="partition">The partition where the message will be produced, if no partition is provided it will be calculated using the message key</param>
+    [Obsolete("This method will be remove in the next major release, please use ProduceAsync() instead")]
     void Produce(
         object messageKey,
         object messageValue,
