@@ -20,7 +20,13 @@ internal class ConfluentProtobufTypeNameResolver : ISchemaRegistryTypeNameResolv
         var schemaString = (await _client.GetSchemaAsync(id, "serialized")).SchemaString;
 
         var protoFields = FileDescriptorProto.Parser.ParseFrom(ByteString.FromBase64(schemaString));
-
-        return $"{protoFields.Package}.{protoFields.MessageType.FirstOrDefault()?.Name}";
+        var messageType = protoFields.MessageType.FirstOrDefault()?.Name;
+        var ns = protoFields.Options?.HasCsharpNamespace == true
+            ? protoFields.Options.CsharpNamespace
+            : protoFields.Package;
+        return BuildTypeName(messageType, ns);
     }
+
+    private static string BuildTypeName(string messageType, string ns)
+        => string.IsNullOrEmpty(ns) ? messageType ?? string.Empty : $"{ns}.{messageType}";
 }
