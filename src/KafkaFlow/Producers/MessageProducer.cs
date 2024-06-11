@@ -188,9 +188,19 @@ internal class MessageProducer : IMessageProducer, IDisposable
         _producer?.Dispose();
     }
 
-    private static void FillContextWithResultMetadata(IMessageContext context, DeliveryResult<byte[], byte[]> result)
+    private void FillContextWithResultMetadata(IMessageContext context, DeliveryResult<byte[], byte[]> result)
     {
-        var concreteProducerContext = (ProducerContext)context.ProducerContext;
+        var concreteProducerContext = context.ProducerContext as ProducerContext;
+
+        if (concreteProducerContext is null)
+        {
+            _logHandler.Warning("Producer context is null on FillContextWithResultMetadata", new
+            {
+                DeliveryResult = result,
+            });
+
+            return;
+        }
 
         concreteProducerContext.Offset = result.Offset;
         concreteProducerContext.Partition = result.Partition;
