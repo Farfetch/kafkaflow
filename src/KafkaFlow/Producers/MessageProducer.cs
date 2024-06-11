@@ -258,7 +258,17 @@ internal class MessageProducer : IMessageProducer, IDisposable
                     {
                         foreach (var handler in _configuration.StatisticsHandlers)
                         {
-                            handler.Invoke(statistics);
+                            try
+                            {
+                                handler?.Invoke(statistics);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logHandler.Error("Kafka Producer StatisticsHandler Error", ex, new
+                                {
+                                    ProducerName = _configuration.Name,
+                                });
+                            }
                         }
                     });
 
@@ -351,14 +361,24 @@ internal class MessageProducer : IMessageProducer, IDisposable
 
         void Handler(DeliveryReport<byte[], byte[]> report)
         {
-            if (report.Error.IsFatal)
+            try
             {
-                this.InvalidateProducer(report.Error, report);
+                if (report.Error.IsFatal)
+                {
+                    this.InvalidateProducer(report.Error, report);
+                }
+
+                FillContextWithResultMetadata(context, report);
+            }
+            catch (Exception ex)
+            {
+                _logHandler.Error("Delivery Result Handler Error", ex, new
+                {
+                    Report = report,
+                });
             }
 
-            FillContextWithResultMetadata(context, report);
-
-            deliveryHandler(report);
+            deliveryHandler?.Invoke(report);
         }
     }
 
