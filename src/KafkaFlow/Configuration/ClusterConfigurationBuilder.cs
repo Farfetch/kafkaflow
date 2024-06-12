@@ -98,13 +98,13 @@ internal class ClusterConfigurationBuilder : IClusterConfigurationBuilder
 
     public IClusterConfigurationBuilder OnStopping(Action<IDependencyResolver> handler)
     {
-        _onStoppingHandler = handler;
+        _onStoppingHandler += handler;
         return this;
     }
 
     public IClusterConfigurationBuilder OnStarted(Action<IDependencyResolver> handler)
     {
-        _onStartedHandler = handler;
+        _onStartedHandler += handler;
         return this;
     }
 
