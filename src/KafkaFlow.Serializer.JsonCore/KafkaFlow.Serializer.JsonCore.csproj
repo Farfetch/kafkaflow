@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
         <PackageId>KafkaFlow.Serializer.JsonCore</PackageId>
         <Description>JSON implementation for KafkaFlow serializer middleware using System.Text.Json</Description>
         <RootNamespace>KafkaFlow.Serializer</RootNamespace>
     </PropertyGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)'== 'netStandard2.0'">
         <PackageReference Include="System.Text.Json" Version="6.0.8" />
     </ItemGroup>
 
