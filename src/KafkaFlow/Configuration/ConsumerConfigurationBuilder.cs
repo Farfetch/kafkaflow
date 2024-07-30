@@ -11,6 +11,7 @@ internal sealed class ConsumerConfigurationBuilder : IConsumerConfigurationBuild
 {
     private readonly List<string> _topics = new();
     private readonly List<TopicPartitions> _topicsPartitions = new();
+    private readonly List<TopicPartitionOffsets> _topicsPartitionOffsets = new();
     private readonly List<Action<string>> _statisticsHandlers = new();
 
     private readonly List<PendingOffsetsStatisticsHandler> _pendingOffsetsStatisticsHandlers = new();
@@ -57,6 +58,12 @@ internal sealed class ConsumerConfigurationBuilder : IConsumerConfigurationBuild
     public IConsumerConfigurationBuilder ManualAssignPartitions(string topicName, IEnumerable<int> partitions)
     {
         _topicsPartitions.Add(new TopicPartitions(topicName, partitions));
+        return this;
+    }
+
+    public IConsumerConfigurationBuilder ManualAssignPartitionOffsets(string topicName, IDictionary<int, long> partitionOffsets)
+    {
+        _topicsPartitionOffsets.Add(new TopicPartitionOffsets(topicName, partitionOffsets));
         return this;
     }
 
@@ -259,6 +266,7 @@ internal sealed class ConsumerConfigurationBuilder : IConsumerConfigurationBuild
             consumerConfigCopy,
             _topics,
             _topicsPartitions,
+            _topicsPartitionOffsets,
             _name,
             clusterConfiguration,
             _disableManagement,

@@ -18,6 +18,8 @@ internal static class MessageStorage
     private static readonly ConcurrentBag<(long, int)> s_versions = new();
     private static readonly ConcurrentBag<byte[]> s_byteMessages = new();
     private static readonly ConcurrentBag<byte[]> s_nullMessages = new();
+    private static readonly ConcurrentBag<OffsetTrackerMessage> s_offsetTrackerMessages = new();
+    private static long s_offsetTrack;
 
     public static void Add(ITestMessage message)
     {
@@ -33,6 +35,12 @@ internal static class MessageStorage
     public static void Add(TestProtoMessage message)
     {
         s_protoMessages.Add(message);
+    }
+    
+    public static void Add(OffsetTrackerMessage message)
+    {
+        s_offsetTrackerMessages.Add(message);
+        s_offsetTrack = Math.Max(message.Offset, s_offsetTrack);
     }
 
     public static void Add(byte[] message)
@@ -139,6 +147,51 @@ internal static class MessageStorage
             await Task.Delay(100).ConfigureAwait(false);
         }
     }
+    
+    public static async Task AssertMessageAsync(OffsetTrackerMessage message)
+    {
+        var start = DateTime.Now;
+
+        while (!s_offsetTrackerMessages.Any(x => x.Id == message.Id && x.Offset == message.Offset))
+        {
+            if (DateTime.Now.Subtract(start).Seconds > TimeoutSec)
+            {
+                Assert.Fail("Message (OffsetTrackerMessage) not received");
+                return;
+            }
+
+            await Task.Delay(100).ConfigureAwait(false);
+        }
+    }
+    
+    public static async Task AssertOffsetTrackerMessageAsync(OffsetTrackerMessage message, bool assertInStore = true)
+    {
+        var start = DateTime.Now;
+
+        while (!s_offsetTrackerMessages.Any(x => x.Id == message.Id && x.Offset == message.Offset))
+        {
+            if (DateTime.Now.Subtract(start).Seconds > TimeoutSec)
+            {
+                if (assertInStore)
+                {
+                    Assert.Fail("Message (OffsetTrackerMessage) not received");
+                }
+                return;
+            }
+
+            await Task.Delay(100).ConfigureAwait(false);
+        }
+
+        if (!assertInStore)
+        {
+            Assert.Fail("Message (OffsetTrackerMessage) received when it should not have been.");
+        }
+    }
+    
+    public static long GetOffsetTrack()
+    {
+        return s_offsetTrack;
+    }
 
     public static List<(long ticks, int version)> GetVersions()
     {
@@ -151,5 +204,7 @@ internal static class MessageStorage
         s_testMessages.Clear();
         s_byteMessages.Clear();
         s_protoMessages.Clear();
+        s_offsetTrackerMessages.Clear();
+        s_offsetTrack = 0;
     }
 }

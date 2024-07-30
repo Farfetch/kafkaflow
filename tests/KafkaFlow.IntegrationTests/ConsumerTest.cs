@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using AutoFixture;
+using Confluent.Kafka;
 using global::Microsoft.Extensions.DependencyInjection;
 using global::Microsoft.VisualStudio.TestTools.UnitTesting;
 using KafkaFlow.Consumers;
@@ -9,6 +12,7 @@ using KafkaFlow.IntegrationTests.Core;
 using KafkaFlow.IntegrationTests.Core.Handlers;
 using KafkaFlow.IntegrationTests.Core.Messages;
 using KafkaFlow.IntegrationTests.Core.Producers;
+using KafkaFlow.Serializer;
 
 namespace KafkaFlow.IntegrationTests;
 
@@ -156,5 +160,61 @@ public class ConsumerTest
         Assert.IsNotNull(consumers.FirstOrDefault(x => x.GroupId.Equals(Bootstrapper.PauseResumeGroupId)));
         Assert.IsNotNull(consumers.FirstOrDefault(x => x.GroupId.Equals(Bootstrapper.ProtobufGroupId)));
         Assert.IsNotNull(consumers.FirstOrDefault(x => x.GroupId.Equals(Bootstrapper.ProtobufGzipGroupId)));
+    }
+
+    [TestMethod]
+    public async Task ManualAssignPartitionOffsetsTest()
+    {
+        // Arrange
+        var producer = _provider.GetRequiredService<IMessageProducer<OffsetTrackerProducer>>();
+        var messages = _fixture
+            .Build<OffsetTrackerMessage>()
+            .Without(m => m.Offset)
+            .CreateMany(10).ToList();
+
+        messages.ForEach(m => producer.Produce(m.Id.ToString(), m, null, DeliveryHandler));
+
+        foreach (var message in messages)
+        {
+            await MessageStorage.AssertMessageAsync(message);
+        }
+        
+        var endOffset = MessageStorage.GetOffsetTrack();
+        MessageStorage.Clear();
+        
+        // Act
+        var serviceProvider = await new ServiceProviderHelper().GetServiceProviderAsync(
+            consumerConfig =>
+            {
+                consumerConfig.ManualAssignPartitionOffsets(Bootstrapper.OffsetTrackerTopicName, new Dictionary<int, long> { { 0, endOffset - 4 } })
+                    .WithGroupId("ManualAssignPartitionOffsetsTest")
+                    .AddMiddlewares(
+                        middlewares => middlewares
+                            .AddDeserializer<JsonCoreDeserializer>()
+                            .AddTypedHandlers(
+                                handlers => handlers.AddHandler<OffsetTrackerMessageHandler>()));
+            }, null);
+        
+        // Assert
+        for (var i = 0; i < 5; i++)
+        {
+            await MessageStorage.AssertOffsetTrackerMessageAsync(messages[i], false);
+        }
+        
+        for (var i = 5; i < 10; i++)
+        {
+            await MessageStorage.AssertOffsetTrackerMessageAsync(messages[i]);
+        }
+        
+        await serviceProvider.CreateKafkaBus().StopAsync();
+        
+        return;
+        
+        void DeliveryHandler(DeliveryReport<byte[], byte[]> report)
+        {
+            var key = Encoding.UTF8.GetString(report.Message.Key);
+            var message = messages.First(m => m.Id.ToString() == key);
+            message.Offset = report.Offset;
+        }
     }
 }
