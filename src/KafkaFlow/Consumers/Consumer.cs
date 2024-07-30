@@ -242,11 +242,11 @@ internal class Consumer : IConsumer
             .SetPartitionsRevokedHandler(
                 (consumer, partitions) =>
                 {
+                    _partitionsRevokedHandlers.ForEach(handler => handler(_dependencyResolver, consumer, partitions));
                     this.Assignment = new List<TopicPartition>();
                     this.Subscription = new List<string>();
                     _currentPartitionsOffsets.Clear();
                     _flowManager.Stop();
-                    _partitionsRevokedHandlers.ForEach(handler => handler(_dependencyResolver, consumer, partitions));
                 })
             .SetErrorHandler((consumer, error) => _errorsHandlers.ForEach(x => x(consumer, error)))
             .SetStatisticsHandler((consumer, statistics) => _statisticsHandlers.ForEach(x => x(consumer, statistics)));
