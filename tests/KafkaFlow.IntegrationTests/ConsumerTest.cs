@@ -172,7 +172,7 @@ public class ConsumerTest
             .Without(m => m.Offset)
             .CreateMany(10).ToList();
 
-        messages.ForEach(m => producer.Produce(m.Id.ToString(), m, null, DeliveryHandler));
+        messages.ForEach(m => producer.Produce(m.Id.ToString(), m, null, report => DeliveryHandler(report, messages)));
 
         foreach (var message in messages)
         {
@@ -211,14 +211,12 @@ public class ConsumerTest
         }
 
         await serviceProviderHelper.StopBusAsync();
-        
-        return;
-        
-        void DeliveryHandler(DeliveryReport<byte[], byte[]> report)
-        {
-            var key = Encoding.UTF8.GetString(report.Message.Key);
-            var message = messages.First(m => m.Id.ToString() == key);
-            message.Offset = report.Offset;
-        }
+    }
+    
+    private static void DeliveryHandler(DeliveryReport<byte[], byte[]> report, List<OffsetTrackerMessage> messages)
+    {
+        var key = Encoding.UTF8.GetString(report.Message.Key);
+        var message = messages.First(m => m.Id.ToString() == key);
+        message.Offset = report.Offset;
     }
 }
