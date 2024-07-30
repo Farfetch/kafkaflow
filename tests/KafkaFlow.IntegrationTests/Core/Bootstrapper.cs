@@ -30,6 +30,7 @@ internal static class Bootstrapper
     internal const string AvroGroupId = "consumer-avro";
     internal const string JsonGroupId = "consumer-json";
     internal const string NullGroupId = "consumer-null";
+    internal const string OffsetTrackerGroupId = "consumer-offset-tracker";
 
 
     private const string ProtobufTopicName = "test-protobuf";
@@ -43,6 +44,7 @@ internal static class Bootstrapper
     private const string AvroTopicName = "test-avro";
     private const string NullTopicName = "test-null";
     private const string DefaultParamsTopicName = "test-default-params";
+    internal const string OffsetTrackerTopicName = "test-offset-tracker";
 
     private static readonly Lazy<IServiceProvider> s_lazyProvider = new(SetupProvider);
 
@@ -203,6 +205,7 @@ internal static class Bootstrapper
                         .CreateTopicIfNotExists(ProtobufGzipTopicName, 2, 1)
                         .CreateTopicIfNotExists(ProtobufGzipTopicName2, 2, 1)
                         .CreateTopicIfNotExists(NullTopicName, 1, 1)
+                        .CreateTopicIfNotExists(OffsetTrackerTopicName, 1, 1)
                         .CreateTopicIfNotExists(DefaultParamsTopicName)
                         .AddConsumer(
                             consumer => consumer
@@ -272,6 +275,22 @@ internal static class Bootstrapper
                                         )))
                         .AddConsumer(
                             consumer => consumer
+                                .Topic(OffsetTrackerTopicName)
+                                .WithGroupId(OffsetTrackerGroupId)
+                                .WithBufferSize(100)
+                                .WithWorkersCount(10)
+                                .WithAutoOffsetReset(AutoOffsetReset.Latest)
+                                .AddMiddlewares(
+                                    middlewares => middlewares
+                                        .AddDeserializer<JsonCoreDeserializer>()
+                                        .AddTypedHandlers(
+                                            handlers =>
+                                                handlers
+                                                    .WithHandlerLifetime(InstanceLifetime.Singleton)
+                                                    .AddHandler<OffsetTrackerMessageHandler>()
+                                        )))
+                        .AddConsumer(
+                            consumer => consumer
                                 .Topics(GzipTopicName)
                                 .WithGroupId(GzipGroupId)
                                 .WithBufferSize(100)
@@ -322,6 +341,12 @@ internal static class Bootstrapper
                         .AddProducer<NullProducer>(
                             producer => producer
                                 .DefaultTopic(NullTopicName)
+                                .AddMiddlewares(
+                                    middlewares => middlewares
+                                        .AddSerializer<JsonCoreSerializer>()))
+                        .AddProducer<OffsetTrackerProducer>(
+                            producer => producer
+                                .DefaultTopic(OffsetTrackerTopicName)
                                 .AddMiddlewares(
                                     middlewares => middlewares
                                         .AddSerializer<JsonCoreSerializer>()))

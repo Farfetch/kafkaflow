@@ -12,6 +12,7 @@ internal class ConsumerConfiguration : IConsumerConfiguration
         Confluent.Kafka.ConsumerConfig consumerConfig,
         IReadOnlyList<string> topics,
         IReadOnlyList<TopicPartitions> manualAssignPartitions,
+        IReadOnlyList<TopicPartitionOffsets> manualAssignPartitionOffsets,
         string consumerName,
         ClusterConfiguration clusterConfiguration,
         bool managementDisabled,
@@ -48,6 +49,7 @@ internal class ConsumerConfiguration : IConsumerConfiguration
         this.AutoCommitInterval = autoCommitInterval;
         this.Topics = topics ?? throw new ArgumentNullException(nameof(topics));
         this.ManualAssignPartitions = manualAssignPartitions ?? throw new ArgumentNullException(nameof(manualAssignPartitions));
+        this.ManualAssignPartitionOffsets = manualAssignPartitionOffsets ?? throw new ArgumentNullException(nameof(manualAssignPartitionOffsets));
         this.ConsumerName = consumerName ?? Guid.NewGuid().ToString();
         this.ClusterConfiguration = clusterConfiguration;
         this.ManagementDisabled = managementDisabled;
@@ -75,6 +77,8 @@ internal class ConsumerConfiguration : IConsumerConfiguration
     public IReadOnlyList<string> Topics { get; }
 
     public IReadOnlyList<TopicPartitions> ManualAssignPartitions { get; }
+
+    public IReadOnlyList<TopicPartitionOffsets> ManualAssignPartitionOffsets { get; }
 
     public string ConsumerName { get; }
 

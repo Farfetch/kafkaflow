@@ -273,11 +273,16 @@ internal class Consumer : IConsumer
 
         if (this.Configuration.ManualAssignPartitions.Any())
         {
-            this.ManualAssign(this.Configuration.ManualAssignPartitions);
+            this.ManualAssignPartitions(this.Configuration.ManualAssignPartitions);
+        }
+
+        if (this.Configuration.ManualAssignPartitionOffsets.Any())
+        {
+            this.ManualAssignPartitionOffsets(this.Configuration.ManualAssignPartitionOffsets);
         }
     }
 
-    private void ManualAssign(IEnumerable<TopicPartitions> topics)
+    private void ManualAssignPartitions(IEnumerable<TopicPartitions> topics)
     {
         var partitions = topics
             .SelectMany(
@@ -287,6 +292,19 @@ internal class Consumer : IConsumer
 
         _consumer.Assign(partitions);
         this.FirePartitionsAssignedHandlers(_consumer, partitions);
+    }
+
+    private void ManualAssignPartitionOffsets(IEnumerable<TopicPartitionOffsets> topics)
+    {
+        var partitionOffsets = topics
+            .SelectMany(
+                topic => topic.PartitionOffsets.Select(
+                    partitionOffset => new Confluent.Kafka.TopicPartitionOffset(
+                        topic.Name, new Partition(partitionOffset.Key), new Offset(partitionOffset.Value))))
+            .ToList();
+
+        _consumer.Assign(partitionOffsets);
+        this.FirePartitionsAssignedHandlers(_consumer, partitionOffsets.Select(x => x.TopicPartition).ToList());
     }
 
     private void FirePartitionsAssignedHandlers(
