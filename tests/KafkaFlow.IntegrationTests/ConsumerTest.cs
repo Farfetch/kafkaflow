@@ -183,11 +183,15 @@ public class ConsumerTest
         MessageStorage.Clear();
         
         // Act
-        var serviceProvider = await new ServiceProviderHelper().GetServiceProviderAsync(
+        var serviceProviderHelper = new ServiceProviderHelper();
+        
+        await serviceProviderHelper.GetServiceProviderAsync(
             consumerConfig =>
             {
                 consumerConfig.ManualAssignPartitionOffsets(Bootstrapper.OffsetTrackerTopicName, new Dictionary<int, long> { { 0, endOffset - 4 } })
                     .WithGroupId("ManualAssignPartitionOffsetsTest")
+                    .WithBufferSize(100)
+                    .WithWorkersCount(10)
                     .AddMiddlewares(
                         middlewares => middlewares
                             .AddDeserializer<JsonCoreDeserializer>()
@@ -205,8 +209,8 @@ public class ConsumerTest
         {
             await MessageStorage.AssertOffsetTrackerMessageAsync(messages[i]);
         }
-        
-        await serviceProvider.CreateKafkaBus().StopAsync();
+
+        await serviceProviderHelper.StopBusAsync();
         
         return;
         
