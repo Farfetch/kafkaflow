@@ -122,6 +122,8 @@ internal class ClusterManager : IClusterManager, IDisposable
                         Name = topicConfiguration.Name,
                         ReplicationFactor = topicConfiguration.Replicas,
                         NumPartitions = topicConfiguration.Partitions,
+                        Configs = topicConfiguration.Configs.ToDictionary(x => x.Key, x => x.Value),
+                        ReplicasAssignments = topicConfiguration.ReplicasAssignments.ToDictionary(x => x.Key, x => x.Value.ToList()),
                     })
                 .ToArray();
 

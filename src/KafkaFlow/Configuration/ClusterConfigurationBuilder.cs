@@ -111,9 +111,11 @@ internal class ClusterConfigurationBuilder : IClusterConfigurationBuilder
     public IClusterConfigurationBuilder CreateTopicIfNotExists(
         string topicName,
         int numberOfPartitions = -1,
-        short replicationFactor = -1)
+        short replicationFactor = -1,
+        IDictionary<string, string> configs = null,
+        IDictionary<int, IEnumerable<int>> replicasAssignments = null)
     {
-        _topicsToCreateIfNotExist.Add(new TopicConfiguration(topicName, numberOfPartitions, replicationFactor));
+        _topicsToCreateIfNotExist.Add(new TopicConfiguration(topicName, numberOfPartitions, replicationFactor, configs, replicasAssignments));
         return this;
     }
 }
