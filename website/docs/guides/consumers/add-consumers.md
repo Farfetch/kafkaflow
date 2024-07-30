@@ -79,6 +79,27 @@ services.AddKafka(kafka => kafka
 );
 ```
 
+## Manual Partition Offset Assignment
+
+The client application can specify the offsets to start consuming from per partition for topics manually using the `ManualAssignPartitionOffsets()` method.
+
+
+```csharp
+using KafkaFlow;
+using KafkaFlow.Serializer;
+using Microsoft.Extensions.DependencyInjection;
+
+services.AddKafka(kafka => kafka
+    .AddCluster(cluster => cluster
+        .WithBrokers(new[] { "localhost:9092" })
+        .AddConsumer(consumer => consumer
+            .ManualAssignPartitionOffsets("topic-name",  new Dictionary<int, long> { { 0, 100 }, { 1, 120 } })
+            ...
+        )
+    )
+);
+```
+
 ## Offset Strategy
 
 You can configure the Offset Strategy for a consumer group in case the Consumer Group has no offset stored in Kafka. 
