@@ -16,8 +16,10 @@ internal class PauseConsumerByNameHandler : IMessageHandler<PauseConsumerByName>
     {
         var consumer = _consumerAccessor[message.ConsumerName];
 
-        if(consumer is null)
+        if (consumer is null)
+        {
             return Task.CompletedTask;
+        }
 
         var assignment = consumer.FilterAssigment(message.Topics);
 
