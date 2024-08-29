@@ -148,23 +148,7 @@ internal static class MessageStorage
         }
     }
     
-    public static async Task AssertMessageAsync(OffsetTrackerMessage message)
-    {
-        var start = DateTime.Now;
-
-        while (!s_offsetTrackerMessages.Any(x => x.Id == message.Id && x.Offset == message.Offset))
-        {
-            if (DateTime.Now.Subtract(start).Seconds > TimeoutSec)
-            {
-                Assert.Fail("Message (OffsetTrackerMessage) not received");
-                return;
-            }
-
-            await Task.Delay(100).ConfigureAwait(false);
-        }
-    }
-    
-    public static async Task AssertOffsetTrackerMessageAsync(OffsetTrackerMessage message, bool assertInStore = true)
+    public static async Task AssertOffsetTrackerMessageNotReceivedAsync(OffsetTrackerMessage message, bool assertInStore = true)
     {
         var start = DateTime.Now;
 

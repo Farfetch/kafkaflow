@@ -176,7 +176,7 @@ public class ConsumerTest
 
         foreach (var message in messages)
         {
-            await MessageStorage.AssertMessageAsync(message);
+            await MessageStorage.AssertOffsetTrackerMessageNotReceivedAsync(message);
         }
         
         var endOffset = MessageStorage.GetOffsetTrack();
@@ -202,12 +202,12 @@ public class ConsumerTest
         // Assert
         for (var i = 0; i < 5; i++)
         {
-            await MessageStorage.AssertOffsetTrackerMessageAsync(messages[i], false);
+            await MessageStorage.AssertOffsetTrackerMessageNotReceivedAsync(messages[i], false);
         }
         
         for (var i = 5; i < 10; i++)
         {
-            await MessageStorage.AssertOffsetTrackerMessageAsync(messages[i]);
+            await MessageStorage.AssertOffsetTrackerMessageNotReceivedAsync(messages[i]);
         }
 
         await serviceProviderHelper.StopBusAsync();
