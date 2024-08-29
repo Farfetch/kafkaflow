@@ -31,6 +31,14 @@ public interface IConsumerConfigurationBuilder
     IConsumerConfigurationBuilder ManualAssignPartitions(string topicName, IEnumerable<int> partitions);
 
     /// <summary>
+    /// Explicitly defines the topic, partitions and offsets that will be used to read the messages
+    /// </summary>
+    /// <param name="topicName">Topic name</param>
+    /// <param name="partitionOffsets">The partition offset dictionary [Partition ID, Offset]</param>
+    /// <returns></returns>
+    IConsumerConfigurationBuilder ManualAssignPartitionOffsets(string topicName, IDictionary<int, long> partitionOffsets);
+
+    /// <summary>
     /// Sets the topics that will be used to read the messages, the partitions will be automatically assigned
     /// </summary>
     /// <param name="topicNames">Topic names</param>

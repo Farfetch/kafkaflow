@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
 using Confluent.Kafka;
@@ -12,11 +11,8 @@ using KafkaFlow.IntegrationTests.Core.Messages;
 using KafkaFlow.IntegrationTests.Core.Middlewares;
 using KafkaFlow.IntegrationTests.Core.Producers;
 using KafkaFlow.Serializer;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Polly;
 
 namespace KafkaFlow.IntegrationTests;
 
@@ -25,8 +21,6 @@ public class GlobalEventsTest
 {
     private readonly Fixture _fixture = new();
     private string _topic;
-    private bool _isPartitionAssigned;
-    private IKafkaBus _bus;
 
     [TestInitialize]
     public void Setup()
@@ -66,6 +60,7 @@ public class GlobalEventsTest
         var countOnStopping = 0;
 
         // Act
+        var serviceProviderHelper = new ServiceProviderHelper();
         await this.GetServiceProviderAsync(
             observers => { },
             this.ConfigureConsumer<GzipMiddleware>,
@@ -74,9 +69,10 @@ public class GlobalEventsTest
             {
                 cluster.OnStopping(_ => countOnStopping++);
                 cluster.OnStopping(_ => countOnStopping++);
-            });
+            },
+            serviceProviderHelper);
 
-        await _bus?.StopAsync();
+        await serviceProviderHelper.StopBusAsync();
 
         // Assert
         Assert.AreEqual(ExpectedOnStoppingCount, countOnStopping);
@@ -270,11 +266,7 @@ public class GlobalEventsTest
             .AddMiddlewares(
                 middlewares => middlewares
                     .AddDeserializer<ProtobufNetDeserializer>()
-                    .Add<T>())
-            .WithPartitionsAssignedHandler((_, _) =>
-            {
-                _isPartitionAssigned = true;
-            });
+                    .Add<T>());
     }
 
     private void ConfigureProducer<T>(IProducerConfigurationBuilder producerConfigurationBuilder)
@@ -289,65 +281,20 @@ public class GlobalEventsTest
         Action<IGlobalEvents> configureGlobalEvents,
         Action<IConsumerConfigurationBuilder> consumerConfiguration,
         Action<IProducerConfigurationBuilder> producerConfiguration,
-        Action<IClusterConfigurationBuilder> builderConfiguration = null)
+        Action<IClusterConfigurationBuilder> builderConfiguration = null,
+        ServiceProviderHelper serviceProviderHelper = null)
     {
-        _isPartitionAssigned = false;
-
-        var clusterBuilderAction = (HostBuilderContext context, IClusterConfigurationBuilder cluster) =>
-        {
-            cluster
-                .WithBrokers(context.Configuration.GetValue<string>("Kafka:Brokers").Split(';'))
-                .CreateTopicIfNotExists(_topic, 1, 1)
-                .AddProducer<JsonProducer2>(producerConfiguration)
-                .AddConsumer(consumerConfiguration);
-        };
-
-        clusterBuilderAction += (_, cluster) =>
-        {
-            builderConfiguration?.Invoke(cluster);
-        };
-
-        var builder = Host
-            .CreateDefaultBuilder()
-            .ConfigureAppConfiguration(
-                (_, config) =>
-                {
-                    config
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile(
-                            "conf/appsettings.json",
-                            false,
-                            true)
-                        .AddEnvironmentVariables();
-                })
-            .ConfigureServices((context, services) =>
-                services.AddKafka(
-                    kafka => kafka
-                        .UseLogHandler<TraceLogHandler>()
-                        .AddCluster(cluster => { clusterBuilderAction.Invoke(context, cluster); })
-                        .SubscribeGlobalEvents(configureGlobalEvents)))
-            .UseDefaultServiceProvider(
-                (_, options) =>
-                {
-                    options.ValidateScopes = true;
-                    options.ValidateOnBuild = true;
-                });
-
-        var host = builder.Build();
-        _bus = host.Services.CreateKafkaBus();
-        _bus.StartAsync().GetAwaiter().GetResult();
-
-        await this.WaitForPartitionAssignmentAsync();
-
-        return host.Services;
-    }
-
-    private async Task WaitForPartitionAssignmentAsync()
-    {
-        await Policy
-            .HandleResult<bool>(isAvailable => !isAvailable)
-            .WaitAndRetryAsync(Enumerable.Range(0, 6).Select(i => TimeSpan.FromSeconds(Math.Pow(i, 2))))
-            .ExecuteAsync(() => Task.FromResult(_isPartitionAssigned));
+        serviceProviderHelper ??= new ServiceProviderHelper();
+        return await serviceProviderHelper.GetServiceProviderAsync(
+            consumerConfiguration,
+            producerConfiguration,
+            cluster =>
+            {
+                cluster.CreateTopicIfNotExists(_topic, 1, 1);
+                builderConfiguration?.Invoke(cluster);
+            },
+            configureGlobalEvents
+        );
     }
 
     private class TriggerErrorMessageMiddleware : IMessageMiddleware
