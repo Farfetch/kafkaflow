@@ -253,7 +253,7 @@ internal sealed class ConsumerConfigurationBuilder : IConsumerConfigurationBuild
 
         consumerConfigCopy.EnableAutoOffsetStore = false;
         consumerConfigCopy.EnableAutoCommit = _consumerConfig.PartitionAssignmentStrategy.IsStopTheWorldStrategy() is false;
-        consumerConfigCopy.AutoCommitIntervalMs = _consumerConfig.AutoCommitIntervalMs ?? 5000;
+        consumerConfigCopy.AutoCommitIntervalMs = (int?)_autoCommitInterval.TotalMilliseconds;
 
         consumerConfigCopy.ReadSecurityInformationFrom(clusterConfiguration);
 
