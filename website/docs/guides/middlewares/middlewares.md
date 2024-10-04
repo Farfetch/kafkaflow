@@ -11,7 +11,7 @@ KafkaFlow is middleware-oriented. Messages are delivered to a middleware and the
 :::info
 
 Middlewares are executed in the same order they are defined in the configuration. 
-Every product/consumer has its own Middlewares instances, so the instances are not shared between different consumers/producers, but when consuming, the instances are shared between the workers of the same consumer. 
+Every producer/consumer has its own Middlewares instances, so the instances are not shared between different consumers/producers, but when consuming, the instances are shared between the workers of the same consumer. 
 
 :::
 
