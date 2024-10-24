@@ -152,11 +152,11 @@ public class JsonDeserializeMiddleware : IMessageMiddleware
         if(!(context.Message is byte[] rawMessage))
             throw new InvalidOperationException();
 
-        var type = Type.GetType(context.Headers.GetString("Message-Type"));
+        var messageType = Type.GetType(context.Headers.GetString("Message-Type"));
 
         var jsonMessage = Encoding.UTF8.GetString(rawMessage);
 
-        context.TransformMessage(JsonConvert.Deserialize(jsonMessage, MessageType));
+        context.TransformMessage(JsonConvert.Deserialize(jsonMessage, messageType));
 
         return next(context);
     }
