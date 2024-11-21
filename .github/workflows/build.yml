@@ -30,9 +30,9 @@ jobs:
           failOnWarnings: true
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '8.x'
 
       - name: Setup Node
         uses: actions/setup-node@v1
