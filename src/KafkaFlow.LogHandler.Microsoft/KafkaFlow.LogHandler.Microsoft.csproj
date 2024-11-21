@@ -1,19 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <RootNamespace>KafkaFlow</RootNamespace>
-        <PackageId>KafkaFlow.LogHandler.Microsoft</PackageId>
-        <Description>LogHandler implementation leveraging Microsoft Logging framework.</Description>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>KafkaFlow</RootNamespace>
+    <PackageId>KafkaFlow.LogHandler.Microsoft</PackageId>
+    <Description>LogHandler implementation leveraging Microsoft Logging framework.</Description>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="System.Text.Json" Version="6.0.11" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
-    </ItemGroup>
-    
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
+  </ItemGroup>
+
 </Project>
