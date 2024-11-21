@@ -7,8 +7,8 @@ namespace KafkaFlow.Consumers;
 
 internal class PartitionOffsets
 {
-    private readonly SortedDictionary<long, IConsumerContext> _processedContexts = new();
-    private readonly LinkedList<IConsumerContext> _receivedContexts = new();
+    private readonly SortedDictionary<long, IConsumerContext> _processedContexts = new ();
+    private readonly LinkedList<IConsumerContext> _receivedContexts = new ();
 
     public IConsumerContext DequeuedContext { get; private set; }
 

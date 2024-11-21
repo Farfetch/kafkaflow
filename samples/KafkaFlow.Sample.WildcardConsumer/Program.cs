@@ -20,7 +20,7 @@ services.AddKafka(
                     producerName, _ => { })
                 .AddConsumer(
                     consumer => consumer
-                        .Topic($"^{topicPrefix}*") // Any topic starting with `random-topic-*` 
+                        .Topic($"^{topicPrefix}*") // Any topic starting with `random-topic-*`
                         .WithGroupId("random-topic-handler")
                         .WithBufferSize(5)
                         .WithWorkersCount(3)
