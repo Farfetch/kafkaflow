@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using KafkaFlow.Middlewares.TypedHandler;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -26,9 +28,11 @@ public class HandlerTypeMappingTests
         // Assert
         _target.GetHandlersTypes(typeof(int))
             .Should()
-            .BeEquivalentTo(
+            .BeEquivalentTo(new List<Type>
+            {
                 typeof(string),
                 typeof(double),
-                typeof(bool));
+                typeof(bool)
+            });
     }
 }

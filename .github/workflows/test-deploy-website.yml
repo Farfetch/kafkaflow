@@ -11,9 +11,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '8.x'
 
       - run: dotnet tool install --global gsferreira.XmlDocMarkdown.Docusaurus --version 0.0.1-beta2 # using this version while the Pull Request isn't accepted here: https://github.com/ejball/XmlDocMarkdown/pull/126
         shell: bash
@@ -76,7 +76,7 @@ jobs:
       - name: Install dependencies
         working-directory: ./website
         run: yarn install --frozen-lockfile
-      
+
       - name: Test build website
         working-directory: ./website
         run: yarn build
