@@ -44,6 +44,8 @@ public class ProducerTest
         var producer = _provider.GetRequiredService<IMessageProducer<NullProducer>>();
         var key = Guid.NewGuid().ToString();
 
+        MessageStorage.Clear();
+
         // Act
         await producer.ProduceAsync(key, Array.Empty<byte>());
 
