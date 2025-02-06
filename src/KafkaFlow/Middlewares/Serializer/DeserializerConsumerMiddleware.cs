@@ -53,7 +53,7 @@ public class DeserializerConsumerMiddleware : IMessageMiddleware
             return;
         }
 
-        var messageType = await _typeResolver.OnConsumeAsync(context);
+        var messageType = await _typeResolver.OnConsumeAsync(context).ConfigureAwait(false);
 
         if (messageType is null)
         {

@@ -21,7 +21,7 @@ internal static class TaskExtensions
             return;
         }
 
-        await Task.WhenAny(task, tcs.Task);
+        await Task.WhenAny(task, tcs.Task).ConfigureAwait(false);
 
         void TrySetResult()
         {

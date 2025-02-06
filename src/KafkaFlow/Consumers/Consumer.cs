@@ -163,7 +163,7 @@ internal class Consumer : IConsumer
             try
             {
                 this.EnsureConsumer();
-                await _flowManager.BlockHeartbeat(cancellationToken);
+                await _flowManager.BlockHeartbeat(cancellationToken).ConfigureAwait(false);
                 return _consumer.Consume(cancellationToken);
             }
             catch (OperationCanceledException)
@@ -176,7 +176,7 @@ internal class Consumer : IConsumer
                     "Max Poll Interval Exceeded",
                     new { this.Configuration.ConsumerName });
 
-                await _maxPollIntervalExceeded.FireAsync();
+                await _maxPollIntervalExceeded.FireAsync().ConfigureAwait(false);
             }
             catch (KafkaException ex) when (ex.Error.IsFatal)
             {
@@ -187,7 +187,7 @@ internal class Consumer : IConsumer
 
                 this.InvalidateConsumer();
 
-                await Task.Delay(5000, cancellationToken);
+                await Task.Delay(5000, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -242,11 +242,11 @@ internal class Consumer : IConsumer
             .SetPartitionsRevokedHandler(
                 (consumer, partitions) =>
                 {
+                    _partitionsRevokedHandlers.ForEach(handler => handler(_dependencyResolver, consumer, partitions));
                     this.Assignment = new List<TopicPartition>();
                     this.Subscription = new List<string>();
                     _currentPartitionsOffsets.Clear();
                     _flowManager.Stop();
-                    _partitionsRevokedHandlers.ForEach(handler => handler(_dependencyResolver, consumer, partitions));
                 })
             .SetErrorHandler((consumer, error) => _errorsHandlers.ForEach(x => x(consumer, error)))
             .SetStatisticsHandler((consumer, statistics) => _statisticsHandlers.ForEach(x => x(consumer, statistics)));

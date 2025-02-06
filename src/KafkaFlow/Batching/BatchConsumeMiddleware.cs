@@ -38,7 +38,7 @@ internal class BatchConsumeMiddleware : IMessageMiddleware, IDisposable
 
     public async Task Invoke(IMessageContext context, MiddlewareDelegate next)
     {
-        await _dispatchSemaphore.WaitAsync();
+        await _dispatchSemaphore.WaitAsync().ConfigureAwait(false);
 
         try
         {
@@ -59,7 +59,7 @@ internal class BatchConsumeMiddleware : IMessageMiddleware, IDisposable
 
         if (_batch.Count >= _batchSize)
         {
-            await this.TriggerDispatchAndWaitAsync();
+            await this.TriggerDispatchAndWaitAsync().ConfigureAwait(false);
         }
     }
 
@@ -72,11 +72,11 @@ internal class BatchConsumeMiddleware : IMessageMiddleware, IDisposable
 
     private async Task TriggerDispatchAndWaitAsync()
     {
-        await _dispatchSemaphore.WaitAsync();
+        await _dispatchSemaphore.WaitAsync().ConfigureAwait(false);
         _dispatchTokenSource?.Cancel();
         _dispatchSemaphore.Release();
 
-        await (_dispatchTask ?? Task.CompletedTask);
+        await (_dispatchTask ?? Task.CompletedTask).ConfigureAwait(false);
     }
 
     private void ScheduleExecution(IMessageContext context, MiddlewareDelegate next)
@@ -92,7 +92,7 @@ internal class BatchConsumeMiddleware : IMessageMiddleware, IDisposable
 
     private async Task DispatchAsync(IMessageContext context, MiddlewareDelegate next)
     {
-        await _dispatchSemaphore.WaitAsync();
+        await _dispatchSemaphore.WaitAsync().ConfigureAwait(false);
 
         _dispatchTokenSource.Dispose();
         _dispatchTokenSource = null;

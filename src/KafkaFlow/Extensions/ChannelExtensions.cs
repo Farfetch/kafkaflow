@@ -11,7 +11,7 @@ internal static class ChannelExtensions
         this ChannelReader<T> reader,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        while (await reader.WaitToReadAsync(cancellationToken))
+        while (await reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
         {
             while (reader.TryRead(out var item))
             {

@@ -75,19 +75,20 @@ internal class ConsumerWorker : IConsumerWorker
 
                 try
                 {
-                    await foreach (var context in _messagesBuffer.Reader.ReadAllItemsAsync(stopCancellationToken))
+                    await foreach (var context in _messagesBuffer.Reader.ReadAllItemsAsync(stopCancellationToken).ConfigureAwait(false))
                     {
                         currentContext = context;
 
                         await this
                             .ProcessMessageAsync(context, stopCancellationToken)
-                            .WithCancellation(stopCancellationToken, true);
+                            .WithCancellation(stopCancellationToken, true)
+                            .ConfigureAwait(false);
                     }
                 }
                 catch (OperationCanceledException)
                 {
                     currentContext?.ConsumerContext.Discard();
-                    await this.DiscardBufferedContextsAsync();
+                    await this.DiscardBufferedContextsAsync().ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -101,13 +102,13 @@ internal class ConsumerWorker : IConsumerWorker
 
     public async Task StopAsync()
     {
-        await _workerStoppingEvent.FireAsync();
+        await _workerStoppingEvent.FireAsync().ConfigureAwait(false);
 
         _messagesBuffer.Writer.TryComplete();
 
-        await _backgroundTask;
+        await _backgroundTask.ConfigureAwait(false);
 
-        await _workerStoppedEvent.FireAsync();
+        await _workerStoppedEvent.FireAsync().ConfigureAwait(false);
     }
 
     public void Dispose()
@@ -118,7 +119,7 @@ internal class ConsumerWorker : IConsumerWorker
 
     private async Task DiscardBufferedContextsAsync()
     {
-        await foreach (var context in _messagesBuffer.Reader.ReadAllItemsAsync(CancellationToken.None))
+        await foreach (var context in _messagesBuffer.Reader.ReadAllItemsAsync(CancellationToken.None).ConfigureAwait(false))
         {
             context.ConsumerContext.Discard();
         }
@@ -130,21 +131,21 @@ internal class ConsumerWorker : IConsumerWorker
         {
             try
             {
-                await _globalEvents.FireMessageConsumeStartedAsync(new MessageEventContext(context));
+                await _globalEvents.FireMessageConsumeStartedAsync(new MessageEventContext(context)).ConfigureAwait(false);
 
                 _ = context.ConsumerContext.Completion.ContinueWith(
                     async task =>
                     {
                         if (task.IsFaulted)
                         {
-                            await _globalEvents.FireMessageConsumeErrorAsync(new MessageErrorEventContext(context, task.Exception));
+                            await _globalEvents.FireMessageConsumeErrorAsync(new MessageErrorEventContext(context, task.Exception)).ConfigureAwait(false);
                         }
 
-                        await _globalEvents.FireMessageConsumeCompletedAsync(new MessageEventContext(context));
+                        await _globalEvents.FireMessageConsumeCompletedAsync(new MessageEventContext(context)).ConfigureAwait(false);
                     },
                     CancellationToken.None);
 
-                await _middlewareExecutor.Execute(context, _ => Task.CompletedTask);
+                await _middlewareExecutor.Execute(context, _ => Task.CompletedTask).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -152,7 +153,7 @@ internal class ConsumerWorker : IConsumerWorker
             }
             catch (Exception ex)
             {
-                await _globalEvents.FireMessageConsumeErrorAsync(new MessageErrorEventContext(context, ex));
+                await _globalEvents.FireMessageConsumeErrorAsync(new MessageErrorEventContext(context, ex)).ConfigureAwait(false);
 
                 _logHandler.Error(
                     "Error processing message",
@@ -172,7 +173,7 @@ internal class ConsumerWorker : IConsumerWorker
                     context.ConsumerContext.Complete();
                 }
 
-                await _workerProcessingEnded.FireAsync(context);
+                await _workerProcessingEnded.FireAsync(context).ConfigureAwait(false);
             }
         }
         catch (Exception ex)

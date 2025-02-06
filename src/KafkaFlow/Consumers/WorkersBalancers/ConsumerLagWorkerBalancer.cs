@@ -41,7 +41,7 @@ internal class ConsumerLagWorkerBalancer
 
     public async Task<int> GetWorkersCountAsync(WorkersCountContext context)
     {
-        var workers = await this.CalculateAsync(context);
+        var workers = await this.CalculateAsync(context).ConfigureAwait(false);
 
         _logHandler.Info(
             "New workers count calculated",
@@ -97,13 +97,14 @@ internal class ConsumerLagWorkerBalancer
                 return DefaultWorkersCount;
             }
 
-            var topicsMetadata = await this.GetTopicsMetadataAsync(context);
+            var topicsMetadata = await this.GetTopicsMetadataAsync(context).ConfigureAwait(false);
 
             var lastOffsets = this.GetPartitionsLastOffset(context.ConsumerName, topicsMetadata);
 
             var partitionsOffset = await _clusterManager.GetConsumerGroupOffsetsAsync(
                 context.ConsumerGroupId,
-                context.AssignedTopicsPartitions.Select(t => t.Name));
+                context.AssignedTopicsPartitions.Select(t => t.Name))
+                .ConfigureAwait(false);
 
             var partitionsLag = CalculatePartitionsLag(lastOffsets, partitionsOffset);
             var instanceLag = CalculateMyPartitionsLag(context, partitionsLag);
@@ -156,7 +157,7 @@ internal class ConsumerLagWorkerBalancer
 
         foreach (var topic in context.AssignedTopicsPartitions)
         {
-            topicsMetadata.Add((topic.Name, await _clusterManager.GetTopicMetadataAsync(topic.Name)));
+            topicsMetadata.Add((topic.Name, await _clusterManager.GetTopicMetadataAsync(topic.Name).ConfigureAwait(false)));
         }
 
         return topicsMetadata;

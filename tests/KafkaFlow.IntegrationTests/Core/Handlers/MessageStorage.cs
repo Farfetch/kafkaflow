@@ -128,7 +128,7 @@ internal static class MessageStorage
     public static async Task AssertNullMessageAsync()
     {
         var start = DateTime.Now;
-        while (!s_nullMessages.IsEmpty)
+        while (s_nullMessages.IsEmpty)
         {
             if (DateTime.Now.Subtract(start).Seconds > TimeoutSec)
             {

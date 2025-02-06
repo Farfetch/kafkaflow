@@ -85,7 +85,7 @@ internal class ClusterManager : IClusterManager, IDisposable
 
         foreach (var name in topicsName)
         {
-            topicsMetadata.Add((name, await this.GetTopicMetadataAsync(name)));
+            topicsMetadata.Add((name, await this.GetTopicMetadataAsync(name).ConfigureAwait(false)));
         }
 
         var topics =
@@ -98,7 +98,7 @@ internal class ClusterManager : IClusterManager, IDisposable
                 .ToList();
 
         var result = await _lazyAdminClient.Value.ListConsumerGroupOffsetsAsync(
-            new[] { new ConsumerGroupTopicPartitions(consumerGroup, topics) });
+            new[] { new ConsumerGroupTopicPartitions(consumerGroup, topics) }).ConfigureAwait(false);
 
         if (!result.Any())
         {
@@ -125,7 +125,7 @@ internal class ClusterManager : IClusterManager, IDisposable
                     })
                 .ToArray();
 
-            await _lazyAdminClient.Value.CreateTopicsAsync(topics);
+            await _lazyAdminClient.Value.CreateTopicsAsync(topics).ConfigureAwait(false);
         }
         catch (CreateTopicsException exception)
         {
