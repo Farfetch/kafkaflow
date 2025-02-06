@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -52,6 +53,11 @@ public class JsonCoreSerializer : ISerializer
     /// <inheritdoc/>
     public Task SerializeAsync(object message, Stream output, ISerializerContext context)
     {
+        if (message is null || message == Array.Empty<byte>())
+        {
+            return Task.CompletedTask;
+        }
+
         using var writer = new Utf8JsonWriter(output, _writerOptions);
 
         JsonSerializer.Serialize(writer, message, _serializerOptions);
