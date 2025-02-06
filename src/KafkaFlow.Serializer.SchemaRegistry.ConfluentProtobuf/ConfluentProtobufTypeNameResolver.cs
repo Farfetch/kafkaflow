@@ -1,8 +1,8 @@
+extern alias GoogleProto;
+
 using System.Linq;
 using System.Threading.Tasks;
 using Confluent.SchemaRegistry;
-using Google.Protobuf;
-using Google.Protobuf.Reflection;
 
 namespace KafkaFlow;
 
@@ -19,7 +19,8 @@ internal class ConfluentProtobufTypeNameResolver : ISchemaRegistryTypeNameResolv
     {
         var schemaString = (await _client.GetSchemaAsync(id, "serialized")).SchemaString;
 
-        var protoFields = FileDescriptorProto.Parser.ParseFrom(ByteString.FromBase64(schemaString));
+        // Issue: https://github.com/confluentinc/confluent-kafka-dotnet/issues/2409
+        var protoFields = GoogleProto::Google.Protobuf.Reflection.FileDescriptorProto.Parser.ParseFrom(GoogleProto::Google.Protobuf.ByteString.FromBase64(schemaString));
 
         return $"{protoFields.Package}.{protoFields.MessageType.FirstOrDefault()?.Name}";
     }

@@ -59,7 +59,8 @@ public class ConfluentJsonSerializer : ISerializer
                     typeof(JsonSerializer<>).MakeGenericType(message.GetType()),
                     _schemaRegistryClient,
                     _serializerConfig,
-                    _schemaGeneratorSettings))
+                    _schemaGeneratorSettings,
+                    null))
             .SerializeAsync(message, output, context);
     }
 }
