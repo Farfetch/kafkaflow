@@ -26,5 +26,5 @@ integration_tests:
 	@echo command | date
 	make init_broker
 	@echo Running integration tests
-	dotnet test tests/KafkaFlow.IntegrationTests/KafkaFlow.IntegrationTests.csproj -c Release --framework netcoreapp3.1 --logger "console;verbosity=detailed"
+	dotnet test tests/KafkaFlow.IntegrationTests/KafkaFlow.IntegrationTests.csproj -c Release --logger "console;verbosity=detailed"
 	make shutdown_broker
