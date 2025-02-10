@@ -26,6 +26,7 @@ public class GlobalEventsTest
     private readonly Fixture _fixture = new();
     private string _topic;
     private bool _isPartitionAssigned;
+    private IKafkaBus _bus;
 
     [TestInitialize]
     public void Setup()
@@ -33,6 +34,52 @@ public class GlobalEventsTest
         _topic = $"GlobalEventsTestTopic_{Guid.NewGuid()}";
 
         MessageStorage.Clear();
+    }
+
+    [TestMethod]
+    public async Task OnStarted_RegisterMultipleOnStartedCallbacks_AllAreCalled()
+    {
+        // Arrange
+        const int ExpectedOnStartedCount = 2;
+        var countOnStarted = 0;
+
+        // Act
+        await this.GetServiceProviderAsync(
+            observers => { },
+            this.ConfigureConsumer<GzipMiddleware>,
+            this.ConfigureProducer<ProtobufNetSerializer>,
+            cluster =>
+            {
+                cluster.OnStarted(_ => countOnStarted++);
+                cluster.OnStarted(_ => countOnStarted++);
+            });
+
+        // Assert
+        Assert.AreEqual(ExpectedOnStartedCount, countOnStarted);
+    }
+
+    [TestMethod]
+    public async Task OnStopping_RegisterMultipleOnStoppingCallbacks_AllAreCalled()
+    {
+        // Arrange
+        const int ExpectedOnStoppingCount = 2;
+        var countOnStopping = 0;
+
+        // Act
+        await this.GetServiceProviderAsync(
+            observers => { },
+            this.ConfigureConsumer<GzipMiddleware>,
+            this.ConfigureProducer<ProtobufNetSerializer>,
+            cluster =>
+            {
+                cluster.OnStopping(_ => countOnStopping++);
+                cluster.OnStopping(_ => countOnStopping++);
+            });
+
+        await _bus?.StopAsync();
+
+        // Assert
+        Assert.AreEqual(ExpectedOnStoppingCount, countOnStopping);
     }
 
     [TestMethod]
@@ -241,9 +288,24 @@ public class GlobalEventsTest
     private async Task<IServiceProvider> GetServiceProviderAsync(
         Action<IGlobalEvents> configureGlobalEvents,
         Action<IConsumerConfigurationBuilder> consumerConfiguration,
-        Action<IProducerConfigurationBuilder> producerConfiguration)
+        Action<IProducerConfigurationBuilder> producerConfiguration,
+        Action<IClusterConfigurationBuilder> builderConfiguration = null)
     {
         _isPartitionAssigned = false;
+
+        var clusterBuilderAction = (HostBuilderContext context, IClusterConfigurationBuilder cluster) =>
+        {
+            cluster
+                .WithBrokers(context.Configuration.GetValue<string>("Kafka:Brokers").Split(';'))
+                .CreateTopicIfNotExists(_topic, 1, 1)
+                .AddProducer<JsonProducer2>(producerConfiguration)
+                .AddConsumer(consumerConfiguration);
+        };
+
+        clusterBuilderAction += (_, cluster) =>
+        {
+            builderConfiguration?.Invoke(cluster);
+        };
 
         var builder = Host
             .CreateDefaultBuilder()
@@ -262,12 +324,7 @@ public class GlobalEventsTest
                 services.AddKafka(
                     kafka => kafka
                         .UseLogHandler<TraceLogHandler>()
-                        .AddCluster(
-                            cluster => cluster
-                                .WithBrokers(context.Configuration.GetValue<string>("Kafka:Brokers").Split(';'))
-                                .CreateTopicIfNotExists(_topic, 1, 1)
-                                .AddProducer<JsonProducer2>(producerConfiguration)
-                                .AddConsumer(consumerConfiguration))
+                        .AddCluster(cluster => { clusterBuilderAction.Invoke(context, cluster); })
                         .SubscribeGlobalEvents(configureGlobalEvents)))
             .UseDefaultServiceProvider(
                 (_, options) =>
@@ -277,8 +334,8 @@ public class GlobalEventsTest
                 });
 
         var host = builder.Build();
-        var bus = host.Services.CreateKafkaBus();
-        bus.StartAsync().GetAwaiter().GetResult();
+        _bus = host.Services.CreateKafkaBus();
+        _bus.StartAsync().GetAwaiter().GetResult();
 
         await this.WaitForPartitionAssignmentAsync();
 

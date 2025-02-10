@@ -162,6 +162,7 @@ internal class ConsumerWorker : IConsumerWorker
                     {
                         context.Message,
                         context.ConsumerContext.Topic,
+                        context.ConsumerContext.TopicPartitionOffset,
                         MessageKey = context.Message.Key,
                         context.ConsumerContext.ConsumerName,
                     });
