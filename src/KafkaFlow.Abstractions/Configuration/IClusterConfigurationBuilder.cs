@@ -77,9 +77,11 @@ public interface IClusterConfigurationBuilder
     /// <param name="topicName">The topic name</param>
     /// <param name="numberOfPartitions">The number of Topic partitions. Default is to use the cluster-defined partitions.</param>
     /// <param name="replicationFactor">The Topic replication factor. Default is to use the cluster-defined replication factor.</param>
+    /// <param name="configs">Additional topic creation configuration values.</param>
     /// <returns></returns>
     IClusterConfigurationBuilder CreateTopicIfNotExists(
         string topicName,
         int numberOfPartitions = -1,
-        short replicationFactor = -1);
+        short replicationFactor = -1,
+        Dictionary<string, string> configs = null);
 }

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace KafkaFlow.Configuration;
 
 /// <summary>
@@ -11,11 +13,13 @@ public class TopicConfiguration
     /// <param name="name">The topic name</param>
     /// <param name="partitions">The number of partitions for the topic</param>
     /// <param name="replicas">Replication factor for the topic</param>
-    public TopicConfiguration(string name, int partitions, short replicas)
+    /// <param name="configs">Additional topic creation configuration values.</param>
+    public TopicConfiguration(string name, int partitions, short replicas, Dictionary<string, string> configs)
     {
         this.Name = name;
         this.Partitions = partitions;
         this.Replicas = replicas;
+        this.Configs = configs;
     }
 
     /// <summary>
@@ -32,4 +36,9 @@ public class TopicConfiguration
     /// Gets the Topic Replication Factor
     /// </summary>
     public short Replicas { get; }
+
+    /// <summary>
+    /// Gets the topic creation configuration
+    /// </summary>
+    public Dictionary<string, string> Configs { get; }
 }
