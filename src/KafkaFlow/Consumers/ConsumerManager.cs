@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Confluent.Kafka;
 using KafkaFlow.Configuration;
+using KafkaFlow.Extensions;
 
 namespace KafkaFlow.Consumers;
 
@@ -11,6 +13,7 @@ internal class ConsumerManager : IConsumerManager
 {
     private readonly IDependencyResolver _dependencyResolver;
     private readonly ILogHandler _logHandler;
+    private readonly bool _stopTheWorldStrategy;
 
     private Timer _evaluateWorkersCountTimer;
 
@@ -26,7 +29,7 @@ internal class ConsumerManager : IConsumerManager
         this.Consumer = consumer;
         this.WorkerPool = consumerWorkerPool;
         this.Feeder = feeder;
-
+        _stopTheWorldStrategy = consumer.Configuration.GetKafkaConfig().PartitionAssignmentStrategy.IsStopTheWorldStrategy();
         this.Consumer.OnPartitionsAssigned((_, _, partitions) => this.OnPartitionAssigned(partitions));
         this.Consumer.OnPartitionsRevoked((_, _, partitions) => this.OnPartitionRevoked(partitions));
     }
@@ -104,9 +107,23 @@ internal class ConsumerManager : IConsumerManager
     {
         _logHandler.Warning(
             "Partitions revoked",
-            this.GetConsumerLogInfo(topicPartitions.Select(x => x.TopicPartition)));
+            this.GetConsumerLogInfo(topicPartitions?.Select(x => x.TopicPartition).ToArray()
+                                    ?? Array.Empty<TopicPartition>()));
 
         this.WorkerPool.StopAsync().GetAwaiter().GetResult();
+
+        if (_stopTheWorldStrategy)
+        {
+            return;
+        }
+
+        var assignedPartitions = Consumer.Assignment;
+        var workersCount = this.CalculateWorkersCount(assignedPartitions).GetAwaiter().GetResult();
+
+        this.WorkerPool
+            .StartAsync(assignedPartitions, workersCount)
+            .GetAwaiter()
+            .GetResult();
     }
 
     private void OnPartitionAssigned(IReadOnlyCollection<Confluent.Kafka.TopicPartition> partitions)
@@ -115,10 +132,16 @@ internal class ConsumerManager : IConsumerManager
             "Partitions assigned",
             this.GetConsumerLogInfo(partitions));
 
-        var workersCount = this.CalculateWorkersCount(partitions).GetAwaiter().GetResult();
+        if (_stopTheWorldStrategy is false)
+        {
+            this.WorkerPool.StopAsync().GetAwaiter().GetResult();
+        }
+
+        var assignedPartitions = Consumer.Assignment;
+        var workersCount = this.CalculateWorkersCount(assignedPartitions).GetAwaiter().GetResult();
 
         this.WorkerPool
-            .StartAsync(partitions, workersCount)
+            .StartAsync(assignedPartitions, workersCount)
             .GetAwaiter()
             .GetResult();
     }
@@ -127,8 +150,16 @@ internal class ConsumerManager : IConsumerManager
     {
         this.Consumer.Configuration.GroupId,
         this.Consumer.Configuration.ConsumerName,
-        Topics = partitions
+        UpdatedTopics = partitions
             .GroupBy(x => x.Topic)
+            .Select(
+                x => new
+                {
+                    x.First().Topic,
+                    PartitionsCount = x.Count(),
+                    Partitions = x.Select(y => y.Partition.Value),
+                }),
+        CurrentTopics = Consumer.Assignment.GroupBy(x => x.Topic)
             .Select(
                 x => new
                 {

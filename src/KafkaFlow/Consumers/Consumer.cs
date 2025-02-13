@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using KafkaFlow.Authentication;
 using KafkaFlow.Configuration;
+using KafkaFlow.Extensions;
 
 namespace KafkaFlow.Consumers;
 
@@ -14,6 +15,7 @@ internal class Consumer : IConsumer
 {
     private readonly IDependencyResolver _dependencyResolver;
     private readonly ILogHandler _logHandler;
+    private readonly bool _stopTheWorldStrategy;
 
     private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>>>
         _partitionsAssignedHandlers = new();
@@ -40,6 +42,7 @@ internal class Consumer : IConsumer
         this.Configuration = configuration;
         _flowManager = new ConsumerFlowManager(this, _logHandler);
         _maxPollIntervalExceeded = new(_logHandler);
+        _stopTheWorldStrategy = Configuration.GetKafkaConfig().PartitionAssignmentStrategy.IsStopTheWorldStrategy();
 
         foreach (var handler in this.Configuration.StatisticsHandlers)
         {
@@ -148,7 +151,17 @@ internal class Consumer : IConsumer
             return;
         }
 
-        _consumer.Commit(validOffsets);
+        if (_stopTheWorldStrategy)
+        {
+            _consumer.Commit(validOffsets);
+        }
+        else
+        {
+            foreach (var topicPartitionOffset in validOffsets)
+            {
+                _consumer.StoreOffset(topicPartitionOffset);
+            }
+        }
 
         foreach (var offset in validOffsets)
         {
@@ -237,17 +250,8 @@ internal class Consumer : IConsumer
         var kafkaConfig = this.Configuration.GetKafkaConfig();
 
         var consumerBuilder = new ConsumerBuilder<byte[], byte[]>(kafkaConfig)
-            .SetPartitionsAssignedHandler(
-                (consumer, partitions) => this.FirePartitionsAssignedHandlers(consumer, partitions))
-            .SetPartitionsRevokedHandler(
-                (consumer, partitions) =>
-                {
-                    _partitionsRevokedHandlers.ForEach(handler => handler(_dependencyResolver, consumer, partitions));
-                    this.Assignment = new List<TopicPartition>();
-                    this.Subscription = new List<string>();
-                    _currentPartitionsOffsets.Clear();
-                    _flowManager.Stop();
-                })
+            .SetPartitionsAssignedHandler(FirePartitionsAssignedHandlers)
+            .SetPartitionsRevokedHandler(FirePartitionRevokedHandlers)
             .SetErrorHandler((consumer, error) => _errorsHandlers.ForEach(x => x(consumer, error)))
             .SetStatisticsHandler((consumer, statistics) => _statisticsHandlers.ForEach(x => x(consumer, statistics)));
 
@@ -293,11 +297,49 @@ internal class Consumer : IConsumer
         IConsumer<byte[], byte[]> consumer,
         List<TopicPartition> partitions)
     {
-        this.Assignment = partitions;
-        this.Subscription = consumer.Subscription;
-        _flowManager.Start(consumer);
+        if (_stopTheWorldStrategy)
+        {
+            this.Assignment = partitions;
+            this.Subscription = consumer.Subscription;
+            _flowManager.Start(consumer);
+            _partitionsAssignedHandlers.ForEach(handler => handler(_dependencyResolver, consumer, partitions));
+            return;
+        }
 
+        if (partitions.Count == 0)
+        {
+            return;
+        }
+
+        this.Assignment = this.Assignment.Union(partitions).ToArray();
+        this.Subscription = consumer.Subscription;
+        _flowManager.Stop();
+        _flowManager.Start(consumer);
         _partitionsAssignedHandlers.ForEach(handler => handler(_dependencyResolver, consumer, partitions));
+    }
+
+    private void FirePartitionRevokedHandlers(IConsumer<byte[], byte[]> consumer, List<Confluent.Kafka.TopicPartitionOffset> partitions)
+    {
+        if (_stopTheWorldStrategy)
+        {
+            _partitionsRevokedHandlers.ForEach(handler => handler(_dependencyResolver, consumer, partitions));
+            this.Assignment = new List<TopicPartition>();
+            this.Subscription = new List<string>();
+            _currentPartitionsOffsets.Clear();
+            _flowManager.Stop();
+            return;
+        }
+
+        this.Assignment = this.Assignment.Except(partitions.Select(x => x.TopicPartition)).ToArray();
+        this.Subscription = consumer.Subscription;
+        foreach (var partition in partitions)
+        {
+            _currentPartitionsOffsets.TryRemove(partition.TopicPartition, out _);
+        }
+
+        _flowManager.Stop();
+        _flowManager.Start(consumer);
+        _partitionsRevokedHandlers.ForEach(handler => handler(_dependencyResolver, consumer, partitions));
     }
 
     private void InvalidateConsumer()
