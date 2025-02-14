@@ -18,7 +18,7 @@ internal class ClusterManager : IClusterManager, IDisposable
 
     private readonly ConcurrentDictionary<string, TopicMetadata> _topicMetadataCache = new();
 
-    public ClusterManager(ILogHandler logHandler, ClusterConfiguration configuration)
+    public ClusterManager(IAdminClientBuilderFactory clientBuilderFactory, ILogHandler logHandler, ClusterConfiguration configuration)
     {
         _logHandler = logHandler;
         _configuration = configuration;
@@ -33,7 +33,7 @@ internal class ClusterManager : IClusterManager, IDisposable
 
                 config.ReadSecurityInformationFrom(configuration);
 
-                var adminClientBuilder = new AdminClientBuilder(config);
+                var adminClientBuilder = clientBuilderFactory.CreateAdminClientBuilder(config);
 
                 var security = configuration.GetSecurityInformation();
 

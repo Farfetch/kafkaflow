@@ -14,9 +14,10 @@ internal class MessageProducer : IMessageProducer, IDisposable
     private readonly IProducerConfiguration _configuration;
     private readonly MiddlewareExecutor _middlewareExecutor;
     private readonly GlobalEvents _globalEvents;
-
+    
     private readonly object _producerCreationSync = new();
 
+    private readonly IProducerBuilderFactory _producerBuilderFactory;
     private volatile IProducer<byte[], byte[]> _producer;
 
     public MessageProducer(
@@ -28,6 +29,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
         _configuration = configuration;
         _middlewareExecutor = new MiddlewareExecutor(configuration.MiddlewaresConfigurations);
         _globalEvents = dependencyResolver.Resolve<GlobalEvents>();
+        _producerBuilderFactory = dependencyResolver.Resolve<IProducerBuilderFactory>();
     }
 
     public string ProducerName => _configuration.Name;
@@ -250,7 +252,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
                 return _producer;
             }
 
-            var producerBuilder = new ProducerBuilder<byte[], byte[]>(_configuration.GetKafkaConfig())
+            var producerBuilder = this._producerBuilderFactory.CreateProducerBuilder(_configuration.GetKafkaConfig())
                 .SetErrorHandler(
                     (_, error) =>
                     {
