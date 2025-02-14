@@ -38,12 +38,15 @@ internal class KafkaConfigurationBuilder : IKafkaConfigurationBuilder
         {
             _dependencyConfigurator.AddSingleton<IClusterManager>(
                 resolver =>
-                    new ClusterManager(resolver.Resolve<ILogHandler>(), cluster));
+                    new ClusterManager(resolver.Resolve<IAdminClientBuilderFactory>(), resolver.Resolve<ILogHandler>(), cluster));
         }
 
         _dependencyConfigurator
             .AddTransient(typeof(ILogHandler), _logHandlerType)
             .AddSingleton<IDateTimeProvider, DateTimeProvider>()
+            .AddSingleton<IAdminClientBuilderFactory, AdminClientBuilderFactory>()
+            .AddSingleton<IProducerBuilderFactory, ProducerBuilderFactory>()
+            .AddSingleton<IConsumerBuilderFactory, ConsumerBuilderFactory>()
             .AddSingleton<IConsumerAccessor>(new ConsumerAccessor())
             .AddSingleton<IConsumerManagerFactory>(new ConsumerManagerFactory())
             .AddSingleton<IClusterManagerAccessor, ClusterManagerAccessor>()

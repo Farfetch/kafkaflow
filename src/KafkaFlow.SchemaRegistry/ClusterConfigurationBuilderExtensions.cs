@@ -21,7 +21,11 @@ public static class ClusterConfigurationBuilderExtensions
     {
         var config = new SchemaRegistryConfig();
         handler(config);
-        cluster.DependencyConfigurator.AddSingleton<ISchemaRegistryClient>(_ => new CachedSchemaRegistryClient(config));
+
+        cluster.DependencyConfigurator
+            .AddSingleton<ISchemaRegistryClientFactory, SchemaRegistryClientFactory>()
+            .AddSingleton(resolver => resolver.Resolve<ISchemaRegistryClientFactory>().CreateSchemaRegistryClient(config));
+
         return cluster;
     }
 }

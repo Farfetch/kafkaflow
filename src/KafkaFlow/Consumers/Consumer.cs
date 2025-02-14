@@ -30,6 +30,7 @@ internal class Consumer : IConsumer
     private readonly ConsumerFlowManager _flowManager;
     private readonly Event _maxPollIntervalExceeded;
 
+    private IConsumerBuilderFactory _consumerBuilderFactory;
     private IConsumer<byte[], byte[]> _consumer;
 
     public Consumer(
@@ -42,6 +43,7 @@ internal class Consumer : IConsumer
         this.Configuration = configuration;
         _flowManager = new ConsumerFlowManager(this, _logHandler);
         _maxPollIntervalExceeded = new(_logHandler);
+        _consumerBuilderFactory = dependencyResolver.Resolve<IConsumerBuilderFactory>();
         _stopTheWorldStrategy = Configuration.GetKafkaConfig().PartitionAssignmentStrategy.IsStopTheWorldStrategy();
 
         foreach (var handler in this.Configuration.StatisticsHandlers)
@@ -249,7 +251,7 @@ internal class Consumer : IConsumer
 
         var kafkaConfig = this.Configuration.GetKafkaConfig();
 
-        var consumerBuilder = new ConsumerBuilder<byte[], byte[]>(kafkaConfig)
+        var consumerBuilder = this._consumerBuilderFactory.CreateConsumerBuilder(kafkaConfig)
             .SetPartitionsAssignedHandler(FirePartitionsAssignedHandlers)
             .SetPartitionsRevokedHandler(FirePartitionRevokedHandlers)
             .SetErrorHandler((consumer, error) => _errorsHandlers.ForEach(x => x(consumer, error)))
