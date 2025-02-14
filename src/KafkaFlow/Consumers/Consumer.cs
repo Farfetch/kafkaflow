@@ -30,7 +30,7 @@ internal class Consumer : IConsumer
     private readonly ConsumerFlowManager _flowManager;
     private readonly Event _maxPollIntervalExceeded;
 
-    private IConsumerBuilderFactory _consumerBuilderFactory;
+    private readonly IConsumerBuilderFactory _consumerBuilderFactory;
     private IConsumer<byte[], byte[]> _consumer;
 
     public Consumer(
