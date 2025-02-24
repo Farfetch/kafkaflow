@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <PackageId>KafkaFlow.Serializer.SchemaRegistry.ConfluentJson</PackageId>
     <Description>Json implementation for KafkaFlow serializer middleware using Confluent.SchemaRegistry.Serdes.Json package</Description>
     <RootNamespace>KafkaFlow.Serializer.SchemaRegistry</RootNamespace>
