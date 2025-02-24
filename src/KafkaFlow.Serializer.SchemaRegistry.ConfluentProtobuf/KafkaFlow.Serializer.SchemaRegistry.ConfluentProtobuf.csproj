@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <PackageId>KafkaFlow.Serializer.SchemaRegistry.ConfluentProtobuf</PackageId>
     <Description>Protobuf implementation for KafkaFlow serializer middleware using Confluent.SchemaRegistry.Serdes.Protobuf package</Description>
     <RootNamespace>KafkaFlow.Serializer.SchemaRegistry</RootNamespace>
@@ -9,10 +9,10 @@
 
   <ItemGroup>
     <PackageReference Include="Confluent.SchemaRegistry.Serdes.Protobuf" Version="2.8.0" />
-    <PackageReference Include="Google.Protobuf" Version="3.26.1">
+    <PackageReference Include="Google.Protobuf" Version="3.29.3">
       <Aliases>GoogleProto</Aliases>
     </PackageReference>
-    <PackageReference Include="protobuf-net.Reflection" Version="3.2.12">
+    <PackageReference Include="protobuf-net.Reflection" Version="3.2.46">
       <Aliases>PbNet</Aliases>
     </PackageReference>
   </ItemGroup>
