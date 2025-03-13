@@ -135,8 +135,8 @@ internal class ClusterManager : IClusterManager, IDisposable
             {
                 if (exceptionResult.Error.Code == ErrorCode.TopicAlreadyExists)
                 {
-                    _logHandler.Warning(
-                        "An error occurred creating topic {Topic}: {Reason}",
+                    _logHandler.Info(
+                        "Topic {Topic} already exists. Skipping creation.",
                         new
                         {
                             exceptionResult.Topic,
