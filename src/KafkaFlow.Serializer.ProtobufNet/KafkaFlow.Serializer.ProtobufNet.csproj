@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="protobuf-net" Version="3.2.12" />
+    <PackageReference Include="protobuf-net" Version="3.2.46" />
   </ItemGroup>
 
   <ItemGroup>
