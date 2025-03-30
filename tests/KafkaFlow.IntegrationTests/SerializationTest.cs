@@ -110,4 +110,18 @@ public class SerializationTest
             await MessageStorage.AssertMessageAsync(message);
         }
     }
+
+    [TestMethod]
+    public async Task NullMessageTest()
+    {
+        // Arrange
+        var producer = _provider.GetRequiredService<IMessageProducer<AvroProducer>>();
+        LogMessages2 message = null;
+
+        // Act
+        await producer.ProduceAsync(Guid.NewGuid().ToString(), message);
+
+        // Assert
+        await MessageStorage.AssertNullMessageAsync();
+    }
 }
