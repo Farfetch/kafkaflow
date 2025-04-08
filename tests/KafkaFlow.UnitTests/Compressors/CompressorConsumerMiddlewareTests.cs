@@ -37,7 +37,7 @@ public class CompressorConsumerMiddlewareTests
         Func<Task> act = () => _target.Invoke(_contextMock.Object, _ => this.SetNextCalled());
 
         // Assert
-        act.Should().Throw<InvalidOperationException>();
+        act.Should().ThrowAsync<InvalidOperationException>();
         _nextCalled.Should().BeFalse();
         _contextMock.Verify(x => x.SetMessage(It.IsAny<object>(), It.IsAny<object>()), Times.Never);
         _decompressorMock.Verify(x => x.Decompress(It.IsAny<byte[]>()), Times.Never);

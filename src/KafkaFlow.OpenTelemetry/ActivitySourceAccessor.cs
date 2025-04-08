@@ -1,9 +1,6 @@
-﻿extern alias SemanticConventions;
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Conventions = SemanticConventions::OpenTelemetry.Trace.TraceSemanticConventions;
 
 namespace KafkaFlow.OpenTelemetry;
 
@@ -19,7 +16,9 @@ internal static class ActivitySourceAccessor
 
     internal static void SetGenericTags(Activity activity, IEnumerable<string> bootstrapServers)
     {
-        activity?.SetTag(Conventions.AttributeMessagingSystem, MessagingSystemId);
-        activity?.SetTag(Conventions.AttributePeerService, string.Join(",", bootstrapServers ?? Enumerable.Empty<string>()));
+        // https://opentelemetry.io/docs/languages/net/libraries/#note-on-versioning
+        // https://github.com/open-telemetry/opentelemetry-dotnet/blob/core-1.9.0/src/Shared/SemanticConventions.cs
+        activity?.SetTag("message.type", MessagingSystemId);
+        activity?.SetTag("peer.service", string.Join(",", bootstrapServers ?? Enumerable.Empty<string>()));
     }
 }
