@@ -39,15 +39,16 @@ public class SerializerProducerMiddleware : IMessageMiddleware
     {
         await _typeResolver.OnProduceAsync(context).ConfigureAwait(false);
 
-        byte[] messageValue = Array.Empty<byte>();
+        var messageValue = context.Message.Value;
 
-        if (context.Message.Value is not null)
+        // if message is not tombstone (null) then we can try deserialising it
+        if (messageValue is not null)
         {
             using (var buffer = s_memoryStreamManager.GetStream())
             {
                 await _serializer
                     .SerializeAsync(
-                        context.Message.Value,
+                        messageValue,
                         buffer,
                         new SerializerContext(context.ProducerContext.Topic))
                     .ConfigureAwait(false);
