@@ -38,11 +38,11 @@ public static class BatchProduceExtension
                 item.MessageKey,
                 item.MessageValue,
                 item.Headers,
-                report =>
+                deliveryReportFlow =>
                 {
-                    item.DeliveryReport = report;
+                    item.DeliveryReport = deliveryReportFlow.ToDeliveryReport();
 
-                    if (report.Error.IsError)
+                    if (deliveryReportFlow.Error.IsError)
                     {
                         hasErrors = true;
                     }
