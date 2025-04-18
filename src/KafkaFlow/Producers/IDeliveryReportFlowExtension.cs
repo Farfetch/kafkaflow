@@ -6,7 +6,7 @@ namespace KafkaFlow;
 /// <summary>
 /// No needed
 /// </summary>
-public static class DeliveryReportExtension
+public static class IDeliveryReportFlowExtension
 {
     /// <summary>
     /// Converts a Confluent.Kafka delivery report to a KafkaFlow delivery report.
@@ -15,14 +15,14 @@ public static class DeliveryReportExtension
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
     /// <returns></returns>
-    public static IDeliveryReportFlow<TKey, TValue> ToIDeliveryReportFlow<TKey, TValue>(this DeliveryReport<TKey, TValue> report)
+    public static DeliveryReport<TKey, TValue> ToDeliveryReport<TKey, TValue>(this IDeliveryReportFlow<TKey, TValue> report)
     {
-        return new DeliveryReportFlow<TKey, TValue>
+        return new DeliveryReport<TKey, TValue>
         {
             Topic = report.Topic,
             Partition = report.Partition,
             Offset = report.Offset,
-            Error = report.Error.ToIError(),
+            Error = report.Error.ToError(),
         };
     }
 }

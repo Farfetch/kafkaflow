@@ -5,7 +5,7 @@ namespace KafkaFlow;
 /// </summary>
 /// <typeparam name="TKey"></typeparam>
 /// <typeparam name="TValue"></typeparam>
-public interface IDeliveryReportFlow<TKey, TValue>
+public interface IDeliveryReportFlow<out TKey, out TValue> : IDeliveryResultFlow<TKey, TValue>
 {
     string Topic { get; }
 
@@ -14,4 +14,14 @@ public interface IDeliveryReportFlow<TKey, TValue>
     long Offset { get; }
 
     IError Error { get; }
+
+    /// <summary>
+    /// Unused
+    /// </summary>
+    TKey Key { get; }
+
+    /// <summary>
+    /// Unused
+    /// </summary>
+    TValue Value { get; }
 }
