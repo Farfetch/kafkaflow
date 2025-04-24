@@ -18,7 +18,7 @@ internal static class ActivitySourceAccessor
     {
         // https://opentelemetry.io/docs/languages/net/libraries/#note-on-versioning
         // https://github.com/open-telemetry/opentelemetry-dotnet/blob/core-1.9.0/src/Shared/SemanticConventions.cs
-        activity?.SetTag("message.type", MessagingSystemId);
+        activity?.SetTag("messaging.system", MessagingSystemId);
         activity?.SetTag("peer.service", string.Join(",", bootstrapServers ?? Enumerable.Empty<string>()));
     }
 }
