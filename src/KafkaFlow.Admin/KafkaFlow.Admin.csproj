@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageId>KafkaFlow.Admin</PackageId>
-        <Description>Allows KafkaFlow to use the Admin commands</Description>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>KafkaFlow.Admin</PackageId>
+    <Description>Allows KafkaFlow to use the Admin commands</Description>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
-        <ProjectReference Include="..\KafkaFlow.Serializer.ProtobufNet\KafkaFlow.Serializer.ProtobufNet.csproj" />
-        <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
+    <ProjectReference Include="..\KafkaFlow.Serializer.ProtobufNet\KafkaFlow.Serializer.ProtobufNet.csproj" />
+    <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
+  </ItemGroup>
 
 </Project>

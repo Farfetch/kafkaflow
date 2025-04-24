@@ -36,7 +36,7 @@ While the KafkaFlow core and most of the extension packages are still targeting 
 
 ## Update package references
 
-To update to KafkaFlow v3, change the `Version` related to KafkaFlow packages to the latest v3 available in each project referencing KafkaFlow packages. 
+To update to KafkaFlow v3, change the `Version` related to KafkaFlow packages to the latest v3 available in each project referencing KafkaFlow packages.
 
 ```
 <ItemGroup>
@@ -115,9 +115,9 @@ Most of these packages contained only interfaces or core functionalities that we
 
 Here is the list of KafkaFlow packages that no longer exist in v3. In case you are referencing any of these packages, please remove those references since their references were moved to the core KafkaFlow package:
 
-- KafkaFlow.TypedHandler 
-- KafkaFlow.Compressor 
-- KafkaFlow.Serializer 
+- KafkaFlow.TypedHandler
+- KafkaFlow.Compressor
+- KafkaFlow.Serializer
 - KafkaFlow.BatchConsume
 
 #### 3.2 Serializer and Compressor Interface Segregation
@@ -138,7 +138,7 @@ In case you are configuring the consumer to deserialize and/or decompress a mess
         .AddMiddlewares(
             middlewares => middlewares
                 .AddCompressor<GzipMessageCompressor>()
-                .AddSerializer<JsonCoreSerializer>()                
+                .AddSerializer<JsonCoreSerializer>()
         )
 )
 ```
@@ -153,7 +153,7 @@ The following changes need to be made when updating to KafkaFlow v3.
         .AddMiddlewares(
             middlewares => middlewares
                 .AddDecompressor<GzipMessageDecompressor>()
-                .AddDeserializer<JsonCoreDeserializer>()                
+                .AddDeserializer<JsonCoreDeserializer>()
         )
 )
 ```
@@ -165,15 +165,15 @@ Having this segregation contributes to a more consistent name scheme together wi
 Related to Deserialization:
 
 - `IDeserializer` interface created.
-- `.AddSerializer()` renamed to `.AddDeserializer()`. 
+- `.AddSerializer()` renamed to `.AddDeserializer()`.
 - Created `JsonCoreDeserializer `, `ProtobufNetDeserializer`, `ConfluentProtobufDeserializer`, `NewtonsoftJsonDeserializer`, `ConfluentJsonDeserializer` and `ConfluentAvroDeserializer` that implements the `.DeserializeAsync()` method.
 - `.AddSingleTypeDeserializer()` renamed to `.AddSingleTypeDeserializer()`
 - `.AddSingleTypeSerializer()` renamed to `.AddSchemaRegistryAvroDeserializer()`
 
 Related to Decompression:
 
-- `IDecompressor` interface created. 
-- `.AddCompressor()` renamed to `.AddDecompressor()`. 
+- `IDecompressor` interface created.
+- `.AddCompressor()` renamed to `.AddDecompressor()`.
 - Created `GzipMessageDecompressor` that implements the `.Decompress()` method.
 
 #### 3.3 Consumer Batching Configuration
