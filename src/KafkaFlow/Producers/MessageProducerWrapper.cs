@@ -15,7 +15,7 @@ internal class MessageProducerWrapper<TProducer> : IMessageProducer<TProducer>
 
     public string ProducerName => _producer.ProducerName;
 
-    public Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
+    public Task<IDeliveryResultFlow<byte[], byte[]>> ProduceAsync(
         string topic,
         object messageKey,
         object message,
@@ -30,7 +30,7 @@ internal class MessageProducerWrapper<TProducer> : IMessageProducer<TProducer>
             partition);
     }
 
-    public Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
+    public Task<IDeliveryResultFlow<byte[], byte[]>> ProduceAsync(
         object messageKey,
         object message,
         IMessageHeaders headers = null,
@@ -48,7 +48,7 @@ internal class MessageProducerWrapper<TProducer> : IMessageProducer<TProducer>
         object messageKey,
         object message,
         IMessageHeaders headers = null,
-        Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
+        Action<IDeliveryReportFlow<byte[], byte[]>> deliveryHandler = null,
         int? partition = null)
     {
         _producer.Produce(
@@ -64,14 +64,14 @@ internal class MessageProducerWrapper<TProducer> : IMessageProducer<TProducer>
         object messageKey,
         object message,
         IMessageHeaders headers = null,
-        Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
+        Action<IDeliveryReportFlow<byte[], byte[]>> deliveryReportHandler = null,
         int? partition = null)
     {
         _producer.Produce(
             messageKey,
             message,
             headers,
-            deliveryHandler,
+            deliveryReportHandler,
             partition);
     }
 }
