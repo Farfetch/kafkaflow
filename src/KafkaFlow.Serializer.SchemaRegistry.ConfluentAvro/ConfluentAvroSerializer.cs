@@ -40,7 +40,8 @@ public class ConfluentAvroSerializer : ISerializer
                 () => Activator.CreateInstance(
                     typeof(AvroSerializer<>).MakeGenericType(message.GetType()),
                     _schemaRegistryClient,
-                    _serializerConfig))
+                    _serializerConfig,
+                    null))
             .SerializeAsync(message, output, context);
     }
 }

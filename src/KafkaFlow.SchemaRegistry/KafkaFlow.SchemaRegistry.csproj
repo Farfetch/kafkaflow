@@ -1,19 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageId>KafkaFlow.SchemaRegistry</PackageId>
-        <Description>Provides extensions methods to use Schema Registry</Description>
-        <RootNamespace>KafkaFlow</RootNamespace>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>KafkaFlow.SchemaRegistry</PackageId>
+    <Description>Provides extensions methods to use Schema Registry</Description>
+    <RootNamespace>KafkaFlow</RootNamespace>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Confluent.SchemaRegistry" Version="2.1.1" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Confluent.SchemaRegistry" Version="2.8.0" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
-        <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
+    <ProjectReference Include="..\KafkaFlow\KafkaFlow.csproj" />
+  </ItemGroup>
 
 </Project>

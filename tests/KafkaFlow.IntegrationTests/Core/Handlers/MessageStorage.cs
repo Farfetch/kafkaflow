@@ -17,7 +17,7 @@ internal static class MessageStorage
     private static readonly ConcurrentBag<TestProtoMessage> s_protoMessages = new();
     private static readonly ConcurrentBag<(long, int)> s_versions = new();
     private static readonly ConcurrentBag<byte[]> s_byteMessages = new();
-    private static readonly ConcurrentBag<byte[]> s_nullMessages = new();
+    private static readonly ConcurrentBag<Message> s_nullMessages = new();
 
     public static void Add(ITestMessage message)
     {
@@ -40,7 +40,7 @@ internal static class MessageStorage
         s_byteMessages.Add(message);
     }
 
-    public static void AddNullMessage(byte[] message)
+    public static void AddNullMessage(Message message)
     {
         s_nullMessages.Add(message);
     }

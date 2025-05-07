@@ -131,6 +131,7 @@ internal static class Bootstrapper
                                 .WithConsumerConfig(defaultConfig)
                                 .AddMiddlewares(
                                     middlewares => middlewares
+                                        .Add<NullHandlerMiddleware>(MiddlewareLifetime.Singleton)
                                         .AddDeserializer<ConfluentAvroDeserializer>()
                                         .AddTypedHandlers(
                                             handlers => handlers
@@ -159,6 +160,7 @@ internal static class Bootstrapper
                                 .WithConsumerConfig(defaultConfig)
                                 .AddMiddlewares(
                                     middlewares => middlewares
+                                        .Add<NullHandlerMiddleware>(MiddlewareLifetime.Singleton)
                                         .AddDeserializer<ConfluentProtobufDeserializer>()
                                         .AddTypedHandlers(
                                             handlers => handlers
@@ -169,6 +171,7 @@ internal static class Bootstrapper
                                 .DefaultTopic(JsonSchemaRegistryTopicName)
                                 .AddMiddlewares(
                                     middlewares => middlewares
+                                        .Add<NullHandlerMiddleware>(MiddlewareLifetime.Singleton)
                                         .AddSerializer(
                                             resolver => new ConfluentJsonSerializer(
                                                 resolver,
@@ -187,6 +190,7 @@ internal static class Bootstrapper
                                 .WithConsumerConfig(defaultConfig)
                                 .AddMiddlewares(
                                     middlewares => middlewares
+                                        .Add<NullHandlerMiddleware>(MiddlewareLifetime.Singleton)
                                         .AddDeserializer<ConfluentJsonDeserializer>()
                                         .AddTypedHandlers(
                                             handlers => handlers
@@ -213,6 +217,7 @@ internal static class Bootstrapper
                                 .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                 .AddMiddlewares(
                                     middlewares => middlewares
+                                        .Add<NullHandlerMiddleware>(MiddlewareLifetime.Singleton)
                                         .AddSingleTypeDeserializer<ProtobufNetDeserializer>(typeof(TestMessage1))
                                         .AddTypedHandlers(
                                             handlers =>
@@ -249,6 +254,7 @@ internal static class Bootstrapper
                                 .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                 .AddMiddlewares(
                                     middlewares => middlewares
+                                        .Add<NullHandlerMiddleware>(MiddlewareLifetime.Singleton)
                                         .AddDeserializer<JsonCoreDeserializer>()
                                         .AddTypedHandlers(
                                             handlers =>
@@ -260,16 +266,10 @@ internal static class Bootstrapper
                                 .Topic(NullTopicName)
                                 .WithGroupId(NullGroupId)
                                 .WithBufferSize(100)
-                                .WithWorkersCount(10)
+                                .WithWorkersCount(1)
                                 .WithAutoOffsetReset(AutoOffsetReset.Latest)
                                 .AddMiddlewares(
-                                    middlewares => middlewares
-                                        .AddTypedHandlers(
-                                            handlers =>
-                                                handlers
-                                                    .WithHandlerLifetime(InstanceLifetime.Singleton)
-                                                    .AddHandler<NullMessageHandler>()
-                                        )))
+                                    middlewares => middlewares.Add<NullHandlerMiddleware>(MiddlewareLifetime.Singleton)))
                         .AddConsumer(
                             consumer => consumer
                                 .Topics(GzipTopicName)
@@ -306,6 +306,7 @@ internal static class Bootstrapper
                                 .WithAutoCommitIntervalMs(1)
                                 .AddMiddlewares(
                                     middlewares => middlewares
+                                        .Add<NullHandlerMiddleware>(MiddlewareLifetime.Singleton)
                                         .AddDecompressor<GzipMessageDecompressor>()
                                         .AddDeserializer<ProtobufNetDeserializer>()
                                         .AddTypedHandlers(

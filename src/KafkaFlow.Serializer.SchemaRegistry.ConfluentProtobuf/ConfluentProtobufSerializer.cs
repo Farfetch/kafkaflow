@@ -38,7 +38,8 @@ public class ConfluentProtobufSerializer : ISerializer
                 () => Activator.CreateInstance(
                     typeof(ProtobufSerializer<>).MakeGenericType(message.GetType()),
                     _schemaRegistryClient,
-                    _serializerConfig))
+                    _serializerConfig,
+                    null))
             .SerializeAsync(message, output, context);
     }
 }

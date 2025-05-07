@@ -119,7 +119,7 @@ public class ConsumerConfigurationBuilderTests
         configuration.BufferSize.Should().Be(bufferSize);
         configuration.WorkersCountCalculator(null, null).Result.Should().Be(workers);
         configuration.GroupId.Should().Be(groupId);
-        configuration.GetKafkaConfig().AutoOffsetReset.Should().Be(offsetReset);
+        configuration.GetKafkaConfig().AutoOffsetReset.Should().HaveSameValueAs(offsetReset);
         configuration.AutoMessageCompletion.Should().Be(false);
         configuration.GetKafkaConfig().EnableAutoOffsetStore.Should().Be(false);
         configuration.GetKafkaConfig().EnableAutoCommit.Should().Be(false);
