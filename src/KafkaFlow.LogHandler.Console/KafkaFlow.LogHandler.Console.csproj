@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
-        <RootNamespace>KafkaFlow</RootNamespace>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <RootNamespace>KafkaFlow</RootNamespace>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
+  </ItemGroup>
 
-    <ItemGroup Condition="'$(TargetFramework)'== 'netStandard2.0'">
-        <PackageReference Include="System.Text.Json" Version="6.0.8" />
-    </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'== 'netStandard2.0'">
+    <PackageReference Include="System.Text.Json" Version="6.0.8" />
+  </ItemGroup>
 
 </Project>

@@ -1,19 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageId>KafkaFlow.Serializer.SchemaRegistry.ConfluentJson</PackageId>
-        <Description>Json implementation for KafkaFlow serializer middleware using Confluent.SchemaRegistry.Serdes.Json package</Description>
-        <RootNamespace>KafkaFlow.Serializer.SchemaRegistry</RootNamespace>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>KafkaFlow.Serializer.SchemaRegistry.ConfluentJson</PackageId>
+    <Description>Json implementation for KafkaFlow serializer middleware using Confluent.SchemaRegistry.Serdes.Json package</Description>
+    <RootNamespace>KafkaFlow.Serializer.SchemaRegistry</RootNamespace>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Confluent.SchemaRegistry.Serdes.Json" Version="1.9.3" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Confluent.SchemaRegistry.Serdes.Json" Version="2.8.0" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
-        <ProjectReference Include="..\KafkaFlow.SchemaRegistry\KafkaFlow.SchemaRegistry.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KafkaFlow.Abstractions\KafkaFlow.Abstractions.csproj" />
+    <ProjectReference Include="..\KafkaFlow.SchemaRegistry\KafkaFlow.SchemaRegistry.csproj" />
+  </ItemGroup>
 
 </Project>

@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using KafkaFlow.Consumers;
-using KafkaFlow.Producers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -21,7 +19,7 @@ public class MessageContextTests
             Mock.Of<IProducerContext>(),
             Mock.Of<IReadOnlyCollection<string>>()
         );
-            
+
 
         // Act
         var changedMessage = messageContext.SetMessage("changed-key", "changed-value");

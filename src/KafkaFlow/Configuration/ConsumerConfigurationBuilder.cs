@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using KafkaFlow.Consumers.DistributionStrategies;
+using KafkaFlow.Extensions;
 
 namespace KafkaFlow.Configuration;
 
@@ -251,7 +252,8 @@ internal sealed class ConsumerConfigurationBuilder : IConsumerConfigurationBuild
         consumerConfigCopy.StatisticsIntervalMs = _consumerConfig.StatisticsIntervalMs ?? _statisticsInterval;
 
         consumerConfigCopy.EnableAutoOffsetStore = false;
-        consumerConfigCopy.EnableAutoCommit = false;
+        consumerConfigCopy.EnableAutoCommit = _consumerConfig.PartitionAssignmentStrategy.IsStopTheWorldStrategy() is false;
+        consumerConfigCopy.AutoCommitIntervalMs = (int?)_autoCommitInterval.TotalMilliseconds;
 
         consumerConfigCopy.ReadSecurityInformationFrom(clusterConfiguration);
 

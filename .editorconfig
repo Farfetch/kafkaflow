@@ -1,5 +1,13 @@
 # editorconfig.org
 
+root = true
+
+[*]
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
 [*.cs]
 # Naming rules for fields
 dotnet_naming_rule.private_fields_with_underscore.symbols = private_field
@@ -35,20 +43,20 @@ dotnet_naming_rule.style_dotnet_naming_rule_DotNetNamingStyle.DoNotUseThisForPri
 
 # name all constant fields using PascalCase
 dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = warning
-dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols  = constant_fields
-dotnet_naming_rule.constant_fields_should_be_pascal_case.style    = pascal_case_style
+dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols = constant_fields
+dotnet_naming_rule.constant_fields_should_be_pascal_case.style = pascal_case_style
 
-dotnet_naming_symbols.constant_fields.applicable_kinds   = field
+dotnet_naming_symbols.constant_fields.applicable_kinds = field
 dotnet_naming_symbols.constant_fields.required_modifiers = const
 
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 
 # static fields should have s_ prefix
 dotnet_naming_rule.static_fields_should_have_prefix.severity = warning
-dotnet_naming_rule.static_fields_should_have_prefix.symbols  = static_fields
-dotnet_naming_rule.static_fields_should_have_prefix.style    = static_prefix_style
+dotnet_naming_rule.static_fields_should_have_prefix.symbols = static_fields
+dotnet_naming_rule.static_fields_should_have_prefix.style = static_prefix_style
 
-dotnet_naming_symbols.static_fields.applicable_kinds   = field
+dotnet_naming_symbols.static_fields.applicable_kinds = field
 dotnet_naming_symbols.static_fields.required_modifiers = static
 
 dotnet_naming_symbols.static_fields.applicable_accessibilities = private, internal, private_protected
@@ -74,11 +82,8 @@ csharp_style_expression_bodied_accessors = true:silent
 csharp_style_expression_bodied_lambdas = true:silent
 csharp_style_expression_bodied_local_functions = false:silent
 
-[*.{cs,vb}]
+[*.cs]
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
-tab_width = 4
-indent_size = 4
-end_of_line = crlf
 dotnet_style_coalesce_expression = true:suggestion
 dotnet_style_null_propagation = true:suggestion
 dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
@@ -94,3 +99,22 @@ dotnet_style_prefer_inferred_tuple_names = true:suggestion
 dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
 dotnet_style_prefer_compound_assignment = true:suggestion
 dotnet_style_prefer_simplified_interpolation = true:suggestion
+
+[Makefile]
+indent_style = tab
+indent_size = 2
+
+[*.csproj]
+indent_size = 2
+
+[*.props]
+indent_size = 2
+
+[*.js]
+indent_size = 2
+
+[*.json]
+indent_size = 2
+
+[*.{yaml,yml}]
+indent_size = 2
