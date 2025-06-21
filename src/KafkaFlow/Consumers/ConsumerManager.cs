@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Confluent.Kafka;
 using KafkaFlow.Configuration;
 using KafkaFlow.Extensions;
 
@@ -108,7 +107,7 @@ internal class ConsumerManager : IConsumerManager
         _logHandler.Warning(
             "Partitions revoked",
             this.GetConsumerLogInfo(topicPartitions?.Select(x => x.TopicPartition).ToArray()
-                                    ?? Array.Empty<TopicPartition>()));
+                                    ?? Array.Empty<Confluent.Kafka.TopicPartition>()));
 
         this.WorkerPool.StopAsync().GetAwaiter().GetResult();
 
