@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using KafkaFlow.Extensions;
 
 namespace KafkaFlow.Consumers;
 
@@ -76,11 +79,23 @@ internal class ConsumerContext : IConsumerContext
     public IOffsetsWatermark GetOffsetsWatermark() =>
         new OffsetsWatermark(
             _consumer.GetWatermarkOffsets(
-                new TopicPartition(
+                new Confluent.Kafka.TopicPartition(
                     this.TopicPartitionOffset.Topic,
                     this.TopicPartitionOffset.Partition)));
 
     public void Pause() => _consumer.FlowManager.Pause(_consumer.Assignment);
 
     public void Resume() => _consumer.FlowManager.Resume(_consumer.Assignment);
+
+    public void Pause(IReadOnlyList<TopicPartition> topicPartitions)
+    {
+        var affectedPartitions = topicPartitions.Select(x => new Confluent.Kafka.TopicPartition(x.Topic, x.Partition));
+        _consumer.FlowManager.Pause(_consumer.Assignment.Intersect(affectedPartitions).ToList());
+    }
+
+    public void Resume(IReadOnlyList<TopicPartition> topicPartitions)
+    {
+        var affectedPartitions = topicPartitions.Select(x => new Confluent.Kafka.TopicPartition(x.Topic, x.Partition));
+        _consumer.FlowManager.Resume(_consumer.Assignment.Intersect(affectedPartitions).ToList());
+    }
 }

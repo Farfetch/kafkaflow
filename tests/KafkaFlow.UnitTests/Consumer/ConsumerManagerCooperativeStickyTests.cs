@@ -72,7 +72,7 @@ public class ConsumerManagerCooperativeStickyTests
 
         _consumerMock
             .SetupGet(x => x.Assignment)
-            .Returns(Array.Empty<TopicPartition>());
+            .Returns([]);
 
         _target = new ConsumerManager(
             _consumerMock.Object,

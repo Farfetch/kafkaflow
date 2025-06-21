@@ -11,7 +11,7 @@ internal class ConsumerFlowManager : IConsumerFlowManager
 {
     private readonly IConsumer _consumer;
     private readonly ILogHandler _logHandler;
-    private readonly List<TopicPartition> _pausedPartitions = new();
+    private readonly List<Confluent.Kafka.TopicPartition> _pausedPartitions = new();
     private readonly SemaphoreSlim _consumerSemaphore = new(1, 1);
 
     private IConsumer<byte[], byte[]> _clientConsumer;
@@ -26,9 +26,9 @@ internal class ConsumerFlowManager : IConsumerFlowManager
         _logHandler = logHandler;
     }
 
-    public IReadOnlyList<TopicPartition> PausedPartitions => _pausedPartitions.AsReadOnly();
+    public IReadOnlyList<Confluent.Kafka.TopicPartition> PausedPartitions => _pausedPartitions.AsReadOnly();
 
-    public void Pause(IReadOnlyCollection<TopicPartition> topicPartitions)
+    public void Pause(IReadOnlyCollection<Confluent.Kafka.TopicPartition> topicPartitions)
     {
         lock (_pausedPartitions)
         {
@@ -64,7 +64,7 @@ internal class ConsumerFlowManager : IConsumerFlowManager
         }
     }
 
-    public void Resume(IReadOnlyCollection<TopicPartition> topicPartitions)
+    public void Resume(IReadOnlyCollection<Confluent.Kafka.TopicPartition> topicPartitions)
     {
         lock (_pausedPartitions)
         {
