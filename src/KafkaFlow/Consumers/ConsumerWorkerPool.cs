@@ -55,7 +55,7 @@ internal class ConsumerWorkerPool : IConsumerWorkerPool
 
     public IEvent WorkerPoolStopped => _workerPoolStoppedSubject;
 
-    public async Task StartAsync(IReadOnlyCollection<TopicPartition> partitions, int workersCount)
+    public async Task StartAsync(IReadOnlyCollection<Confluent.Kafka.TopicPartition> partitions, int workersCount)
     {
         try
         {

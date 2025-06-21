@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Confluent.Kafka;
 
 namespace KafkaFlow.Consumers;
 
@@ -12,7 +11,7 @@ internal class OffsetManager : IOffsetManager
 
     public OffsetManager(
         IOffsetCommitter committer,
-        IEnumerable<TopicPartition> partitions)
+        IEnumerable<Confluent.Kafka.TopicPartition> partitions)
     {
         _committer = committer;
         _partitionsOffsets = partitions.ToDictionary(

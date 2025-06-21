@@ -9,7 +9,7 @@ internal interface IConsumerWorkerPool
 {
     int CurrentWorkersCount { get; }
 
-    Task StartAsync(IReadOnlyCollection<TopicPartition> partitions, int workersCount);
+    Task StartAsync(IReadOnlyCollection<Confluent.Kafka.TopicPartition> partitions, int workersCount);
 
     Task StopAsync();
 

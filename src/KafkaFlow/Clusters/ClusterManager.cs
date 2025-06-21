@@ -92,7 +92,7 @@ internal class ClusterManager : IClusterManager, IDisposable
             topicsMetadata
                 .SelectMany(
                     topic => topic.Metadata.Partitions.Select(
-                        partition => new TopicPartition(
+                        partition => new Confluent.Kafka.TopicPartition(
                             topic.Name,
                             new Partition(partition.Id))))
                 .ToList();
