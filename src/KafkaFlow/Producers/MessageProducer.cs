@@ -324,7 +324,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
         try
         {
             var produceTask = partition.HasValue ?
-                localProducer.ProduceAsync(new TopicPartition(context.ProducerContext.Topic, partition.Value), message) :
+                localProducer.ProduceAsync(new Confluent.Kafka.TopicPartition(context.ProducerContext.Topic, partition.Value), message) :
                 localProducer.ProduceAsync(context.ProducerContext.Topic, message);
 
             result = await produceTask.ConfigureAwait(false);
@@ -357,7 +357,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
         if (partition.HasValue)
         {
             localProducer.Produce(
-                new TopicPartition(context.ProducerContext.Topic, partition.Value),
+                new Confluent.Kafka.TopicPartition(context.ProducerContext.Topic, partition.Value),
                 message,
                 Handler);
 

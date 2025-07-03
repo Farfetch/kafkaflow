@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -108,4 +109,14 @@ public interface IConsumerContext
     /// Resume Kafka's message fetch
     /// </summary>
     void Resume();
+
+    /// <summary>
+    /// Pause Kafka's message fetch, from a specific partitions, buffered messages will still be processed
+    /// </summary>
+    void Pause(IReadOnlyList<TopicPartition> topicPartitions);
+
+    /// <summary>
+    /// Resume Kafka's message fetch for specific partitions
+    /// </summary>
+    void Resume(IReadOnlyList<TopicPartition> topicPartitions);
 }
