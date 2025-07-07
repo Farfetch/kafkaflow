@@ -30,6 +30,11 @@ public interface IConsumerConfiguration
     IReadOnlyList<TopicPartitions> ManualAssignPartitions { get; }
 
     /// <summary>
+    /// Gets the topic partition offsets to manually assign
+    /// </summary>
+    IReadOnlyList<TopicPartitionOffsets> ManualAssignPartitionOffsets { get; }
+
+    /// <summary>
     /// Gets the consumer name
     /// </summary>
     string ConsumerName { get; }

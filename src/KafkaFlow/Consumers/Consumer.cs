@@ -95,9 +95,7 @@ internal class Consumer : IConsumer
                 return ConsumerStatus.Running;
             }
 
-            return this.FlowManager.PausedPartitions.Count == this.Assignment.Count ?
-                ConsumerStatus.Paused :
-                ConsumerStatus.PartiallyRunning;
+            return this.FlowManager.PausedPartitions.Count == this.Assignment.Count ? ConsumerStatus.Paused : ConsumerStatus.PartiallyRunning;
         }
     }
 
@@ -130,14 +128,13 @@ internal class Consumer : IConsumer
 
     public IEnumerable<TopicPartitionLag> GetTopicPartitionsLag()
     {
-        return this.Assignment.Select(
-            tp =>
-            {
-                var offset = Math.Max(0, _currentPartitionsOffsets.GetOrAdd(tp, _ => this.GetPosition(tp)));
-                var offsetEnd = Math.Max(0, this.GetWatermarkOffsets(tp).High.Value);
+        return this.Assignment.Select(tp =>
+        {
+            var offset = Math.Max(0, _currentPartitionsOffsets.GetOrAdd(tp, _ => this.GetPosition(tp)));
+            var offsetEnd = Math.Max(0, this.GetWatermarkOffsets(tp).High.Value);
 
-                return new TopicPartitionLag(tp.Topic, tp.Partition.Value, offset == 0 ? 0 : offsetEnd - offset);
-            });
+            return new TopicPartitionLag(tp.Topic, tp.Partition.Value, offset == 0 ? 0 : offsetEnd - offset);
+        });
     }
 
     public void Commit(IReadOnlyCollection<Confluent.Kafka.TopicPartitionOffset> offsets)
@@ -217,27 +214,26 @@ internal class Consumer : IConsumer
 
     private void RegisterLogErrorHandler()
     {
-        this.OnError(
-            (_, error) =>
+        this.OnError((_, error) =>
+        {
+            var errorData = new
             {
-                var errorData = new
-                {
-                    Code = error.Code.ToString(),
-                    error.Reason,
-                    error.IsBrokerError,
-                    error.IsLocalError,
-                    error.IsError,
-                };
+                Code = error.Code.ToString(),
+                error.Reason,
+                error.IsBrokerError,
+                error.IsLocalError,
+                error.IsError,
+            };
 
-                if (error.IsFatal)
-                {
-                    _logHandler.Error("Kafka Consumer Internal Error", null, errorData);
-                }
-                else
-                {
-                    _logHandler.Warning("Kafka Consumer Internal Warning", errorData);
-                }
-            });
+            if (error.IsFatal)
+            {
+                _logHandler.Error("Kafka Consumer Internal Error", null, errorData);
+            }
+            else
+            {
+                _logHandler.Warning("Kafka Consumer Internal Warning", errorData);
+            }
+        });
     }
 
     private void EnsureConsumer()
@@ -277,20 +273,34 @@ internal class Consumer : IConsumer
 
         if (this.Configuration.ManualAssignPartitions.Any())
         {
-            this.ManualAssign(this.Configuration.ManualAssignPartitions);
+            this.ManualAssignPartitions(this.Configuration.ManualAssignPartitions);
+        }
+
+        if (this.Configuration.ManualAssignPartitionOffsets.Any())
+        {
+            this.ManualAssignPartitionOffsets(this.Configuration.ManualAssignPartitionOffsets);
         }
     }
 
-    private void ManualAssign(IEnumerable<TopicPartitions> topics)
+    private void ManualAssignPartitions(IEnumerable<TopicPartitions> topics)
     {
         var partitions = topics
-            .SelectMany(
-                topic => topic.Partitions.Select(
-                    partition => new TopicPartition(topic.Name, new Partition(partition))))
+            .SelectMany(topic => topic.Partitions.Select(partition => new TopicPartition(topic.Name, new Partition(partition))))
             .ToList();
 
         _consumer.Assign(partitions);
         this.FirePartitionsAssignedHandlers(_consumer, partitions);
+    }
+
+    private void ManualAssignPartitionOffsets(IEnumerable<TopicPartitionOffsets> topics)
+    {
+        var partitionOffsets = topics
+            .SelectMany(topic => topic.PartitionOffsets.Select(partitionOffset => new Confluent.Kafka.TopicPartitionOffset(
+                topic.Name, new Partition(partitionOffset.Key), new Offset(partitionOffset.Value))))
+            .ToList();
+
+        _consumer.Assign(partitionOffsets);
+        this.FirePartitionsAssignedHandlers(_consumer, partitionOffsets.Select(x => x.TopicPartition).ToList());
     }
 
     private void FirePartitionsAssignedHandlers(
