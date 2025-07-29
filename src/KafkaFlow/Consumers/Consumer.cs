@@ -17,7 +17,7 @@ internal class Consumer : IConsumer
     private readonly ILogHandler _logHandler;
     private readonly bool _stopTheWorldStrategy;
 
-    private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>>>
+    private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartition>>>
         _partitionsAssignedHandlers = new();
 
     private readonly List<Action<IDependencyResolver, IConsumer<byte[], byte[]>,
@@ -26,7 +26,7 @@ internal class Consumer : IConsumer
 
     private readonly List<Action<IConsumer<byte[], byte[]>, Error>> _errorsHandlers = new();
     private readonly List<Action<IConsumer<byte[], byte[]>, string>> _statisticsHandlers = new();
-    private readonly ConcurrentDictionary<TopicPartition, long> _currentPartitionsOffsets = new();
+    private readonly ConcurrentDictionary<Confluent.Kafka.TopicPartition, long> _currentPartitionsOffsets = new();
     private readonly ConsumerFlowManager _flowManager;
     private readonly Event _maxPollIntervalExceeded;
 
@@ -71,7 +71,7 @@ internal class Consumer : IConsumer
 
     public IReadOnlyList<string> Subscription { get; private set; } = new List<string>();
 
-    public IReadOnlyList<TopicPartition> Assignment { get; private set; } = new List<TopicPartition>();
+    public IReadOnlyList<Confluent.Kafka.TopicPartition> Assignment { get; private set; } = new List<Confluent.Kafka.TopicPartition>();
 
     public IConsumerFlowManager FlowManager => _flowManager;
 
@@ -101,7 +101,7 @@ internal class Consumer : IConsumer
         }
     }
 
-    public void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<TopicPartition>> handler) =>
+    public void OnPartitionsAssigned(Action<IDependencyResolver, IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartition>> handler) =>
         _partitionsAssignedHandlers.Add(handler);
 
     public void OnPartitionsRevoked(
@@ -114,13 +114,13 @@ internal class Consumer : IConsumer
     public void OnStatistics(Action<IConsumer<byte[], byte[]>, string> handler) =>
         _statisticsHandlers.Add(handler);
 
-    public Offset GetPosition(TopicPartition topicPartition) =>
+    public Offset GetPosition(Confluent.Kafka.TopicPartition topicPartition) =>
         _consumer.Position(topicPartition);
 
-    public WatermarkOffsets GetWatermarkOffsets(TopicPartition topicPartition) =>
+    public WatermarkOffsets GetWatermarkOffsets(Confluent.Kafka.TopicPartition topicPartition) =>
         _consumer.GetWatermarkOffsets(topicPartition);
 
-    public WatermarkOffsets QueryWatermarkOffsets(TopicPartition topicPartition, TimeSpan timeout) =>
+    public WatermarkOffsets QueryWatermarkOffsets(Confluent.Kafka.TopicPartition topicPartition, TimeSpan timeout) =>
         _consumer.QueryWatermarkOffsets(topicPartition, timeout);
 
     public List<Confluent.Kafka.TopicPartitionOffset> OffsetsForTimes(
@@ -286,7 +286,7 @@ internal class Consumer : IConsumer
         var partitions = topics
             .SelectMany(
                 topic => topic.Partitions.Select(
-                    partition => new TopicPartition(topic.Name, new Partition(partition))))
+                    partition => new Confluent.Kafka.TopicPartition(topic.Name, new Partition(partition))))
             .ToList();
 
         _consumer.Assign(partitions);
@@ -295,7 +295,7 @@ internal class Consumer : IConsumer
 
     private void FirePartitionsAssignedHandlers(
         IConsumer<byte[], byte[]> consumer,
-        List<TopicPartition> partitions)
+        List<Confluent.Kafka.TopicPartition> partitions)
     {
         if (_stopTheWorldStrategy)
         {
@@ -323,7 +323,7 @@ internal class Consumer : IConsumer
         if (_stopTheWorldStrategy)
         {
             _partitionsRevokedHandlers.ForEach(handler => handler(_dependencyResolver, consumer, partitions));
-            this.Assignment = new List<TopicPartition>();
+            this.Assignment = new List<Confluent.Kafka.TopicPartition>();
             this.Subscription = new List<string>();
             _currentPartitionsOffsets.Clear();
             _flowManager.Stop();
