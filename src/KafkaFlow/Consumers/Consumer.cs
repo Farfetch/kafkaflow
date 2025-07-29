@@ -285,7 +285,9 @@ internal class Consumer : IConsumer
     private void ManualAssignPartitions(IEnumerable<TopicPartitions> topics)
     {
         var partitions = topics
-            .SelectMany(topic => topic.Partitions.Select(partition => new TopicPartition(topic.Name, new Partition(partition))))
+            .SelectMany(
+                topic => topic.Partitions.Select(
+                    partition => new Confluent.Kafka.TopicPartition(topic.Name, new Partition(partition))))
             .ToList();
 
         _consumer.Assign(partitions);
