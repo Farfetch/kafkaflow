@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -38,13 +38,17 @@ internal static class OpenTelemetryProducerEventsHandler
                 context?.Items.Add(ActivitySourceAccessor.ActivityString, activity);
 
                 contextToInject = activity.Context;
+
+                // Existing keys in Baggage.Current are preserved, values from Activity.Baggage are only added or overwrite if present.
+                foreach (var item in activity.Baggage)
+                {
+                    Baggage.SetBaggage(item.Key, item.Value);
+                }
             }
             else if (Activity.Current != null)
             {
                 contextToInject = Activity.Current.Context;
             }
-
-            Baggage.Current = Baggage.Create(activity?.Baggage.ToDictionary(item => item.Key, item => item.Value));
 
             // Inject the ActivityContext into the message headers to propagate trace context to the receiving service.
             s_propagator.Inject(new PropagationContext(contextToInject, Baggage.Current), context, InjectTraceContextIntoBasicProperties);
