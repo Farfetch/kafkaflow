@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -225,6 +225,55 @@ public class OpenTelemetryTests
         Assert.AreEqual(consumerSpan.GetBaggageItem(baggageName1), baggageValue1);
         Assert.AreEqual(producerSpan.GetBaggageItem(baggageName2), baggageValue2);
         Assert.AreEqual(consumerSpan.GetBaggageItem(baggageName2), baggageValue2);
+    }
+
+    [TestMethod]
+    public async Task AddOpenTelemetry_ProducingMessage_BaggageCurrentMergedWithActivityBaggage()
+    {
+        // Arrange
+        var provider = await this.GetServiceProvider();
+        MessageStorage.Clear();
+
+        var baggageName1 = "CurrentBaggageKey";
+        var baggageValue1 = "CurrentBaggageValue";
+        var baggageName2 = "ActivityBaggageKey";
+        var baggageValue2 = "ActivityBaggageValue";
+        var baggageNameConflict = "ConflictKey";
+        var currentValue = "CurrentValue";
+        var activityValue = "ActivityValue";
+
+        using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+        .AddSource(KafkaFlowInstrumentation.ActivitySourceName)
+        .AddInMemoryExporter(_exportedItems)
+        .Build();
+
+        var producer = provider.GetRequiredService<IMessageProducer<GzipProducer>>();
+        var message = _fixture.Create<byte[]>();
+
+        // Set initial Baggage.Current values
+        Baggage.SetBaggage(baggageName1, baggageValue1);
+        Baggage.SetBaggage(baggageNameConflict, currentValue);
+
+        // Act: create Activity with baggage (per OTel spec, Activity baggage has precedence on conflicts)
+        var activitySource = new ActivitySource(KafkaFlowInstrumentation.ActivitySourceName);
+        using (var activity = activitySource.StartActivity("TestActivity", ActivityKind.Producer))
+        {
+            activity?.AddBaggage(baggageName2, baggageValue2);
+            activity?.AddBaggage(baggageNameConflict, activityValue); // should overwrite
+            await producer.ProduceAsync(null, message);
+        }
+
+        // Assert
+        var (_, consumerSpan, _) = await this.WaitForSpansAsync();
+
+        // Current baggage values must be preserved
+        Assert.AreEqual(baggageValue1, consumerSpan.GetBaggageItem(baggageName1));
+
+        // Activity baggage values must be propagated
+        Assert.AreEqual(baggageValue2, consumerSpan.GetBaggageItem(baggageName2));
+
+        // On conflict, Activity baggage must take precedence according to OTel spec
+        Assert.AreEqual(activityValue, consumerSpan.GetBaggageItem(baggageNameConflict));
     }
 
     private async Task<IServiceProvider> GetServiceProvider(Action<KafkaFlowInstrumentationOptions> options = null)
