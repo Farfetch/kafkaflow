@@ -14,16 +14,19 @@ public class BatchProduceItem
     /// <param name="messageKey">The message partition key</param>
     /// <param name="messageValue">The message content</param>
     /// <param name="headers">The message headers</param>
+    /// <param name="partition">The partition to produce the message to. If null, the partitioner will be used.</param>
     public BatchProduceItem(
         string topic,
         object messageKey,
         object messageValue,
-        IMessageHeaders headers)
+        IMessageHeaders headers,
+        int? partition = null)
     {
         this.Topic = topic;
         this.MessageKey = messageKey;
         this.MessageValue = messageValue;
         this.Headers = headers;
+        this.Partition = partition;
     }
 
     /// <summary>
@@ -50,4 +53,9 @@ public class BatchProduceItem
     /// Gets the delivery report after the production
     /// </summary>
     public DeliveryReport<byte[], byte[]> DeliveryReport { get; internal set; }
+
+    /// <summary>
+    /// Gets the partition to produce the message to. If null, the partitioner will decide the partition.
+    /// </summary>
+    public int? Partition { get; }
 }
