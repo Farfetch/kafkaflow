@@ -253,7 +253,8 @@ internal class Consumer : IConsumer
             .SetPartitionsAssignedHandler(FirePartitionsAssignedHandlers)
             .SetPartitionsRevokedHandler(FirePartitionRevokedHandlers)
             .SetErrorHandler((consumer, error) => _errorsHandlers.ForEach(x => x(consumer, error)))
-            .SetStatisticsHandler((consumer, statistics) => _statisticsHandlers.ForEach(x => x(consumer, statistics)));
+            .SetStatisticsHandler((consumer, statistics) => _statisticsHandlers.ForEach(x => x(consumer, statistics)))
+            .SetLogHandler((_, log) => _logHandler.Log(log));
 
         var security = this.Configuration.ClusterConfiguration.GetSecurityInformation();
 
