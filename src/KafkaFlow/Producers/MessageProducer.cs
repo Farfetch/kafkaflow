@@ -33,14 +33,14 @@ internal class MessageProducer : IMessageProducer, IDisposable
 
     public string ProducerName => _configuration.Name;
 
-    public async Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
+    public async Task<IDeliveryResultFlow<byte[], byte[]>> ProduceAsync(
         string topic,
         object messageKey,
         object messageValue,
         IMessageHeaders headers = null,
         int? partition = null)
     {
-        DeliveryResult<byte[], byte[]> report = null;
+        DeliveryResult<byte[], byte[]> deliveryResult = null;
 
         using var messageScope = _producerDependencyScope.Resolver.CreateScope();
 
@@ -60,7 +60,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
                     messageContext,
                     async context =>
                     {
-                        report = await this
+                        deliveryResult = await this
                             .InternalProduceAsync(context, partition)
                             .ConfigureAwait(false);
                     })
@@ -74,10 +74,10 @@ internal class MessageProducer : IMessageProducer, IDisposable
             throw;
         }
 
-        return report;
+        return deliveryResult.ToIDeliveryResultFlow();
     }
 
-    public Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
+    public Task<IDeliveryResultFlow<byte[], byte[]>> ProduceAsync(
         object messageKey,
         object messageValue,
         IMessageHeaders headers = null,
@@ -102,7 +102,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
         object messageKey,
         object messageValue,
         IMessageHeaders headers = null,
-        Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
+        Action<IDeliveryReportFlow<byte[], byte[]>> deliveryHandler = null,
         int? partition = null)
     {
         var messageScope = _producerDependencyScope.Resolver.CreateScope();
@@ -137,7 +137,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
                                 completionSource.SetResult(0);
                             }
 
-                            deliveryHandler?.Invoke(report);
+                            deliveryHandler?.Invoke(report.ToIDeliveryReportFlow());
                         });
 
                     return completionSource.Task;
@@ -153,7 +153,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
                                 Error = new Error(ErrorCode.Local_Fail, task.Exception?.Message),
                                 Status = PersistenceStatus.NotPersisted,
                                 Topic = topic,
-                            });
+                            }.ToIDeliveryReportFlow());
                     }
 
                     messageScope.Dispose();
@@ -166,7 +166,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
         object messageKey,
         object messageValue,
         IMessageHeaders headers = null,
-        Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
+        Action<IDeliveryReportFlow<byte[], byte[]>> deliveryReportHandler = null,
         int? partition = null)
     {
         if (string.IsNullOrWhiteSpace(_configuration.DefaultTopic))
@@ -180,7 +180,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
             messageKey,
             messageValue,
             headers,
-            deliveryHandler,
+            deliveryReportHandler,
             partition);
     }
 
