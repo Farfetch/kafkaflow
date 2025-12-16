@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using KafkaFlow.Authentication;
 using KafkaFlow.Configuration;
+using KafkaFlow.Extensions;
 
 namespace KafkaFlow.Producers;
 
@@ -280,7 +281,8 @@ internal class MessageProducer : IMessageProducer, IDisposable
                                 });
                             }
                         }
-                    });
+                    })
+                .SetLogHandler((_, log) => _logHandler.Log(log));
 
             var security = _configuration.Cluster.GetSecurityInformation();
 
