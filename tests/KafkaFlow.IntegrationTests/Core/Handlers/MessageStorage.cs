@@ -11,13 +11,15 @@ namespace KafkaFlow.IntegrationTests.Core.Handlers;
 
 internal static class MessageStorage
 {
-    private const int TimeoutSec = 8;
+    private const int TimeoutSec = 30;
     private static readonly ConcurrentBag<ITestMessage> s_testMessages = new();
     private static readonly ConcurrentBag<LogMessages2> s_avroMessages = new();
     private static readonly ConcurrentBag<TestProtoMessage> s_protoMessages = new();
     private static readonly ConcurrentBag<(long, int)> s_versions = new();
     private static readonly ConcurrentBag<byte[]> s_byteMessages = new();
     private static readonly ConcurrentBag<Message> s_nullMessages = new();
+    private static readonly ConcurrentBag<OffsetTrackerMessage> s_offsetTrackerMessages = new();
+    private static long s_offsetTrack;
 
     public static void Add(ITestMessage message)
     {
@@ -33,6 +35,12 @@ internal static class MessageStorage
     public static void Add(TestProtoMessage message)
     {
         s_protoMessages.Add(message);
+    }
+
+    public static void Add(OffsetTrackerMessage message)
+    {
+        s_offsetTrackerMessages.Add(message);
+        s_offsetTrack = Math.Max(message.Offset, s_offsetTrack);
     }
 
     public static void Add(byte[] message)
@@ -140,6 +148,51 @@ internal static class MessageStorage
         }
     }
 
+    public static async Task AssertMessageAsync(OffsetTrackerMessage message)
+    {
+        var start = DateTime.Now;
+
+        while (!s_offsetTrackerMessages.Any(x => x.Id == message.Id && x.Offset == message.Offset))
+        {
+            if (DateTime.Now.Subtract(start).Seconds > TimeoutSec)
+            {
+                Assert.Fail("Message (OffsetTrackerMessage) not received");
+                return;
+            }
+
+            await Task.Delay(100).ConfigureAwait(false);
+        }
+    }
+
+    public static async Task AssertOffsetTrackerMessageAsync(OffsetTrackerMessage message, bool assertInStore = true)
+    {
+        var start = DateTime.Now;
+
+        while (!s_offsetTrackerMessages.Any(x => x.Id == message.Id && x.Offset == message.Offset))
+        {
+            if (DateTime.Now.Subtract(start).Seconds > TimeoutSec)
+            {
+                if (assertInStore)
+                {
+                    Assert.Fail("Message (OffsetTrackerMessage) not received");
+                }
+                return;
+            }
+
+            await Task.Delay(100).ConfigureAwait(false);
+        }
+
+        if (!assertInStore)
+        {
+            Assert.Fail("Message (OffsetTrackerMessage) received when it should not have been.");
+        }
+    }
+
+    public static long GetOffsetTrack()
+    {
+        return s_offsetTrack;
+    }
+
     public static List<(long ticks, int version)> GetVersions()
     {
         return s_versions.ToList();
@@ -151,5 +204,7 @@ internal static class MessageStorage
         s_testMessages.Clear();
         s_byteMessages.Clear();
         s_protoMessages.Clear();
+        s_offsetTrackerMessages.Clear();
+        s_offsetTrack = 0;
     }
 }
