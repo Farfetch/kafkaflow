@@ -30,14 +30,14 @@
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
-    "@angular-builders/custom-webpack": "^14.0.1",
-    "@angular-devkit/build-angular": "^14.2.8",
+    "@angular-builders/custom-webpack": "^21.0.3",
+    "@angular-devkit/build-angular": "^21.1.0",
     "@angular-eslint/builder": "14.1.2",
     "@angular-eslint/eslint-plugin": "14.1.2",
     "@angular-eslint/eslint-plugin-template": "14.1.2",
-    "@angular-eslint/schematics": "14.1.2",
+    "@angular-eslint/schematics": "21.1.0",
     "@angular-eslint/template-parser": "14.1.2",
-    "@angular/cli": "~14.2.8",
+    "@angular/cli": "~21.1.0",
     "@angular/compiler-cli": "^14.2.0",
     "@angular/localize": "^14.2.0",
     "@types/jasmine": "~4.0.0",
