@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Confluent.Kafka;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Consumers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

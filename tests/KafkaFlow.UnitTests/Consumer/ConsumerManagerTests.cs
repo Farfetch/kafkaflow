@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoFixture;
 using Confluent.Kafka;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Configuration;
 using KafkaFlow.Consumers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

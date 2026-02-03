@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Confluent.SchemaRegistry;
 
-using FluentAssertions;
+using AwesomeAssertions;
 
 using Google.Protobuf;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

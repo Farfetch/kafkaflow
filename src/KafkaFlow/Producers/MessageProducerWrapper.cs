@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 
@@ -14,6 +15,13 @@ internal class MessageProducerWrapper<TProducer> : IMessageProducer<TProducer>
     }
 
     public string ProducerName => _producer.ProducerName;
+
+    public Task<IReadOnlyCollection<BatchProduceItem>> BatchProduceAsync(
+        IReadOnlyCollection<BatchProduceItem> items,
+        bool throwIfAnyProduceFail = true)
+    {
+        return _producer.BatchProduceAsync(items, throwIfAnyProduceFail);
+    }
 
     public Task<DeliveryResult<byte[], byte[]>> ProduceAsync(
         string topic,

@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Middlewares.Serializer;
 using KafkaFlow.Middlewares.Serializer.Resolvers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
