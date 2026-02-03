@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using FluentAssertions;
+using AwesomeAssertions;
 
 using KafkaFlow.Middlewares.Compressor;
 

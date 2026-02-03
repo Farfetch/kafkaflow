@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using AutoFixture;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Serializer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

@@ -1,7 +1,7 @@
 using System;
 using AutoFixture;
 using Confluent.Kafka;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

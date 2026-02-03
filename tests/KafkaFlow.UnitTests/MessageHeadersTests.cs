@@ -1,6 +1,6 @@
 using System.Text;
 using Confluent.Kafka;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace KafkaFlow.UnitTests;

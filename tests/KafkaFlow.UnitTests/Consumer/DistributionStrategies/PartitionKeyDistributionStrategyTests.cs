@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Consumers.DistributionStrategies;
 using KafkaFlow.UnitTests.Factories;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

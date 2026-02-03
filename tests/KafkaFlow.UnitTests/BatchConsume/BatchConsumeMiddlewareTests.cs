@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using AutoFixture;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Batching;
 using KafkaFlow.Configuration;
 using KafkaFlow.Consumers;
