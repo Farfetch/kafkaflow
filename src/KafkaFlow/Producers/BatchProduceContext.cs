@@ -12,16 +12,10 @@ namespace KafkaFlow.Producers;
 /// </summary>
 internal sealed class BatchProduceContext
 {
-    private readonly ConcurrentBag<BatchMessageEntry> _entries = new();
+    private readonly ConcurrentQueue<BatchMessageEntry> _entries = new();
 
     public IReadOnlyList<BatchMessageEntry> GetEntries() =>
         _entries.OrderBy(x => x.BatchIndex).ToList();
-
-    public IReadOnlyList<BatchMessageEntry> GetSuccessfulEntries() =>
-        _entries.Where(e => e.IsSuccess).OrderBy(e => e.BatchIndex).ToList();
-
-    public IReadOnlyList<BatchMessageEntry> GetFailedEntries() =>
-        _entries.Where(e => !e.IsSuccess).OrderBy(e => e.BatchIndex).ToList();
 
     /// <summary>
     /// Registers a message that completed middleware processing successfully.
@@ -32,7 +26,7 @@ internal sealed class BatchProduceContext
         Message<byte[], byte[]> messageToProduce,
         IMessageContext context)
     {
-        _entries.Add(new BatchMessageEntry(batchIndex, item, true, messageToProduce, context, null));
+        _entries.Enqueue(new BatchMessageEntry(batchIndex, item, true, messageToProduce, context, null));
     }
 
     /// <summary>
@@ -46,7 +40,7 @@ internal sealed class BatchProduceContext
             Error = new Error(ErrorCode.Local_Fail, exception.Message),
             Status = PersistenceStatus.NotPersisted,
         };
-        _entries.Add(new BatchMessageEntry(batchIndex, item, false, null, null, exception));
+        _entries.Enqueue(new BatchMessageEntry(batchIndex, item, false, null, null, exception));
     }
 }
 
