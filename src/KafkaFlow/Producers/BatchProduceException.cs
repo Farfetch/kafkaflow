@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace KafkaFlow.Producers;
 
 /// <summary>
-/// Exception thrown by <see cref="M:BatchProduceExtension.BatchProduceAsync"/>
+/// Exception thrown by <see cref="M:MessageProducer.BatchProduceAsync"/>
 /// </summary>
 public class BatchProduceException : Exception
 {

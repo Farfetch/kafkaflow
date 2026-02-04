@@ -211,17 +211,17 @@ internal class MessageProducer : IMessageProducer, IDisposable
         // All items are now registered (either success with message, or failure with DeliveryReport set)
         await Task.WhenAll(middlewareTasks).ConfigureAwait(false);
 
-        // If instructed, throw if any message failed during middleware processing
-        var unsuccessful = batchContext.GetFailedEntries();
-        if (unsuccessful.Count > 0 && throwIfAnyProduceFail)
+        var allEntries = batchContext.GetEntries();
+        var successfulEntries = allEntries.Where(e => e.IsSuccess).ToList();
+
+        var errors = allEntries.Where(e => !e.IsSuccess).Select(e => e.Error).ToList();
+
+        if (errors.Count > 0 && throwIfAnyProduceFail)
         {
-            var exceptions = unsuccessful.Select(e => e.Error).ToList();
-            var aggregateException = new AggregateException("One or more messages failed during middleware processing", exceptions);
+            var aggregateException = new AggregateException("One or more messages failed during middleware processing", errors);
             throw new BatchProduceException(items, aggregateException);
         }
 
-        // Produce the messages that passed middleware
-        var successfulEntries = batchContext.GetSuccessfulEntries();
         if (successfulEntries.Count > 0)
         {
             try
@@ -247,7 +247,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
             }
         }
 
-        return batchContext.GetEntries().Select(e => e.Item).ToList();
+        return allEntries.Select(e => e.Item).ToList();
     }
 
     private async Task ExecuteMessageWithBatchContextAsync(
@@ -483,7 +483,13 @@ internal class MessageProducer : IMessageProducer, IDisposable
                     {
                         FillContextWithResultMetadata(entry.Context, report);
                     }
-
+                }
+                catch (Exception ex)
+                {
+                    _logHandler.Error("Batch Produce Delivery Handler Error", ex, new { Report = report });
+                }
+                finally
+                {
                     // Set the DeliveryReport directly on the item
                     entry.Item.DeliveryReport = report;
 
@@ -491,10 +497,6 @@ internal class MessageProducer : IMessageProducer, IDisposable
                     {
                         completionSource.TrySetResult(true);
                     }
-                }
-                catch (Exception ex)
-                {
-                    _logHandler.Error("Batch Produce Delivery Handler Error", ex, new { Report = report });
                 }
             }
 

@@ -89,64 +89,6 @@ public class BatchProduceContextTests
     }
 
     [TestMethod]
-    public void GetSuccessfulEntries_ShouldReturnOnlySuccessfulEntriesSorted()
-    {
-        // Arrange
-        var context = new BatchProduceContext();
-        var item = CreateBatchProduceItem("test-topic");
-        var message = CreateMessage();
-        var messageContext = Mock.Of<IMessageContext>();
-
-        context.Register(0, item, message, messageContext);
-        context.RegisterFailure(1, item, new Exception("Error 1"));
-        context.Register(2, item, message, messageContext);
-        context.RegisterFailure(3, item, new Exception("Error 2"));
-        context.Register(4, item, message, messageContext);
-
-        // Act
-        var successful = context.GetSuccessfulEntries();
-
-        // Assert
-        successful.Should().HaveCount(3);
-        successful[0].BatchIndex.Should().Be(0);
-        successful[0].IsSuccess.Should().BeTrue();
-        successful[1].BatchIndex.Should().Be(2);
-        successful[1].IsSuccess.Should().BeTrue();
-        successful[2].BatchIndex.Should().Be(4);
-        successful[2].IsSuccess.Should().BeTrue();
-    }
-
-    [TestMethod]
-    public void GetFailedEntries_ShouldReturnOnlyFailedEntriesSorted()
-    {
-        // Arrange
-        var context = new BatchProduceContext();
-        var item = CreateBatchProduceItem("test-topic");
-        var message = CreateMessage();
-        var messageContext = Mock.Of<IMessageContext>();
-        var error1 = new InvalidOperationException("Error 1");
-        var error2 = new ArgumentException("Error 2");
-
-        context.Register(0, item, message, messageContext);
-        context.RegisterFailure(1, item, error1);
-        context.Register(2, item, message, messageContext);
-        context.RegisterFailure(3, item, error2);
-        context.Register(4, item, message, messageContext);
-
-        // Act
-        var failed = context.GetFailedEntries();
-
-        // Assert
-        failed.Should().HaveCount(2);
-        failed[0].BatchIndex.Should().Be(1);
-        failed[0].IsSuccess.Should().BeFalse();
-        failed[0].Error.Should().BeSameAs(error1);
-        failed[1].BatchIndex.Should().Be(3);
-        failed[1].IsSuccess.Should().BeFalse();
-        failed[1].Error.Should().BeSameAs(error2);
-    }
-
-    [TestMethod]
     public void Register_ShouldBeThreadSafe()
     {
         // Arrange
@@ -189,7 +131,7 @@ public class BatchProduceContextTests
         Task.WaitAll(tasks);
 
         // Assert
-        var entries = context.GetFailedEntries();
+        var entries = context.GetEntries().Where(e => !e.IsSuccess).ToList();
         entries.Should().HaveCount(100);
         entries.Select(e => e.BatchIndex).Should().BeEquivalentTo(Enumerable.Range(0, 100));
     }
@@ -222,14 +164,12 @@ public class BatchProduceContextTests
 
         // Assert
         var allEntries = context.GetEntries();
-        var successful = context.GetSuccessfulEntries();
-        var failed = context.GetFailedEntries();
+        var successful = allEntries.Where(e => e.IsSuccess).ToList();
+        var failed = allEntries.Where(e => !e.IsSuccess).ToList();
 
         allEntries.Should().HaveCount(100);
         successful.Should().HaveCount(50);
         failed.Should().HaveCount(50);
-        successful.All(e => e.IsSuccess).Should().BeTrue();
-        failed.All(e => !e.IsSuccess).Should().BeTrue();
     }
 
     private static Message<byte[], byte[]> CreateMessage()
