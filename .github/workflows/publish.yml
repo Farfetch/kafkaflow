@@ -17,9 +17,9 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Setup Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
-          node-version: '18.x'
+          node-version: '20.x'
 
       - name: Build Client App
         working-directory: ./src/KafkaFlow.Admin.Dashboard/ClientApp
