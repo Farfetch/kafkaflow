@@ -2,7 +2,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Serializer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

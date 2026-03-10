@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using Confluent.SchemaRegistry;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Serializer.SchemaRegistry;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

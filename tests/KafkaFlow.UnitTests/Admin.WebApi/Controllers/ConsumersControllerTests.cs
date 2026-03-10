@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Admin;
 using KafkaFlow.Admin.WebApi.Contracts;
 using KafkaFlow.Admin.WebApi.Controllers;

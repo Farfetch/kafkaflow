@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Middlewares.Serializer;
 using KafkaFlow.Middlewares.Serializer.Resolvers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

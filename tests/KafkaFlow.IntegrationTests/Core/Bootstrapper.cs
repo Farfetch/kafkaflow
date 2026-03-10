@@ -19,30 +19,33 @@ namespace KafkaFlow.IntegrationTests.Core;
 
 internal static class Bootstrapper
 {
-    public const string PauseResumeTopicName = "test-pause-resume";
+    private static readonly string s_suffix = Guid.NewGuid().ToString("N").Substring(0, 6);
+
+    public static readonly string PauseResumeTopicName = $"test-pause-resume-{s_suffix}";
+
     public const int MaxPollIntervalMs = 7000;
 
-    internal const string ProtobufGroupId = "consumer-protobuf";
-    internal const string GzipGroupId = "consumer-gzip";
-    internal const string JsonGzipGroupId = "consumer-json-gzip";
-    internal const string ProtobufGzipGroupId = "consumer-protobuf-gzip";
-    internal const string PauseResumeGroupId = "consumer-pause-resume";
-    internal const string AvroGroupId = "consumer-avro";
-    internal const string JsonGroupId = "consumer-json";
-    internal const string NullGroupId = "consumer-null";
+    public  static readonly string ProtobufTopicName = $"test-protobuf-{s_suffix}";
+    public  static readonly string ProtobufSchemaRegistryTopicName = $"test-protobuf-sr-{s_suffix}";
+    public  static readonly string JsonSchemaRegistryTopicName = $"test-json-sr-{s_suffix}";
+    public  static readonly string JsonTopicName = $"test-json-{s_suffix}";
+    public  static readonly string GzipTopicName = $"test-gzip-{s_suffix}";
+    public  static readonly string JsonGzipTopicName = $"test-json-gzip-{s_suffix}";
+    public  static readonly string ProtobufGzipTopicName = $"test-protobuf-gzip-{s_suffix}";
+    public  static readonly string ProtobufGzipTopicName2 = $"test-protobuf-gzip-2-{s_suffix}";
+    public  static readonly string AvroTopicName = $"test-avro-{s_suffix}";
+    public  static readonly string NullTopicName = $"test-null-{s_suffix}";
+    public  static readonly string DefaultParamsTopicName = $"test-default-params-{s_suffix}";
 
+    internal static readonly string ProtobufGroupId = $"consumer-protobuf-{s_suffix}";
+    internal static readonly string GzipGroupId = $"consumer-gzip-{s_suffix}";
+    internal static readonly string JsonGzipGroupId = $"consumer-json-gzip-{s_suffix}";
+    internal static readonly string ProtobufGzipGroupId = $"consumer-protobuf-gzip-{s_suffix}";
+    internal static readonly string PauseResumeGroupId = $"consumer-pause-resume-{s_suffix}";
+    internal static readonly string AvroGroupId = $"consumer-avro-{s_suffix}";
+    internal static readonly string JsonGroupId = $"consumer-json-{s_suffix}";
+    internal static readonly string NullGroupId = $"consumer-null-{s_suffix}";
 
-    private const string ProtobufTopicName = "test-protobuf";
-    private const string ProtobufSchemaRegistryTopicName = "test-protobuf-sr";
-    private const string JsonSchemaRegistryTopicName = "test-json-sr";
-    private const string JsonTopicName = "test-json";
-    private const string GzipTopicName = "test-gzip";
-    private const string JsonGzipTopicName = "test-json-gzip";
-    private const string ProtobufGzipTopicName = "test-protobuf-gzip";
-    private const string ProtobufGzipTopicName2 = "test-protobuf-gzip-2";
-    private const string AvroTopicName = "test-avro";
-    private const string NullTopicName = "test-null";
-    private const string DefaultParamsTopicName = "test-default-params";
 
     private static readonly Lazy<IServiceProvider> s_lazyProvider = new(SetupProvider);
 

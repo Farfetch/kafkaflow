@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using KafkaFlow.Authentication;
 using KafkaFlow.Configuration;
+using KafkaFlow.Extensions;
 
 namespace KafkaFlow.Producers;
 
@@ -188,6 +191,104 @@ internal class MessageProducer : IMessageProducer, IDisposable
         _producer?.Dispose();
     }
 
+    public async Task<IReadOnlyCollection<BatchProduceItem>> BatchProduceAsync(
+        IReadOnlyCollection<BatchProduceItem> items,
+        bool throwIfAnyProduceFail = true)
+    {
+        if (items.Count == 0)
+        {
+            return items;
+        }
+
+        var batchContext = new BatchProduceContext();
+
+        // Launch all middleware chains in parallel
+        var middlewareTasks = items
+            .Select((item, index) => ExecuteMessageWithBatchContextAsync(batchContext, index, item))
+            .ToArray();
+
+        // Wait for all middleware chains to complete
+        // All items are now registered (either success with message, or failure with DeliveryReport set)
+        await Task.WhenAll(middlewareTasks).ConfigureAwait(false);
+
+        var allEntries = batchContext.GetEntries();
+        var successfulEntries = allEntries.Where(e => e.IsSuccess).ToList();
+
+        var errors = allEntries.Where(e => !e.IsSuccess).Select(e => e.Error).ToList();
+
+        if (errors.Count > 0 && throwIfAnyProduceFail)
+        {
+            var aggregateException = new AggregateException("One or more messages failed during middleware processing", errors);
+            throw new BatchProduceException(items, aggregateException);
+        }
+
+        if (successfulEntries.Count > 0)
+        {
+            try
+            {
+                await this.ProduceBatchInternalAsync(successfulEntries).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                if (throwIfAnyProduceFail)
+                {
+                    throw new BatchProduceException(items, ex);
+                }
+
+                foreach (var entry in successfulEntries.Where(e => e.Item.DeliveryReport == null))
+                {
+                    entry.Item.DeliveryReport = new DeliveryReport<byte[], byte[]>
+                    {
+                        Topic = entry.Item.Topic,
+                        Error = new Error(ErrorCode.Local_Fail, ex.Message),
+                        Status = PersistenceStatus.NotPersisted,
+                    };
+                }
+            }
+        }
+
+        return allEntries.Select(e => e.Item).ToList();
+    }
+
+    private async Task ExecuteMessageWithBatchContextAsync(
+        BatchProduceContext batchContext,
+        int batchIndex,
+        BatchProduceItem item)
+    {
+        using var messageScope = _producerDependencyScope.Resolver.CreateScope();
+
+        var messageContext = this.CreateMessageContext(
+            item.Topic,
+            item.MessageKey,
+            item.MessageValue,
+            item.Headers,
+            messageScope.Resolver);
+
+        await _globalEvents.FireMessageProduceStartedAsync(new MessageEventContext(messageContext)).ConfigureAwait(false);
+
+        try
+        {
+            await _middlewareExecutor
+                .Execute(
+                    messageContext,
+                    context =>
+                    {
+                        // Register message for batch produce instead of producing immediately
+                        var message = CreateMessage(context);
+                        batchContext.Register(batchIndex, item, message, context);
+                        return Task.CompletedTask;
+                    })
+                .ConfigureAwait(false);
+
+            await _globalEvents.FireMessageProduceCompletedAsync(new MessageEventContext(messageContext)).ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            batchContext.RegisterFailure(batchIndex, item, e);
+            await _globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(messageContext, e)).ConfigureAwait(false);
+        }
+    }
+
     private void FillContextWithResultMetadata(IMessageContext context, DeliveryResult<byte[], byte[]> result)
     {
         var concreteProducerContext = context.ProducerContext as ProducerContext;
@@ -280,7 +381,8 @@ internal class MessageProducer : IMessageProducer, IDisposable
                                 });
                             }
                         }
-                    });
+                    })
+                .SetLogHandler((_, log) => _logHandler.Log(log));
 
             var security = _configuration.Cluster.GetSecurityInformation();
 
@@ -324,7 +426,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
         try
         {
             var produceTask = partition.HasValue ?
-                localProducer.ProduceAsync(new TopicPartition(context.ProducerContext.Topic, partition.Value), message) :
+                localProducer.ProduceAsync(new Confluent.Kafka.TopicPartition(context.ProducerContext.Topic, partition.Value), message) :
                 localProducer.ProduceAsync(context.ProducerContext.Topic, message);
 
             result = await produceTask.ConfigureAwait(false);
@@ -346,6 +448,92 @@ internal class MessageProducer : IMessageProducer, IDisposable
         return result;
     }
 
+    /// <summary>
+    /// Produces a batch of messages that have already been processed through middlewares.
+    /// Sets DeliveryReport directly on each BatchProduceItem.
+    /// </summary>
+    private Task ProduceBatchInternalAsync(IReadOnlyList<BatchMessageEntry> entries)
+    {
+        var completionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var localProducer = this.EnsureProducer();
+        var pendingCount = entries.Count;
+
+        // Produce all messages in order using synchronous Produce with callbacks
+        // in order to guarantee message order in Kafka
+        // https://github.com/confluentinc/confluent-kafka-dotnet/wiki/Producer#produceasync-vs-produce
+        foreach (var entry in entries)
+        {
+            void DeliveryHandler(DeliveryReport<byte[], byte[]> report)
+            {
+                try
+                {
+                    if (report.Error.IsFatal)
+                    {
+                        this.InvalidateProducer(report.Error, report);
+                    }
+
+                    if (report.Error.IsError)
+                    {
+                        _globalEvents.FireMessageProduceErrorAsync(
+                            new MessageErrorEventContext(
+                                entry.Context,
+                                new ProduceException<byte[], byte[]>(report.Error, report)));
+                    }
+                    else
+                    {
+                        FillContextWithResultMetadata(entry.Context, report);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logHandler.Error("Batch Produce Delivery Handler Error", ex, new { Report = report });
+                }
+                finally
+                {
+                    // Set the DeliveryReport directly on the item
+                    entry.Item.DeliveryReport = report;
+
+                    if (System.Threading.Interlocked.Decrement(ref pendingCount) == 0)
+                    {
+                        completionSource.TrySetResult(true);
+                    }
+                }
+            }
+
+            try
+            {
+                if (entry.Item.Partition.HasValue)
+                {
+                    localProducer.Produce(
+                        new Confluent.Kafka.TopicPartition(entry.Item.Topic, entry.Item.Partition.Value),
+                        entry.MessageToProduce,
+                        DeliveryHandler);
+                }
+                else
+                {
+                    localProducer.Produce(
+                        entry.Item.Topic,
+                        entry.MessageToProduce,
+                        DeliveryHandler);
+                }
+            }
+            catch (ProduceException<byte[], byte[]> e)
+            {
+                _globalEvents.FireMessageProduceErrorAsync(new MessageErrorEventContext(entry.Context, e));
+
+                if (e.Error.IsFatal)
+                {
+                    this.InvalidateProducer(e.Error, null);
+                }
+
+                completionSource.TrySetException(e);
+                return completionSource.Task;
+            }
+        }
+
+        return completionSource.Task;
+    }
+
     private void InternalProduce(
         IMessageContext context,
         int? partition,
@@ -357,7 +545,7 @@ internal class MessageProducer : IMessageProducer, IDisposable
         if (partition.HasValue)
         {
             localProducer.Produce(
-                new TopicPartition(context.ProducerContext.Topic, partition.Value),
+                new Confluent.Kafka.TopicPartition(context.ProducerContext.Topic, partition.Value),
                 message,
                 Handler);
 

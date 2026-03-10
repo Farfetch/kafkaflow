@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Admin;
 using KafkaFlow.Admin.Messages;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

@@ -27,6 +27,24 @@ public class BatchProduceItem
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="BatchProduceItem"/> class.
+    /// </summary>
+    /// <param name="topic">The destination topic</param>
+    /// <param name="messageKey">The message partition key</param>
+    /// <param name="messageValue">The message content</param>
+    /// <param name="headers">The message headers</param>
+    /// <param name="partition">The partition to produce the message to</param>
+    public BatchProduceItem(
+        string topic,
+        object messageKey,
+        object messageValue,
+        IMessageHeaders headers,
+        int partition) : this(topic, messageKey, messageValue, headers)
+    {
+        this.Partition = partition;
+    }
+
+    /// <summary>
     /// Gets the message topic name
     /// </summary>
     public string Topic { get; }
@@ -50,4 +68,9 @@ public class BatchProduceItem
     /// Gets the delivery report after the production
     /// </summary>
     public DeliveryReport<byte[], byte[]> DeliveryReport { get; internal set; }
+
+    /// <summary>
+    /// Gets the partition to produce the message to. If null, the partitioner will decide the partition.
+    /// </summary>
+    public int? Partition { get; }
 }

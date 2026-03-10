@@ -67,7 +67,7 @@ public static class ConfigurationBuilderExtensions
     /// <returns></returns>
     public static IConsumerConfigurationBuilder WithPartitionsAssignedHandler(
         this IConsumerConfigurationBuilder builder,
-        Action<IDependencyResolver, List<TopicPartition>> partitionsAssignedHandler)
+        Action<IDependencyResolver, List<Confluent.Kafka.TopicPartition>> partitionsAssignedHandler)
     {
         return ((ConsumerConfigurationBuilder)builder).WithPartitionsAssignedHandler(partitionsAssignedHandler);
     }

@@ -7,6 +7,7 @@ using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using KafkaFlow.Authentication;
 using KafkaFlow.Configuration;
+using KafkaFlow.Extensions;
 
 namespace KafkaFlow.Clusters;
 
@@ -33,7 +34,8 @@ internal class ClusterManager : IClusterManager, IDisposable
 
                 config.ReadSecurityInformationFrom(configuration);
 
-                var adminClientBuilder = new AdminClientBuilder(config);
+                var adminClientBuilder = new AdminClientBuilder(config)
+                    .SetLogHandler((_, log) => _logHandler.Log(log));
 
                 var security = configuration.GetSecurityInformation();
 
@@ -92,7 +94,7 @@ internal class ClusterManager : IClusterManager, IDisposable
             topicsMetadata
                 .SelectMany(
                     topic => topic.Metadata.Partitions.Select(
-                        partition => new TopicPartition(
+                        partition => new Confluent.Kafka.TopicPartition(
                             topic.Name,
                             new Partition(partition.Id))))
                 .ToList();

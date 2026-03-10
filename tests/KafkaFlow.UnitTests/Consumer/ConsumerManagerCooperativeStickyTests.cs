@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
 using Confluent.Kafka;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Configuration;
 using KafkaFlow.Consumers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -72,7 +72,7 @@ public class ConsumerManagerCooperativeStickyTests
 
         _consumerMock
             .SetupGet(x => x.Assignment)
-            .Returns(Array.Empty<TopicPartition>());
+            .Returns([]);
 
         _target = new ConsumerManager(
             _consumerMock.Object,

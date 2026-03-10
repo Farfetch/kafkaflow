@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoFixture;
 using Confluent.Kafka;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Configuration;
 using KafkaFlow.Consumers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -68,11 +68,11 @@ public class ConsumerManagerTests
         _consumerMock
             .SetupGet(x => x.Configuration)
             .Returns(configurationMock.Object);
-        
+
         _consumerMock
             .SetupGet(x => x.Assignment)
-            .Returns(Array.Empty<TopicPartition>());
-        
+            .Returns([]);
+
         _target = new ConsumerManager(
             _consumerMock.Object,
             _workerPoolMock.Object,
@@ -138,7 +138,7 @@ public class ConsumerManagerTests
 
         _logHandlerMock
             .Setup(x => x.Info(It.IsAny<string>(), It.IsAny<object>()));
-        
+
         _consumerMock.SetupGet(x=>x.Assignment).Returns(partitions.ToArray());
 
         // Act

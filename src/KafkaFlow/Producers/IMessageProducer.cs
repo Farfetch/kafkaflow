@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using KafkaFlow.Producers;
 
 namespace KafkaFlow;
 
@@ -85,4 +87,16 @@ public interface IMessageProducer
         IMessageHeaders headers = null,
         Action<DeliveryReport<byte[], byte[]>> deliveryHandler = null,
         int? partition = null);
+
+    /// <summary>
+    /// Produces a batch of messages ensuring that messages are sent to Kafka in the order they appear in the batch.
+    /// All messages are processed through the middleware chain in parallel for performance,
+    /// but the final submission to Kafka happens in sequence to preserve ordering.
+    /// </summary>
+    /// <param name="items">All messages to produce</param>
+    /// <param name="throwIfAnyProduceFail">Indicates if the method should throw a <see cref="BatchProduceException"/> if any message fails</param>
+    /// <returns>A Task that will be completed when all produce operations finish, containing the batch items with their delivery reports</returns>
+    Task<IReadOnlyCollection<BatchProduceItem>> BatchProduceAsync(
+        IReadOnlyCollection<BatchProduceItem> items,
+        bool throwIfAnyProduceFail = true);
 }

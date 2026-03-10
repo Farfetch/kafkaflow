@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Confluent.Kafka;
-using FluentAssertions;
+using AwesomeAssertions;
 using KafkaFlow.Consumers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -13,17 +13,17 @@ public class OffsetManagerTests
 {
     private Mock<IOffsetCommitter> _committerMock;
     private OffsetManager _target;
-    private TopicPartition _topicPartition;
+    private Confluent.Kafka.TopicPartition _topicPartition;
 
     [TestInitialize]
     public void Setup()
     {
         _committerMock = new Mock<IOffsetCommitter>();
-        _topicPartition = new TopicPartition("topic-A", new Partition(1));
+        _topicPartition = new Confluent.Kafka.TopicPartition("topic-A", new Partition(1));
 
         _target = new OffsetManager(
             _committerMock.Object,
-            new List<TopicPartition> { _topicPartition });
+            new List<Confluent.Kafka.TopicPartition> { _topicPartition });
     }
 
     [TestMethod]

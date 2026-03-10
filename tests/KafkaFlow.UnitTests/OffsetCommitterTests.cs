@@ -16,7 +16,7 @@ public class OffsetCommitterTests
 
     private Mock<IConsumer> _consumerMock;
 
-    private TopicPartition _topicPartition;
+    private Confluent.Kafka.TopicPartition _topicPartition;
 
     private OffsetCommitter _offsetCommitter;
 
@@ -24,7 +24,7 @@ public class OffsetCommitterTests
     public async Task Setup()
     {
         _consumerMock = new Mock<IConsumer>();
-        _topicPartition = new TopicPartition("topic-A", new Partition(1));
+        _topicPartition = new Confluent.Kafka.TopicPartition("topic-A", new Partition(1));
 
         _consumerMock
             .Setup(c => c.Configuration.AutoCommitInterval)
