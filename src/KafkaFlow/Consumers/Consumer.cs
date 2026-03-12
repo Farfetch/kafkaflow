@@ -205,6 +205,7 @@ internal class Consumer : IConsumer
             catch (Exception ex)
             {
                 _logHandler.Error("Kafka Consumer Error", ex, null);
+                throw;
             }
             finally
             {
