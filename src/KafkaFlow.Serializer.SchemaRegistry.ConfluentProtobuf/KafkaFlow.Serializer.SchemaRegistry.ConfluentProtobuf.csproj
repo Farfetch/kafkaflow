@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Confluent.SchemaRegistry.Serdes.Protobuf" Version="2.8.0" />
+    <PackageReference Include="Confluent.SchemaRegistry.Serdes.Protobuf" Version="2.13.2" />
     <PackageReference Include="Google.Protobuf" Version="3.30.1">
       <Aliases>GoogleProto</Aliases>
     </PackageReference>
