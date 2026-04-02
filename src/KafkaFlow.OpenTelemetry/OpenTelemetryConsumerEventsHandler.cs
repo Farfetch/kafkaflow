@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -12,9 +12,6 @@ namespace KafkaFlow.OpenTelemetry;
 internal static class OpenTelemetryConsumerEventsHandler
 {
     private const string ProcessString = "process";
-    private const string AttributeMessagingSourceName = "messaging.source.name";
-    private const string AttributeMessagingKafkaConsumerGroup = "messaging.kafka.consumer.group";
-    private const string AttributeMessagingKafkaSourcePartition = "messaging.kafka.source.partition";
     private static readonly TextMapPropagator s_propagator = Propagators.DefaultTextMapPropagator;
 
     public static Task OnConsumeStarted(IMessageContext context, KafkaFlowInstrumentationOptions options)
@@ -37,11 +34,11 @@ internal static class OpenTelemetryConsumerEventsHandler
                 activity?.AddBaggage(item.Key, item.Value);
             }
 
-            context?.Items.Add(ActivitySourceAccessor.ActivityString, activity);
+            context?.Items.Add(ActivitySourceAccessor.ActivityContextItemKey, activity);
 
-            ActivitySourceAccessor.SetGenericTags(activity, context?.Brokers);
+            ActivitySourceAccessor.SetGenericTags(activity);
 
-            if (activity != null && activity.IsAllDataRequested)
+            if (activity is { IsAllDataRequested: true })
             {
                 SetConsumerTags(context, activity);
             }
@@ -58,9 +55,9 @@ internal static class OpenTelemetryConsumerEventsHandler
 
     public static Task OnConsumeCompleted(IMessageContext context)
     {
-        if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityString, out var value) && value is Activity activity)
+        if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityContextItemKey, out var value) && value is Activity activity)
         {
-            activity?.Dispose();
+            activity.Dispose();
         }
 
         return Task.CompletedTask;
@@ -68,12 +65,12 @@ internal static class OpenTelemetryConsumerEventsHandler
 
     public static Task OnConsumeError(IMessageContext context, Exception ex)
     {
-        if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityString, out var value) && value is Activity activity)
+        if (context.Items.TryGetValue(ActivitySourceAccessor.ActivityContextItemKey, out var value) && value is Activity activity)
         {
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            activity?.RecordException(ex);
-
-            activity?.Dispose();
+            activity.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity.SetTag(AttributeKeys.ErrorType, ex.GetType().FullName);
+            activity.AddException(ex);
+            activity.Dispose();
         }
 
         return Task.CompletedTask;
@@ -86,13 +83,29 @@ internal static class OpenTelemetryConsumerEventsHandler
 
     private static void SetConsumerTags(IMessageContext context, Activity activity)
     {
-        string messageKey = context.Message.Key != null ? Encoding.UTF8.GetString(context.Message.Key as byte[]) : string.Empty;
+        activity.SetTag(AttributeKeys.OperationType, ProcessString);
+        activity.SetTag(AttributeKeys.OperationName, ProcessString);
+        activity.SetTag(AttributeKeys.DestinationName, context.ConsumerContext.Topic);
+        activity.SetTag(AttributeKeys.DestinationPartitionId, context.ConsumerContext.Partition.ToString());
+        activity.SetTag(AttributeKeys.ConsumerGroupName, context.ConsumerContext.GroupId);
+        activity.SetTag(AttributeKeys.ClientId, context.ConsumerContext.ConsumerName);
+        activity.SetTag(AttributeKeys.KafkaOffset, context.ConsumerContext.Offset);
 
-        activity.SetTag(ActivitySourceAccessor.AttributeMessagingOperation, ProcessString);
-        activity.SetTag(AttributeMessagingSourceName, context.ConsumerContext.Topic);
-        activity.SetTag(AttributeMessagingKafkaConsumerGroup, context.ConsumerContext.GroupId);
-        activity.SetTag(ActivitySourceAccessor.AttributeMessagingKafkaMessageKey, messageKey);
-        activity.SetTag(ActivitySourceAccessor.AttributeMessagingKafkaMessageOffset, context.ConsumerContext.Offset);
-        activity.SetTag(AttributeMessagingKafkaSourcePartition, context.ConsumerContext.Partition);
+        var messageKey = ActivitySourceAccessor.FormatMessageKey(context.Message.Key);
+
+        if (messageKey != null)
+        {
+            activity.SetTag(AttributeKeys.KafkaMessageKey, messageKey);
+        }
+
+        if (context.Message.Value == null)
+        {
+            activity.SetTag(AttributeKeys.KafkaMessageTombstone, true);
+        }
+
+        if (context.Message.Value is byte[] body)
+        {
+            activity.SetTag(AttributeKeys.MessageBodySize, body.Length);
+        }
     }
 }

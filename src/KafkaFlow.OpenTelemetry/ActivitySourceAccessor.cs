@@ -1,24 +1,26 @@
-﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Text;
 
 namespace KafkaFlow.OpenTelemetry;
 
 internal static class ActivitySourceAccessor
 {
-    internal const string ActivityString = "otel_activity";
+    internal const string ActivityContextItemKey = "otel_activity";
     internal const string MessagingSystemId = "kafka";
-    internal const string AttributeMessagingOperation = "messaging.operation";
-    internal const string AttributeMessagingKafkaMessageKey = "messaging.kafka.message.key";
-    internal const string AttributeMessagingKafkaMessageOffset = "messaging.kafka.message.offset";
 
     internal static readonly ActivitySource s_activitySource = new(KafkaFlowInstrumentation.ActivitySourceName, KafkaFlowInstrumentation.Version);
 
-    internal static void SetGenericTags(Activity activity, IEnumerable<string> bootstrapServers)
+    internal static void SetGenericTags(Activity activity)
     {
         // https://opentelemetry.io/docs/languages/net/libraries/#note-on-versioning
         // https://github.com/open-telemetry/opentelemetry-dotnet/blob/core-1.9.0/src/Shared/SemanticConventions.cs
         activity?.SetTag("messaging.system", MessagingSystemId);
-        activity?.SetTag("peer.service", string.Join(",", bootstrapServers ?? Enumerable.Empty<string>()));
     }
+
+    internal static string FormatMessageKey(object key) => key switch
+    {
+        null => null,
+        byte[] bytes => Encoding.UTF8.GetString(bytes),
+        _ => key.ToString(),
+    };
 }
