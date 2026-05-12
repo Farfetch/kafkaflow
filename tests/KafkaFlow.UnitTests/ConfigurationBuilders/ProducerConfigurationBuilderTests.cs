@@ -119,4 +119,78 @@ public class ProducerConfigurationBuilderTests
         configuration.BaseProducerConfig.CompressionType.Should().Be(compressionType);
         configuration.BaseProducerConfig.CompressionLevel.Should().Be(-1);
     }
+
+    [TestMethod]
+    public void Build_UseProducerConfig_ShouldNotOverrideLingerMsAndStatisticsIntervalMs()
+    {
+        // Arrange
+        var clusterConfiguration = _fixture.Create<ClusterConfiguration>();
+
+        const double lingerMs = 1000;
+        const int statisticsMs = 2000;
+        var producerConfig = new ProducerConfig
+        {
+            LingerMs = lingerMs,
+            StatisticsIntervalMs = statisticsMs
+        };
+
+        _target.WithProducerConfig(producerConfig);
+
+        // Act
+        var configuration = _target.Build(clusterConfiguration);
+
+        // Assert
+        configuration.Cluster.Should().Be(clusterConfiguration);
+        configuration.BaseProducerConfig.LingerMs.Should().Be(lingerMs);
+        configuration.BaseProducerConfig.StatisticsIntervalMs.Should().Be(statisticsMs);
+    }
+
+    [TestMethod]
+    public void Build_UseProducerConfigAndUseLingerMs_ShouldOverrideLingerMs()
+    {
+        // Arrange
+        var clusterConfiguration = _fixture.Create<ClusterConfiguration>();
+
+        const double producerConfigLingerMs = 1000;
+        const double expectedLingerMs = 2000;
+        var producerConfig = new ProducerConfig { LingerMs = producerConfigLingerMs };
+
+        _target
+            .WithProducerConfig(producerConfig)
+            .WithLingerMs(expectedLingerMs);
+
+        // Act
+        var configuration = _target.Build(clusterConfiguration);
+
+        // Assert
+        configuration.Cluster.Should().Be(clusterConfiguration);
+        configuration.BaseProducerConfig.LingerMs.Should().Be(expectedLingerMs);
+    }
+
+    [TestMethod]
+    public void Build_UseProducerConfigAndUseStatisticsIntervalMs_ShouldOverrideStatisticsIntervalMs()
+    {
+        // Arrange
+        var clusterConfiguration = _fixture.Create<ClusterConfiguration>();
+
+        const int producerConfigStatisticsIntervalMs = 1000;
+        const int expectedStatisticsIntervalMs = 2000;
+        var producerConfig = new ProducerConfig
+        {
+            StatisticsIntervalMs = producerConfigStatisticsIntervalMs
+        };
+
+        _target
+            .WithProducerConfig(producerConfig)
+            .WithStatisticsIntervalMs(expectedStatisticsIntervalMs);
+
+        // Act
+        var configuration = _target.Build(clusterConfiguration);
+
+        // Assert
+        configuration.Cluster.Should().Be(clusterConfiguration);
+        configuration
+            .BaseProducerConfig.StatisticsIntervalMs.Should()
+            .Be(expectedStatisticsIntervalMs);
+    }
 }

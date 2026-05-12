@@ -13,7 +13,7 @@ internal class ProducerConfigurationBuilder : IProducerConfigurationBuilder
     private string _topic;
     private ProducerConfig _producerConfig;
     private Acks? _acks;
-    private int _statisticsInterval;
+    private int? _statisticsInterval;
     private double? _lingerMs;
     private ProducerCustomFactory _customFactory = (producer, _) => producer;
 
@@ -86,8 +86,15 @@ internal class ProducerConfigurationBuilder : IProducerConfigurationBuilder
     {
         _producerConfig ??= new ProducerConfig();
 
-        _producerConfig.StatisticsIntervalMs = _statisticsInterval;
-        _producerConfig.LingerMs = _lingerMs;
+        if (_statisticsInterval.HasValue)
+        {
+            _producerConfig.StatisticsIntervalMs = _statisticsInterval;
+        }
+
+        if (_lingerMs.HasValue)
+        {
+            _producerConfig.LingerMs = _lingerMs;
+        }
 
         _producerConfig.ReadSecurityInformationFrom(clusterConfiguration);
 
