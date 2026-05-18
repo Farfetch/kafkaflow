@@ -143,7 +143,6 @@ internal class ConsumerFlowManager : IConsumerFlowManager
     private void StopHeartbeat()
     {
         _heartbeatTokenSource?.Cancel();
-        _heartbeatTask?.GetAwaiter().GetResult();
-        _heartbeatTask?.Dispose();
+        _heartbeatTask = null;
     }
 }
