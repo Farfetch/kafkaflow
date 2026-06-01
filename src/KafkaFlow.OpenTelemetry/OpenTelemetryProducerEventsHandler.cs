@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
-using OpenTelemetry.Trace;
 
 namespace KafkaFlow.OpenTelemetry;
 
@@ -18,7 +17,7 @@ internal static class OpenTelemetryProducerEventsHandler
     {
         try
         {
-            var activityName = !string.IsNullOrEmpty(context?.ProducerContext.Topic) ? $"{context.ProducerContext.Topic} {PublishString}" : PublishString;
+            var activityName = !string.IsNullOrEmpty(context?.ProducerContext.Topic) ? $"{context.ProducerContext.Topic} {SendString}" : SendString;
 
             // Start an activity with a name following the semantic convention of the OpenTelemetry messaging specification.
             // The convention also defines a set of attributes (in .NET they are mapped as `tags`) to be populated in the activity.
