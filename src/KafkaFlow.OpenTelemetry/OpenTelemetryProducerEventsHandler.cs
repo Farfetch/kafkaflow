@@ -12,7 +12,6 @@ namespace KafkaFlow.OpenTelemetry;
 internal static class OpenTelemetryProducerEventsHandler
 {
     private const string SendString = "send";
-    private const string PublishString = "publish";
     private static readonly TextMapPropagator s_propagator = Propagators.DefaultTextMapPropagator;
 
     public static Task OnProducerStarted(IMessageContext context, KafkaFlowInstrumentationOptions options)
@@ -103,7 +102,7 @@ internal static class OpenTelemetryProducerEventsHandler
     private static void SetProducerTags(IMessageContext context, Activity activity)
     {
         activity.SetTag(AttributeKeys.OperationType, SendString);
-        activity.SetTag(AttributeKeys.OperationName, PublishString);
+        activity.SetTag(AttributeKeys.OperationName, SendString);
         activity.SetTag(AttributeKeys.DestinationName, context?.ProducerContext.Topic);
 
         if (context?.ProducerContext.Partition.HasValue == true)
