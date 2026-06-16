@@ -117,7 +117,24 @@ internal class ClusterManager : IClusterManager, IDisposable
     {
         try
         {
+            var duplicatedTopics = configurations
+                .GroupBy(c => c, new DuplicateTopicConfigurationEqualityComparer())
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key.Name)
+                .ToList();
+
+            foreach (var duplicatedTopic in duplicatedTopics)
+            {
+                _logHandler.Warning(
+                        "Topic {Topic} declaration is duplicated. First topic configuration will be used",
+                        new
+                        {
+                            duplicatedTopic,
+                        });
+            }
+
             var topics = configurations
+                .Distinct(new DuplicateTopicConfigurationEqualityComparer())
                 .Select(
                     topicConfiguration => new TopicSpecification
                     {
@@ -170,5 +187,12 @@ internal class ClusterManager : IClusterManager, IDisposable
         {
             _lazyAdminClient.Value.Dispose();
         }
+    }
+
+    private class DuplicateTopicConfigurationEqualityComparer : IEqualityComparer<TopicConfiguration>
+    {
+        public bool Equals(TopicConfiguration x, TopicConfiguration y) => x?.Name == y?.Name;
+
+        public int GetHashCode(TopicConfiguration obj) => obj.Name.GetHashCode();
     }
 }
