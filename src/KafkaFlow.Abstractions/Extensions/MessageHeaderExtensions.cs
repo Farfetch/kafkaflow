@@ -17,7 +17,7 @@ public static class MessageHeaderExtensions
     public static string GetString(this IMessageHeaders headers, string key, Encoding encoding)
     {
         var value = headers[key];
-        return value != null ? encoding.GetString(headers[key]) : null;
+        return value != null ? encoding.GetString(value) : null;
     }
 
     /// <summary>
