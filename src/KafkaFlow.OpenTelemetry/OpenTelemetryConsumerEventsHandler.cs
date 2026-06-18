@@ -81,7 +81,11 @@ internal static class OpenTelemetryConsumerEventsHandler
 
     private static IEnumerable<string> ExtractTraceContextIntoBasicProperties(IMessageContext context, string key)
     {
-        return new[] { context.Headers.GetString(key, Encoding.UTF8) };
+        var value = context.Headers.GetString(key, Encoding.UTF8);
+
+        return value != null
+            ? new[] { value }
+            : Array.Empty<string>();
     }
 
     private static void SetConsumerTags(IMessageContext context, Activity activity)
