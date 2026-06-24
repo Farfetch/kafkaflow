@@ -166,7 +166,13 @@ internal class ConsumerWorkerPool : IConsumerWorkerPool
 
         var context = this.CreateMessageContext(message, worker);
 
-        _offsetManager.Enqueue(context.ConsumerContext);
+        if (!_offsetManager.Enqueue(context.ConsumerContext))
+        {
+            // Partition was revoked between when the message was polled and when it
+            // reached this point (feeder race during rebalance). Discard it here —
+            // Kafka will replay it on the new partition owner after the rebalance.
+            return;
+        }
 
         await worker.EnqueueAsync(context).ConfigureAwait(false);
     }

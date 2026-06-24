@@ -35,14 +35,17 @@ internal class OffsetManager : IOffsetManager
         }
     }
 
-    public void Enqueue(IConsumerContext context)
+    public bool Enqueue(IConsumerContext context)
     {
-        if (_partitionsOffsets.TryGetValue(
+        if (!_partitionsOffsets.TryGetValue(
                 (context.Topic, context.Partition),
                 out var offsets))
         {
-            offsets.Enqueue(context);
+            return false;
         }
+
+        offsets.Enqueue(context);
+        return true;
     }
 
     public Task WaitContextsCompletionAsync() =>

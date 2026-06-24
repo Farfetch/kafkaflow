@@ -175,4 +175,83 @@ public class ConsumerManagerTests
         _workerPoolMock.VerifyNoOtherCalls();
         _logHandlerMock.VerifyAll();
     }
+
+    [TestMethod]
+    public void OnPartitionsRevoked_ShouldCancelFeederBeforeWorkerPool_ToPreventOffsetLossUnderHighLoad()
+    {
+        // Arrange
+        // Cancel() is used instead of StopAsync() because the callback runs on the same
+        // thread as consumer.Consume() (the feeder thread). Awaiting the feeder task from
+        // there would deadlock. Cancel() just signals the cancellation token; the feeder
+        // exits naturally after Consume() returns.
+        var partitions = _fixture.Create<List<Confluent.Kafka.TopicPartitionOffset>>();
+
+        var callOrder = new List<string>();
+
+        _feederMock
+            .Setup(x => x.Cancel())
+            .Callback(() => callOrder.Add("Feeder.Cancel"));
+
+        _workerPoolMock
+            .Setup(x => x.StopAsync())
+            .Callback(() => callOrder.Add("WorkerPool.StopAsync"))
+            .Returns(Task.CompletedTask);
+
+        _logHandlerMock
+            .Setup(x => x.Warning(It.IsAny<string>(), It.IsAny<object>()));
+
+        // Act
+        _onPartitionRevokedHandler(_dependencyResolver.Object, null, partitions);
+
+        // Assert - feeder cancelled before pool drain
+        _feederMock.Verify(x => x.Cancel(), Times.Once);
+
+        Assert.AreEqual(2, callOrder.Count);
+        Assert.AreEqual("Feeder.Cancel", callOrder[0]);
+        Assert.AreEqual("WorkerPool.StopAsync", callOrder[1]);
+    }
+
+    [TestMethod]
+    public void OnPartitionsAssigned_ShouldCancelAndRestartFeeder_ToCloseRebalanceRaceWindow()
+    {
+        // Arrange
+        // OnPartitionAssigned must cancel any running feeder (including the one started at
+        // startup) before the pool is rebuilt, then restart it after. This closes the window
+        // where a stale message from a no-longer-assigned partition could be enqueued without
+        // offset tracking. For stop-the-world strategy the pool is NOT stopped here (it was
+        // already stopped in OnPartitionsRevoked).
+        var partitions = _fixture.Create<List<Confluent.Kafka.TopicPartition>>();
+
+        var callOrder = new List<string>();
+
+        _feederMock
+            .Setup(x => x.Cancel())
+            .Callback(() => callOrder.Add("Feeder.Cancel"));
+
+        _feederMock
+            .Setup(x => x.Start())
+            .Callback(() => callOrder.Add("Feeder.Start"));
+
+        _workerPoolMock
+            .Setup(x => x.StartAsync(partitions, It.IsAny<int>()))
+            .Callback(() => callOrder.Add("WorkerPool.StartAsync"))
+            .Returns(Task.CompletedTask);
+
+        _logHandlerMock
+            .Setup(x => x.Info(It.IsAny<string>(), It.IsAny<object>()));
+
+        _consumerMock.SetupGet(x => x.Assignment).Returns(partitions.ToArray());
+
+        // Act
+        _onPartitionAssignedHandler(_dependencyResolver.Object, Mock.Of<Confluent.Kafka.IConsumer<byte[], byte[]>>(), partitions);
+
+        // Assert - order: cancel → start pool → start feeder
+        _feederMock.Verify(x => x.Cancel(), Times.Once);
+        _feederMock.Verify(x => x.Start(), Times.Once);
+
+        Assert.AreEqual(3, callOrder.Count);
+        Assert.AreEqual("Feeder.Cancel", callOrder[0]);
+        Assert.AreEqual("WorkerPool.StartAsync", callOrder[1]);
+        Assert.AreEqual("Feeder.Start", callOrder[2]);
+    }
 }
