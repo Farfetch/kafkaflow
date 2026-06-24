@@ -4,10 +4,7 @@ namespace KafkaFlow.Consumers;
 
 internal class NullOffsetManager : IOffsetManager
 {
-    public void Enqueue(IConsumerContext context)
-    {
-        // Do nothing
-    }
+    public bool Enqueue(IConsumerContext context) => true;
 
     public void MarkAsProcessed(IConsumerContext offset)
     {

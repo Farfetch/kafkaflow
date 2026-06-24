@@ -64,14 +64,18 @@ internal class WorkerPoolFeeder : IWorkerPoolFeeder
             CancellationToken.None);
     }
 
-    public async Task StopAsync()
+    public void Cancel()
     {
         if (_stopTokenSource is { IsCancellationRequested: false })
         {
             _stopTokenSource.Cancel();
             _stopTokenSource.Dispose();
         }
+    }
 
+    public async Task StopAsync()
+    {
+        this.Cancel();
         await (_feederTask ?? Task.CompletedTask).ConfigureAwait(false);
     }
 }

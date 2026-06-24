@@ -4,7 +4,9 @@ namespace KafkaFlow.Consumers;
 
 internal interface IOffsetManager
 {
-    void Enqueue(IConsumerContext context);
+    // Returns false when the context's partition is not tracked (e.g. was revoked).
+    // The caller must skip further processing if false is returned.
+    bool Enqueue(IConsumerContext context);
 
     void MarkAsProcessed(IConsumerContext offset);
 

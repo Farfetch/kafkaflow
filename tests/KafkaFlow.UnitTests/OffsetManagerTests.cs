@@ -60,10 +60,37 @@ public class OffsetManagerTests
             Times.Once);
     }
 
-    private IConsumerContext MockConsumerContext(int offset)
+    [TestMethod]
+    public void Enqueue_ForRevokedPartition_SilentlyDropsMessage_CausingOffsetLoss()
+    {
+        // This test proves the mechanism behind Bug #1 in ConsumerManager:
+        // When the feeder is not stopped during rebalance, it can consume a message
+        // from a partition that was just revoked. That message gets enqueued into a
+        // new OffsetManager (created for the new partition set). Since the revoked
+        // partition is not in the new OffsetManager, Enqueue and MarkAsProcessed
+        // both silently no-op. The message is processed by a worker but its offset
+        // is NEVER committed. After the rebalance the broker replays that offset.
+        var revokedPartition = new Confluent.Kafka.TopicPartition("topic-A", new Partition(99));
+        var context = MockConsumerContext(100, revokedPartition.Topic, revokedPartition.Partition.Value);
+
+        // Act - message from revoked partition arrives in new OffsetManager
+        _target.Enqueue(context);
+        _target.MarkAsProcessed(context);
+
+        // Assert - offset is silently dropped, committer is never called
+        _committerMock.Verify(
+            c => c.MarkAsProcessed(It.IsAny<TopicPartitionOffset>()),
+            Times.Never,
+            "Offset from a partition unknown to this OffsetManager is silently discarded");
+    }
+
+    private IConsumerContext MockConsumerContext(int offset) =>
+        MockConsumerContext(offset, _topicPartition.Topic, _topicPartition.Partition.Value);
+
+    private IConsumerContext MockConsumerContext(int offset, string topic, int partition)
     {
         var mock = new Mock<IConsumerContext>();
-        var tpo = new TopicPartitionOffset(_topicPartition.Topic, _topicPartition.Partition, offset);
+        var tpo = new TopicPartitionOffset(topic, partition, offset);
 
         mock
             .SetupGet(x => x.Offset)

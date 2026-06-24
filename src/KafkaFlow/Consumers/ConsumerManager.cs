@@ -109,10 +109,17 @@ internal class ConsumerManager : IConsumerManager
             this.GetConsumerLogInfo(topicPartitions?.Select(x => x.TopicPartition).ToArray()
                                     ?? Array.Empty<Confluent.Kafka.TopicPartition>()));
 
+        // Cancel the feeder before draining workers. We cannot await the feeder task here
+        // because this callback runs synchronously on the same thread as consumer.Consume(),
+        // which is the thread the feeder is blocked on — awaiting would deadlock.
+        // Cancelling the token is safe: the feeder exits after Consume() returns, and
+        // EnqueueAsync discards any message whose partition is no longer tracked.
+        this.Feeder.Cancel();
         this.WorkerPool.StopAsync().GetAwaiter().GetResult();
 
         if (_stopTheWorldStrategy)
         {
+            // For stop-the-world strategies the feeder is restarted in OnPartitionAssigned.
             return;
         }
 
@@ -123,6 +130,8 @@ internal class ConsumerManager : IConsumerManager
             .StartAsync(assignedPartitions, workersCount)
             .GetAwaiter()
             .GetResult();
+
+        this.Feeder.Start();
     }
 
     private void OnPartitionAssigned(IReadOnlyCollection<Confluent.Kafka.TopicPartition> partitions)
@@ -130,6 +139,12 @@ internal class ConsumerManager : IConsumerManager
         _logHandler.Info(
             "Partitions assigned",
             this.GetConsumerLogInfo(partitions));
+
+        // Cancel any currently-running feeder before rebuilding the worker pool.
+        // On initial startup the feeder was started in StartAsync; cancelling it here
+        // and restarting after the pool is ready closes the window where a message from
+        // a no-longer-assigned partition could slip through without offset tracking.
+        this.Feeder.Cancel();
 
         if (_stopTheWorldStrategy is false)
         {
@@ -143,6 +158,8 @@ internal class ConsumerManager : IConsumerManager
             .StartAsync(assignedPartitions, workersCount)
             .GetAwaiter()
             .GetResult();
+
+        this.Feeder.Start();
     }
 
     private object GetConsumerLogInfo(IEnumerable<Confluent.Kafka.TopicPartition> partitions) => new
