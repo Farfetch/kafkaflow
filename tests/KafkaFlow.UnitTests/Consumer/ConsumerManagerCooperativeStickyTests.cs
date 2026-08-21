@@ -114,7 +114,7 @@ public class ConsumerManagerCooperativeStickyTests
             .Returns(Task.CompletedTask);
 
         _workerPoolMock
-            .Setup(x => x.StopAsync())
+            .Setup(x => x.StopAsync(false))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -136,7 +136,7 @@ public class ConsumerManagerCooperativeStickyTests
         var allPartitions = currentPartitions.Concat(newAssignedPartitions).ToArray();
 
         _workerPoolMock
-            .Setup(x => x.StopAsync())
+            .Setup(x => x.StopAsync(false))
             .Returns(Task.CompletedTask);
 
         _workerPoolMock
@@ -166,7 +166,7 @@ public class ConsumerManagerCooperativeStickyTests
         var leftPartitions = currentPartitions.Except(revokedPartitions).ToArray();
 
         _workerPoolMock
-            .Setup(x => x.StopAsync())
+            .Setup(x => x.StopAsync(false))
             .Returns(Task.CompletedTask);
 
         _workerPoolMock

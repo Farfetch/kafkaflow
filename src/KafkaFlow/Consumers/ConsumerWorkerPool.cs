@@ -59,11 +59,17 @@ internal class ConsumerWorkerPool : IConsumerWorkerPool
     {
         try
         {
-            _offsetManager = _consumer.Configuration.NoStoreOffsets ?
-                new NullOffsetManager() :
-                new OffsetManager(_offsetCommitter, partitions);
+            // The offset manager is tied to the partition assignment, not to the workers. When the pool is
+            // restarted with the same assignment (e.g. a workers count change) the previous instance is kept,
+            // otherwise the offsets it holds and did not commit yet would be forgotten and skipped.
+            if (_offsetManager is null)
+            {
+                _offsetManager = _consumer.Configuration.NoStoreOffsets ?
+                    new NullOffsetManager() :
+                    new OffsetManager(_offsetCommitter, partitions);
 
-            await _offsetCommitter.StartAsync().ConfigureAwait(false);
+                await _offsetCommitter.StartAsync().ConfigureAwait(false);
+            }
 
             this.CurrentWorkersCount = workersCount;
 
@@ -114,10 +120,15 @@ internal class ConsumerWorkerPool : IConsumerWorkerPool
         }
     }
 
-    public async Task StopAsync()
+    public async Task StopAsync(bool keepOffsetManager = false)
     {
         if (_workers.Count == 0)
         {
+            if (!keepOffsetManager)
+            {
+                _offsetManager = null;
+            }
+
             return;
         }
 
@@ -139,34 +150,53 @@ internal class ConsumerWorkerPool : IConsumerWorkerPool
         currentWorkers.ForEach(worker => worker.Dispose());
         _stopCancellationTokenSource?.Dispose();
 
-        _offsetManager = null;
+        if (!keepOffsetManager)
+        {
+            _offsetManager = null;
+        }
 
         await _workerPoolStoppedSubject.FireAsync().ConfigureAwait(false);
 
-        await _offsetCommitter.StopAsync().ConfigureAwait(false);
+        if (!keepOffsetManager)
+        {
+            await _offsetCommitter.StopAsync().ConfigureAwait(false);
+        }
     }
 
     public async Task EnqueueAsync(ConsumeResult<byte[], byte[]> message, CancellationToken stopCancellationToken)
     {
         await _startedTaskSource.Task.ConfigureAwait(false);
 
-        var worker = (IConsumerWorker)await _distributionStrategy
-            .GetWorkerAsync(
-                new WorkerDistributionContext(
-                    _consumer.Configuration.ConsumerName,
-                    message.Topic,
-                    message.Partition.Value,
-                    message.Message.Key,
-                    stopCancellationToken)).ConfigureAwait(false);
+        IConsumerWorker worker;
 
-        if (worker is null)
+        try
         {
-            return;
+            worker = (IConsumerWorker)await _distributionStrategy
+                .GetWorkerAsync(
+                    new WorkerDistributionContext(
+                        _consumer.Configuration.ConsumerName,
+                        message.Topic,
+                        message.Partition.Value,
+                        message.Message.Key,
+                        stopCancellationToken)).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            worker = null;
         }
 
         var context = this.CreateMessageContext(message, worker);
 
         _offsetManager.Enqueue(context.ConsumerContext);
+
+        if (worker is null)
+        {
+            // The pool is stopping and no worker took the message, but it was already read from Kafka.
+            // Discarding it keeps it in the offset manager as not processed, so the committed offset cannot
+            // move past it and the message is delivered again the next time consumption starts.
+            context.ConsumerContext.Discard();
+            return;
+        }
 
         await worker.EnqueueAsync(context).ConfigureAwait(false);
     }

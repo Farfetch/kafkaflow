@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using Confluent.Kafka;
@@ -23,6 +25,7 @@ public class ConsumerManagerTests
     private Mock<IWorkerPoolFeeder> _feederMock;
     private Mock<ILogHandler> _logHandlerMock;
     private Mock<IDependencyResolver> _dependencyResolver;
+    private Mock<IConsumerConfiguration> _configurationMock;
 
     private Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartition>> _onPartitionAssignedHandler;
     private Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartitionOffset>> _onPartitionRevokedHandler;
@@ -51,23 +54,23 @@ public class ConsumerManagerTests
                 (Action<IDependencyResolver, Confluent.Kafka.IConsumer<byte[], byte[]>, List<Confluent.Kafka.TopicPartitionOffset>> value) =>
                     _onPartitionRevokedHandler = value);
 
-        var configurationMock= new Mock<IConsumerConfiguration>();
+        _configurationMock = new Mock<IConsumerConfiguration>();
 
-        configurationMock
+        _configurationMock
             .Setup(x => x.GetKafkaConfig())
             .Returns(() => new ConsumerConfig { PartitionAssignmentStrategy = PartitionAssignmentStrategy.RoundRobin });
 
-        configurationMock
+        _configurationMock
             .SetupGet(x => x.WorkersCountCalculator)
             .Returns((_, _) => Task.FromResult(10));
 
-        configurationMock
+        _configurationMock
             .SetupGet(x => x.WorkersCountEvaluationInterval)
             .Returns(TimeSpan.FromMinutes(5));
 
         _consumerMock
             .SetupGet(x => x.Configuration)
-            .Returns(configurationMock.Object);
+            .Returns(_configurationMock.Object);
 
         _consumerMock
             .SetupGet(x => x.Assignment)
@@ -113,7 +116,7 @@ public class ConsumerManagerTests
             .Returns(Task.CompletedTask);
 
         _workerPoolMock
-            .Setup(x => x.StopAsync())
+            .Setup(x => x.StopAsync(false))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -124,6 +127,39 @@ public class ConsumerManagerTests
         _workerPoolMock.VerifyAll();
         _workerPoolMock.VerifyNoOtherCalls();
         _consumerMock.Verify(x => x.Dispose(), Times.Once());
+    }
+
+    [TestMethod]
+    public async Task ChangingWorkersCount_StopsWorkerPoolKeepingTheOffsetManager()
+    {
+        // Arrange - the partition assignment does not change, so offsets already consumed must not be forgotten
+        _configurationMock
+            .SetupGet(x => x.WorkersCountEvaluationInterval)
+            .Returns(TimeSpan.FromMilliseconds(10));
+
+        _workerPoolMock.SetupGet(x => x.CurrentWorkersCount).Returns(1);
+        _workerPoolMock.Setup(x => x.StopAsync(It.IsAny<bool>())).Returns(Task.CompletedTask);
+        _workerPoolMock
+            .Setup(x => x.StartAsync(It.IsAny<IReadOnlyCollection<Confluent.Kafka.TopicPartition>>(), 10))
+            .Returns(Task.CompletedTask);
+
+        _feederMock.Setup(x => x.StopAsync()).Returns(Task.CompletedTask);
+        _feederMock.Setup(x => x.Start());
+
+        // Act
+        await _target.StartAsync();
+
+        SpinWait
+            .SpinUntil(
+                () => _workerPoolMock.Invocations.Any(x => x.Method.Name == nameof(IConsumerWorkerPool.StopAsync)),
+                TimeSpan.FromSeconds(5))
+            .Should()
+            .BeTrue("the workers count evaluation should have restarted the pool");
+
+        await _target.StopAsync();
+
+        // Assert
+        _workerPoolMock.Verify(x => x.StopAsync(true), Times.AtLeastOnce);
     }
 
     [TestMethod]
@@ -157,7 +193,7 @@ public class ConsumerManagerTests
         var partitions = _fixture.Create<List<Confluent.Kafka.TopicPartitionOffset>>();
 
         _workerPoolMock
-            .Setup(x => x.StopAsync())
+            .Setup(x => x.StopAsync(false))
             .Returns(Task.CompletedTask);
 
         _consumerMock

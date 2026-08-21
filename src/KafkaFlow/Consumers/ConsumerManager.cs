@@ -89,7 +89,11 @@ internal class ConsumerManager : IConsumerManager
             this.StopEvaluateWorkerCountTimer();
 
             await this.Feeder.StopAsync().ConfigureAwait(false);
-            await this.WorkerPool.StopAsync().ConfigureAwait(false);
+
+            // The partition assignment does not change here, so the offset manager must survive the restart.
+            // Recreating it would forget the offsets that were consumed but not processed yet, and the new
+            // instance would commit past them, skipping those messages for good.
+            await this.WorkerPool.StopAsync(keepOffsetManager: true).ConfigureAwait(false);
 
             await this.WorkerPool.StartAsync(this.Consumer.Assignment, workersCount).ConfigureAwait(false);
             this.Feeder.Start();
