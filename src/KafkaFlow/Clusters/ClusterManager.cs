@@ -43,10 +43,10 @@ internal class ClusterManager : IClusterManager, IDisposable
                 {
                     var handler = security.OAuthBearerTokenRefreshHandler;
 
-                    adminClientBuilder.SetOAuthBearerTokenRefreshHandler((client, _) =>
+                    adminClientBuilder.SetOAuthBearerTokenRefreshHandler((client, oauthbearerConfig) =>
                     {
                         var authenticator = new OAuthBearerAuthenticator(client);
-                        handler(authenticator);
+                        handler(authenticator, oauthbearerConfig);
                     });
                 }
 
