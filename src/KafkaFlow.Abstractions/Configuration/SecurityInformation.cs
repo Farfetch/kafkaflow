@@ -1,5 +1,5 @@
-using KafkaFlow.Authentication;
 using System;
+using KafkaFlow.Authentication;
 
 namespace KafkaFlow.Configuration;
 
@@ -256,5 +256,5 @@ public class SecurityInformation
     /// <summary>
     ///     Gets or sets the OAuthBearerTokenRefreshHandler for custom OAuth authentication.
     /// </summary>
-    public Action<IOAuthBearerAuthenticator> OAuthBearerTokenRefreshHandler { get; set; }
+    public Action<IOAuthBearerAuthenticator, string> OAuthBearerTokenRefreshHandler { get; set; }
 }

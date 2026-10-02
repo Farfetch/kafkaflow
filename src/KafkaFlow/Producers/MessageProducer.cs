@@ -390,10 +390,10 @@ internal class MessageProducer : IMessageProducer, IDisposable
             {
                 var handler = security.OAuthBearerTokenRefreshHandler;
 
-                producerBuilder.SetOAuthBearerTokenRefreshHandler((client, _) =>
+                producerBuilder.SetOAuthBearerTokenRefreshHandler((client, oauthbearerConfig) =>
                 {
                     var authenticator = new OAuthBearerAuthenticator(client);
-                    handler(authenticator);
+                    handler(authenticator, oauthbearerConfig);
                 });
             }
 
