@@ -7,7 +7,7 @@ using KafkaFlow.Serializer.SchemaRegistry;
 namespace KafkaFlow;
 
 /// <summary>
-/// No needed
+/// Not needed
 /// </summary>
 public static class ProducerConfigurationBuilderExtensions
 {

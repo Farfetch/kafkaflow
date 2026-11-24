@@ -3,7 +3,7 @@ using KafkaFlow.Configuration;
 namespace KafkaFlow;
 
 /// <summary>
-/// No needed
+/// Not needed
 /// </summary>
 public static class ExtensionMethods
 {

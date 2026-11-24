@@ -6,7 +6,7 @@ using KafkaFlow.Middlewares.Serializer.Resolvers;
 namespace KafkaFlow;
 
 /// <summary>
-/// No needed
+/// Not needed
 /// </summary>
 public static class ProducerMiddlewareConfigurationBuilder
 {

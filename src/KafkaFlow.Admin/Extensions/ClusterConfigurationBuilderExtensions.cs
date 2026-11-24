@@ -8,7 +8,7 @@ using KafkaFlow.Serializer;
 namespace KafkaFlow;
 
 /// <summary>
-/// No needed
+/// Not needed
 /// </summary>
 public static class ClusterConfigurationBuilderExtensions
 {
@@ -18,7 +18,7 @@ public static class ClusterConfigurationBuilderExtensions
     /// <param name="cluster">The cluster configuration builder</param>
     /// <param name="topic">The topic to be used by the admin commands</param>
     /// <param name="consumerGroup">The consumer group prefix</param>
-    /// <param name="topicPartition">The partition used to produce and consumer admin messages</param>
+    /// <param name="topicPartition">The partition used to produce and consume admin messages</param>
     /// <returns></returns>
     public static IClusterConfigurationBuilder EnableAdminMessages(
         this IClusterConfigurationBuilder cluster,
@@ -79,9 +79,9 @@ public static class ClusterConfigurationBuilderExtensions
     /// <param name="cluster">The cluster configuration builder</param>
     /// <param name="topicName">The topic to be used by the metric commands</param>
     /// <param name="consumerGroup">The consumer group prefix</param>
-    /// <param name="cleanRunInterval">How often run storage cleanup. Every 10 minutes by default</param>
+    /// <param name="cleanRunInterval">How often to run storage cleanup. Every 10 minutes by default</param>
     /// <param name="expiryTime">Cleanup will remove metrics older than specified interval. 6 hours by default</param>
-    /// <param name="topicPartition">The partition used to produce and consumer telemetry data</param>
+    /// <param name="topicPartition">The partition used to produce and consume telemetry data</param>
     /// <returns></returns>
     public static IClusterConfigurationBuilder EnableTelemetry(
         this IClusterConfigurationBuilder cluster,
